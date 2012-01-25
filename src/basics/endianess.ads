@@ -24,6 +24,16 @@ package Endianess is
    function ToLittleEndian(Integer: Integer32) return LittleEndianInteger32;
    function ToLittleEndian(Integer: Integer64) return LittleEndianInteger64;
 
+   function FromLittleEndian(Integer: LittleEndianInteger16) return Integer16;
+   function FromLittleEndian(Integer: LittleEndianInteger32) return Integer32;
+   function FromLittleEndian(Integer: LittleEndianInteger64) return Integer64;
+
    function ToBigEndian(Integer: Integer16) return BigEndianInteger16;
+   function ToBigEndian(Integer: Integer32) return BigEndianInteger32;
+   function ToBigEndian(Integer: Integer64) return BigEndianInteger64;
+
+   function FromBigEndian(Integer: BigEndianInteger16) return Integer16;
+   function FromBigEndian(Integer: BigEndianInteger32) return Integer32;
+   function FromBigEndian(Integer: BigEndianInteger64) return Integer64;
 
 end Endianess;
