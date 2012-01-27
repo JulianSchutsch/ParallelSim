@@ -30,16 +30,41 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 package body BSDSockets is
    use type Interfaces.C.int;
 
+   function AddressFamilyToInt is new Ada.Unchecked_Conversion(Source => AddressFamilyEnum,
+                                                               Target => Interfaces.C.int);
+   function SocketTypeToInt is new Ada.Unchecked_Conversion(Source => SocketTypeEnum,
+                                                            Target => Interfaces.C.int);
+   function ProtocolToInt is new Ada.Unchecked_Conversion(Source => ProtocolEnum,
+                                                          Target => Interfaces.C.int);
+
+   procedure Bind
+     (Socket : SocketID;
+      Port   : PortID;
+      Host   : String := "") is
+
+      Addr   : aliased BSDSockets.Thin.SockAddr_In6;
+      Result : Interfaces.C.int;
+
+   begin
+      Result:=BSDSockets.Thin.Bind(Socket  => Interfaces.C.int(Socket),
+                                   Name    => Addr'Access,
+                                   NameLen => Addr'Size/8);
+
+
+   end Bind;
+
    function Socket
      (AddressFamily : AddressFamilyEnum;
       SocketType    : SocketTypeEnum;
       Protocol      : ProtocolEnum) return SocketID is
-      Value : Interfaces.C.int;
+      Value         : Interfaces.C.int;
    begin
-      Value:=BSDSockets.Thin.Socket(AddressFamily,
-                                    SocketType,
-                                    Protocol);
+      Value:=BSDSockets.Thin.Socket(AddressFamilyToInt(AddressFamily),
+                                    SocketTypeToInt(SocketType),
+                                    ProtocolToInt(Protocol));
+      Put(Integer(Value));
       if Value=-1 then
+         Put(Integer(BSDSockets.Thin.Error));
          raise FailedToCreateSocket;
       end if;
       return SocketID(Value);

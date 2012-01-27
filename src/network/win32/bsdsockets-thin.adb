@@ -50,7 +50,15 @@ package body BSDSockets.Thin is
    function WSACleanup return Interfaces.C.int;
    pragma Import(StdCall,WSACleanup,"WSACleanup");
 
+   function WSAGetLastError return Interfaces.C.int;
+   pragma Import(StdCall,WSAGetLastError,"WSAGetLastError");
+
    WSAInfo : aliased WSAData;
+
+   function Error return Interfaces.C.int is
+   begin
+      return WSAGetLastError;
+   end Error;
 
    procedure Initialize is
    begin

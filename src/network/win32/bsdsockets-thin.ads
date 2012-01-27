@@ -23,6 +23,8 @@
 
 with Interfaces;
 with Interfaces.C;
+with Interfaces.C.Strings;
+with System;
 
 package BSDSockets.Thin is
 
@@ -39,7 +41,7 @@ package BSDSockets.Thin is
       end record;
    pragma Convention(C,In_Addr);
 
-   type Sockaddr_In is
+   type SockAddr_In is
       record
          sin_family : Interfaces.C.short;
          sin_port   : Interfaces.C.unsigned_short;
@@ -48,16 +50,37 @@ package BSDSockets.Thin is
       end record;
    pragma Convention(C,SockAddr_In);
 
-   function Socket(AddressFamily : AddressFamilyEnum;
-                   SocketType    : SocketTypeEnum;
-                   ProtocolType  : ProtocolEnum) return Interfaces.C.int;
+   type In_Addr6 is
+      record
+         s6_addr:Interfaces.C.char_array(0..15);
+      end record;
+
+   type SockAddr_In6 is
+      record
+         sin6_family   : Interfaces.C.short;
+         sin6_port     : Interfaces.C.unsigned_short;
+         sin6_flowinfo : Interfaces.C.unsigned_long;
+         sin6_addr     : In_Addr6;
+         sin6_scope_id : Interfaces.C.unsigned_long;
+      end record;
+   pragma Convention(C,Sockaddr_In6);
+
+   function Error return Interfaces.C.int;
+
+   function Socket(AddressFamily : Interfaces.C.int;
+                   SocketType    : Interfaces.C.int;
+                   ProtocolType  : Interfaces.C.int) return Interfaces.C.int;
    pragma Import(StdCall,Socket,"socket");
 
    function Bind(Socket  : Interfaces.C.int;
-                 Name    : access SockAddr;
+                 Name    : access SockAddr_In6;
                  NameLen : Interfaces.C.int) return Interfaces.C.int;
    pragma Import(StdCall,Bind,"bind");
 
+   function INET_PTON(AddressFamily : Interfaces.C.int;
+                      AddrString    : Interfaces.C.Strings.chars_ptr;
+                      Buffer        : System.Address) return Interfaces.C.int;
+   pragma Import(StdCall,INET_PTON,"inet_pton");
 
    procedure Initialize;
    procedure Finalize;

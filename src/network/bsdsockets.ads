@@ -32,7 +32,9 @@ package BSDSockets is
    FailedToCreateSocket           : Exception;
 
    type SocketID is private;
+
    type PortID is new Interfaces.C.int;
+
    type AddressFamilyEnum is (AF_UNSPEC,
                               AF_INET,
                               AF_IPX,
@@ -57,9 +59,27 @@ package BSDSockets is
                          IPPROTO_ICMPV6,
                          IPPROTO_RM);
 
+   procedure Bind
+     (Socket : SocketID;
+      Port   : PortID;
+      Host   : String := "");
+
+   function Socket
+     (AddressFamily : AddressFamilyEnum;
+      SocketType    : SocketTypeEnum;
+      Protocol      : ProtocolEnum) return SocketID;
+
+   procedure Initialize;
+
+   procedure Finalize;
+
+private
+
+   type SocketID is new Interfaces.C.int;
+
    for AddressFamilyEnum use
      (AF_UNSPEC=>0,
-      AF_INET=>4,
+      AF_INET=>2,
       AF_IPX=>6,
       AF_APPLETALK=>16,
       AF_NETBIOS=>17,
@@ -89,30 +109,5 @@ package BSDSockets is
       IPPROTO_RM=>113);
 
    for ProtocolEnum'Size use Interfaces.C.int'Size;
-
-   function AddressFamilyToInt is new Ada.Unchecked_Conversion(Source => AddressFamilyEnum,
-                                                               Target => Interfaces.C.int);
-   function SocketTypeToInt is new Ada.Unchecked_Conversion(Source => SocketTypeEnum,
-                                                            Target => Interfaces.C.int);
-   function ProtocolToInt is new Ada.Unchecked_Conversion(Source => ProtocolEnum,
-                                                          Target => Interfaces.C.int);
-
---   procedure Bind
---     (Socket : SocketID;
---      Port   : PortID;
---      Host   : String := "");
-
-   function Socket
-     (AddressFamily : AddressFamilyEnum;
-      SocketType    : SocketTypeEnum;
-      Protocol      : ProtocolEnum) return SocketID;
-
-   procedure Initialize;
-
-   procedure Finalize;
-
-private
-
-   type SocketID is new Interfaces.C.int;
 
 end BSDSockets;
