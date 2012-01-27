@@ -52,6 +52,7 @@ package body Network.Packets is
       New_Line;
       Dest.Content(0..Source.Position-1)  := Source.Content(0..Source.Position-1);
       Dest.Position := 0;
+      Dest.Filled   := Source.Position;
    end Copy;
 
    procedure Read(Stream : in out InPacket;
@@ -63,7 +64,7 @@ package body Network.Packets is
       Put(Integer(Stream.Position+Item'Last));
       New_Line;
       Last := Stream.Position+Item'Last;
-      if Last>Stream.Content'Last then
+      if Last>Stream.Filled then
          raise PacketOverflow;
       end if;
       Item := Stream.Content(Stream.Position..Last-1);

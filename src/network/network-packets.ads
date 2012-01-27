@@ -34,7 +34,8 @@ package Network.Packets is
    type InPacket(Max: Stream_Element_Offset) is new Root_Stream_Type with
       record
          Content  : Stream_Element_Array(0..Max);
-         Position : Stream_Element_Offset:=0;
+         Position : Stream_Element_Offset := 0;
+         Filled : Stream_Element_Offset   := 0;
       end record;
 
    type OutPacket(Max: Stream_Element_Offset) is new Root_Stream_Type with
