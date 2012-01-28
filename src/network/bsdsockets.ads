@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
---   Copyright 2011 Julian Schutsch
+--   Copyright 2012 Julian Schutsch
 --
 --   This file is part of ParallelSim
 --
@@ -21,6 +21,23 @@
 --   27.Jan 2012 Julian Schutsch
 --     - Original version
 
+-- Reasons for implementation
+--   At the date of the writting of this file, no standard Socket library
+--   supporting Ipv6 is implemented. This socket implementation tries to
+--   limit itself to a modern implementation of the BSDSockets including
+--   GetAddrInfo and Inet_Pton which both are capable of handling IPv6
+--   addresses.
+--
+--   The BSDSockets packet is a wrapper of the plattform specific
+--   BSDSockets-Thin packet.
+--   Functions do not return arbitrary integers but raise exceptions.
+--
+-- Usage
+--   The usage of this package is similar to the usage of the BSDSocket API
+--   directly.
+--   For portability one has to use Initialize and Finalize before using
+--   and after using this package. (Example : Windows)
+
 pragma Ada_2012;
 
 with Interfaces.C;
@@ -29,12 +46,15 @@ with Ada.Unchecked_Conversion;
 package BSDSockets is
 
    FailedNetworkAPIInitialization : Exception;
-   FailedToCreateSocket           : Exception;
+   FailedSocket : Exception;
+   FailedBind   : Exception;
+   FailedListen : Exception;
 
    type SocketID is private;
 
-   type PortID is new Interfaces.C.int;
+   type PortID is range 0..65535;
 
+   -- Has Representation --
    type AddressFamilyEnum is (AF_UNSPEC,
                               AF_INET,
                               AF_IPX,
@@ -44,12 +64,14 @@ package BSDSockets is
                               AF_IRDA,
                               AF_BTH);
 
+   -- Has Representation --
    type SocketTypeEnum is (SOCK_STREAM,
                            SOCK_DGRAM,
                            SOCK_RAW,
                            SOCK_RDM,
                            SOCK_SEQPACKET);
 
+   -- Has Representation --
    type ProtocolEnum is (IPPROTO_ANY,
                          IPPROTO_ICMP,
                          IPPROTO_IGMP,
@@ -59,10 +81,19 @@ package BSDSockets is
                          IPPROTO_ICMPV6,
                          IPPROTO_RM);
 
+   -- Has Representation --
+   type BindFamilyEnum is (AF_INET,
+                           AF_INET6);
+
    procedure Bind
      (Socket : SocketID;
       Port   : PortID;
+      Family : BindFamilyEnum;
       Host   : String := "");
+
+   procedure Listen
+     (Socket  : SocketID;
+      Backlog : Integer:=0);
 
    function Socket
      (AddressFamily : AddressFamilyEnum;
@@ -70,44 +101,49 @@ package BSDSockets is
       Protocol      : ProtocolEnum) return SocketID;
 
    procedure Initialize;
-
    procedure Finalize;
 
 private
 
    type SocketID is new Interfaces.C.int;
 
-   for AddressFamilyEnum use
-     (AF_UNSPEC=>0,
-      AF_INET=>2,
-      AF_IPX=>6,
-      AF_APPLETALK=>16,
-      AF_NETBIOS=>17,
-      AF_INET6=>23,
-      AF_IRDA=>26,
-      AF_BTH=>32);
+   -- Representation --
+   for BindFamilyEnum use
+     (AF_INET  => 2,
+      AF_INET6 => 23);
+   for BindFamilyEnum'Size use Interfaces.C.int'Size;
 
+   -- Representation --
+   for AddressFamilyEnum use
+     (AF_UNSPEC    => 0,
+      AF_INET      => 2,
+      AF_IPX       => 6,
+      AF_APPLETALK => 16,
+      AF_NETBIOS   => 17,
+      AF_INET6     => 23,
+      AF_IRDA      => 26,
+      AF_BTH       => 32);
    for AddressFamilyEnum'Size use Interfaces.C.int'Size;
 
+   -- Representation --
    for SocketTypeEnum use
-     (SOCK_STREAM=>1,
-      SOCK_DGRAM=>2,
-      SOCK_RAW=>3,
-      SOCK_RDM=>4,
-      SOCK_SEQPACKET=>5);
-
+     (SOCK_STREAM    => 1,
+      SOCK_DGRAM     => 2,
+      SOCK_RAW       => 3,
+      SOCK_RDM       => 4,
+      SOCK_SEQPACKET => 5);
    for SocketTypeEnum'Size use Interfaces.C.int'Size;
 
+   -- Representation --
    for ProtocolEnum use
-     (IPPROTO_ANY=>0,
-      IPPROTO_ICMP=>1,
-      IPPROTO_IGMP=>2,
-      BTHPROTO_RFCOMM=>3,
-      IPPROTO_TCP=>6,
-      IPPROTO_UDP=>17,
-      IPPROTO_ICMPV6=>58,
-      IPPROTO_RM=>113);
-
+     (IPPROTO_ANY     => 0,
+      IPPROTO_ICMP    => 1,
+      IPPROTO_IGMP    => 2,
+      BTHPROTO_RFCOMM => 3,
+      IPPROTO_TCP     => 6,
+      IPPROTO_UDP     => 17,
+      IPPROTO_ICMPV6  => 58,
+      IPPROTO_RM      => 113);
    for ProtocolEnum'Size use Interfaces.C.int'Size;
 
 end BSDSockets;
