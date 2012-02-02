@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
---   Copyright 2011 Julian Schutsch
+--   Copyright 2012 Julian Schutsch
 --
 --   This file is part of ParallelSim
 --

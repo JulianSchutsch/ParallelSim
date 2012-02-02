@@ -33,36 +33,56 @@
 --   Functions do not return arbitrary integers but raise exceptions.
 --
 -- Usage
---   The usage of this package is similar to the usage of the BSDSocket API
---   directly.
+--   The usage of this package is close to the usage of the BSDSocket API
+--   directly, but some functions are extended to be easier to handle
+--   in Ada.
 --   For portability one has to use Initialize and Finalize before using
 --   and after using this package. (Example : Windows)
 
 pragma Ada_2012;
 
 with Interfaces.C;
+with Interfaces.C.Strings;
 with Ada.Unchecked_Conversion;
+
 
 package BSDSockets is
 
    FailedNetworkAPIInitialization : Exception;
-   FailedSocket : Exception;
-   FailedBind   : Exception;
-   FailedListen : Exception;
+   FailedSocket           : Exception;
+   FailedBind             : Exception;
+   FailedListen           : Exception;
+   FailedGetAddrInfo      : Exception;
+   FailedConnect          : Exception;
+   FailedAccept           : Exception;
+   EntryAddedToTwoLists   : Exception;
+   EntryNotAddedToAnyList : Exception;
 
    type SocketID is private;
 
    type PortID is range 0..65535;
 
+   type AddrInfo is private;
+   type In_Addr6 is private;
+   type SockAddr_In6 is private;
+   type SockAddr is private;
+   type SockAddrAccess is access SockAddr;
+
+   type PrivSelectEntry is private;
+
+   type SelectEntry is
+      record
+         Socket    : SocketID;
+         Readable  : Boolean;
+         Writeable : Boolean;
+         Priv      : PrivSelectEntry;
+      end record;
+
+   type SelectList is private;
+
    -- Has Representation --
-   type AddressFamilyEnum is (AF_UNSPEC,
-                              AF_INET,
-                              AF_IPX,
-                              AF_APPLETALK,
-                              AF_NETBIOS,
-                              AF_INET6,
-                              AF_IRDA,
-                              AF_BTH);
+   type AddressFamilyEnum is (AF_INET,
+                              AF_INET6);
 
    -- Has Representation --
    type SocketTypeEnum is (SOCK_STREAM,
@@ -81,14 +101,23 @@ package BSDSockets is
                          IPPROTO_ICMPV6,
                          IPPROTO_RM);
 
-   -- Has Representation --
-   type BindFamilyEnum is (AF_INET,
-                           AF_INET6);
+   type AddrInfoAccess is access AddrInfo;
+   type AddrInfoAccessAccess is access AddrInfoAccess;
+
+   -- Extended select function
+   -- This function accepts a list of SocketSelectEntry each containing
+   --  a socket and a read- and writeable flag.
+   procedure SSelect(Sockets : in out SelectList);
+
+   procedure AddEntry(List: access SelectList;
+                      Entr: access SelectEntry);
+
+   procedure RemoveEntry(Entr: access SelectEntry);
 
    procedure Bind
      (Socket : SocketID;
       Port   : PortID;
-      Family : BindFamilyEnum;
+      Family : AddressFamilyEnum;
       Host   : String := "");
 
    procedure Listen
@@ -100,29 +129,109 @@ package BSDSockets is
       SocketType    : SocketTypeEnum;
       Protocol      : ProtocolEnum) return SocketID;
 
+   function Socket
+     (AddrInfo : AddrInfoAccess) return SocketID;
+
+   procedure Connect
+     (Socket   : SocketID;
+      AddrInfo : not null AddrInfoAccess;
+      Port     : PortID);
+
+   function AAccept
+     (Socket : SocketID;
+      Host   : out String;
+      Port   : out PortID) return SocketID;
+
+   function GetAddrInfo(AddressFamily : AddressFamilyEnum;
+                        SocketType    : SocketTypeEnum;
+                        Protocol      : ProtocolEnum;
+                        Host          : String) return AddrInfoAccess;
+   procedure FreeAddrInfo(AddrInfo: not null AddrInfoAccess);
+
+   function AddrInfo_Next(AddrInfo: AddrInfoAccess) return AddrInfoAccess;
+
+   function ToString(Port : PortID) return String;
+   function ToString(Socket : SocketID) return String;
+
    procedure Initialize;
    procedure Finalize;
 
 private
 
+   type PrivSelectEntry is
+      record
+         Next : access SelectEntry := null;
+         Last : access SelectEntry := null;
+         List : access SelectList  := null;
+      end record;
+
+   type SelectList is
+      record
+         FirstEntry: access SelectEntry;
+      end record;
+
+   type SockAddr is
+      record
+         sa_family : Interfaces.C.short;
+         -- sa_port is the only field which is required using
+         --  connect in combination with getaddrinfo
+         sa_port   : Interfaces.C.unsigned_short;
+         sa_data   : Interfaces.C.char_array(0..11);
+      end record;
+   pragma Convention(C,SockAddr);
+
+   type In_Addr is
+      record
+         S_Addr : Interfaces.C.unsigned_long;
+      end record;
+   pragma Convention(C,In_Addr);
+
+   type SockAddr_In is
+      record
+         sin_family : Interfaces.C.short;
+         sin_port   : Interfaces.C.unsigned_short;
+         sin_addr   : In_Addr;
+         sin_zero   : Interfaces.C.char_array(0..7);
+      end record;
+   pragma Convention(C,SockAddr_In);
+
+   type In_Addr6 is
+      record
+         s6_addr:Interfaces.C.char_array(0..15);
+      end record;
+   pragma Convention(C,In_Addr6);
+
+   type SockAddr_In6 is
+      record
+         sin6_family   : Interfaces.C.short;
+         sin6_port     : Interfaces.C.unsigned_short;
+         sin6_flowinfo : Interfaces.C.unsigned_long;
+         sin6_addr     : aliased In_Addr6;
+         sin6_scope_id : Interfaces.C.unsigned_long;
+      end record;
+   pragma Convention(C,Sockaddr_In6);
+
+   type AddrInfo is
+      record
+         ai_flags     : Interfaces.C.int;
+         ai_family    : Interfaces.C.int;
+         ai_socktype  : Interfaces.C.int;
+         ai_protocol  : Interfaces.C.int;
+         ai_addrlen   : Interfaces.C.size_t;
+         ai_canonname : Interfaces.C.Strings.chars_ptr;
+         ai_addr      : SockAddrAccess;
+         ai_next      : AddrInfoAccess;
+      end record;
+   pragma Convention(C,AddrInfo);
+
    type SocketID is new Interfaces.C.int;
 
    -- Representation --
-   for BindFamilyEnum use
-     (AF_INET  => 2,
-      AF_INET6 => 23);
-   for BindFamilyEnum'Size use Interfaces.C.int'Size;
 
    -- Representation --
    for AddressFamilyEnum use
-     (AF_UNSPEC    => 0,
-      AF_INET      => 2,
-      AF_IPX       => 6,
-      AF_APPLETALK => 16,
-      AF_NETBIOS   => 17,
-      AF_INET6     => 23,
-      AF_IRDA      => 26,
-      AF_BTH       => 32);
+     (AF_INET      => 2,
+      AF_INET6     => 23);
    for AddressFamilyEnum'Size use Interfaces.C.int'Size;
 
    -- Representation --

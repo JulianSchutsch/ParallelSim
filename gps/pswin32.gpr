@@ -1,4 +1,4 @@
-project ps is
+project pswin32 is
 
    for Source_Dirs use (
       "..\src\",
@@ -17,11 +17,11 @@ project ps is
    end Compiler;
 
    package Linker is
-      for Default_Switches ("ada") use ("-lwsock32");
+      for Default_Switches ("ada") use ("-lws2_32");
    end Linker;
 
    package Builder is
    end Builder;
 
-end ps;
+end pswin32;
 

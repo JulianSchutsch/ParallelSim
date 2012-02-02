@@ -24,18 +24,24 @@
 pragma Ada_2012;
 
 with Ada.Streams;
+with CustomMaps;
 
 package Network.Packets is
    use Ada.Streams;
 
    PacketOverflow   : Exception;
    InvalidOperation : Exception;
+   IncompleteData   : Exception;
+   InvalidData      : Exception;
+
+   type PacketServer is abstract tagged null record;
+   type PacketClient is abstract tagged null record;
 
    type InPacket(Max: Stream_Element_Offset) is new Root_Stream_Type with
       record
          Content  : Stream_Element_Array(0..Max);
          Position : Stream_Element_Offset := 0;
-         Filled : Stream_Element_Offset   := 0;
+         Filled   : Stream_Element_Offset   := 0;
       end record;
 
    type OutPacket(Max: Stream_Element_Offset) is new Root_Stream_Type with
@@ -43,6 +49,17 @@ package Network.Packets is
          Content  : Stream_Element_Array(0..Max);
          Position : Stream_Element_Offset:=0;
       end record;
+
+   procedure Initialize(Server : in out PacketServer;
+                        Config : CustomMaps.StringStringMap.Map) is abstract;
+
+   procedure Finalize(Server: in out PacketServer) is abstract;
+
+   procedure Send(Server: in out PacketServer;
+                  Packet: in out OutPacket'Class) is abstract;
+
+   procedure Receive(Server: in out PacketServer;
+                     Packet: in out InPacket'Class) is abstract;
 
    type InPacketAccess is access InPacket;
    type OutPacketAccess is access OutPacket;

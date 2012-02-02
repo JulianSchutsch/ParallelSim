@@ -1,4 +1,4 @@
-project ps is
+project pslinux is
 
    for Source_Dirs use (
       "../src/",
@@ -23,5 +23,4 @@ project ps is
    package Builder is
    end Builder;
 
-end ps;
-
+end pslinux;

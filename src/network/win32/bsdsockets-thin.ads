@@ -25,45 +25,28 @@ with Interfaces;
 with Interfaces.C;
 with Interfaces.C.Strings;
 with System;
+with Ada.Streams;
 
 package BSDSockets.Thin is
 
-   type SockAddr is
-      record
-         sa_family : Interfaces.C.unsigned_short;
-         sa_data: Interfaces.C.char_array(0..13);
-      end record;
-   pragma Convention(C,SockAddr);
+   FD_SETSIZE: constant Natural:=1024;
 
-   type In_Addr is
-      record
-         S_Addr : Interfaces.C.unsigned_long;
-      end record;
-   pragma Convention(C,In_Addr);
+   type fd_set_array is array(0..FD_SETSIZE-1) of SocketID;
+   pragma Convention(C,fd_set_array);
 
-   type SockAddr_In is
+   type fd_set_struct is
       record
-         sin_family : Interfaces.C.short;
-         sin_port   : Interfaces.C.unsigned_short;
-         sin_addr   : In_Addr;
-         sin_zero   : Interfaces.C.char_array(0..7);
+         fd_count : Interfaces.C.unsigned;
+         fd_array : fd_set_array;
       end record;
-   pragma Convention(C,SockAddr_In);
+   pragma Convention(C,fd_set_struct);
 
-   type In_Addr6 is
+   type TimeVal is
       record
-         s6_addr:Interfaces.C.char_array(0..15);
+         tv_sec  : Interfaces.C.long;
+         tv_usec : Interfaces.C.long;
       end record;
-
-   type SockAddr_In6 is
-      record
-         sin6_family   : Interfaces.C.short;
-         sin6_port     : Interfaces.C.unsigned_short;
-         sin6_flowinfo : Interfaces.C.unsigned_long;
-         sin6_addr     : In_Addr6;
-         sin6_scope_id : Interfaces.C.unsigned_long;
-      end record;
-   pragma Convention(C,Sockaddr_In6);
+   pragma Convention(C,TimeVal);
 
    function Error return Interfaces.C.int;
 
@@ -77,10 +60,65 @@ package BSDSockets.Thin is
                  NameLen : Interfaces.C.int) return Interfaces.C.int;
    pragma Import(StdCall,Bind,"bind");
 
+   function Listen(Socket  : Interfaces.C.int;
+                   Backlog : Interfaces.C.int) return Interfaces.C.int;
+   pragma Import(StdCall,Listen,"listen");
+
+   function Connect(Socket  : Interfaces.C.int;
+                    Name    : SockAddrAccess;
+                    NameLen : Interfaces.C.int) return Interfaces.C.int;
+   pragma Import(StdCall,Connect,"connect");
+
+   function GetAddrInfo(pNodeName    : Interfaces.C.Strings.chars_ptr;
+                        pServiceName : Interfaces.C.Strings.chars_ptr;
+                        pHints       : access AddrInfo;
+                        ppResult     : access AddrInfoAccess) return Interfaces.C.int;
+   pragma Import(StdCall,GetAddrInfo,"getaddrinfo");
+
+   procedure FreeAddrInfo(pAddrInfo: access AddrInfo);
+   pragma Import(StdCall,FreeAddrInfo,"freeaddrinfo");
+
    function INET_PTON(AddressFamily : Interfaces.C.int;
                       AddrString    : Interfaces.C.Strings.chars_ptr;
-                      Buffer        : System.Address) return Interfaces.C.int;
-   pragma Import(StdCall,INET_PTON,"inet_pton");
+                      Buffer        : access In_Addr6) return Interfaces.C.int;
+
+   function HTONS(HostShort : Interfaces.C.unsigned_short) return Interfaces.C.unsigned_short;
+   pragma Import(StdCall,HTONS,"htons");
+
+   function SSelect(NumberOfSockets: Interfaces.C.int;
+                    ReadSet         : access fd_set_struct;
+                    WriteSet        : access fd_set_struct;
+                    ExceptSet       : access fd_set_struct;
+                    TimeOut         : access TimeVal) return Interfaces.C.int;
+   pragma Import(StdCall,SSelect,"select");
+
+   function AAccept(Socket  : Interfaces.C.int;
+                    Addr    : access SockAddr;
+                    AddrLen : access Interfaces.C.int) return Interfaces.C.int;
+   pragma Import(StdCall,AAccept,"accept");
+
+   function Recv(Socket : Interfaces.C.int;
+                 Buf    : access Ada.Streams.Stream_Element_Array;
+                 Len    : Interfaces.C.int;
+                 Flags  : Interfaces.C.int) return Interfaces.C.int;
+   pragma Import(StdCall,Recv,"recv");
+
+   function Send(Socket : Interfaces.C.int;
+                 Buf    : access Ada.Streams.Stream_Element_Array;
+                 Len    : Interfaces.C.int;
+                 Flags  : Interfaces.C.int) return Interfaces.C.int;
+   pragma Import(StdCall,Send,"send");
+
+   procedure FD_SET(Socket : SocketID;
+                    Set    : access fd_set_struct);
+
+   procedure FD_CLR(Socket : SocketID;
+                    Set    : access fd_set_struct);
+
+   function FD_ISSET(Socket : SocketID;
+                      Set    : access fd_set_struct) return Interfaces.C.int;
+
+   procedure FD_ZERO(Set : access fd_set_struct);
 
    procedure Initialize;
    procedure Finalize;
