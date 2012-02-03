@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
---   Copyright 2011 Julian Schutsch
+--   Copyright 2012 Julian Schutsch
 --
 --   This file is part of ParallelSim
 --
@@ -20,6 +20,17 @@
 -- Revision History
 --   27.Jan 2012 Julian Schutsch
 --     - Original version
+
+-- Reasons for implementation
+--   This source provides a direct interface to the Win32 BSDSocket
+--   implementation.
+--   It is necessary because Win32 uses a different calling convention than
+--   Unix implementations and requires initialization (WSAStartup)
+
+-- Usage
+--   This file should ONLY be used by the package BSDSockets.
+--   The folder containing this file should be win32 specific and be included
+--   in the build process only on win32 systems.
 
 with Interfaces;
 with Interfaces.C;
@@ -50,75 +61,116 @@ package BSDSockets.Thin is
 
    function Error return Interfaces.C.int;
 
-   function Socket(AddressFamily : Interfaces.C.int;
-                   SocketType    : Interfaces.C.int;
-                   ProtocolType  : Interfaces.C.int) return Interfaces.C.int;
+   function Socket
+     (AddressFamily : Interfaces.C.int;
+      SocketType    : Interfaces.C.int;
+      ProtocolType  : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(StdCall,Socket,"socket");
 
-   function Bind(Socket  : Interfaces.C.int;
-                 Name    : access SockAddr_In6;
-                 NameLen : Interfaces.C.int) return Interfaces.C.int;
+   function Bind
+     (Socket  : Interfaces.C.int;
+      Name    : access SockAddr_In6;
+      NameLen : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(StdCall,Bind,"bind");
 
-   function Listen(Socket  : Interfaces.C.int;
-                   Backlog : Interfaces.C.int) return Interfaces.C.int;
+   function Listen
+     (Socket  : Interfaces.C.int;
+      Backlog : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(StdCall,Listen,"listen");
 
-   function Connect(Socket  : Interfaces.C.int;
-                    Name    : SockAddrAccess;
-                    NameLen : Interfaces.C.int) return Interfaces.C.int;
+   function Connect
+     (Socket  : Interfaces.C.int;
+      Name    : SockAddrAccess;
+      NameLen : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(StdCall,Connect,"connect");
 
-   function GetAddrInfo(pNodeName    : Interfaces.C.Strings.chars_ptr;
-                        pServiceName : Interfaces.C.Strings.chars_ptr;
-                        pHints       : access AddrInfo;
-                        ppResult     : access AddrInfoAccess) return Interfaces.C.int;
+   function GetAddrInfo
+     (pNodeName    : Interfaces.C.Strings.chars_ptr;
+      pServiceName : Interfaces.C.Strings.chars_ptr;
+      pHints       : access AddrInfo;
+      ppResult     : access AddrInfoAccess)
+      return Interfaces.C.int;
    pragma Import(StdCall,GetAddrInfo,"getaddrinfo");
 
-   procedure FreeAddrInfo(pAddrInfo: access AddrInfo);
+   procedure FreeAddrInfo
+     (pAddrInfo: access AddrInfo);
    pragma Import(StdCall,FreeAddrInfo,"freeaddrinfo");
 
-   function INET_PTON(AddressFamily : Interfaces.C.int;
-                      AddrString    : Interfaces.C.Strings.chars_ptr;
-                      Buffer        : access In_Addr6) return Interfaces.C.int;
+   function INET_PTON
+     (AddressFamily : Interfaces.C.int;
+      AddrString    : Interfaces.C.Strings.chars_ptr;
+      Buffer        : access In_Addr6)
+      return Interfaces.C.int;
 
-   function HTONS(HostShort : Interfaces.C.unsigned_short) return Interfaces.C.unsigned_short;
+   function HTONS
+     (HostShort : Interfaces.C.unsigned_short)
+      return Interfaces.C.unsigned_short;
    pragma Import(StdCall,HTONS,"htons");
 
-   function SSelect(NumberOfSockets: Interfaces.C.int;
-                    ReadSet         : access fd_set_struct;
-                    WriteSet        : access fd_set_struct;
-                    ExceptSet       : access fd_set_struct;
-                    TimeOut         : access TimeVal) return Interfaces.C.int;
+   -- Select prefixed with S because Select is reserved word
+   function SSelect
+     (NumberOfSockets: Interfaces.C.int;
+      ReadSet         : access fd_set_struct;
+      WriteSet        : access fd_set_struct;
+      ExceptSet       : access fd_set_struct;
+      TimeOut         : access TimeVal)
+      return Interfaces.C.int;
    pragma Import(StdCall,SSelect,"select");
 
-   function AAccept(Socket  : Interfaces.C.int;
-                    Addr    : access SockAddr;
-                    AddrLen : access Interfaces.C.int) return Interfaces.C.int;
+   -- Accept prefixed with A because Accept is reserved word
+   function AAccept
+     (Socket  : Interfaces.C.int;
+      Addr    : access SockAddr;
+      AddrLen : access Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(StdCall,AAccept,"accept");
 
-   function Recv(Socket : Interfaces.C.int;
-                 Buf    : access Ada.Streams.Stream_Element_Array;
-                 Len    : Interfaces.C.int;
-                 Flags  : Interfaces.C.int) return Interfaces.C.int;
+   function Recv
+     (Socket : Interfaces.C.int;
+      Buf    : access Ada.Streams.Stream_Element_Array;
+      Len    : Interfaces.C.int;
+      Flags  : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(StdCall,Recv,"recv");
 
-   function Send(Socket : Interfaces.C.int;
-                 Buf    : access Ada.Streams.Stream_Element_Array;
-                 Len    : Interfaces.C.int;
-                 Flags  : Interfaces.C.int) return Interfaces.C.int;
+   function Send
+     (Socket : Interfaces.C.int;
+      Buf    : access Ada.Streams.Stream_Element_Array;
+      Len    : Interfaces.C.int;
+      Flags  : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(StdCall,Send,"send");
 
-   procedure FD_SET(Socket : SocketID;
-                    Set    : access fd_set_struct);
+   function CloseSocket
+     (Socket : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(StdCall,CloseSocket,"closesocket");
 
-   procedure FD_CLR(Socket : SocketID;
-                    Set    : access fd_set_struct);
+   function ShutDown
+     (Socket : Interfaces.C.int;
+      Method : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(StdCall,Shutdown,"shutdown");
 
-   function FD_ISSET(Socket : SocketID;
-                      Set    : access fd_set_struct) return Interfaces.C.int;
+   procedure FD_SET
+     (Socket : SocketID;
+      Set    : access fd_set_struct);
 
-   procedure FD_ZERO(Set : access fd_set_struct);
+   procedure FD_CLR
+     (Socket : SocketID;
+      Set    : access fd_set_struct);
+
+   function FD_ISSET
+     (Socket : SocketID;
+      Set    : access fd_set_struct)
+      return Interfaces.C.int;
+
+   procedure FD_ZERO
+     (Set : access fd_set_struct);
 
    procedure Initialize;
    procedure Finalize;

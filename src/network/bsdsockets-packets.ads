@@ -24,28 +24,32 @@ with CustomMaps;
 
 package BSDSockets.Packets is
 
-   type UDPServer is new Network.Packets.PacketServer with
+   type TCPServer is new Network.Packets.PacketServer with private;
+
+
+   overriding
+   procedure Initialize(Server : in out TCPServer;
+                        Config : CustomMaps.StringStringMap.Map);
+
+   overriding
+   procedure Finalize(Server: in out TCPServer);
+
+   overriding
+   procedure Send(Server: in out TCPServer;
+                  Packet: in out Network.Packets.OutPacket'Class);
+
+   overriding
+   procedure Receive(Server: in out TCPServer;
+                     Packet: in out Network.Packets.InPacket'Class);
+
+   type TCPClient is new Network.Packets.PacketClient with
       record
          SelectEntry : aliased BSDSockets.SelectEntry;
       end record;
 
+private
 
-   overriding
-   procedure Initialize(Server : in out UDPServer;
-                        Config : CustomMaps.StringStringMap.Map);
-
-   overriding
-   procedure Finalize(Server: in out UDPServer);
-
-   overriding
-   procedure Send(Server: in out UDPServer;
-                  Packet: in out Network.Packets.OutPacket'Class);
-
-   overriding
-   procedure Receive(Server: in out UDPServer;
-                     Packet: in out Network.Packets.InPacket'Class);
-
-   type UDPClient is new Network.Packets.PacketClient with
+   type TCPServer is new Network.Packets.PacketServer with
       record
          SelectEntry : aliased BSDSockets.SelectEntry;
       end record;

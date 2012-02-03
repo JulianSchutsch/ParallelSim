@@ -24,7 +24,7 @@ procedure Ps is
 --   ClientHost   : String(1..1000);
 --   ClientPort   : BSDSockets.PortID;
 --   ClientConn   : BSDSOckets.SocketID;
-   PacketServer       : BSDSockets.Packets.UDPServer;
+   PacketServer       : BSDSockets.Packets.TCPServer;
    PacketServerConfig : CustomMaps.StringStringMap.Map;
 
 begin

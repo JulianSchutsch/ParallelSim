@@ -44,30 +44,45 @@ package body BSDSockets.Thin is
          lpVendorInfo   : Interfaces.C.Strings.chars_ptr;
       end record;
    pragma Convention(C,WSADATA);
+   ---------------------------------------------------------------------------
 
-   function WSAStartup(Version : Interfaces.C.unsigned_short;
-                       Data    : access WSAData) return Interfaces.C.int;
+   function WSAStartup
+     (Version : Interfaces.C.unsigned_short;
+      Data    : access WSAData)
+      return Interfaces.C.int;
    pragma Import(StdCall,WSAStartup,"WSAStartup");
+   ---------------------------------------------------------------------------
 
-   function WSACleanup return Interfaces.C.int;
+   function WSACleanup
+     return Interfaces.C.int;
    pragma Import(StdCall,WSACleanup,"WSACleanup");
+   ---------------------------------------------------------------------------
 
-   function WSAGetLastError return Interfaces.C.int;
+   function WSAGetLastError
+     return Interfaces.C.int;
    pragma Import(StdCall,WSAGetLastError,"WSAGetLastError");
+   ---------------------------------------------------------------------------
 
-   function WSAStringToAddressA(AddressString   : Interfaces.C.Strings.chars_ptr;
-                                AddressFamily   : Interfaces.C.int;
-                                lpProtocolInfo  : System.Address;
-                                lpAddress       : access SockAddr_In6;
-                                lpAddressLength : access Interfaces.c.int) return Interfaces.C.int;
+   function WSAStringToAddressA
+     (AddressString   : Interfaces.C.Strings.chars_ptr;
+      AddressFamily   : Interfaces.C.int;
+      lpProtocolInfo  : System.Address;
+      lpAddress       : access SockAddr_In6;
+      lpAddressLength : access Interfaces.c.int)
+      return Interfaces.C.int;
    pragma Import(StdCall,WSAStringToAddressA,"WSAStringToAddressA");
+   ---------------------------------------------------------------------------
 
-   function INET_PTON(AddressFamily : Interfaces.C.int;
-                      AddrString    : Interfaces.C.Strings.chars_ptr;
-                      Buffer        : access In_Addr6) return Interfaces.C.int is
+   function INET_PTON
+     (AddressFamily : Interfaces.C.int;
+      AddrString    : Interfaces.C.Strings.chars_ptr;
+      Buffer        : access In_Addr6)
+      return Interfaces.C.int is
+
       Addr   : aliased SockAddr_In6;
       Result : Interfaces.C.int;
       Len    : aliased Interfaces.C.int;
+
    begin
       Len := SockAddr_In6'Size*8;
       Result:=WSAStringToAddressA(AddressString   => AddrString,
@@ -78,30 +93,27 @@ package body BSDSockets.Thin is
       Buffer.all := Addr.sin6_addr;
       return Result;
    end INET_PTON;
+   ---------------------------------------------------------------------------
 
-   WSAInfo : aliased WSAData;
-
-   function Error return Interfaces.C.int is
+   function Error
+     return Interfaces.C.int is
    begin
       return WSAGetLastError;
    end Error;
+   ---------------------------------------------------------------------------
 
-   procedure Initialize is
-   begin
-      if WSAStartup(16#0202#,WSAInfo'Access)/=0 then
-         raise FailedNetworkAPIInitialization;
-      end if;
-   end Initialize;
-
-   procedure FD_SET(Socket : SocketID;
-                    Set    : access fd_set_struct) is
+   procedure FD_SET
+     (Socket : SocketID;
+      Set    : access fd_set_struct) is
    begin
       Set.fd_array(Integer(Set.fd_count)) := Socket;
       Set.fd_count := Set.fd_count+1;
    end FD_SET;
+   ---------------------------------------------------------------------------
 
-   procedure FD_CLR(Socket : SocketID;
-                    Set    : access fd_set_struct) is
+   procedure FD_CLR
+     (Socket : SocketID;
+      Set    : access fd_set_struct) is
    begin
       for i in Set.fd_array'Range loop
          if Set.fd_array(i)=Socket then
@@ -112,9 +124,12 @@ package body BSDSockets.Thin is
          end if;
       end loop;
    end FD_CLR;
+   ---------------------------------------------------------------------------
 
-   function FD_ISSET(Socket : SocketID;
-                      Set    : access fd_set_struct) return Interfaces.C.int is
+   function FD_ISSET
+     (Socket : SocketID;
+      Set    : access fd_set_struct)
+      return Interfaces.C.int is
    begin
       Put("FD_ISSET");
       for i in 0..Set.fd_count-1 loop
@@ -127,10 +142,23 @@ package body BSDSockets.Thin is
       return 0;
    end FD_ISSET;
 
-   procedure FD_ZERO(Set : access fd_set_struct) is
+   procedure FD_ZERO
+     (Set : access fd_set_struct) is
    begin
       Set.fd_count:=0;
    end FD_ZERO;
+   ---------------------------------------------------------------------------
+
+   -- Stores information obtained during initialization
+   WSAInfo : aliased WSAData;
+
+   procedure Initialize is
+   begin
+      if WSAStartup(16#0202#,WSAInfo'Access)/=0 then
+         raise FailedNetworkAPIInitialization;
+      end if;
+   end Initialize;
+   ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
@@ -139,5 +167,6 @@ package body BSDSockets.Thin is
          New_Line;
       end if;
    end Finalize;
+   ---------------------------------------------------------------------------
 
 end BSDSockets.Thin;

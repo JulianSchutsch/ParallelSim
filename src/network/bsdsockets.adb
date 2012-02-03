@@ -43,6 +43,39 @@ package body BSDSockets is
      new Ada.Unchecked_Conversion(Source => ProtocolEnum,
                                   Target => Interfaces.C.int);
 
+   function ShutdownMethodToInt is
+     new Ada.Unchecked_Conversion(Source => ShutdownMethodEnum,
+                                  Target => Interfaces.C.int);
+
+   procedure CloseSocket
+     (Socket : SocketID) is
+
+      Result : Interfaces.C.int;
+
+   begin
+      Result:=BSDSockets.Thin.CloseSocket
+        (Socket => Interfaces.C.int(Socket));
+      if Result/=0 then
+         raise FailedCloseSocket;
+      end if;
+   end CloseSocket;
+   ---------------------------------------------------------------------------
+
+   procedure Shutdown(Socket : SocketID;
+                      Method : ShutdownMethodEnum) is
+
+      Result : Interfaces.C.int;
+
+   begin
+      Result:=BSDSockets.Thin.Shutdown
+        (Socket => Interfaces.C.int(Socket),
+         Method => ShutdownMethodToInt(Method));
+      if Result/=0 then
+         raise FailedShutdown;
+      end if;
+   end Shutdown;
+   ---------------------------------------------------------------------------
+
    procedure AddEntry(List: access SelectList;
                       Entr: access SelectEntry) is
    begin
@@ -57,6 +90,7 @@ package body BSDSockets is
       Entr.Priv.List:=List;
       List.FirstEntry:=Entr;
    end AddEntry;
+   ---------------------------------------------------------------------------
 
    procedure RemoveEntry(Entr: access SelectEntry) is
    begin
@@ -73,21 +107,25 @@ package body BSDSockets is
       end if;
       Entr.Priv.List := null;
    end RemoveEntry;
+   ---------------------------------------------------------------------------
 
    function ToString(Port : PortID) return String is
    begin
       return Integer'Image(Integer(Port));
    end ToString;
+   ---------------------------------------------------------------------------
 
    function ToString(Socket : SocketID) return String is
    begin
       return Integer'Image(Integer(Socket));
    end ToString;
+   ---------------------------------------------------------------------------
 
    function AAccept
      (Socket : SocketID;
       Host   : out String;
-      Port   : out PortID) return SocketID is
+      Port   : out PortID)
+      return SocketID is
 
       Result  : Interfaces.C.int;
       Addr    : aliased SockAddr;
@@ -106,6 +144,7 @@ package body BSDSockets is
       end if;
       return SocketID(Result);
    end AAccept;
+   ---------------------------------------------------------------------------
 
    procedure SSelect(Sockets : in out SelectList) is
       Fill        : Integer:=0;
@@ -134,10 +173,12 @@ package body BSDSockets is
 
             while Fill/=0 loop
 
-               StartCursor.Readable  := BSDSockets.Thin.FD_ISSET
-                 (StartCursor.Socket,ReadSet'Access)/=0;
-               StartCursor.Writeable := BSDSockets.Thin.FD_ISSET
-                 (StartCursor.Socket,WriteSet'Access)/=0;
+               StartCursor.Readable
+                 := BSDSockets.Thin.FD_ISSET
+                   (StartCursor.Socket,ReadSet'Access)/=0;
+               StartCursor.Writeable
+                 := BSDSockets.Thin.FD_ISSET
+                   (StartCursor.Socket,WriteSet'Access)/=0;
 
                StartCursor := StartCursor.Priv.Next;
                Fill := Fill - 1;
@@ -168,7 +209,7 @@ package body BSDSockets is
          end loop;
       end if;
    end SSelect;
-
+   ---------------------------------------------------------------------------
 
    procedure FreeAddrInfo(AddrInfo: not null AddrInfoAccess) is
    begin
@@ -195,11 +236,13 @@ package body BSDSockets is
       Hints.ai_socktype := SocketTypeToInt(SocketType);
       Hints.ai_protocol := ProtocolToInt(Protocol);
       HostPtr := Interfaces.C.Strings.New_String(Str => Host);
+
       Result:=BSDSockets.Thin.GetAddrInfo
         (pNodeName    => HostPtr,
          pServiceName => Interfaces.C.Strings.Null_Ptr,
          pHints       => Hints'Access,
          ppResult     => AddrInfoPointer'Access);
+
       if Result/=0 then
          Put(Integer(BSDSockets.Thin.Error));
          New_Line;

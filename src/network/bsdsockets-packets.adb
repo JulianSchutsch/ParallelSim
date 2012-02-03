@@ -24,13 +24,15 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body BSDSockets.Packets is
 
-   procedure Initialize(Server : in out UDPServer;
+   procedure Initialize(Server : in out TCPServer;
                         Config : CustomMaps.StringStringMap.Map) is
+
       PortStr   : Unbounded_String;
       FamilyStr : Unbounded_String;
       Host      : Unbounded_String;
       Port      : PortID;
       Family    : AddressFamilyEnum;
+
    begin
       PortStr   := Config.Element(To_Unbounded_String("Port"));
       FamilyStr := Config.Element(To_Unbounded_String("Family"));
@@ -48,7 +50,7 @@ package body BSDSockets.Packets is
 
       Server.SelectEntry.Socket := Socket
         (AddressFamily => Family,
-         SocketType    => SOCK_DGRAM,
+         SocketType    => SOCK_STREAM,
          Protocol      => IPPROTO_ANY);
 
       Put("Socket(Initialize):");
@@ -60,20 +62,23 @@ package body BSDSockets.Packets is
            Family => Family,
            Host   => To_String(Host));
 
+      Listen(Socket  => Server.SelectEntry.Socket,
+             Backlog => 0);
+
    end Initialize;
 
-   procedure Finalize(Server : in out UDPServer) is
+   procedure Finalize(Server : in out TCPServer) is
    begin
       null;
    end Finalize;
 
-   procedure Send(Server: in out UDPServer;
+   procedure Send(Server: in out TCPServer;
                   Packet: in out Network.Packets.OutPacket'Class) is
    begin
       null;
    end Send;
 
-   procedure Receive(Server: in out UDPServer;
+   procedure Receive(Server: in out TCPServer;
                      Packet: in out Network.Packets.InPacket'Class) is
    begin
       null;

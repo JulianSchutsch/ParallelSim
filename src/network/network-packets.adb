@@ -28,36 +28,44 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Network.Packets is
 
-   procedure Debug(Packet: in OutPacket) is
+   procedure Debug
+     (Packet: in OutPacket) is
    begin
       for i in Packet.Content'Range loop
          Put(Integer(Packet.Content(i)));
       end loop;
       New_Line;
    end Debug;
+   ---------------------------------------------------------------------------
 
-   procedure Debug(Packet: in InPacket) is
+   procedure Debug
+     (Packet: in InPacket) is
    begin
       for i in Packet.Content'Range loop
          Put(Integer(Packet.Content(i)));
       end loop;
       New_Line;
    end Debug;
+   ---------------------------------------------------------------------------
 
-   procedure Copy(Source : not null access OutPacket'Class;
-                  Dest   : not null access InPacket'Class) is
+   procedure Copy
+     (Source : not null access OutPacket'Class;
+      Dest   : not null access InPacket'Class) is
    begin
       Put("Copy complete packet");
       Put(Integer(Source.Position));
       New_Line;
-      Dest.Content(0..Source.Position-1)  := Source.Content(0..Source.Position-1);
+      Dest.Content(0..Source.Position-1)
+        := Source.Content(0..Source.Position-1);
       Dest.Position := 0;
       Dest.Filled   := Source.Position;
    end Copy;
+   ---------------------------------------------------------------------------
 
-   procedure Read(Stream : in out InPacket;
-                  Item   : out Stream_Element_Array;
-                  Last   : out Stream_Element_Offset) is
+   procedure Read
+     (Stream : in out InPacket;
+      Item   : out Stream_Element_Array;
+      Last   : out Stream_Element_Offset) is
    begin
       Put("Read Element");
       Put(Integer(Stream.Position));
@@ -70,23 +78,31 @@ package body Network.Packets is
       Item := Stream.Content(Stream.Position..Last-1);
       Stream.Position := Last;
    end Read;
+   ---------------------------------------------------------------------------
 
-   procedure Write(Stream : in out InPacket;
-                   Item   : in Stream_Element_Array) is
+   procedure Write
+     (Stream : in out InPacket;
+      Item   : in Stream_Element_Array) is
    begin
       raise InvalidOperation;
    end Write;
+   ---------------------------------------------------------------------------
 
-   procedure Read(Stream : in out OutPacket;
-                  Item   : out Stream_Element_Array;
-                  Last   : out Stream_Element_Offset) is
+   procedure Read
+     (Stream : in out OutPacket;
+      Item   : out Stream_Element_Array;
+      Last   : out Stream_Element_Offset) is
    begin
       raise InvalidOperation;
    end Read;
+   ---------------------------------------------------------------------------
 
-   procedure Write(Stream : in out OutPacket;
-                   Item   : in Stream_Element_Array) is
+   procedure Write
+     (Stream : in out OutPacket;
+      Item   : in Stream_Element_Array) is
+
       Last : Stream_Element_Offset;
+
    begin
       Put("Write Element");
       Put(Integer(Stream.Position));
@@ -99,5 +115,6 @@ package body Network.Packets is
       Stream.Content(Stream.Position..Last-1):=Item;
       Stream.Position:=Last;
    end Write;
+   ---------------------------------------------------------------------------
 
 end Network.Packets;

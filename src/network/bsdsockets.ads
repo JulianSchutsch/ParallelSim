@@ -57,6 +57,8 @@ package BSDSockets is
    FailedAccept           : Exception;
    EntryAddedToTwoLists   : Exception;
    EntryNotAddedToAnyList : Exception;
+   FailedShutdown         : Exception;
+   FailedCloseSocket      : Exception;
 
    type SocketID is private;
 
@@ -81,25 +83,33 @@ package BSDSockets is
    type SelectList is private;
 
    -- Has Representation --
-   type AddressFamilyEnum is (AF_INET,
-                              AF_INET6);
+   type AddressFamilyEnum is
+     (AF_INET,
+      AF_INET6);
 
    -- Has Representation --
-   type SocketTypeEnum is (SOCK_STREAM,
-                           SOCK_DGRAM,
-                           SOCK_RAW,
-                           SOCK_RDM,
-                           SOCK_SEQPACKET);
+   type SocketTypeEnum is
+     (SOCK_STREAM,
+      SOCK_DGRAM,
+      SOCK_RAW,
+      SOCK_RDM,
+      SOCK_SEQPACKET);
 
    -- Has Representation --
-   type ProtocolEnum is (IPPROTO_ANY,
-                         IPPROTO_ICMP,
-                         IPPROTO_IGMP,
-                         BTHPROTO_RFCOMM,
-                         IPPROTO_TCP,
-                         IPPROTO_UDP,
-                         IPPROTO_ICMPV6,
-                         IPPROTO_RM);
+   type ProtocolEnum is
+     (IPPROTO_ANY,
+      IPPROTO_ICMP,
+      IPPROTO_IGMP,
+      BTHPROTO_RFCOMM,
+      IPPROTO_TCP,
+      IPPROTO_UDP,
+      IPPROTO_ICMPV6,
+      IPPROTO_RM);
+
+   type ShutdownMethodEnum is
+     (SD_RECEIVE,
+      SD_SEND,
+      SD_BOTH);
 
    type AddrInfoAccess is access AddrInfo;
    type AddrInfoAccessAccess is access AddrInfoAccess;
@@ -107,12 +117,15 @@ package BSDSockets is
    -- Extended select function
    -- This function accepts a list of SocketSelectEntry each containing
    --  a socket and a read- and writeable flag.
-   procedure SSelect(Sockets : in out SelectList);
+   procedure SSelect
+     (Sockets : in out SelectList);
 
-   procedure AddEntry(List: access SelectList;
-                      Entr: access SelectEntry);
+   procedure AddEntry
+     (List: access SelectList;
+      Entr: access SelectEntry);
 
-   procedure RemoveEntry(Entr: access SelectEntry);
+   procedure RemoveEntry
+     (Entr: access SelectEntry);
 
    procedure Bind
      (Socket : SocketID;
@@ -127,10 +140,12 @@ package BSDSockets is
    function Socket
      (AddressFamily : AddressFamilyEnum;
       SocketType    : SocketTypeEnum;
-      Protocol      : ProtocolEnum) return SocketID;
+      Protocol      : ProtocolEnum)
+      return SocketID;
 
    function Socket
-     (AddrInfo : AddrInfoAccess) return SocketID;
+     (AddrInfo : AddrInfoAccess)
+      return SocketID;
 
    procedure Connect
      (Socket   : SocketID;
@@ -142,16 +157,34 @@ package BSDSockets is
       Host   : out String;
       Port   : out PortID) return SocketID;
 
-   function GetAddrInfo(AddressFamily : AddressFamilyEnum;
-                        SocketType    : SocketTypeEnum;
-                        Protocol      : ProtocolEnum;
-                        Host          : String) return AddrInfoAccess;
-   procedure FreeAddrInfo(AddrInfo: not null AddrInfoAccess);
+   procedure CloseSocket
+     (Socket : SocketID);
 
-   function AddrInfo_Next(AddrInfo: AddrInfoAccess) return AddrInfoAccess;
+   procedure ShutDown
+     (Socket : SocketID;
+      Method : ShutDownMethodEnum);
 
-   function ToString(Port : PortID) return String;
-   function ToString(Socket : SocketID) return String;
+   function GetAddrInfo
+     (AddressFamily : AddressFamilyEnum;
+      SocketType    : SocketTypeEnum;
+      Protocol      : ProtocolEnum;
+      Host          : String)
+      return AddrInfoAccess;
+
+   procedure FreeAddrInfo
+     (AddrInfo: not null AddrInfoAccess);
+
+   function AddrInfo_Next
+     (AddrInfo: AddrInfoAccess)
+      return AddrInfoAccess;
+
+   function ToString
+     (Port : PortID)
+      return String;
+
+   function ToString
+     (Socket : SocketID)
+      return String;
 
    procedure Initialize;
    procedure Finalize;
@@ -254,5 +287,12 @@ private
       IPPROTO_ICMPV6  => 58,
       IPPROTO_RM      => 113);
    for ProtocolEnum'Size use Interfaces.C.int'Size;
+
+   -- Representation --
+   for ShutdownMethodEnum use
+     (SD_RECEIVE => 0,
+      SD_SEND    => 1,
+      SD_BOTH    => 2);
+   for ShutDownMethodEnum'Size use Interfaces.C.int'Size;
 
 end BSDSockets;
