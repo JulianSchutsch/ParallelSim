@@ -18,9 +18,22 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   27.Jan 2012 Julian Schutsch
+--   3.Feb 2012 Julian Schutsch
 --     - Original version
 
-package Network is
+with Network.Streams;
 
-end Network;
+package BSDSockets.Streams is
+   type StreamType is new Network.Streams.StreamType with private;
+
+private
+   type StreamType is new Network.Streams.StreamType with
+      record
+         null;
+      end record;
+
+   overriding
+   procedure Flush
+     (Stream: in out StreamType);
+
+end BSDSockets.Streams;

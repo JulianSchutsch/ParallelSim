@@ -18,9 +18,26 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   27.Jan 2012 Julian Schutsch
+--   3.Feb 2012 Julian Schutsch
 --     - Original version
 
-package Network is
+-- Reasons for implementation
+--   A barrier is a synchronisation method where each participating client
+--   stops at a certain point to wait for all other clients to arrive at
+--   the same point.
+--   For very large numbers of clients, these barriers become notoriously
+--   expensive in terms of network bandwidth costs.
+--   This modul provides an abstract tagged type for easy replacement
+--   of barrier implementations.
 
-end Network;
+package Network.Barrier is
+   type BarrierType is abstract tagged null record;
+
+   procedure SignalReady
+     (Barrier : in out BarrierType) is abstract;
+
+   function AllReady
+     (Barrier : in BarrierType)
+     return Boolean is abstract;
+
+end Network.Barrier;

@@ -65,23 +65,38 @@ package body BSDSockets.Packets is
       Listen(Socket  => Server.SelectEntry.Socket,
              Backlog => 0);
 
+      BSDSockets.AddEntry
+        (List => BSDSockets.DefaultSelectList'Access,
+         Entr => Server.SelectEntry'Access);
+
    end Initialize;
+   ---------------------------------------------------------------------------
 
    procedure Finalize(Server : in out TCPServer) is
    begin
-      null;
+      BSDSockets.RemoveEntry
+        (Entr => Server.SelectEntry'Access);
+      BSDSockets.ShutDown
+        (Socket => Server.SelectEntry.Socket,
+         Method => BSDSockets.SD_BOTH);
+      BSDSockets.CloseSocket
+        (Socket => Server.SelectEntry.Socket);
    end Finalize;
+   ---------------------------------------------------------------------------
 
    procedure Send(Server: in out TCPServer;
                   Packet: in out Network.Packets.OutPacket'Class) is
    begin
+      --      BSDSockets.Send
       null;
    end Send;
+   ---------------------------------------------------------------------------
 
    procedure Receive(Server: in out TCPServer;
                      Packet: in out Network.Packets.InPacket'Class) is
    begin
       null;
    end Receive;
+   ---------------------------------------------------------------------------
 
 end BSDSockets.Packets;

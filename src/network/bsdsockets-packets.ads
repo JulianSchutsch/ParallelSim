@@ -26,7 +26,6 @@ package BSDSockets.Packets is
 
    type TCPServer is new Network.Packets.PacketServer with private;
 
-
    overriding
    procedure Initialize(Server : in out TCPServer;
                         Config : CustomMaps.StringStringMap.Map);

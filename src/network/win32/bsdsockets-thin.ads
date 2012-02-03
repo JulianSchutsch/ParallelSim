@@ -139,8 +139,8 @@ package BSDSockets.Thin is
 
    function Send
      (Socket : Interfaces.C.int;
-      Buf    : access Ada.Streams.Stream_Element_Array;
-      Len    : Interfaces.C.int;
+      Data   : access Ada.Streams.Stream_Element;
+      Length : Interfaces.C.int;
       Flags  : Interfaces.C.int)
       return Interfaces.C.int;
    pragma Import(StdCall,Send,"send");

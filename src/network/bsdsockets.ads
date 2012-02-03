@@ -44,7 +44,7 @@ pragma Ada_2012;
 with Interfaces.C;
 with Interfaces.C.Strings;
 with Ada.Unchecked_Conversion;
-
+with Ada.Streams;
 
 package BSDSockets is
 
@@ -59,6 +59,8 @@ package BSDSockets is
    EntryNotAddedToAnyList : Exception;
    FailedShutdown         : Exception;
    FailedCloseSocket      : Exception;
+   FailedSend             : Exception;
+   FailedReceive          : Exception;
 
    type SocketID is private;
 
@@ -80,7 +82,10 @@ package BSDSockets is
          Priv      : PrivSelectEntry;
       end record;
 
-   type SelectList is private;
+   type SelectList is
+      record
+         FirstEntry: access SelectEntry;
+      end record;
 
    -- Has Representation --
    type AddressFamilyEnum is
@@ -110,6 +115,11 @@ package BSDSockets is
      (SD_RECEIVE,
       SD_SEND,
       SD_BOTH);
+
+   type SendEnum is
+     (MSG_NONE,
+      MSG_OOB,
+      MSG_DONTROUTE);
 
    type AddrInfoAccess is access AddrInfo;
    type AddrInfoAccessAccess is access AddrInfoAccess;
@@ -171,6 +181,14 @@ package BSDSockets is
       Host          : String)
       return AddrInfoAccess;
 
+   function Send
+     (Socket : SocketID;
+      Data   : access Ada.Streams.Stream_Element_Array;
+      Offset : Ada.Streams.Stream_Element_Offset;
+      Length : Ada.Streams.Stream_Element_Count;
+      Flags  : SendEnum)
+      return Ada.Streams.Stream_Element_Count;
+
    procedure FreeAddrInfo
      (AddrInfo: not null AddrInfoAccess);
 
@@ -186,6 +204,10 @@ package BSDSockets is
      (Socket : SocketID)
       return String;
 
+   -- Default Select List, is processed by Process procedure (below)
+   DefaultSelectList : aliased SelectList;
+
+   procedure Process;
    procedure Initialize;
    procedure Finalize;
 
@@ -196,11 +218,6 @@ private
          Next : access SelectEntry := null;
          Last : access SelectEntry := null;
          List : access SelectList  := null;
-      end record;
-
-   type SelectList is
-      record
-         FirstEntry: access SelectEntry;
       end record;
 
    type SockAddr is
@@ -294,5 +311,13 @@ private
       SD_SEND    => 1,
       SD_BOTH    => 2);
    for ShutDownMethodEnum'Size use Interfaces.C.int'Size;
+
+   -- Representation --
+   for SendEnum use
+     (MSG_NONE      => 0,
+      MSG_OOB       => 1,
+      MSG_DONTROUTE => 4);
+
+   for SendEnum'Size use Interfaces.C.int'Size;
 
 end BSDSockets;

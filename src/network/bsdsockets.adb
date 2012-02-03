@@ -33,19 +33,49 @@ with System.Address_Image;
 package body BSDSockets is
    use type Interfaces.C.int;
 
-   function AddressFamilyToInt is
-     new Ada.Unchecked_Conversion(Source => AddressFamilyEnum,
-                                  Target => Interfaces.C.int);
-   function SocketTypeToInt is
-     new Ada.Unchecked_Conversion(Source => SocketTypeEnum,
-                                  Target => Interfaces.C.int);
-   function ProtocolToInt is
-     new Ada.Unchecked_Conversion(Source => ProtocolEnum,
-                                  Target => Interfaces.C.int);
+   function AddressFamilyToInt is new Ada.Unchecked_Conversion
+     (Source => AddressFamilyEnum,
+      Target => Interfaces.C.int);
 
-   function ShutdownMethodToInt is
-     new Ada.Unchecked_Conversion(Source => ShutdownMethodEnum,
-                                  Target => Interfaces.C.int);
+   function SocketTypeToInt is new Ada.Unchecked_Conversion
+     (Source => SocketTypeEnum,
+      Target => Interfaces.C.int);
+
+   function ProtocolToInt is new Ada.Unchecked_Conversion
+     (Source => ProtocolEnum,
+      Target => Interfaces.C.int);
+
+   function ShutdownMethodToInt is new Ada.Unchecked_Conversion
+     (Source => ShutdownMethodEnum,
+      Target => Interfaces.C.int);
+
+   function SendEnumToInt is new Ada.Unchecked_Conversion
+     (Source => SendEnum,
+      Target => Interfaces.C.int);
+
+   function Send
+     (Socket : SocketID;
+      Data   : access Ada.Streams.Stream_Element_Array;
+      Offset : Ada.Streams.Stream_Element_Offset;
+      Length : Ada.Streams.Stream_Element_Count;
+      Flags  : SendEnum)
+      return Ada.Streams.Stream_Element_Count is
+
+      Result : Interfaces.C.int;
+
+   begin
+      Result:=BSDSockets.Thin.Send
+        (Socket => Interfaces.C.int(Socket),
+         Data   => Data(Offset)'Access,
+         Length => Interfaces.C.int(Length),
+         Flags  => SendEnumToInt(Flags));
+
+      if Result<0 then
+         raise FailedSend;
+      end if;
+
+      return Ada.Streams.Stream_Element_Count(Result);
+   end;
 
    procedure CloseSocket
      (Socket : SocketID) is
@@ -368,6 +398,12 @@ package body BSDSockets is
       return SocketID(Value);
    end Socket;
    ---------------------------------------------------------------------------
+
+   procedure Process is
+   begin
+      SSelect
+        (Sockets => DefaultSelectList);
+   end Process;
 
    procedure Initialize is
    begin

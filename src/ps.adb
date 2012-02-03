@@ -11,6 +11,10 @@ with BSDSockets.Packets;
 with CustomMaps;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
+with Network.Streams;
+with Network.Barrier;
+with BSDSockets.Streams;
+
 with System;
 with System.Address_Image;
 
@@ -36,6 +40,8 @@ begin
    PacketServerConfig.Insert(To_Unbounded_String("Family"),To_Unbounded_String("IPv4"));
 
    PacketServer.Initialize(Config => PacketServerConfig);
+
+   BSDSockets.Process;
 
    PacketServer.Finalize;
 

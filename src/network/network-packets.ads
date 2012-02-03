@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
---   Copyright 2011 Julian Schutsch
+--   Copyright 2012 Julian Schutsch
 --
 --   This file is part of ParallelSim
 --
@@ -41,7 +41,7 @@ package Network.Packets is
       record
          Content  : Stream_Element_Array(0..Max);
          Position : Stream_Element_Offset := 0;
-         Filled   : Stream_Element_Offset   := 0;
+         Filled   : Stream_Element_Offset := 0;
       end record;
 
    type OutPacket(Max: Stream_Element_Offset) is new Root_Stream_Type with
