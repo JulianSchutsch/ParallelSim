@@ -30,10 +30,11 @@ package BSDSockets.Streams is
 
    type Server is tagged
       record
-         OnNewPeer : access procedure(Data: out Network.Peers.PeerData);
+         OnNewPeer: access procedure(Data:Network.Peers.PeerData);
       end record;
 
 private
+
    type Client is new Network.Streams.StreamType with
       record
          SelectEntry : aliased BSDSockets.SelectEntry;

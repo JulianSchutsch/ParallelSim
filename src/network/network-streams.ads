@@ -29,6 +29,7 @@
 
 with Ada.Streams; use Ada.Streams;
 with CustomMaps;
+with Network.Peers;
 
 package Network.Streams is
 
@@ -43,6 +44,7 @@ package Network.Streams is
          AmountReceived  : Stream_Element_Count;
          WrittenContent  : Stream_Element_Array(0..Max);
          WritePosition   : Stream_Element_Offset;
+         OnNewPeer       : access procedure(Data: out Network.Peers.PeerData);
       end record;
 
    overriding
