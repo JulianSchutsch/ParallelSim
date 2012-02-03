@@ -22,18 +22,34 @@
 --     - Original version
 
 with Network.Streams;
+with Network.Peers;
+with CustomMaps;
 
 package BSDSockets.Streams is
-   type StreamType is new Network.Streams.StreamType with private;
+   type Client is new Network.Streams.StreamType with private;
+
+   type Server is tagged
+      record
+         OnNewPeer : access procedure(Data: out Network.Peers.PeerData);
+      end record;
 
 private
-   type StreamType is new Network.Streams.StreamType with
+   type Client is new Network.Streams.StreamType with
       record
-         null;
+         SelectEntry : aliased BSDSockets.SelectEntry;
       end record;
 
    overriding
    procedure Flush
-     (Stream: in out StreamType);
+     (Stream: in out Client);
+
+   overriding
+   procedure Initialize
+     (Stream: in out Client;
+      Config: CustomMaps.StringStringMap.Map);
+
+   overriding
+   procedure Finalize
+     (Stream: in out Client);
 
 end BSDSockets.Streams;

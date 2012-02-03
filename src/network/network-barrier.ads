@@ -38,6 +38,6 @@ package Network.Barrier is
 
    function AllReady
      (Barrier : in BarrierType)
-     return Boolean is abstract;
+      return Boolean is abstract;
 
 end Network.Barrier;

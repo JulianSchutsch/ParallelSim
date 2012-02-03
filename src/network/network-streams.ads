@@ -28,10 +28,13 @@
 --   contents separately.
 
 with Ada.Streams; use Ada.Streams;
+with CustomMaps;
 
 package Network.Streams is
 
    StreamOverflow : Exception;
+   IncompleteData   : Exception;
+   InvalidData      : Exception;
 
    type StreamType(Max: Stream_Element_Count) is abstract new Root_Stream_Type with
       record
@@ -52,6 +55,13 @@ package Network.Streams is
    procedure Write
      (Stream : in out StreamType;
       Item   : in Stream_Element_Array);
+
+   procedure Initialize
+     (Stream : in out StreamType;
+      Config : CustomMaps.StringStringMap.Map) is abstract;
+
+   procedure Finalize
+     (Stream : in out StreamType) is abstract;
 
    procedure Flush
      (Stream : in out StreamType) is abstract;
