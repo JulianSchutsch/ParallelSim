@@ -24,7 +24,7 @@
 package body Network.Streams is
 
    procedure Read
-     (Stream : in out StreamType;
+     (Stream : in out Channel;
       Item   : out Stream_Element_Array;
       Last   : out Stream_Element_Offset) is
    begin
@@ -38,7 +38,7 @@ package body Network.Streams is
    ---------------------------------------------------------------------------
 
    procedure Write
-     (Stream : in out StreamType;
+     (Stream : in out Channel;
       Item   : in Stream_Element_Array) is
 
       Last : Stream_Element_Offset;

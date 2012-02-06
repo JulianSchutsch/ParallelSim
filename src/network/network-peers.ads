@@ -27,9 +27,9 @@
 --   data to a specific client.
 
 package Network.Peers is
-   type PeerData is abstract tagged null record;
+   type PeerData is tagged null record;
 
-   procedure OnReceive(Data: PeerData) is abstract;
-   procedure OnDisconnect(Data: PeerData) is abstract;
+   procedure OnReceive(Data: PeerData) is null;
+   procedure OnDisconnect(Data: PeerData) is null;
 
 end Network.Peers;

@@ -24,21 +24,10 @@
 with Network.Streams;
 with Network.Peers;
 with CustomMaps;
+with Ada.Unchecked_Deallocation;
 
 package BSDSockets.Streams is
-   type Client is new Network.Streams.StreamType with private;
-
-   type Server is tagged
-      record
-         OnNewPeer: access procedure(Data:Network.Peers.PeerData);
-      end record;
-
-private
-
-   type Client is new Network.Streams.StreamType with
-      record
-         SelectEntry : aliased BSDSockets.SelectEntry;
-      end record;
+   type Client is new Network.Streams.Channel with private;
 
    overriding
    procedure Flush
@@ -46,11 +35,46 @@ private
 
    overriding
    procedure Initialize
-     (Stream: in out Client;
-      Config: CustomMaps.StringStringMap.Map);
+     (Item   : not null access Client;
+      Config : CustomMaps.StringStringMap.Map);
 
    overriding
    procedure Finalize
-     (Stream: in out Client);
+     (Item: not null access Client);
+
+   type Server is new Network.Streams.Server with private;
+
+   overriding
+   procedure Initialize
+     (Item : not null access Server;
+      Config : CustomMaps.StringStringMap.Map);
+
+   overriding
+   procedure Finalize
+     (Item : not null access Server);
+
+private
+
+   type ClientModeEnum is
+     (ClientModeConnecting,
+      ClientModeConnected);
+
+   type Server is new Network.Streams.Server with
+      record
+         SelectEntry : aliased BSDSockets.SelectEntry;
+         NextServer  : access Server;
+         LastServer  : access Server;
+      end record;
+
+   type Client is new Network.Streams.Channel with
+      record
+         SelectEntry   : aliased BSDSockets.SelectEntry;
+         FirstAddrInfo : AddrInfoAccess;
+         CurrAddrInfo  : AddrInfoAccess;
+         ClientMode    : CLientModeEnum:=ClientModeConnecting;
+         Port          : PortID;
+         NextClient    : access Client;
+         LastClient    : access Client;
+      end record;
 
 end BSDSockets.Streams;

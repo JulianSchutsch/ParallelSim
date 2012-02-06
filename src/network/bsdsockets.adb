@@ -101,6 +101,7 @@ package body BSDSockets is
         (Socket => Interfaces.C.int(Socket),
          Method => ShutdownMethodToInt(Method));
       if Result/=0 then
+         Put(Integer(BSDSockets.Thin.Error));
          raise FailedShutdown;
       end if;
    end Shutdown;
@@ -262,9 +263,14 @@ package body BSDSockets is
       HostPtr         : Interfaces.C.Strings.chars_ptr;
       Hints           : aliased AddrInfo;
    begin
-      Hints.ai_family   := AddressFamilyToInt(AddressFamily);
-      Hints.ai_socktype := SocketTypeToInt(SocketType);
-      Hints.ai_protocol := ProtocolToInt(Protocol);
+      Hints.ai_flags     := 0;
+      Hints.ai_family    := AddressFamilyToInt(AddressFamily);
+      Hints.ai_socktype  := SocketTypeToInt(SocketType);
+      Hints.ai_protocol  := ProtocolToInt(Protocol);
+      Hints.ai_addrlen   := 0;
+      Hints.ai_canonname := Interfaces.C.Strings.Null_Ptr;
+      Hints.ai_addr      := null;
+      Hints.ai_next      := null;
       HostPtr := Interfaces.C.Strings.New_String(Str => Host);
 
       Result:=BSDSockets.Thin.GetAddrInfo
