@@ -21,37 +21,34 @@
 --   3.Feb 2012 Julian Schutsch
 --     - Original version
 
+pragma Ada_2005;
+
 with Network.Streams;
-with Network.Peers;
 with CustomMaps;
 with Ada.Unchecked_Deallocation;
 
 package BSDSockets.Streams is
    type Client is new Network.Streams.Channel with private;
-
-   overriding
-   procedure Flush
-     (Stream: in out Client);
-
-   overriding
-   procedure Initialize
-     (Item   : not null access Client;
-      Config : CustomMaps.StringStringMap.Map);
-
-   overriding
-   procedure Finalize
-     (Item: not null access Client);
+   type ClientAccess is access all Client;
 
    type Server is new Network.Streams.Server with private;
+   type ServerAccess is access all Server;
 
-   overriding
-   procedure Initialize
-     (Item : not null access Server;
-      Config : CustomMaps.StringStringMap.Map);
+   procedure Process;
 
-   overriding
-   procedure Finalize
-     (Item : not null access Server);
+   function NewStreamServer
+     (Config : CustomMaps.StringStringMap.Map)
+      return Network.Streams.ServerClassAccess;
+
+   procedure FreeStreamServer
+     (Item : in out Network.Streams.ServerClassAccess);
+
+   function NewStreamClient
+     (Config : CustomMaps.StringStringMap.Map)
+      return Network.Streams.ClientClassAccess;
+
+   procedure FreeStreamClient
+     (Item : in out Network.Streams.ClientClassAccess);
 
 private
 
@@ -59,11 +56,20 @@ private
      (ClientModeConnecting,
       ClientModeConnected);
 
-   type Server is new Network.Streams.Server with
+   type ServerChannel is new Network.Streams.Channel with
       record
          SelectEntry : aliased BSDSockets.SelectEntry;
-         NextServer  : access Server;
-         LastServer  : access Server;
+         NextChannel : access ServerChannel;
+         LastChannel : access ServerChannel;
+         Server      : ServerAccess;
+      end record;
+
+   type Server is new Network.Streams.Server with
+      record
+         SelectEntry  : aliased BSDSockets.SelectEntry;
+         NextServer   : access Server;
+         LastServer   : access Server;
+         FirstChannel : access ServerChannel;
       end record;
 
    type Client is new Network.Streams.Channel with

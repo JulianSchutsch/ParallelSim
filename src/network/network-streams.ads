@@ -27,10 +27,26 @@
 --   It also implements stream read and write acting on input and output
 --   contents separately.
 
+-- Usage
+--   The network stream is available through two tagged types:
+--
+--    Server  : Accepts incoming connections and creates channels to
+--              represent them.
+--
+--    Channel : Can either be a client side connection or a server side
+--              connection. Acts as a stream with input and output separated.
+--
+--   Both communicate back by use of communication tagged types:
+--
+--     ServerCallBack
+--     ChannelCallBack
+--
+--   Which are assigned to a callback entry in Server or Channel by the
+--   using component (for example when OnAccept is called).
+
 with Ada.Streams; use Ada.Streams;
 with Ada.Unchecked_Deallocation;
 with CustomMaps;
-with Network.Peers;
 
 package Network.Streams is
 
@@ -38,24 +54,33 @@ package Network.Streams is
    IncompleteData   : Exception;
    InvalidData      : Exception;
 
-   type Channel(Max: Stream_Element_Count) is abstract new Root_Stream_Type with
+   --------------------------------
+   -->>>> Channel and Client <<<<--
+   --------------------------------
+
+   type ChannelCallBack;
+   type ChannelCallBackAccess is access ChannelCallBack;
+
+   type Channel(Max: Stream_Element_Count) is
+     abstract new Root_Stream_Type with
       record
          ReceivedContent : Stream_Element_Array(0..Max);
          ReceivePosition : Stream_Element_Offset;
          AmountReceived  : Stream_Element_Count;
          WrittenContent  : Stream_Element_Array(0..Max);
          WritePosition   : Stream_Element_Offset;
-         PeerData        : Network.Peers.PeerData;
+         CallBack        : ChannelCallBackAccess;
       end record;
 
-   type ChannelClassAccess is access Channel'Class;
+   type ChannelClassAccess is access all Channel'Class;
+   type ClientClassAccess is access all Channel'Class;
 
-   type Server is abstract tagged
-      record
-         OnNewChannel: access procedure(Item: Channel);
-      end record;
+   type ClientConstructor is access function
+     (Config : CustomMaps.StringStringMap.Map)
+      return ClientClassAccess;
 
-   type ServerClassAccess is access Server'Class;
+   type ClientDestructor is access procedure
+     (Item : in out ClientClassAccess);
 
    overriding
    procedure Read
@@ -67,27 +92,55 @@ package Network.Streams is
    procedure Write
      (Stream : in out Channel;
       Item   : in Stream_Element_Array);
+   ---------------------------------------------------------------------------
 
-   procedure Initialize
-     (Item   : not null access Channel;
-      Config : CustomMaps.StringStringMap.Map) is abstract;
+   type ChannelCallBack is tagged null record;
 
-   procedure Finalize
-     (Item : not null access Channel) is abstract;
+   procedure OnReceive
+     (Item : in out ChannelCallBack) is null;
 
-   procedure Flush
-     (Item : in out Channel) is abstract;
+   procedure OnDisconnect
+     (Item : in out ChannelCallBack) is null;
 
-   procedure Initialize
-     (Item   : not null access Server;
-      Config : CustomMaps.StringStringMap.Map) is abstract;
+   procedure OnFailedConnect
+     (Item : in out ChannelCallBack) is null;
+   ---------------------------------------------------------------------------
 
-   procedure Finalize
-     (Item : not null access Server) is abstract;
+   --------------------
+   -->>>> Server <<<<--
+   --------------------
+
+   type ServerCallBack;
+   type ServerCallBackAccess is access ServerCallBack;
+
+   type Server is abstract tagged
+      record
+         CallBack : ServerCallBackAccess;
+      end record;
+   type ServerClassAccess is access all Server'Class;
+
+   type ServerConstructor is access function
+     (Config : CustomMaps.StringStringMap.Map)
+      return ServerClassAccess;
+
+   type ServerDestructor is access procedure
+     (Item : in out ServerClassAccess);
+   ---------------------------------------------------------------------------
+
+   type ServerCallBack is tagged null record;
+
+   procedure OnAccept
+     (Item : in out ServerCallBack;
+      Chan : ChannelClassAccess) is null;
+   ---------------------------------------------------------------------------
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Channel'Class,
       Name   => ChannelClassAccess);
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => Channel'Class,
+      Name   => ClientClassAccess);
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Server'Class,

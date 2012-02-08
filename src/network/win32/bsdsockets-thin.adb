@@ -1,5 +1,5 @@
 -------------------------------------------------------------------------------
---   Copyright 2011 Julian Schutsch
+--   Copyright 2012 Julian Schutsch
 --
 --   This file is part of ParallelSim
 --
@@ -16,11 +16,6 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
-
--- Revision History
---   27.Jan 2012 Julian Schutsch
---     - Original version
-
 with Interfaces;
 with Interfaces.C;
 with Interfaces.C.Strings;
@@ -131,14 +126,11 @@ package body BSDSockets.Thin is
       Set    : access fd_set_struct)
       return Interfaces.C.int is
    begin
-      Put("FD_ISSET");
       for i in 0..Set.fd_count-1 loop
          if Set.fd_array(Integer(i))=Socket then
-            Put("END1");
             return 1;
          end if;
       end loop;
-      Put("END0");
       return 0;
    end FD_ISSET;
 

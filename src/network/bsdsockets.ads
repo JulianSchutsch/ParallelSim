@@ -31,7 +31,7 @@
 --   The BSDSockets packet is a wrapper of the plattform specific
 --   BSDSockets-Thin packet.
 --   Functions do not return arbitrary integers but raise exceptions.
---
+
 -- Usage
 --   The usage of this package is close to the usage of the BSDSocket API
 --   directly, but some functions are extended to be easier to handle
@@ -45,6 +45,7 @@ with Interfaces.C;
 with Interfaces.C.Strings;
 with Ada.Unchecked_Conversion;
 with Ada.Streams;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package BSDSockets is
 
@@ -164,7 +165,7 @@ package BSDSockets is
 
    function AAccept
      (Socket : SocketID;
-      Host   : out String;
+      Host   : out Unbounded_String;
       Port   : out PortID) return SocketID;
 
    procedure CloseSocket

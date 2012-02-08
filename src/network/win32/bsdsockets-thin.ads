@@ -145,6 +145,13 @@ package BSDSockets.Thin is
       return Interfaces.C.int;
    pragma Import(StdCall,Send,"send");
 
+   function AAccess
+     (Socket  : Interfaces.C.int;
+      Addr    : access SockAddr;
+      AddrLen : access Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(StdCall,AAccess,"access");
+
    function CloseSocket
      (Socket : Interfaces.C.int)
       return Interfaces.C.int;

@@ -16,10 +16,6 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
-
--- Revision History
---   27.Jan 2012 Julian Schutsch
---     - Original version
 pragma Ada_2012;
 
 with BSDSockets.Thin;
@@ -76,6 +72,7 @@ package body BSDSockets is
 
       return Ada.Streams.Stream_Element_Count(Result);
    end;
+   ---------------------------------------------------------------------------
 
    procedure CloseSocket
      (Socket : SocketID) is
@@ -154,7 +151,7 @@ package body BSDSockets is
 
    function AAccept
      (Socket : SocketID;
-      Host   : out String;
+      Host   : out Unbounded_String;
       Port   : out PortID)
       return SocketID is
 
@@ -168,7 +165,7 @@ package body BSDSockets is
         (Socket  => Interfaces.C.int(Socket),
          Addr    => Addr'Access,
          AddrLen => AddrLen'Access);
-      Host := "";
+      Host := To_Unbounded_String("");
       Port := 0;
       if Result=-1 then
          raise FailedAccept;
