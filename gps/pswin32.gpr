@@ -6,6 +6,8 @@ project pswin32 is
       "..\src\basics",
       "..\src\basics\littleendian",
       "..\src\network",
+      "..\src\simcontrol",
+      "..\src\simelement",
       "..\src\network\win32");
    for Object_Dir use "..\build";
    for Exec_Dir use "..\bin";
