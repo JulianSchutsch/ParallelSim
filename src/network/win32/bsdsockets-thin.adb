@@ -126,8 +126,8 @@ package body BSDSockets.Thin is
       Set    : access fd_set_struct)
       return Interfaces.C.int is
    begin
-      for i in 0..Set.fd_count-1 loop
-         if Set.fd_array(Integer(i))=Socket then
+      for i in 0..Integer(Set.fd_count)-1 loop
+         if Set.fd_array(i)=Socket then
             return 1;
          end if;
       end loop;

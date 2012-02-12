@@ -62,6 +62,7 @@ package BSDSockets is
    FailedCloseSocket      : Exception;
    FailedSend             : Exception;
    FailedReceive          : Exception;
+   FailedRecv             : Exception;
 
    type SocketID is private;
 
@@ -184,9 +185,13 @@ package BSDSockets is
 
    function Send
      (Socket : SocketID;
-      Data   : access Ada.Streams.Stream_Element_Array;
-      Offset : Ada.Streams.Stream_Element_Offset;
-      Length : Ada.Streams.Stream_Element_Count;
+      Data   : Ada.Streams.Stream_Element_Array;
+      Flags  : SendEnum)
+      return Ada.Streams.Stream_Element_Count;
+
+   function Recv
+     (Socket : SocketID;
+      Data   : in out Ada.Streams.Stream_Element_Array;
       Flags  : SendEnum)
       return Ada.Streams.Stream_Element_Count;
 

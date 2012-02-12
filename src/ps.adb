@@ -38,7 +38,7 @@ begin
       To_Unbounded_String("127.0.0.1"));
    Config.Insert
      (To_Unbounded_String("ControlStreamPort"),
-      To_Unbounded_String("10001"));
+      To_Unbounded_String("10010"));
    Config.Insert
      (To_Unbounded_String("IPFamily"),
       To_Unbounded_String("IPv4"));
@@ -51,8 +51,10 @@ begin
      (NetworkImplementation => NetworkImplementation,
       Config                => Config);
 
-   BSDSockets.Process;
-   BSDSockets.Streams.Process;
+   for i in 0..999 loop
+      BSDSockets.Process;
+      BSDSockets.Streams.Process;
+   end loop;
 
    SimControl.FreeSimControl(SimCtr);
    SimElement.FreeSimElement(SimEle);

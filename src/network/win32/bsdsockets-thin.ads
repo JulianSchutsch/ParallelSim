@@ -131,7 +131,7 @@ package BSDSockets.Thin is
 
    function Recv
      (Socket : Interfaces.C.int;
-      Buf    : access Ada.Streams.Stream_Element_Array;
+      Buf    : System.Address;
       Len    : Interfaces.C.int;
       Flags  : Interfaces.C.int)
       return Interfaces.C.int;
@@ -139,7 +139,7 @@ package BSDSockets.Thin is
 
    function Send
      (Socket : Interfaces.C.int;
-      Data   : access Ada.Streams.Stream_Element;
+      Data   : System.Address;
       Length : Interfaces.C.int;
       Flags  : Interfaces.C.int)
       return Interfaces.C.int;

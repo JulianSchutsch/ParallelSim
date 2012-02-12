@@ -54,22 +54,18 @@ package Network.Streams is
    IncompleteData   : Exception;
    InvalidData      : Exception;
 
-   --------------------------------
-   -->>>> Channel and Client <<<<--
-   --------------------------------
-
    type ChannelCallBack;
-   type ChannelCallBackAccess is access ChannelCallBack;
+   type ChannelCallBackClassAccess is access all ChannelCallBack'Class;
 
    type Channel(Max: Stream_Element_Count) is
      abstract new Root_Stream_Type with
       record
-         ReceivedContent : Stream_Element_Array(0..Max);
+         ReceivedContent : aliased Stream_Element_Array(0..Max);
          ReceivePosition : Stream_Element_Offset;
          AmountReceived  : Stream_Element_Count;
-         WrittenContent  : Stream_Element_Array(0..Max);
+         WrittenContent  : aliased Stream_Element_Array(0..Max);
          WritePosition   : Stream_Element_Offset;
-         CallBack        : ChannelCallBackAccess;
+         CallBack        : ChannelCallBackClassAccess;
       end record;
 
    type ChannelClassAccess is access all Channel'Class;
@@ -94,7 +90,10 @@ package Network.Streams is
       Item   : in Stream_Element_Array);
    ---------------------------------------------------------------------------
 
-   type ChannelCallBack is tagged null record;
+   type ChannelCallBack is tagged limited
+      record
+         Channel : ChannelClassAccess;
+      end record;
 
    procedure OnReceive
      (Item : in out ChannelCallBack) is null;
@@ -106,16 +105,12 @@ package Network.Streams is
      (Item : in out ChannelCallBack) is null;
    ---------------------------------------------------------------------------
 
-   --------------------
-   -->>>> Server <<<<--
-   --------------------
-
    type ServerCallBack;
-   type ServerCallBackAccess is access ServerCallBack;
+   type ServerCallBackClassAccess is access all ServerCallBack'Class;
 
    type Server is abstract tagged
       record
-         CallBack : ServerCallBackAccess;
+         CallBack : ServerCallBackClassAccess;
       end record;
    type ServerClassAccess is access all Server'Class;
 

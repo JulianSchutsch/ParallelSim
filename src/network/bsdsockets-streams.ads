@@ -28,20 +28,9 @@ with CustomMaps;
 with Ada.Unchecked_Deallocation;
 
 package BSDSockets.Streams is
+
    type Client is new Network.Streams.Channel with private;
    type ClientAccess is access all Client;
-
-   type Server is new Network.Streams.Server with private;
-   type ServerAccess is access all Server;
-
-   procedure Process;
-
-   function NewStreamServer
-     (Config : CustomMaps.StringStringMap.Map)
-      return Network.Streams.ServerClassAccess;
-
-   procedure FreeStreamServer
-     (Item : in out Network.Streams.ServerClassAccess);
 
    function NewStreamClient
      (Config : CustomMaps.StringStringMap.Map)
@@ -49,12 +38,22 @@ package BSDSockets.Streams is
 
    procedure FreeStreamClient
      (Item : in out Network.Streams.ClientClassAccess);
+   ---------------------------------------------------------------------------
+
+   type Server is new Network.Streams.Server with private;
+   type ServerAccess is access all Server;
+
+   function NewStreamServer
+     (Config : CustomMaps.StringStringMap.Map)
+      return Network.Streams.ServerClassAccess;
+
+   procedure FreeStreamServer
+     (Item : in out Network.Streams.ServerClassAccess);
+   ---------------------------------------------------------------------------
+
+   procedure Process;
 
 private
-
-   type ClientModeEnum is
-     (ClientModeConnecting,
-      ClientModeConnected);
 
    type ServerChannel is new Network.Streams.Channel with
       record
@@ -63,6 +62,7 @@ private
          LastChannel : access ServerChannel;
          Server      : ServerAccess;
       end record;
+   ---------------------------------------------------------------------------
 
    type Server is new Network.Streams.Server with
       record
@@ -71,6 +71,11 @@ private
          LastServer   : access Server;
          FirstChannel : access ServerChannel;
       end record;
+   ---------------------------------------------------------------------------
+
+   type ClientModeEnum is
+     (ClientModeConnecting,
+      ClientModeConnected);
 
    type Client is new Network.Streams.Channel with
       record
@@ -82,5 +87,6 @@ private
          NextClient    : access Client;
          LastClient    : access Client;
       end record;
+   ---------------------------------------------------------------------------
 
 end BSDSockets.Streams;

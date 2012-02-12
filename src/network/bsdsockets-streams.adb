@@ -22,14 +22,14 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body BSDSockets.Streams is
-   use type Network.Streams.ServerCallBackAccess;
-   use type Network.Streams.ChannelCallBackAccess;
+   use type Network.Streams.ServerCallBackClassAccess;
+   use type Network.Streams.ChannelCallBackClassAccess;
+   use type Ada.Streams.Stream_Element_Offset;
 
    Servers        : access Server := null;
    Clients        : access Client := null;
 
    type ServerChannelAccess is access ServerChannel;
-
 
    procedure Next
      (Item : not null access Client) is
@@ -46,6 +46,8 @@ package body BSDSockets.Streams is
               (Socket   => Item.SelectEntry.Socket,
                AddrInfo => Item.CurrAddrInfo,
                Port     => Item.Port);
+
+            Put("Add Entry for Client");
 
             BSDSockets.AddEntry
               (List => BSDSockets.DefaultSelectList'Access,
@@ -220,6 +222,12 @@ package body BSDSockets.Streams is
 
       Next(Item);
 
+      Item.NextClient := Clients;
+      if Clients/=null then
+         Clients.LastClient:=Item;
+      end if;
+      Clients:=Item;
+
       return Network.Streams.ClientClassAccess(Item);
 
    end newStreamClient;
@@ -244,6 +252,16 @@ package body BSDSockets.Streams is
       BSDSockets.CloseSocket
         (Socket => Clie.SelectEntry.Socket);
 
+      if Clie.LastClient/=null then
+         Clie.LastClient.NextClient:=Clie.NextClient;
+      else
+         Clients:=Clie.NextClient;
+      end if;
+
+      if Clie.NextClient/=null then
+         Clie.NextClient.LastClient:=Clie.LastClient;
+      end if;
+
       Network.Streams.Free(Item);
    end FreeStreamClient;
    ---------------------------------------------------------------------------
@@ -262,6 +280,10 @@ package body BSDSockets.Streams is
         (Socket => Item.SelectEntry.Socket,
          Host   => Host,
          Port   => Port);
+
+      Put("NewSock");
+      Put(BSDSockets.ToString(NewSock));
+      New_Line;
 
       NewServerChannel                    := new ServerChannel(Max=>1023);
       NewServerChannel.SelectEntry.Socket := NewSock;
@@ -288,6 +310,49 @@ package body BSDSockets.Streams is
    end AAccept;
    ---------------------------------------------------------------------------
 
+   procedure Send
+     (Item : access Client) is
+
+      SendAmount : Ada.Streams.Stream_Element_Count;
+
+   begin
+      SendAmount:=BSDSockets.Send
+        (Socket => Item.SelectEntry.Socket,
+         Data   => Item.WrittenContent(0..Item.WritePosition-1),
+         Flags  => BSDSockets.MSG_NONE);
+
+      Item.WrittenContent(0..Item.WritePosition-SendAmount-1)
+        :=Item.WrittenContent(SendAmount..Item.WritePosition-1);
+
+      Item.WritePosition := Item.WritePosition - SendAmount;
+   end Send;
+   ---------------------------------------------------------------------------
+
+   procedure Recv
+     (Item : access ServerChannel) is
+
+      RecvAmount : Ada.Streams.Stream_Element_Count;
+
+   begin
+      Item.ReceivedContent(0..Item.AmountReceived-Item.ReceivePosition-1)
+        :=Item.ReceivedContent(Item.ReceivePosition..Item.AmountReceived-1);
+
+      Item.ReceivePosition:=0;
+
+      RecvAmount:=BSDSockets.Recv
+        (Socket => Item.SelectEntry.Socket,
+         Data   => Item.ReceivedContent(Item.AmountReceived..Item.ReceivedContent'Last),
+         Flags  => BSDSockets.MSG_NONE);
+
+      Item.AmountReceived:=Item.AmountReceived+RecvAmount;
+
+      if Item.CallBack/=null then
+         Item.CallBack.OnReceive;
+      end if;
+
+   end Recv;
+   ---------------------------------------------------------------------------
+
    procedure Process is
 
       ServerItem        : access Server := Servers;
@@ -304,8 +369,8 @@ package body BSDSockets.Streams is
          end if;
 
          if ClientItem.SelectEntry.Writeable then
-            Put("Something to write...");
-            New_Line;
+            Send
+              (Item => ClientItem);
          end if;
 
          ClientItem:=ClientItem.NextClient;
@@ -315,24 +380,26 @@ package body BSDSockets.Streams is
       while ServerItem/=null loop
 
          if ServerItem.SelectEntry.Readable then
+            New_Line;
 
             AAccept
               (Item => ServerItem);
 
-            ServerChannelItem:=ServerItem.FirstChannel;
-
-            while ServerChannelItem/=null loop
-
-               if ServerChannelItem.SelectEntry.Readable then
-                  Put("RECEIVE...");
-                  New_Line;
-               end if;
-
-               ServerChannelItem:=ServerChannelItem.NextChannel;
-
-            end loop;
-
          end if;
+
+         ServerChannelItem:=ServerItem.FirstChannel;
+
+         while ServerChannelItem/=null loop
+
+            if ServerChannelItem.SelectEntry.Readable then
+               Recv
+                 (Item => ServerChannelItem);
+            end if;
+
+            ServerChannelItem:=ServerChannelItem.NextChannel;
+
+         end loop;
+
 
          ServerItem:=ServerItem.NextServer;
 

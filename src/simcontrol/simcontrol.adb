@@ -19,11 +19,88 @@
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+
+with SimCommon;
+
 package body SimControl is
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => SimControl,
       Name   => SimControlAccess);
+
+   type StreamChannelStatus is
+     (StreamChannelStatusWaitForID,
+      StreamChannelStatusWaitForVersion);
+
+   type StreamChannelCallBack is new Network.Streams.ChannelCallBack with
+      record
+         PSimControl : SimControlAccess;
+         Status      : StreamChannelStatus:=StreamChannelStatusWaitForID;
+      end record;
+
+   type StreamChannelCallBackaccess is access StreamChannelCallBack;
+
+   overriding
+   procedure OnReceive
+     (Item : in out StreamChannelCallBack) is
+     use type SimCommon.ParallelSimNetworkIDString;
+
+      NetworkID : SimCommon.ParallelSimNetworkIDString;
+
+   begin
+      loop
+         case Item.Status is
+            when StreamChannelStatusWaitForID =>
+               begin
+                  Put("Try Reading");
+                  New_Line;
+                  SimCommon.ParallelSimNetworkIDString'Read
+                    (Item.Channel,
+                     NetworkID);
+                  if NetworkID=SimCommon.ParallelSimNetworkID then
+                     Put("Valid Id...switch status");
+                  else
+                     Put("Oh...network ID incorrect, need to terminate the connection");
+                  end if;
+               exception
+                  when Network.Streams.StreamOverflow =>
+                     Put("Stream Overflow");
+                     return;
+               end;
+            when others =>
+               Put("Other Status..");
+         end case;
+      end loop;
+   end OnReceive;
+   ---------------------------------------------------------------------------
+
+   type StreamServerCallBack is new Network.Streams.ServerCallBack with
+      record
+         PSimControl : SimControlAccess;
+      end record;
+
+   type StreamServerCallBackAccess is access StreamServerCallBack;
+
+   overriding
+   procedure OnAccept
+     (Item : in out StreamServerCallBack;
+      Chan : Network.Streams.ChannelClassAccess) is
+
+      NewCallBack : StreamChannelCallBackAccess;
+
+   begin
+
+      NewCallBack             := new StreamChannelCallBack;
+      NewCallBack.PSimControl := Item.PSimControl;
+      NewCallBack.Channel     := Chan;
+
+      Chan.CallBack
+        :=Network.Streams.ChannelCallBackClassAccess(NewCallBack);
+
+   end;
+   ---------------------------------------------------------------------------
 
    function NewSimControl
      (NetworkImplementation : Network.Config.Implementation;
@@ -33,6 +110,7 @@ package body SimControl is
       Item : SimControlAccess;
 
       StreamServerConfig : CustomMaps.StringStringMap.Map;
+      StreamServerCB     : StreamServerCallBackAccess;
 
    begin
       Item:=new SimControl;
@@ -52,6 +130,11 @@ package body SimControl is
       Item.StreamServer := NetworkImplementation.NewStreamServer
         (Config => StreamServerConfig);
 
+      StreamServerCB:=new StreamServerCallBack;
+      StreamServerCB.PSimControl:=Item;
+
+      Item.StreamServer.CallBack
+        :=Network.Streams.ServerCallBackClassAccess(StreamServerCB);
       return Item;
 
    end NewSimControl;

@@ -16,8 +16,14 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
+pragma Ada_2005;
+
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+
+with SimCommon;
 
 package body SimElement is
 
@@ -30,7 +36,7 @@ package body SimElement is
       Config                : CustomMaps.StringStringMap.Map)
       return SimElementAccess is
 
-      Item : SimElementAccess;
+      Item               : SimElementAccess;
       StreamClientConfig : CustomMaps.StringStringMap.Map;
 
    begin
@@ -52,6 +58,10 @@ package body SimElement is
       Item.StreamClient := NetworkImplementation.NewStreamClient
         (Config => StreamClientConfig);
 
+      SimCommon.ParallelSimNetworkIDString'Write
+        (Item.StreamClient,
+         SimCommon.ParallelSimNetworkID);
+
       return Item;
 
    end NewSimElement;
@@ -63,5 +73,11 @@ package body SimElement is
       Free(Item);
    end FreeSimElement;
    ---------------------------------------------------------------------------
+
+   procedure Process
+     (Item : in out SimElement) is
+   begin
+      null;
+   end Process;
 
 end SimElement;

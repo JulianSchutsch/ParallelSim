@@ -39,6 +39,9 @@ package SimElement is
    procedure FreeSimElement
      (Item : in out SimElementAccess);
 
+   procedure Process
+     (Item : in out SimElement);
+
 private
 
    type SimElement is tagged

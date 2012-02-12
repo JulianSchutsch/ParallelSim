@@ -49,11 +49,32 @@ package body BSDSockets is
      (Source => SendEnum,
       Target => Interfaces.C.int);
 
+   function Recv
+     (Socket : SocketID;
+      Data   : in out Ada.Streams.Stream_Element_Array;
+      Flags  : SendEnum)
+      return Ada.Streams.Stream_Element_Count is
+
+      Result : Interfaces.C.int;
+
+   begin
+      Result:=BSDSockets.Thin.Recv
+        (Socket => Interfaces.C.int(Socket),
+         Buf    => Data'Address,
+         Len    => Data'Length,
+         Flags  => SendEnumToInt(Flags));
+
+      if Result<0 then
+         raise FailedRecv;
+      end if;
+
+      return Ada.Streams.Stream_Element_Count(Result);
+   end Recv;
+   ---------------------------------------------------------------------------
+
    function Send
      (Socket : SocketID;
-      Data   : access Ada.Streams.Stream_Element_Array;
-      Offset : Ada.Streams.Stream_Element_Offset;
-      Length : Ada.Streams.Stream_Element_Count;
+      Data   : Ada.Streams.Stream_Element_Array;
       Flags  : SendEnum)
       return Ada.Streams.Stream_Element_Count is
 
@@ -62,8 +83,8 @@ package body BSDSockets is
    begin
       Result:=BSDSockets.Thin.Send
         (Socket => Interfaces.C.int(Socket),
-         Data   => Data(Offset)'Access,
-         Length => Interfaces.C.int(Length),
+         Data   => Data'Address,
+         Length => Data'Length,
          Flags  => SendEnumToInt(Flags));
 
       if Result<0 then
@@ -226,11 +247,13 @@ package body BSDSockets is
             TimeOut         => TimeVal'Access);
 
          while Fill/=0 loop
-
             StartCursor.Readable := BSDSockets.Thin.FD_ISSET
-              (StartCursor.Socket,ReadSet'Access)/=0;
+              (Socket => StartCursor.Socket,
+               Set    => ReadSet'Access)/=0;
+
             StartCursor.Writeable := BSDSockets.Thin.FD_ISSET
-              (StartCursor.Socket,WriteSet'Access)/=0;
+              (Socket => StartCursor.Socket,
+               Set    => WriteSet'Access)/=0;
 
             StartCursor := StartCursor.Priv.Next;
             Fill := Fill - 1;
@@ -341,6 +364,8 @@ package body BSDSockets is
                                    Name    => Addr'Access,
                                    NameLen => Addr'Size/8);
       if Result/=0 then
+         Put(Integer(BSDSockets.Thin.Error));
+         New_Line;
          raise FailedBind;
       end if;
    end Bind;
