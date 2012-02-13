@@ -70,7 +70,8 @@ package body BSDSockets.Streams is
          end;
 
          Item.CurrAddrInfo
-           := Item.CurrAddrInfo.ai_next;
+           := BSDSockets.AddrInfo_Next
+             (AddrInfo => Item.CurrAddrInfo);
 
       else
          FreeAddrInfo

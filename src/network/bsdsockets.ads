@@ -46,6 +46,7 @@ with Interfaces.C.Strings;
 with Ada.Unchecked_Conversion;
 with Ada.Streams;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with SysAddrInfo;
 
 package BSDSockets is
 
@@ -68,7 +69,7 @@ package BSDSockets is
 
    type PortID is range 0..65535;
 
-   type AddrInfo is private;
+   type AddrInfo is new SysAddrInfo.AddrInfo;
    type In_Addr6 is private;
    type SockAddr_In6 is private;
    type SockAddr is private;
@@ -266,19 +267,6 @@ private
          sin6_scope_id : Interfaces.C.unsigned_long;
       end record;
    pragma Convention(C,Sockaddr_In6);
-
-   type AddrInfo is
-      record
-         ai_flags     : Interfaces.C.int;
-         ai_family    : Interfaces.C.int;
-         ai_socktype  : Interfaces.C.int;
-         ai_protocol  : Interfaces.C.int;
-         ai_addrlen   : Interfaces.C.size_t;
-         ai_addr      : SockAddrAccess;
-         ai_canonname : Interfaces.C.Strings.chars_ptr;
-         ai_next      : AddrInfoAccess;
-      end record;
-   pragma Convention(C,AddrInfo);
 
    type SocketID is new Interfaces.C.int;
 

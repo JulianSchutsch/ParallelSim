@@ -86,7 +86,11 @@ package body BSDSockets.Thin is
                                   lpAddress       => Addr'Access,
                                   lpAddressLength => Len'Access);
       Buffer.all := Addr.sin6_addr;
-      return Result;
+      if Result=0 then
+         return 1;
+      else
+         return 0;
+      end if;
    end INET_PTON;
    ---------------------------------------------------------------------------
 

@@ -49,6 +49,14 @@ package body BSDSockets is
      (Source => SendEnum,
       Target => Interfaces.C.int);
 
+   function AddressToSockAddrAccess is new Ada.Unchecked_Conversion
+     (Source => System.Address,
+      Target => SockAddrAccess);
+
+   function AddressToAddrInfoAccess is new Ada.Unchecked_Conversion
+     (Source => System.Address,
+      Target => AddrInfoAccess);
+
    function Recv
      (Socket : SocketID;
       Data   : in out Ada.Streams.Stream_Element_Array;
@@ -196,7 +204,6 @@ package body BSDSockets is
    ---------------------------------------------------------------------------
 
    procedure SSelect(Sockets : in out SelectList) is
-      use type BSDSockets.Thin.fd_set_element;-- TEMP HACK
       Fill        : Integer:=0;
       ReadSet     : aliased BSDSockets.Thin.fd_set_struct;
       WriteSet    : aliased BSDSockets.Thin.fd_set_struct;
@@ -249,7 +256,6 @@ package body BSDSockets is
       if Fill/=0 then
          Put("Post Select:");
          Put(Integer(MaxSocket));
-         Put(Integer(ReadSet(0)));
          Put(Integer(ReadSet'Size));
          New_Line;
          Result := BSDSockets.Thin.SSelect
@@ -286,7 +292,7 @@ package body BSDSockets is
 
    function AddrInfo_Next(AddrInfo: AddrInfoAccess) return AddrInfoAccess is
    begin
-      return AddrInfo.ai_next;
+      return AddressToAddrInfoAccess(AddrInfo.ai_next);
    end AddrInfo_Next;
    ---------------------------------------------------------------------------
 
@@ -305,8 +311,8 @@ package body BSDSockets is
       Hints.ai_protocol  := ProtocolToInt(Protocol);
       Hints.ai_addrlen   := 0;
       Hints.ai_canonname := Interfaces.C.Strings.Null_Ptr;
-      Hints.ai_addr      := null;
-      Hints.ai_next      := null;
+      Hints.ai_addr      := System.Null_Address;
+      Hints.ai_next      := System.Null_Address;
       HostPtr := Interfaces.C.Strings.New_String(Str => Host);
 
       Result:=BSDSockets.Thin.GetAddrInfo
@@ -391,21 +397,22 @@ package body BSDSockets is
      (Socket   : SocketID;
       AddrInfo : not null AddrInfoAccess;
       Port     : PortID) is
+     use type System.Address; -- HACK
 
       Result : Interfaces.C.int;
 
    begin
       -- CAUTION : ai_addr might have an invalid address, propably 0
       Put("Connect..1");
-      if AddrInfo.ai_addr=null then
+      if AddrInfo.ai_addr=System.Null_Address then
          Put("Is indeed null");
          New_Line;
       end if;
-      AddrInfo.ai_addr.sa_port := BSDSockets.Thin.HTONS
+      AddressToSockAddrAccess(AddrInfo.ai_addr).sa_port := BSDSockets.Thin.HTONS
         (Interfaces.C.unsigned_short(Port));
       Put("Connect..2");
       Result:=BSDSockets.Thin.Connect(Interfaces.C.int(Socket),
-                                      AddrInfo.ai_addr,
+                                      AddressToSockAddrAccess(AddrInfo.ai_addr),
                                       Interfaces.C.int(AddrInfo.ai_addrlen));
       Put("Connect..3");
       if Result/=0 then
