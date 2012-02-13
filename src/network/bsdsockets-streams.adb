@@ -20,6 +20,7 @@ pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Exceptions;
 
 package body BSDSockets.Streams is
    use type Network.Streams.ServerCallBackClassAccess;
@@ -31,16 +32,25 @@ package body BSDSockets.Streams is
 
    type ServerChannelAccess is access ServerChannel;
 
+   -- Procedure called by NewStreamClient to
+   --  loop of GetAddrInfo data.
    procedure Next
      (Item : not null access Client) is
 
    begin
+      Put("Next...Connect");
+      New_Line;
       if Item.CurrAddrInfo/=null then
 
          begin
+            Put("SelectEntry.Assign(Socket)");
+            New_Line;
 
             Item.SelectEntry.Socket:=Socket
               (AddrInfo => Item.CurrAddrInfo);
+
+            Put("Calling Connect");
+            New_Line;
 
             Connect
               (Socket   => Item.SelectEntry.Socket,
@@ -54,7 +64,8 @@ package body BSDSockets.Streams is
                Entr => Item.SelectEntry'Access);
 
          exception
-            when others =>
+            when E:others =>
+               Put(Ada.Exceptions.Exception_Information(E));
                CloseSocket(Socket => Item.SelectEntry.Socket);
          end;
 

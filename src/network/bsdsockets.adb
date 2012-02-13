@@ -196,6 +196,7 @@ package body BSDSockets is
    ---------------------------------------------------------------------------
 
    procedure SSelect(Sockets : in out SelectList) is
+      use type BSDSockets.Thin.fd_set_element;-- TEMP HACK
       Fill        : Integer:=0;
       ReadSet     : aliased BSDSockets.Thin.fd_set_struct;
       WriteSet    : aliased BSDSockets.Thin.fd_set_struct;
@@ -203,22 +204,29 @@ package body BSDSockets is
       Result      : Interfaces.C.int;
       MainCursor  : access SelectEntry:=Sockets.FirstEntry;
       StartCursor : access SelectEntry:=Sockets.FirstEntry;
+      MaxSocket   : Interfaces.C.int;
    begin
       BSDSockets.Thin.FD_ZERO(ReadSet'Access);
       BSDSockets.Thin.FD_ZERO(WriteSet'Access);
       TimeVal.tv_sec  := 0;
       TimeVal.tv_usec := 0;
+      MaxSocket := 1023; --TODO: TEMP HACK
       while MainCursor/=null loop
+         if Interfaces.C.int(MainCursor.Socket)>MaxSocket then
+            MaxSocket:=Interfaces.C.int(MainCursor.Socket);
+         end if;
          BSDSockets.Thin.FD_SET(MainCursor.Socket,ReadSet'Access);
          BSDSockets.Thin.FD_SET(MainCursor.Socket,WriteSet'Access);
          Fill := Fill+1;
          if Fill=BSDSockets.Thin.FD_SETSIZE then
             Result := BSDSockets.Thin.SSelect
-              (NumberOfSockets => Interfaces.C.int(Fill),
+              (NumberOfSockets => MaxSocket+1,
                ReadSet         => ReadSet'Access,
                WriteSet        => WriteSet'Access,
                ExceptSet       => null,
                TimeOut         => TimeVal'Access);
+
+            MaxSocket := 1023; -- TODO: TEMP HACK
 
             while Fill/=0 loop
 
@@ -239,12 +247,20 @@ package body BSDSockets is
       end loop;
 
       if Fill/=0 then
+         Put("Post Select:");
+         Put(Integer(MaxSocket));
+         Put(Integer(ReadSet(0)));
+         Put(Integer(ReadSet'Size));
+         New_Line;
          Result := BSDSockets.Thin.SSelect
-           (NumberOfSockets => Interfaces.C.int(Fill),
+           (NumberOfSockets => MaxSocket+1,
             ReadSet         => ReadSet'Access,
             WriteSet        => WriteSet'Access,
             ExceptSet       => null,
             TimeOut         => TimeVal'Access);
+         Put("Result");
+         Put(Integer(Result));
+         New_Line;
 
          while Fill/=0 loop
             StartCursor.Readable := BSDSockets.Thin.FD_ISSET
@@ -344,7 +360,7 @@ package body BSDSockets is
          AddrString    => HostPtr,
          Buffer        => Addr.sin6_addr'Access);
 
-      if Result/=0 then
+      if Result/=1 then
          Put("Failed because address translation failed");
          Put(Integer(Result));
          Put(Integer(BSDSockets.Thin.Error));
@@ -380,11 +396,18 @@ package body BSDSockets is
 
    begin
       -- CAUTION : ai_addr might have an invalid address, propably 0
+      Put("Connect..1");
+      if AddrInfo.ai_addr=null then
+         Put("Is indeed null");
+         New_Line;
+      end if;
       AddrInfo.ai_addr.sa_port := BSDSockets.Thin.HTONS
         (Interfaces.C.unsigned_short(Port));
+      Put("Connect..2");
       Result:=BSDSockets.Thin.Connect(Interfaces.C.int(Socket),
                                       AddrInfo.ai_addr,
                                       Interfaces.C.int(AddrInfo.ai_addrlen));
+      Put("Connect..3");
       if Result/=0 then
          Put(Integer(BSDSockets.Thin.Error));
          raise FailedConnect;

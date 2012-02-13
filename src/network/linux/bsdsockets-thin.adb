@@ -37,16 +37,40 @@ package body BSDSockets.Thin is
                 -- to implement them on linux yet... (this is just a quick debug help
                 -- which must disappear
    end Error;
+   ---------------------------------------------------------------------------
 
-   procedure Initialize is
+   procedure FD_SET
+     (Socket : SocketID;
+      Set    : access fd_set_struct) is
    begin
-      null;
-   end Initialize;
+      Set(Integer(Socket)/32):=Set(Integer(Socket)/32) or 2**Integer(Socket);
+   end FD_SET;
+   ---------------------------------------------------------------------------
 
-
-   procedure Finalize is
+   procedure FD_CLR
+     (Socket : SocketID;
+      Set    : access fd_set_struct) is
    begin
-      null;
-   end Finalize;
+      Set(Integer(Socket)/32):=Set(Integer(Socket)/32) and not (2**Integer(Socket));
+   end FD_CLR;
+   ---------------------------------------------------------------------------
+
+   function FD_ISSET
+     (Socket : SocketID;
+      Set    : access fd_set_struct)
+      return Interfaces.C.int is
+   begin
+      return Interfaces.C.int(Set(Integer(Socket)/32) and (2**Integer(Socket)));
+   end FD_ISSET;
+   ---------------------------------------------------------------------------
+
+   procedure FD_ZERO
+     (Set : access fd_set_struct) is
+   begin
+      for i in Set'Range loop
+         Set(i):=0;
+      end loop;
+   end FD_ZERO;
+   ---------------------------------------------------------------------------
 
 end BSDSockets.Thin;

@@ -51,7 +51,7 @@ begin
      (NetworkImplementation => NetworkImplementation,
       Config                => Config);
 
-   for i in 0..999 loop
+   for i in 0..3 loop
       BSDSockets.Process;
       BSDSockets.Streams.Process;
    end loop;

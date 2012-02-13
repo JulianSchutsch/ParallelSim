@@ -274,8 +274,8 @@ private
          ai_socktype  : Interfaces.C.int;
          ai_protocol  : Interfaces.C.int;
          ai_addrlen   : Interfaces.C.size_t;
-         ai_canonname : Interfaces.C.Strings.chars_ptr;
          ai_addr      : SockAddrAccess;
+         ai_canonname : Interfaces.C.Strings.chars_ptr;
          ai_next      : AddrInfoAccess;
       end record;
    pragma Convention(C,AddrInfo);

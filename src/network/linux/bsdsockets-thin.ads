@@ -28,70 +28,137 @@ with System;
 
 package BSDSockets.Thin is
 
-   type SockAddr is
-      record
-         sa_family : Interfaces.C.unsigned_short;
-         sa_data: Interfaces.C.char_array(0..13);
-      end record;
-   pragma Convention(C,SockAddr);
-
-   type In_Addr is
-      record
-         S_Addr : Interfaces.C.unsigned_long;
-      end record;
-   pragma Convention(C,In_Addr);
-
-   type SockAddr_In is
-      record
-         sin_family : Interfaces.C.short;
-         sin_port   : Interfaces.C.unsigned_short;
-         sin_addr   : aliased In_Addr;
-         sin_zero   : Interfaces.C.char_array(0..7);
-      end record;
-   pragma Convention(C,SockAddr_In);
-
-   type In_Addr6 is
-      record
-         s6_addr:Interfaces.C.char_array(0..15);
-      end record;
-   pragma Convention(C,In_Addr6);
-
-   type SockAddr_In6 is
-      record
-         sin6_family   : Interfaces.C.short;
-         sin6_port     : Interfaces.C.unsigned_short;
-         sin6_flowinfo : Interfaces.C.unsigned_long;
-         sin6_addr     : aliased In_Addr6;
-         sin6_scope_id : Interfaces.C.unsigned_long;
-      end record;
-   pragma Convention(C,Sockaddr_In6);
-
    function Error return Interfaces.C.int;
 
-   function Socket(AddressFamily : Interfaces.C.int;
-                   SocketType    : Interfaces.C.int;
-                   ProtocolType  : Interfaces.C.int) return Interfaces.C.int;
+   FD_SETSIZE: constant Natural:=1024;
+
+   -- WARNING : This packet array may not be portable between different
+   --           compilers
+   type fd_set_element is mod 2**32;
+   for fd_set_element'Size use 32;
+
+   type fd_set_struct is array (0..FD_SETSIZE/32-1) of fd_set_element;
+   for fd_set_struct'Alignment use 32;
+
+   type TimeVal is
+      record
+         tv_sec  : Interfaces.C.long;
+         tv_usec : Interfaces.C.long;
+      end record;
+   pragma Convention(C,TimeVal);
+
+   function Socket
+     (AddressFamily : Interfaces.C.int;
+      SocketType    : Interfaces.C.int;
+      ProtocolType  : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(C,Socket,"socket");
 
-   function Bind(Socket  : Interfaces.C.int;
-                 Name    : access SockAddr_In6;
-                 NameLen : Interfaces.C.int) return Interfaces.C.int;
+   function Bind
+     (Socket  : Interfaces.C.int;
+      Name    : access SockAddr_In6;
+      NameLen : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(C,Bind,"bind");
 
-   function Listen(Socket : Interfaces.C.int;
-                   Backlog : Interfaces.C.int) return Interfaces.C.int;
+   function Listen
+     (Socket  : Interfaces.C.int;
+      Backlog : Interfaces.C.int)
+      return Interfaces.C.int;
    pragma Import(C,Listen,"listen");
 
-   function INET_PTON(AddressFamily : Interfaces.C.int;
-                      AddrString    : Interfaces.C.Strings.chars_ptr;
-                      Buffer        : access In_Addr6) return Interfaces.C.int;
+   function INET_PTON
+     (AddressFamily : Interfaces.C.int;
+      AddrString    : Interfaces.C.Strings.chars_ptr;
+      Buffer        : access In_Addr6)
+      return Interfaces.C.int;
    pragma Import(C,INET_PTON,"inet_pton");
 
-   function HTONS(HostShort : Interfaces.C.unsigned_short) return Interfaces.C.unsigned_short;
+   function HTONS
+     (HostShort : Interfaces.C.unsigned_short)
+      return Interfaces.C.unsigned_short;
    pragma Import(C,HTONS,"htons");
 
-   procedure Initialize;
-   procedure Finalize;
+   function Recv
+     (Socket : Interfaces.C.int;
+      Buf    : System.Address;
+      Len    : Interfaces.C.int;
+      Flags  : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(C,Recv,"recv");
+
+   function Send
+     (Socket : Interfaces.C.int;
+      Data   : System.Address;
+      Length : Interfaces.C.int;
+      Flags  : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(C,Send,"send");
+
+   function CloseSocket
+     (Socket : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(C,CloseSocket,"close");
+
+   function ShutDown
+     (Socket : Interfaces.C.int;
+      Method : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(C,ShutDown,"shutdown");
+
+   function AAccept
+     (Socket  : Interfaces.C.int;
+      Addr    : access SockAddr;
+      AddrLen : access Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(C,AAccept,"accept");
+
+   function SSelect
+     (NumberOfSockets : Interfaces.C.int;
+      ReadSet        : access fd_set_struct;
+      WriteSet       : access fd_set_struct;
+      ExceptSet      : access fd_set_struct;
+      TimeOut        : access TimeVal)
+      return Interfaces.C.int;
+   pragma Import(C,SSelect,"select");
+
+   function GetAddrInfo
+     (pNodeName    : Interfaces.C.Strings.chars_ptr;
+      pServiceName : Interfaces.C.Strings.chars_ptr;
+      pHints       : access AddrInfo;
+      ppResult     : access AddrInfoAccess)
+      return Interfaces.C.int;
+   pragma Import(C,GetAddrInfo,"getaddrinfo");
+
+   function Connect
+     (Socket  : Interfaces.C.int;
+      Name    : SockAddrAccess;
+      NameLen : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(C,Connect,"connect");
+
+   procedure FreeAddrInfo
+     (pAddrInfo : access AddrInfo);
+   pragma Import(C,FreeAddrInfo,"freeaddrinfo");
+
+   procedure FD_SET
+     (Socket : SocketID;
+      Set    : access fd_set_struct);
+
+   procedure FD_CLR
+     (Socket : SocketID;
+      Set    : access fd_set_struct);
+
+   function FD_ISSET
+     (Socket : SocketID;
+      Set    : access fd_set_struct)
+      return Interfaces.C.int;
+
+   procedure FD_ZERO
+     (Set : access fd_set_struct);
+
+   procedure Initialize is null;
+   procedure Finalize is null;
 
 private
 
