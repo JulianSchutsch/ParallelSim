@@ -24,6 +24,8 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 with SimCommon;
+with Endianess;
+with Types;
 
 package body SimElement is
 
@@ -58,9 +60,14 @@ package body SimElement is
       Item.StreamClient := NetworkImplementation.NewStreamClient
         (Config => StreamClientConfig);
 
+      -- Send Program ID
       SimCommon.ParallelSimNetworkIDString'Write
         (Item.StreamClient,
          SimCommon.ParallelSimNetworkID);
+      -- Send Version
+      Endianess.LittleEndianInteger32'Write
+        (Item.StreamClient,
+         Endianess.ToLittleEndian(10));
 
       return Item;
 

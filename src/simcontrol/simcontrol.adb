@@ -21,7 +21,10 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Streams;
 
+with Types;
+with Endianess;
 with SimCommon;
 
 package body SimControl is
@@ -32,7 +35,7 @@ package body SimControl is
 
    type StreamChannelStatus is
      (StreamChannelStatusWaitForID,
-      StreamChannelStatusWaitForVersion);
+      StreamChannelStatusOther);
 
    type StreamChannelCallBack is new Network.Streams.ChannelCallBack with
       record
@@ -45,34 +48,51 @@ package body SimControl is
    overriding
    procedure OnReceive
      (Item : in out StreamChannelCallBack) is
-     use type SimCommon.ParallelSimNetworkIDString;
+      use type SimCommon.ParallelSimNetworkIDString;
+      use type Types.Integer32;
 
       NetworkID : SimCommon.ParallelSimNetworkIDString;
+      Version   : Endianess.LittleEndianInteger32;
+
+      Pos : Ada.Streams.Stream_Element_Offset;
 
    begin
       loop
+         Pos := Item.Channel.ReceivePosition;
          case Item.Status is
+
             when StreamChannelStatusWaitForID =>
-               begin
-                  Put("Try Reading");
+
+               SimCommon.ParallelSimNetworkIDString'Read
+                 (Item.Channel,
+                  NetworkID);
+
+               Endianess.LittleEndianInteger32'Read
+                 (Item.Channel,
+                  Version);
+
+               if (NetworkID=SimCommon.ParallelSimNetworkID) and
+                 (Endianess.FromLittleEndian(Version)=10) then
+                  Put("Correct ID and Version");
                   New_Line;
-                  SimCommon.ParallelSimNetworkIDString'Read
-                    (Item.Channel,
-                     NetworkID);
-                  if NetworkID=SimCommon.ParallelSimNetworkID then
-                     Put("Valid Id...switch status");
-                  else
-                     Put("Oh...network ID incorrect, need to terminate the connection");
-                  end if;
-               exception
-                  when Network.Streams.StreamOverflow =>
-                     Put("Stream Overflow");
-                     return;
-               end;
+                  Item.Status:=StreamChannelStatusOther;
+               else
+                  Put("Invalid connect header...");
+                  New_Line;
+                  -- TODO: Disconnect, report incident.
+               end if;
             when others =>
                Put("Other Status..");
+               New_Line;
+               return; -- Dummy...
          end case;
       end loop;
+   exception
+      when Network.Streams.StreamOverflow =>
+         Item.Channel.ReceivePosition:=Pos;
+         Put("Stream Overflow");
+         New_Line;
+         return;
    end OnReceive;
    ---------------------------------------------------------------------------
 
