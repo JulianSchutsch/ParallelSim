@@ -28,24 +28,14 @@ with CustomMaps;
 
 package SimControl is
 
-   type SimControl is tagged private;
-   type SimControlAccess is access SimControl;
-
-   function NewSimControl
+   procedure Initialize
      (NetworkImplementation : Network.Config.Implementation;
-      Config                : CustomMaps.StringStringMap.Map)
-      return SimControlAccess;
+      Config                : CustomMaps.StringStringMap.Map);
 
-   procedure FreeSimControl
-     (Item : in out SimControlAccess);
+   procedure Finalize;
+
+   procedure Process;
 
 private
-
-   type SimControl is tagged
-      record
-         StreamServer          : Network.Streams.ServerClassAccess;
-         NetworkImplementation : Network.Config.Implementation;
-         Config                : CustomMaps.StringStringMap.Map;
-      end record;
 
 end SimControl;

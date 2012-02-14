@@ -39,6 +39,12 @@
 --   For portability one has to use Initialize and Finalize before using
 --   and after using this package. (Example : Windows)
 
+-- Warnings
+--   The SSelect implementation is plattform dependent and is limited to
+--   1024 sockets on unix plattforms.
+--   On windows many select calls are generated to test for an arbitrary
+--   number of active sockets.
+
 pragma Ada_2012;
 
 with Interfaces.C;

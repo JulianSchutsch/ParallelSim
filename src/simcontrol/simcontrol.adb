@@ -29,29 +29,26 @@ with SimCommon;
 
 package body SimControl is
 
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => SimControl,
-      Name   => SimControlAccess);
+   StreamServer      : Network.Streams.ServerClassAccess;
+   NetImplementation : Network.Config.Implementation;
+   NetConfig         : CustomMaps.StringStringMap.Map;
 
    type StreamChannelStatus is
      (StreamChannelStatusWaitForID,
       StreamChannelStatusOther);
 
-   type StreamChannelCallBack is new Network.Streams.ChannelCallBack with
-      record
-         SimControl : SimControlAccess;
-         Status     : StreamChannelStatus:=StreamChannelStatusWaitForID;
-      end record;
+   Status     : StreamChannelStatus:=StreamChannelStatusWaitForID;
 
+   type StreamChannelCallBack is new Network.Streams.ChannelCallBack with null record;
    type StreamChannelCallBackaccess is access StreamChannelCallBack;
 
    overriding
    procedure OnReceive
      (Item : in out StreamChannelCallBack) is
-      use type SimCommon.ParallelSimNetworkIDString;
+      use type SimCommon.NetworkIDString;
       use type Types.Integer32;
 
-      NetworkID : SimCommon.ParallelSimNetworkIDString;
+      NetworkID : SimCommon.NetworkIDString;
       Version   : Endianess.LittleEndianInteger32;
 
       Pos : Ada.Streams.Stream_Element_Offset;
@@ -59,11 +56,11 @@ package body SimControl is
    begin
       loop
          Pos := Item.Channel.ReceivePosition;
-         case Item.Status is
+         case Status is
 
             when StreamChannelStatusWaitForID =>
 
-               SimCommon.ParallelSimNetworkIDString'Read
+               SimCommon.NetworkIDString'Read
                  (Item.Channel,
                   NetworkID);
 
@@ -71,11 +68,11 @@ package body SimControl is
                  (Item.Channel,
                   Version);
 
-               if (NetworkID=SimCommon.ParallelSimNetworkID) and
+               if (NetworkID=SimCommon.NetworkElementID) and
                  (Endianess.FromLittleEndian(Version)=10) then
                   Put("Correct ID and Version");
                   New_Line;
-                  Item.Status:=StreamChannelStatusOther;
+                  Status:=StreamChannelStatusOther;
                else
                   Put("Invalid connect header...");
                   New_Line;
@@ -96,11 +93,7 @@ package body SimControl is
    end OnReceive;
    ---------------------------------------------------------------------------
 
-   type StreamServerCallBack is new Network.Streams.ServerCallBack with
-      record
-         SimControl : SimControlAccess;
-      end record;
-
+   type StreamServerCallBack is new Network.Streams.ServerCallBack with null record;
    type StreamServerCallBackAccess is access StreamServerCallBack;
 
    overriding
@@ -113,7 +106,6 @@ package body SimControl is
    begin
 
       NewCallBack            := new StreamChannelCallBack;
-      NewCallBack.SimControl := Item.SimControl;
       NewCallBack.Channel    := Chan;
 
       Chan.CallBack
@@ -122,20 +114,16 @@ package body SimControl is
    end;
    ---------------------------------------------------------------------------
 
-   function NewSimControl
+   procedure Initialize
      (NetworkImplementation : Network.Config.Implementation;
-      Config                : CustomMaps.StringStringMap.Map)
-      return SimControlAccess is
-
-      Item : SimControlAccess;
+      Config                : CustomMaps.StringStringMap.Map) is
 
       StreamServerConfig : CustomMaps.StringStringMap.Map;
       StreamServerCB     : StreamServerCallBackAccess;
 
    begin
-      Item:=new SimControl;
-      Item.NetworkImplementation := NetworkImplementation;
-      Item.Config                := Config;
+      NetImplementation := NetworkImplementation;
+      NetConfig         := Config;
 
       StreamServerConfig.Insert
         (To_Unbounded_String("Host"),
@@ -147,24 +135,27 @@ package body SimControl is
         (To_Unbounded_String("Family"),
          Config.Element(To_Unbounded_String("IPFamily")));
 
-      Item.StreamServer := NetworkImplementation.NewStreamServer
+      StreamServer := NetworkImplementation.NewStreamServer
         (Config => StreamServerConfig);
 
       StreamServerCB:=new StreamServerCallBack;
-      StreamServerCB.SimControl:=Item;
 
-      Item.StreamServer.CallBack
+      StreamServer.CallBack
         :=Network.Streams.ServerCallBackClassAccess(StreamServerCB);
-      return Item;
-
-   end NewSimControl;
+   end Initialize;
    ---------------------------------------------------------------------------
 
-   procedure FreeSimControl
-     (Item : in out SimControlAccess) is
+   procedure Finalize is
    begin
-      Free(Item);
-   end FreeSimControl;
+      NetImplementation.FreeStreamServer
+        (Item => StreamServer);
+   end Finalize;
+   ---------------------------------------------------------------------------
+
+   procedure Process is
+   begin
+      null;
+   end Process;
    ---------------------------------------------------------------------------
 
 end SimControl;

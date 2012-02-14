@@ -29,23 +29,20 @@ with Types;
 
 package body SimElement is
 
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => SimElement,
-      Name   => SimElementAccess);
+   StreamClient          : Network.Streams.ClientClassAccess;
+   NetImplementation     : Network.Config.Implementation;
+   NetConfig             : CustomMaps.StringStringMap.Map;
 
-   function NewSimElement
+   procedure Initialize
      (NetworkImplementation : Network.Config.Implementation;
-      Config                : CustomMaps.StringStringMap.Map)
-      return SimElementAccess is
+      Config                : CustomMaps.StringStringMap.Map) is
 
-      Item               : SimElementAccess;
       StreamClientConfig : CustomMaps.StringStringMap.Map;
 
    begin
-      Item := new SimElement;
 
-      Item.NetworkImplementation := NetworkImplementation;
-      Item.Config                := Config;
+      NetImplementation := NetworkImplementation;
+      NetConfig         := Config;
 
       StreamClientConfig.Insert
         (To_Unbounded_String("Host"),
@@ -57,34 +54,32 @@ package body SimElement is
         (To_Unbounded_String("Family"),
          Config.Element(To_Unbounded_String("IPFamily")));
 
-      Item.StreamClient := NetworkImplementation.NewStreamClient
+      StreamClient := NetworkImplementation.NewStreamClient
         (Config => StreamClientConfig);
 
       -- Send Program ID
-      SimCommon.ParallelSimNetworkIDString'Write
-        (Item.StreamClient,
-         SimCommon.ParallelSimNetworkID);
+      SimCommon.NetworkIDString'Write
+        (StreamClient,
+         SimCommon.NetworkElementID);
       -- Send Version
       Endianess.LittleEndianInteger32'Write
-        (Item.StreamClient,
+        (StreamClient,
          Endianess.ToLittleEndian(10));
 
-      return Item;
-
-   end NewSimElement;
+   end Initialize;
    ---------------------------------------------------------------------------
 
-   procedure FreeSimElement
-     (Item : in out SimElementAccess) is
+   procedure Finalize is
    begin
-      Free(Item);
-   end FreeSimElement;
+      NetImplementation.FreeStreamClient
+        (Item => StreamClient);
+   end Finalize;
    ---------------------------------------------------------------------------
 
-   procedure Process
-     (Item : in out SimElement) is
+   procedure Process is
    begin
       null;
    end Process;
+   ---------------------------------------------------------------------------
 
 end SimElement;

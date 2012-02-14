@@ -28,27 +28,12 @@ with CustomMaps;
 
 package SimElement is
 
-   type SimElement is tagged private;
-   type SimElementAccess is access SimElement;
-
-   function NewSimElement
+   procedure Initialize
      (NetworkImplementation : Network.Config.Implementation;
-      Config                : CustomMaps.StringStringMap.Map)
-      return SimElementAccess;
+      Config                : CustomMaps.StringStringMap.Map);
 
-   procedure FreeSimElement
-     (Item : in out SimElementAccess);
+   procedure Finalize;
 
-   procedure Process
-     (Item : in out SimElement);
-
-private
-
-   type SimElement is tagged
-      record
-         StreamClient          : Network.Streams.ClientClassAccess;
-         NetworkImplementation : Network.Config.Implementation;
-         Config                : CustomMaps.StringStringMap.Map;
-      end record;
+   procedure Process;
 
 end SimElement;

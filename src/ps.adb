@@ -20,18 +20,25 @@ with SimElement;
 
 procedure Ps is
 
+   type ApplicationTypeEnum is
+     (ApplicationTypeAdmin,
+      ApplicationTypeControl,
+      ApplicationTypeElement,
+      ApplicationTypeEntrance,
+      ApplicationTypeClient);
+
    NetworkImplementation: constant Network.Config.Implementation:=
      (NewStreamServer  => BSDSockets.Streams.NewStreamServer'Access,
       NewStreamClient  => BSDSockets.Streams.NewStreamClient'Access,
       FreeStreamServer => BSDSockets.Streams.FreeStreamServer'Access,
       FreeStreamClient => BSDSockets.Streams.FreeStreamClient'Access);
 
-   SimCtr : SimControl.SimControlAccess;
-   SimEle : SimElement.SimElementAccess;
-
    Config : CustomMaps.StringStringMap.Map;
 
+   ApplicationType : ApplicationTypeEnum:=ApplicationTypeAdmin;
+
 begin
+
    BSDSockets.Initialize;
 
    Config.Insert
@@ -44,21 +51,46 @@ begin
      (To_Unbounded_String("IPFamily"),
       To_Unbounded_String("IPv4"));
 
-   SimCtr := SimControl.NewSimControl
-     (NetworkImplementation => NetworkImplementation,
-      Config                => Config);
+   case ApplicationType is
+      when ApplicationTypeAdmin => null;
+      when ApplicationTypeControl =>
+         SimControl.Initialize
+           (NetworkImplementation => NetworkImplementation,
+            Config                => Config);
+      when ApplicationTypeElement =>
+         SimElement.Initialize
+           (NetworkImplementation => NetworkImplementation,
+            Config                => Config);
+      when ApplicationTypeEntrance => null;
+      when ApplicationTypeClient => null;
+   end case;
 
-   SimEle := SimElement.NewSimElement
-     (NetworkImplementation => NetworkImplementation,
-      Config                => Config);
-
-   for i in 0..3 loop
+   loop
       BSDSockets.Process;
       BSDSockets.Streams.Process;
+
+      case ApplicationType is
+         when ApplicationTypeAdmin => null;
+         when ApplicationTypeControl =>
+            SimControl.Process;
+         when ApplicationTypeElement =>
+            SimElement.Process;
+         when ApplicationTypeEntrance => null;
+         when ApplicationTypeClient => null;
+      end case;
+
+
    end loop;
 
-   SimControl.FreeSimControl(SimCtr);
-   SimElement.FreeSimElement(SimEle);
+   case ApplicationType is
+      when ApplicationTypeAdmin => null;
+      when ApplicationTypeControl =>
+         SimControl.Finalize;
+      when ApplicationTypeElement =>
+         SimElement.Finalize;
+      when ApplicationTypeEntrance => null;
+      when ApplicationTypeClient => null;
+   end case;
 
    BSDSockets.Finalize;
 end Ps;
