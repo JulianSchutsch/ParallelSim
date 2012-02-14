@@ -39,8 +39,8 @@ package body SimControl is
 
    type StreamChannelCallBack is new Network.Streams.ChannelCallBack with
       record
-         PSimControl : SimControlAccess;
-         Status      : StreamChannelStatus:=StreamChannelStatusWaitForID;
+         SimControl : SimControlAccess;
+         Status     : StreamChannelStatus:=StreamChannelStatusWaitForID;
       end record;
 
    type StreamChannelCallBackaccess is access StreamChannelCallBack;
@@ -98,7 +98,7 @@ package body SimControl is
 
    type StreamServerCallBack is new Network.Streams.ServerCallBack with
       record
-         PSimControl : SimControlAccess;
+         SimControl : SimControlAccess;
       end record;
 
    type StreamServerCallBackAccess is access StreamServerCallBack;
@@ -112,9 +112,9 @@ package body SimControl is
 
    begin
 
-      NewCallBack             := new StreamChannelCallBack;
-      NewCallBack.PSimControl := Item.PSimControl;
-      NewCallBack.Channel     := Chan;
+      NewCallBack            := new StreamChannelCallBack;
+      NewCallBack.SimControl := Item.SimControl;
+      NewCallBack.Channel    := Chan;
 
       Chan.CallBack
         :=Network.Streams.ChannelCallBackClassAccess(NewCallBack);
@@ -151,7 +151,7 @@ package body SimControl is
         (Config => StreamServerConfig);
 
       StreamServerCB:=new StreamServerCallBack;
-      StreamServerCB.PSimControl:=Item;
+      StreamServerCB.SimControl:=Item;
 
       Item.StreamServer.CallBack
         :=Network.Streams.ServerCallBackClassAccess(StreamServerCB);

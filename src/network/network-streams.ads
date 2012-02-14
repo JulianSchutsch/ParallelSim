@@ -105,6 +105,8 @@ package Network.Streams is
      (Item : in out ChannelCallBack) is null;
    ---------------------------------------------------------------------------
 
+   ---------------------------------------------------------------------------
+
    type ServerCallBack;
    type ServerCallBackClassAccess is access all ServerCallBack'Class;
 

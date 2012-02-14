@@ -254,19 +254,12 @@ package body BSDSockets is
       end loop;
 
       if Fill/=0 then
-         Put("Post Select:");
-         Put(Integer(MaxSocket));
-         Put(Integer(ReadSet'Size));
-         New_Line;
          Result := BSDSockets.Thin.SSelect
            (NumberOfSockets => MaxSocket+1,
             ReadSet         => ReadSet'Access,
             WriteSet        => WriteSet'Access,
             ExceptSet       => null,
             TimeOut         => TimeVal'Access);
-         Put("Result");
-         Put(Integer(Result));
-         New_Line;
 
          while Fill/=0 loop
             StartCursor.Readable := BSDSockets.Thin.FD_ISSET
@@ -403,22 +396,18 @@ package body BSDSockets is
 
    begin
       -- CAUTION : ai_addr might have an invalid address, propably 0
-      Put("Connect..1");
-      if AddrInfo.ai_addr=System.Null_Address then
-         Put("Is indeed null");
-         New_Line;
-      end if;
       AddressToSockAddrAccess(AddrInfo.ai_addr).sa_port := BSDSockets.Thin.HTONS
         (Interfaces.C.unsigned_short(Port));
-      Put("Connect..2");
+
       Result:=BSDSockets.Thin.Connect(Interfaces.C.int(Socket),
                                       AddressToSockAddrAccess(AddrInfo.ai_addr),
                                       Interfaces.C.int(AddrInfo.ai_addrlen));
-      Put("Connect..3");
+
       if Result/=0 then
          Put(Integer(BSDSockets.Thin.Error));
          raise FailedConnect;
       end if;
+
    end Connect;
    ---------------------------------------------------------------------------
 

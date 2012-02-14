@@ -13,6 +13,7 @@ with Network.Streams;
 with Network.Barrier;
 with Network.Config;
 with BSDSockets.Streams;
+with Network.Messages;
 
 with SimControl;
 with SimElement;
