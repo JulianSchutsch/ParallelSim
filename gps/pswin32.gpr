@@ -1,13 +1,40 @@
 project Pswin32 is
 
-   for Source_Dirs use ("..\src", "..\src\basics", "..\src\basics", "..\src\basics\littleendian", "..\src\network", "..\src\simcontrol", "..\src\simelement", "..\src\network\win32");
+   for Source_Dirs use
+    ("..\src",
+     "..\src\basics",
+     "..\src\basics",
+     "..\src\basics\littleendian",
+     "..\src\network",
+     "..\src\simcontrol",
+     "..\src\simelement",
+     "..\src\simadmin",
+     "..\src\network\win32");
+
+
    for Object_Dir use "..\build";
+
    for Exec_Dir use "..\bin";
-   for Main use ("ps.adb");
-   for Languages use ("Ada");
+
+   for Main use
+     ("ps.adb");
+
+   for Languages use
+     ("Ada");
 
    package Compiler is
-      for Default_Switches ("ada") use ("-gnato", "-gnatp", "-fstack-check", "-gnatE", "-gnatn", "-funroll-loops", "-g", "-gnata", "-gnatf", "-gnatVn");
+      for Default_Switches ("ada") use
+       ("-gnato",
+        "-gnatp",
+        "-fstack-check",
+        "-gnatE",
+        "-gnatn",
+        "-funroll-loops",
+        "-g",
+        "-gnata",
+        "-gnatf",
+        "-gnatVn");
+
    end Compiler;
 
    package Linker is
@@ -18,4 +45,3 @@ project Pswin32 is
    end Builder;
 
 end Pswin32;
-

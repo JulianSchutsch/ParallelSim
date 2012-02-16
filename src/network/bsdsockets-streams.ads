@@ -24,7 +24,7 @@
 pragma Ada_2005;
 
 with Network.Streams;
-with CustomMaps;
+with Basics; use Basics;
 with Ada.Unchecked_Deallocation;
 
 package BSDSockets.Streams is
@@ -33,7 +33,7 @@ package BSDSockets.Streams is
    type ClientAccess is access all Client;
 
    function NewStreamClient
-     (Config : CustomMaps.StringStringMap.Map)
+     (Config : StringStringMap.Map)
       return Network.Streams.ClientClassAccess;
 
    procedure FreeStreamClient
@@ -44,7 +44,7 @@ package BSDSockets.Streams is
    type ServerAccess is access all Server;
 
    function NewStreamServer
-     (Config : CustomMaps.StringStringMap.Map)
+     (Config : StringStringMap.Map)
       return Network.Streams.ServerClassAccess;
 
    procedure FreeStreamServer

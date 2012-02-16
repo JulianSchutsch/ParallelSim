@@ -31,13 +31,13 @@ package body SimElement is
 
    StreamClient          : Network.Streams.ClientClassAccess;
    NetImplementation     : Network.Config.Implementation;
-   NetConfig             : CustomMaps.StringStringMap.Map;
+   NetConfig             : StringStringMap.Map;
 
    procedure Initialize
      (NetworkImplementation : Network.Config.Implementation;
-      Config                : CustomMaps.StringStringMap.Map) is
+      Config                : StringStringMap.Map) is
 
-      StreamClientConfig : CustomMaps.StringStringMap.Map;
+      StreamClientConfig : StringStringMap.Map;
 
    begin
 

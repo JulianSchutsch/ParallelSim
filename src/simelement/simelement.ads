@@ -24,13 +24,13 @@ pragma Ada_2005;
 
 with Network.Config;
 with Network.Streams;
-with CustomMaps;
+with Basics; use Basics;
 
 package SimElement is
 
    procedure Initialize
      (NetworkImplementation : Network.Config.Implementation;
-      Config                : CustomMaps.StringStringMap.Map);
+      Config                : StringStringMap.Map);
 
    procedure Finalize;
 

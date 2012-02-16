@@ -31,7 +31,7 @@ package body SimControl is
 
    StreamServer      : Network.Streams.ServerClassAccess;
    NetImplementation : Network.Config.Implementation;
-   NetConfig         : CustomMaps.StringStringMap.Map;
+   NetConfig         : StringStringMap.Map;
 
    type StreamChannelStatus is
      (StreamChannelStatusWaitForID,
@@ -116,9 +116,9 @@ package body SimControl is
 
    procedure Initialize
      (NetworkImplementation : Network.Config.Implementation;
-      Config                : CustomMaps.StringStringMap.Map) is
+      Config                : StringStringMap.Map) is
 
-      StreamServerConfig : CustomMaps.StringStringMap.Map;
+      StreamServerConfig : StringStringMap.Map;
       StreamServerCB     : StreamServerCallBackAccess;
 
    begin

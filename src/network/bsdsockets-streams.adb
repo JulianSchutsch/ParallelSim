@@ -110,7 +110,7 @@ package body BSDSockets.Streams is
    ---------------------------------------------------------------------------
 
    function NewStreamServer
-     (Config : CustomMaps.StringStringMap.Map)
+     (Config : StringStringMap.Map)
       return Network.Streams.ServerClassAccess is
 
       Item : ServerAccess;
@@ -196,7 +196,7 @@ package body BSDSockets.Streams is
    ---------------------------------------------------------------------------
 
    function NewStreamClient
-     (Config : CustomMaps.StringStringMap.Map)
+     (Config : StringStringMap.Map)
       return Network.Streams.ClientClassAccess is
 
       Item      : ClientAccess;

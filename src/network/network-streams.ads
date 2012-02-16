@@ -46,7 +46,7 @@
 
 with Ada.Streams; use Ada.Streams;
 with Ada.Unchecked_Deallocation;
-with CustomMaps;
+with Basics; use Basics;
 
 package Network.Streams is
 
@@ -72,7 +72,7 @@ package Network.Streams is
    type ClientClassAccess is access all Channel'Class;
 
    type ClientConstructor is access function
-     (Config : CustomMaps.StringStringMap.Map)
+     (Config : StringStringMap.Map)
       return ClientClassAccess;
 
    type ClientDestructor is access procedure
@@ -117,7 +117,7 @@ package Network.Streams is
    type ServerClassAccess is access all Server'Class;
 
    type ServerConstructor is access function
-     (Config : CustomMaps.StringStringMap.Map)
+     (Config : StringStringMap.Map)
       return ServerClassAccess;
 
    type ServerDestructor is access procedure

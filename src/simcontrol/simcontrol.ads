@@ -24,13 +24,13 @@ pragma Ada_2005;
 
 with Network.Streams;
 with Network.Config;
-with CustomMaps;
+with Basics; use Basics;
 
 package SimControl is
 
    procedure Initialize
      (NetworkImplementation : Network.Config.Implementation;
-      Config                : CustomMaps.StringStringMap.Map);
+      Config                : StringStringMap.Map);
 
    procedure Finalize;
 

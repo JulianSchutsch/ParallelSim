@@ -24,7 +24,7 @@
 pragma Ada_2012;
 
 with Ada.Streams;
-with CustomMaps;
+with Basics; use Basics;
 
 package Network.Messages is
    use Ada.Streams;
