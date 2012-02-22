@@ -1,0 +1,54 @@
+abstract project Common is
+
+   type OS_Type is ("Windows_NT","Linux");
+
+   OS : OS_Type := external("OS");
+
+   
+   Source_Directories:=
+     ("../src",
+      "../src/basics",
+      "../src/basics",
+      "../src/basics/littleendian", -- Currently no plattform supported has different endianess
+      "../src/network",
+      "../src/simcontrol",
+      "../src/simelement",
+      "../src/simadmin",
+      "../src/siminstance");
+
+   Object_Directory:=".";
+
+   Exec_Directory:=".";
+
+   Compiler_Switches:=
+     ("-gnato",
+      "-gnatp",
+      "-fstack-check",
+      "-gnatE",
+      "-gnatn",
+      "-funroll-loops",
+      "-g",
+      "-gnata",
+      "-gnatf",
+      "-gnatVn");
+
+   Linker_Switches:=();
+
+   case OS is
+
+      when "Windows_NT" =>
+
+         Source_Directories:=Source_Directories &
+            "../src/network/win32";
+
+         Linker_Switches:=Linker_Switches &
+            "-lws2_32";
+
+      when "Linux" =>
+
+         Source_Directories:=Source_Directories &
+            "../src/network/linux";
+
+   end case;
+
+end Common;
