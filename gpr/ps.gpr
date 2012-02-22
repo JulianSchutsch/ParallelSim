@@ -1,6 +1,6 @@
 with "common.gpr";
 
-project Pswin32 is
+project Ps is
 
    for Source_Dirs use
      Common.Source_Directories;
@@ -31,4 +31,4 @@ project Pswin32 is
    package Builder is
    end Builder;
 
-end Pswin32;
+end Ps;
