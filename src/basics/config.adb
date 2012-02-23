@@ -1,0 +1,166 @@
+-------------------------------------------------------------------------------
+--   Copyright 2012 Julian Schutsch
+--
+--   This file is part of ParallelSim
+--
+--   ParallelSim is free software: you can redistribute it and/or modify
+--   it under the terms of the GNU Affero General Public License as published
+--   by the Free Software Foundation, either version 3 of the License, or
+--   (at your option) any later version.
+--
+--   ParallelSim is distributed in the hope that it will be useful,
+--   but WITHOUT ANY WARRANTY; without even the implied warranty of
+--   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--   GNU Affero General Public License for more details.
+--
+--   You should have received a copy of the GNU Affero General Public License
+--   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------------
+pragma Ada_2005;
+
+with Ada.Text_IO;
+with Ada.Text_IO.Unbounded_IO;
+
+package body Config is
+
+   procedure SaveToFile
+     (Item     : in out Modules;
+      FileName : String) is
+
+      use type StringStringMap.Cursor;
+
+      File        : Ada.Text_IO.File_Type;
+      ModulCursor : ModuleAccess;
+      MapCursor   : StringStringMap.Cursor;
+
+   begin
+      Ada.Text_IO.Create
+        (File => File,
+         Name => FileName);
+
+      ModulCursor:=Item.First;
+      while ModulCursor/=null loop
+
+         Ada.Text_IO.Unbounded_IO.Put_Line
+           (File => File,
+            Item => ModulCursor.Name);
+
+         MapCursor:=ModulCursor.Map.First;
+
+         while MapCursor/=StringStringMap.No_Element loop
+
+            if StringStringMap.Key(MapCursor)="" then
+               raise InvalidName;
+            end if;
+            Ada.Text_IO.Unbounded_IO.Put_Line
+              (File => File,
+               Item => StringStringMap.Key(MapCursor));
+            Ada.Text_IO.Unbounded_IO.Put_Line
+              (File => File,
+               Item => StringStringMap.Element(MapCursor));
+
+            MapCursor:=StringStringMap.Next(MapCursor);
+         end loop;
+         -- Indicate end of map
+         Ada.Text_IO.Put("");
+
+         ModulCursor:=ModulCursor.Next;
+      end loop;
+      -- Indicate end of modules
+      Ada.Text_IO.Put("");
+      Ada.Text_IO.Close
+        (File => File);
+
+   end SaveToFile;
+   ---------------------------------------------------------------------------
+
+   procedure LoadFromFile
+     (Item     : in out Modules;
+      FileName : String) is
+
+      File       : Ada.Text_IO.File_Type;
+      ModuleName : Unbounded_String;
+      Key        : Unbounded_String;
+      Value      : Unbounded_String;
+
+      Map : access StringStringMap.Map;
+
+   begin
+      Ada.Text_IO.Open
+        (File => File,
+         Name => FileName,
+         Mode => Ada.Text_IO.In_File);
+
+      modulloop:
+      loop
+         Ada.Text_IO.Unbounded_IO.Get_Line
+           (File => File,
+            Item => ModuleName);
+         exit modulloop when ModuleName="";
+
+         NewModule
+           (Item => Item,
+            Name => ModuleName);
+
+         Map:=GetModuleMap
+           (Item => Item,
+            Name => ModuleName);
+
+         maploop:
+         loop
+            Ada.Text_IO.Unbounded_IO.Get_Line
+              (File => File,
+               Item => Key);
+            exit maploop when Key="";
+            Map.Insert
+              (Key      => Key,
+               New_Item => Value);
+         end loop maploop;
+
+      end loop modulloop;
+
+      Ada.Text_IO.Close
+        (File => File);
+   end LoadFromFile;
+
+   procedure NewModule
+     (Item : in out Modules;
+      Name : Unbounded_String) is
+
+      NModul : ModuleAccess;
+
+   begin
+      -- TODO: Check for double names.
+
+      if Name="" then
+         raise InvalidName;
+      end if;
+      NModul:=new Module;
+      NModul.Name := Name;
+      NModul.Last := null;
+      NModul.Next := Item.First;
+      if Item.First/=null then
+         Item.First.Last:=NModul;
+      end if;
+      Item.First:=NModul;
+
+   end NewModule;
+   ---------------------------------------------------------------------------
+
+   function GetModuleMap
+     (Item : Modules;
+      Name : Unbounded_String)
+      return access StringStringMap.Map is
+
+      Cursor : ModuleAccess;
+
+   begin
+      Cursor := Item.First;
+      while (Cursor/=null)
+        and then (Cursor.Name/=Name) loop
+         Cursor:=Cursor.Next;
+      end loop;
+      return Cursor.Map'Access;
+   end GetModuleMap;
+
+end Config;
