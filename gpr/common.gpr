@@ -4,19 +4,19 @@ abstract project Common is
 
    OS : OS_Type := external("OS");
 
-   
-   Source_Directories:=
-     ("../src",
-      "../src/basics",
-      "../src/basics",
-      "../src/basics/littleendian", -- Currently no plattform supported has different endianess
-      "../src/network",
-      "../src/simcontrol",
-      "../src/simelement",
-      "../src/simadmin",
-      "../src/siminstance");
+   Dir := Common'Project_Dir & "/";
 
-   Object_Directory:=".";
+   Source_Directories:=
+     (Dir & "../src",
+      Dir & "../src/basics",
+      Dir & "../src/basics/littleendian", -- Currently no plattform supported has different endianess
+      Dir & "../src/network",
+      Dir & "../src/simcontrol",
+      Dir & "../src/simelement",
+      Dir & "../src/simadmin",
+      Dir & "../src/siminstance");
+
+   Object_Directory:=Dir;
 
    Exec_Directory:=".";
 
@@ -39,7 +39,7 @@ abstract project Common is
       when "Windows_NT" =>
 
          Source_Directories:=Source_Directories &
-            "../src/network/win32";
+            (Dir & "../src/network/win32");
 
          Linker_Switches:=Linker_Switches &
             "-lws2_32";
@@ -47,7 +47,7 @@ abstract project Common is
       when "Linux" =>
 
          Source_Directories:=Source_Directories &
-            "../src/network/linux";
+            (Dir  & "../src/network/linux");
 
    end case;
 
