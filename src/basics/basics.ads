@@ -39,4 +39,6 @@ package Basics is
       Element_Type => Unbounded_String,
       "=" => "=");
 
+   type StringArray is array (Positive range <>) of Unbounded_String;
+
 end Basics;

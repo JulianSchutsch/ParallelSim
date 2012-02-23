@@ -1,0 +1,34 @@
+with "common.gpr";
+
+project Ps is
+
+   for Source_Dirs use
+     Common.Source_Directories;
+
+   for Object_Dir use
+     Common.Object_Directory;
+
+   for Exec_Dir use
+     Common.Exec_Directory;
+
+   for Main use
+     ("ps.adb");
+
+   for Languages use
+     ("Ada");
+
+   package Compiler is
+      for Default_Switches ("ada") use
+        Common.Compiler_Switches;
+
+   end Compiler;
+
+   package Linker is
+      for Default_Switches ("ada") use
+        Common.Linker_Switches;
+   end Linker;
+
+   package Builder is
+   end Builder;
+
+end Ps;

@@ -18,20 +18,20 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   7.Feb 2012 Julian Schutsch
---     - Original version
-with Network.Streams;
-with Network.Process;
+--   22.Feb 2012 Julian Schutsch
+--    - Original version
 
-package Network.Config is
+-- Reasons for implementation
+--   Package testing with strings as parameters cannot be done by testing
+--   all possible combinations.
+--   This unit is meant as a tool to provide a reasonable, random subset.
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-   type Implementation is
-      record
-         NewStreamServer  : Network.Streams.ServerConstructor;
-         NewStreamClient  : Network.Streams.ClientConstructor;
-         FreeStreamServer : Network.Streams.ServerDestructor;
-         FreeStreamClient : Network.Streams.ClientDestructor;
-         SpawnProcesses   : Network.Process.SpawnAccess;
-      end record;
+package UniqueStrings is
 
-end;
+   function AnyRandomString
+     return Unbounded_String;
+   function UniqueRandomString
+      return Unbounded_String;
+
+end UniqueStrings;

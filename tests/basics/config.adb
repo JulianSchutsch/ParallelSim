@@ -17,21 +17,35 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
--- Revision History
---   7.Feb 2012 Julian Schutsch
---     - Original version
-with Network.Streams;
-with Network.Process;
+-- Test
+--    Testing of Config package
+--        * Adding of modules
+--        * Saving and Loading
 
-package Network.Config is
+pragma Ada_2005;
 
-   type Implementation is
-      record
-         NewStreamServer  : Network.Streams.ServerConstructor;
-         NewStreamClient  : Network.Streams.ClientConstructor;
-         FreeStreamServer : Network.Streams.ServerDestructor;
-         FreeStreamClient : Network.Streams.ClientDestructor;
-         SpawnProcesses   : Network.Process.SpawnAccess;
-      end record;
+with Config;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with UniqueStrings; use UniqueStrings;
 
-end;
+procedure Test is
+
+   Modules1 : Config.Modules;
+   Modules2 : Config.Modules;
+
+
+   procedure CreateRandomModules is
+   begin
+      for i in 0..99999 loop
+         Put(UniqueRandomString);
+         New_Line;
+      end loop;
+   end;
+
+begin
+
+   CreateRandomModules;
+
+end Test;

@@ -14,93 +14,41 @@ with Network.Barrier;
 with Network.Config;
 with BSDSockets.Streams;
 with Network.Messages;
+with Network.Process;
 
 with SimControl;
 with SimElement;
 with SimAdmin;
+with Config;
 
 with ProgramArguments;
 
 procedure Ps is
-
-   type ApplicationTypeEnum is
-     (ApplicationTypeAdmin,
-      ApplicationTypeControl,
-      ApplicationTypeElement,
-      ApplicationTypeEntrance,
-      ApplicationTypeClient);
+   use type StringStringMap.Cursor;
 
    NetworkImplementation: constant Network.Config.Implementation:=
      (NewStreamServer  => BSDSockets.Streams.NewStreamServer'Access,
       NewStreamClient  => BSDSockets.Streams.NewStreamClient'Access,
       FreeStreamServer => BSDSockets.Streams.FreeStreamServer'Access,
-      FreeStreamClient => BSDSockets.Streams.FreeStreamClient'Access);
-
-   Config : StringStringMap.Map;
-
-   ApplicationType : ApplicationTypeEnum:=ApplicationTypeAdmin;
+      FreeStreamClient => BSDSockets.Streams.FreeStreamClient'Access,
+      SpawnProcesses   => Network.Process.Spawn'Access);
 
 begin
 
-   ProgramArguments.Debug;
-
    BSDSockets.Initialize;
 
-   Config.Insert
-     (To_Unbounded_String("ControlHost"),
-      To_Unbounded_String("127.0.0.1"));
-   Config.Insert
-     (To_Unbounded_String("ControlStreamPort"),
-      To_Unbounded_String("10010"));
-   Config.Insert
-     (To_Unbounded_String("IPFamily"),
-      To_Unbounded_String("IPv4"));
-
-   case ApplicationType is
-      when ApplicationTypeAdmin =>
-         SimAdmin.Initialize
-           (NetworkImplementation => NetworkImplementation,
-            Config                => Config);
-      when ApplicationTypeControl =>
-         SimControl.Initialize
-           (NetworkImplementation => NetworkImplementation,
-            Config                => Config);
-      when ApplicationTypeElement =>
-         SimElement.Initialize
-           (NetworkImplementation => NetworkImplementation,
-            Config                => Config);
-      when ApplicationTypeEntrance => null;
-      when ApplicationTypeClient => null;
-   end case;
-
-   while true loop
-      BSDSockets.Process;
-      BSDSockets.Streams.Process;
-
-      case ApplicationType is
-         when ApplicationTypeAdmin =>
-            exit when SimAdmin.Process;
-         when ApplicationTypeControl =>
-            SimControl.Process;
-         when ApplicationTypeElement =>
-            SimElement.Process;
-         when ApplicationTypeEntrance => null;
-         when ApplicationTypeClient => null;
-      end case;
-
-
-   end loop;
-
-   case ApplicationType is
-      when ApplicationTypeAdmin =>
-         SimAdmin.Finalize;
-      when ApplicationTypeControl =>
-         SimControl.Finalize;
-      when ApplicationTypeElement =>
-         SimElement.Finalize;
-      when ApplicationTypeEntrance => null;
-      when ApplicationTypeClient => null;
-   end case;
+   -- Check if this is a start or an instance program
+   if ProgramArguments.VariablesMap.Find
+     (Key=> To_Unbounded_String("instance"))
+     /=StringStringMap.No_Element then
+      -- This is an instance program, wait for instructions
+      null;
+   else
+      -- This is a start program
+      null;
+   end if;
+ --     BSDSockets.Process;
+ --     BSDSockets.Streams.Process;
 
    BSDSockets.Finalize;
 end Ps;
