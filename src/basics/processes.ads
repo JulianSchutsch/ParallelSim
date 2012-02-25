@@ -24,7 +24,11 @@
 -- Reason for implementation
 --   Executing programs without attaching them to the executing program is
 --   not specified in the Ada standard library.
+
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 package Processes is
+
+   Suffix : Unbounded_String;
 
    procedure Execute
      (ProgramName : String;

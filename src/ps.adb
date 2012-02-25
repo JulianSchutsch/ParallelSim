@@ -37,7 +37,7 @@ procedure Ps is
 
 begin
    Network.Processes.Spawn
-     (Program => "simctr.exe",
+     (Program => "simctr" & To_String(Processes.Suffix),
       Configuration => Conf,
       Amount => 2);
 

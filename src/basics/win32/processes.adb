@@ -125,4 +125,6 @@ package body Processes is
       Interfaces.C.Strings.Free(CCommandLine);
    end Execute;
 
+begin
+   Suffix:=To_Unbounded_String(".exe");
 end Processes;
