@@ -12,6 +12,10 @@ begin
 
    Network.Config.LoadConfiguration
      (Configuration => Configuration);
+
+   Config.Debug
+     (Item => Configuration);
+
    loop
       null;
    end loop;

@@ -18,8 +18,8 @@
 -------------------------------------------------------------------------------
 pragma Ada_2005;
 
-with Ada.Text_IO;
-with Ada.Text_IO.Unbounded_IO;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
 
 with Ada.Unchecked_Deallocation;
 
@@ -28,6 +28,41 @@ package body Config is
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Module,
       Name   => ModuleAccess);
+
+   procedure Debug
+     (Item : in out Config_Type) is
+
+      use type StringStringMap.Cursor;
+
+      ModuleCursor : ModuleAccess;
+      MapCursor    : StringStringMap.Cursor;
+
+   begin
+      Put("Configuration(Debug):");
+      New_Line;
+      ModuleCursor:=Item.First;
+      while ModuleCursor/=null loop
+
+         Put("Module:");
+         Put(ModuleCursor.Name);
+         New_Line;
+         New_Line;
+
+         MapCursor:=ModuleCursor.Map.First;
+         while MapCursor/=StringStringMap.No_Element loop
+
+            Put("  ");
+            Put(StringStringMap.Key(MapCursor));
+            Put(" : ");
+            Put(StringStringMap.Element(MapCursor));
+            New_Line;
+            MapCursor:=StringStringMap.Next(MapCursor);
+
+         end loop;
+
+         ModuleCursor:=ModuleCursor.Next;
+      end loop;
+   end Debug;
 
    procedure Insert
      (Item : in out Config_Type;
@@ -56,7 +91,7 @@ package body Config is
          New_Item => Value);
 
    end Insert;
-
+   ---------------------------------------------------------------------------
 
    procedure Clear
      (Item : in out Config_Type) is

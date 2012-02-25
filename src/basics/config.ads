@@ -76,6 +76,9 @@ package Config is
    procedure Clear
      (Item : in out Config_Type);
 
+   procedure Debug
+     (Item : in out Config_Type);
+
 private
 
    type Module;
