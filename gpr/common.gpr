@@ -2,7 +2,7 @@ abstract project Common is
 
    type OS_Type is ("Windows_NT","Linux");
 
-   OS : OS_Type := external("OS");
+   OS : OS_Type := external("OS","Linux");
 
    Dir := Common'Project_Dir & "/";
 
