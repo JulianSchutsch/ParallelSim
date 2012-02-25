@@ -21,7 +21,7 @@
 --   7.Feb 2012 Julian Schutsch
 --     - Original version
 with Network.Streams;
-with Network.Process;
+with Network.Processes;
 
 package Network.Config is
 
@@ -31,7 +31,7 @@ package Network.Config is
          NewStreamClient  : Network.Streams.ClientConstructor;
          FreeStreamServer : Network.Streams.ServerDestructor;
          FreeStreamClient : Network.Streams.ClientDestructor;
-         SpawnProcesses   : Network.Process.SpawnAccess;
+         SpawnProcesses   : Network.Processes.SpawnAccess;
       end record;
 
 end;

@@ -30,8 +30,18 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 package UniqueStrings is
 
    function AnyRandomString
-     return Unbounded_String;
-   function UniqueRandomString
+     (MinimumLength : Positive;
+      MaximumLength : Positive)
       return Unbounded_String;
+
+   function UniqueRandomString
+     (MinimumLength : Positive;
+      MaximumLength : Positive)
+      return Unbounded_String;
+
+   procedure ClearUniqueStrings;
+
+   function AnyPreviousRandomString
+     return Unbounded_String;
 
 end UniqueStrings;

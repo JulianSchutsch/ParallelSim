@@ -19,7 +19,6 @@
 with Interfaces;
 with Interfaces.C;
 with Interfaces.C.Strings;
-with Interfaces.C.Pointers;
 with System;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;

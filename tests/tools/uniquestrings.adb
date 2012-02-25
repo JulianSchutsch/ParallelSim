@@ -23,6 +23,10 @@
 with Ada.Numerics.Float_Random; use Ada.Numerics.Float_Random;
 with Ada.Containers.Doubly_Linked_Lists;
 
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Float_Text_IO; use Ada.Float_Text_IO;
+
 package body UniqueStrings is
 
   package NameList is new Ada.Containers.Doubly_Linked_Lists
@@ -33,15 +37,38 @@ package body UniqueStrings is
    Gen : Generator;
    RandomNameList : NameList.List;
 
-   function AnyRandomString
+   procedure ClearUniqueStrings is
+   begin
+      RandomNameList.Clear;
+   end ClearUniqueStrings;
+
+   function AnyPreviousRandomString
      return Unbounded_String is
 
-      Chars : Integer;
-      Str   : Unbounded_String;
+      Index  : Natural;
+      Cursor : NameList.Cursor;
 
    begin
-      Chars:=Integer(Float(Random(Gen))*1.0)+1;
-      for i in 0..Chars loop
+      Index:=Natural(Float'Rounding(Float(Random(Gen)*Float(NameList.Length(RandomNameList)))));
+      Cursor := RandomNameList.First;
+      for i in 2..Index loop
+         Cursor:=NameList.Next(Cursor);
+      end loop;
+      return NameList.Element(Cursor);
+   end AnyPreviousRandomString;
+
+
+   function AnyRandomString
+     (MinimumLength : Positive;
+      MaximumLength : Positive)
+     return Unbounded_String is
+
+      Chars     : Integer;
+      Str       : Unbounded_String;
+
+   begin
+      Chars := Positive(Float'Rounding(Float(Random(Gen))*Float(MaximumLength-MinimumLength)))+MinimumLength;
+      for i in 1..Chars loop
          Append
            (Source   => Str,
             New_Item => Character'Val(Integer(Float(Random(Gen))*24.0)+65));
@@ -51,15 +78,19 @@ package body UniqueStrings is
    end AnyRandomString;
 
    function UniqueRandomString
+     (MinimumLength : Positive;
+      MaximumLength : Positive)
      return Unbounded_String is
-      Name : Unbounded_String;
+      Name   : Unbounded_String;
       Cursor : NameList.Cursor;
    begin
       loop
-         Name:=AnyRandomString;
+         Name:=AnyRandomString
+           (MinimumLength => MinimumLength,
+            MaximumLength => MaximumLength);
          Cursor:=NameList.Find
            (Container => RandomNameList,
-            Item     => Name);
+            Item      => Name);
 
          exit when Cursor=NameList.No_Element;
       end loop;

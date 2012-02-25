@@ -13,10 +13,9 @@ abstract project Common is
       Dir & "../src/network",
       Dir & "../src/simcontrol",
       Dir & "../src/simelement",
-      Dir & "../src/simadmin",
-      Dir & "../src/siminstance");
+      Dir & "../src/simadmin");
 
-   Object_Directory:=Dir;
+   Object_Directory:=Dir & "../build";
 
    Exec_Directory:=".";
 
@@ -30,24 +29,32 @@ abstract project Common is
       "-g",
       "-gnata",
       "-gnatf",
-      "-gnatVn");
+      "-gnatVn",
+      ""
+     );
 
    Linker_Switches:=();
+
+   Binder_Switches:=
+     ("-E");
 
    case OS is
 
       when "Windows_NT" =>
 
          Source_Directories:=Source_Directories &
-            (Dir & "../src/network/win32");
+            (Dir & "../src/network/win32",
+             Dir & "../src/basics/win32");
 
          Linker_Switches:=Linker_Switches &
-            "-lws2_32";
+            ("-lws2_32",
+             "-lkernel32");
 
       when "Linux" =>
 
          Source_Directories:=Source_Directories &
-            (Dir  & "../src/network/linux");
+            (Dir & "../src/network/linux",
+             Dir & "../src/basics/linux");
 
    end case;
 

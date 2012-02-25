@@ -18,36 +18,16 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---  16.Feb 2012 Julian Schutsch
+--   25.Feb 2012 Julian Schutsch
 --     - Original version
 
--- Reasons for implementation
---   Spawn of an arbitrary number of processes independently of the currently
---   used system (MPI, local, ...)
---   This package provides an implementation for local (single computer)
---   spawn.
+-- Reason for implementation
+--   Executing programs without attaching them to the executing program is
+--   not specified in the Ada standard library.
+package Processes is
 
-with basics; use basics;
+   procedure Execute
+     (ProgramName : String;
+      Arguments   : String);
 
-package Network.Process is
-
-   FailedSpawn : Exception;
-
-   type SpawnCallBackAccess is
-     access function
-       (Number : Natural)
-        return StringVector.Vector;
-
-   type SpawnAccess is
-     access procedure
-       (Program      : String;
-        Arguments    : SpawnCallBackAccess;
-        ProcessCount : Positive);
-
-   -- Assumes all processes are created on the current local node.
-   procedure Spawn
-     (Program      : String;
-      Arguments    : SpawnCallBackAccess;
-      ProcessCount : Positive);
-
-end Network.Process;
+end Processes;

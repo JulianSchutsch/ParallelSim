@@ -67,6 +67,9 @@ package Config is
      (Item     : in out Modules;
       FileName : String);
 
+   procedure Clear
+     (Item : in out Modules);
+
 private
 
    type Module;

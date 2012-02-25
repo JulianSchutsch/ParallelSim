@@ -12,7 +12,7 @@ project Ps is
      Common.Exec_Directory;
 
    for Main use
-     ("ps.adb");
+     ("ps.adb","simctr.adb");
 
    for Languages use
      ("Ada");
@@ -28,7 +28,9 @@ project Ps is
         Common.Linker_Switches;
    end Linker;
 
-   package Builder is
-   end Builder;
+   package Binder is
+      for Default_Switches ("ada") use
+        Common.Binder_Switches;
+   end Binder;
 
 end Ps;

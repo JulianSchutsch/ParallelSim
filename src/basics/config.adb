@@ -21,7 +21,34 @@ pragma Ada_2005;
 with Ada.Text_IO;
 with Ada.Text_IO.Unbounded_IO;
 
+with Ada.Unchecked_Deallocation;
+
 package body Config is
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => Module,
+      Name   => ModuleAccess);
+
+   procedure Clear
+     (Item : in out Modules) is
+
+      ModuleCursor : ModuleAccess;
+      ModuleCursor2 : ModuleAccess;
+
+   begin
+
+      ModuleCursor:=Item.First;
+      while ModuleCursor/=null loop
+
+         ModuleCursor2:=ModuleCursor.Next;
+
+         Free(ModuleCursor);
+
+         ModuleCursor:=ModuleCursor2;
+
+      end loop;
+
+   end Clear;
 
    procedure SaveToFile
      (Item     : in out Modules;
@@ -30,7 +57,7 @@ package body Config is
       use type StringStringMap.Cursor;
 
       File        : Ada.Text_IO.File_Type;
-      ModulCursor : ModuleAccess;
+      ModuleCursor : ModuleAccess;
       MapCursor   : StringStringMap.Cursor;
 
    begin
@@ -38,14 +65,14 @@ package body Config is
         (File => File,
          Name => FileName);
 
-      ModulCursor:=Item.First;
-      while ModulCursor/=null loop
+      ModuleCursor:=Item.First;
+      while ModuleCursor/=null loop
 
          Ada.Text_IO.Unbounded_IO.Put_Line
            (File => File,
-            Item => ModulCursor.Name);
+            Item => ModuleCursor.Name);
 
-         MapCursor:=ModulCursor.Map.First;
+         MapCursor:=ModuleCursor.Map.First;
 
          while MapCursor/=StringStringMap.No_Element loop
 
@@ -62,12 +89,16 @@ package body Config is
             MapCursor:=StringStringMap.Next(MapCursor);
          end loop;
          -- Indicate end of map
-         Ada.Text_IO.Put("");
+         Ada.Text_IO.Put_Line
+           (File => File,
+            Item => "");
 
-         ModulCursor:=ModulCursor.Next;
+         ModuleCursor:=ModuleCursor.Next;
       end loop;
       -- Indicate end of modules
-      Ada.Text_IO.Put("");
+      Ada.Text_IO.Put_Line
+        (File => File,
+         Item => "");
       Ada.Text_IO.Close
         (File => File);
 
@@ -112,6 +143,9 @@ package body Config is
               (File => File,
                Item => Key);
             exit maploop when Key="";
+            Ada.Text_IO.Unbounded_IO.Get_Line
+              (File => File,
+               Item => Value);
             Map.Insert
               (Key      => Key,
                New_Item => Value);
@@ -162,5 +196,6 @@ package body Config is
       end loop;
       return Cursor.Map'Access;
    end GetModuleMap;
+   ---------------------------------------------------------------------------
 
 end Config;

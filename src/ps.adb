@@ -14,41 +14,31 @@ with Network.Barrier;
 with Network.Config;
 with BSDSockets.Streams;
 with Network.Messages;
-with Network.Process;
+with Network.Processes;
 
 with SimControl;
 with SimElement;
 with SimAdmin;
 with Config;
+with Processes;
 
 with ProgramArguments;
 
 procedure Ps is
-   use type StringStringMap.Cursor;
 
    NetworkImplementation: constant Network.Config.Implementation:=
      (NewStreamServer  => BSDSockets.Streams.NewStreamServer'Access,
       NewStreamClient  => BSDSockets.Streams.NewStreamClient'Access,
       FreeStreamServer => BSDSockets.Streams.FreeStreamServer'Access,
       FreeStreamClient => BSDSockets.Streams.FreeStreamClient'Access,
-      SpawnProcesses   => Network.Process.Spawn'Access);
+      SpawnProcesses   => Network.Processes.Spawn'Access);
+
+   Conf : Config.Modules;
 
 begin
+   Network.Processes.Spawn
+     (Program => "simctr.exe",
+      Configuration => Conf,
+      Amount => 2);
 
-   BSDSockets.Initialize;
-
-   -- Check if this is a start or an instance program
-   if ProgramArguments.VariablesMap.Find
-     (Key=> To_Unbounded_String("instance"))
-     /=StringStringMap.No_Element then
-      -- This is an instance program, wait for instructions
-      null;
-   else
-      -- This is a start program
-      null;
-   end if;
- --     BSDSockets.Process;
- --     BSDSockets.Streams.Process;
-
-   BSDSockets.Finalize;
 end Ps;
