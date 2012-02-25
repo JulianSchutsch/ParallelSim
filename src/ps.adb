@@ -26,11 +26,32 @@ with ProgramArguments;
 
 procedure Ps is
 
-   Conf : Config.Config_Type;
+   Configuration : Config.Config_Type;
+   NetworkImplementation : Network.Config.Implementation_Type;
 
 begin
-   Network.Processes.Spawn
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Network.Control<->Element"),
+      Key        => To_Unbounded_String("StreamImplementation"),
+      Value      => To_Unbounded_String("BSDSockets.Stream"));
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Network.Control<->Element"),
+      Key        => To_Unbounded_String("ProcessesImplementation"),
+      Value      => To_Unbounded_String("Local"));
+
+   NetworkImplementation:=Network.Config.FindImplementation
+     (ModuleName    => To_Unbounded_String("Network.Control<->Element"),
+      Configuration => Configuration);
+
+   NetworkImplementation.Processes.StoreConfig
+     (Configuration => Configuration);
+
+   NetworkImplementation.Processes.Spawn
      (Program => "simctr" & To_String(Processes.Suffix),
-      Amount  => 2);
+      Amount  => 1);
 
 end Ps;

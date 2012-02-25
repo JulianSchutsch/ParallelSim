@@ -29,6 +29,35 @@ package body Config is
      (Object => Module,
       Name   => ModuleAccess);
 
+   procedure Insert
+     (Item : in out Config_Type;
+      ModuleName : Unbounded_String;
+      Key        : Unbounded_String;
+      Value      : Unbounded_String) is
+
+      ModuleMap : access StringStringMap.Map;
+
+   begin
+      ModuleMap:=GetModuleMap
+        (Item => Item,
+         Name => ModuleName);
+
+      if ModuleMap=null then
+         NewModule
+           (Item => Item,
+            Name => ModuleName);
+         ModuleMap := GetModuleMap
+           (Item => Item,
+            Name => ModuleName);
+      end if;
+
+      ModuleMap.Insert
+        (Key => Key,
+         New_Item => Value);
+
+   end Insert;
+
+
    procedure Clear
      (Item : in out Config_Type) is
 
@@ -49,6 +78,7 @@ package body Config is
       end loop;
 
    end Clear;
+   ---------------------------------------------------------------------------
 
    procedure SaveToFile
      (Item     : in out Config_Type;
@@ -156,6 +186,7 @@ package body Config is
       Ada.Text_IO.Close
         (File => File);
    end LoadFromFile;
+   ---------------------------------------------------------------------------
 
    procedure NewModule
      (Item : in out Config_Type;
@@ -194,7 +225,11 @@ package body Config is
         and then (Cursor.Name/=Name) loop
          Cursor:=Cursor.Next;
       end loop;
-      return Cursor.Map'Access;
+      if (Cursor/=null) then
+         return Cursor.Map'Access;
+      else
+         return null;
+      end if;
    end GetModuleMap;
    ---------------------------------------------------------------------------
 

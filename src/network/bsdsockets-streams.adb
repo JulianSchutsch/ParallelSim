@@ -21,11 +21,20 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Exceptions;
+with Network.Config;
 
 package body BSDSockets.Streams is
    use type Network.Streams.ServerCallBackClassAccess;
    use type Network.Streams.ChannelCallBackClassAccess;
    use type Ada.Streams.Stream_Element_Offset;
+
+   StreamImplementation : constant Network.Config.StreamImplementation_Type:=
+     (ImplementationIdentifier => To_Unbounded_String("BSDSockets.Stream"),
+      NewServer  => NewStreamServer'Access,
+      FreeServer => FreeStreamServer'Access,
+      NewClient  => NewStreamClient'Access,
+      FreeClient => FreeStreamClient'Access,
+      Process    => Process'Access);
 
    Servers        : access Server := null;
    Clients        : access Client := null;
@@ -420,4 +429,7 @@ package body BSDSockets.Streams is
    end;
    ---------------------------------------------------------------------------
 
+begin
+   Network.Config.RegisterStreamImplementation
+     (StreamImplementation => StreamImplementation);
 end BSDSockets.Streams;

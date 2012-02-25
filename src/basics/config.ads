@@ -54,6 +54,12 @@ package Config is
      (Item : in out Config_Type;
       Name : Unbounded_String);
 
+   procedure Insert
+     (Item : in out Config_Type;
+      ModuleName : Unbounded_String;
+      Key        : Unbounded_String;
+      Value      : Unbounded_String);
+
    function GetModuleMap
      (Item : Config_Type;
       Name : Unbounded_String)

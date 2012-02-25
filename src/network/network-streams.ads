@@ -54,6 +54,9 @@ package Network.Streams is
    IncompleteData   : Exception;
    InvalidData      : Exception;
 
+   type ProcessAccess is
+     access procedure;
+
    type ChannelCallBack;
    type ChannelCallBackClassAccess is access all ChannelCallBack'Class;
 

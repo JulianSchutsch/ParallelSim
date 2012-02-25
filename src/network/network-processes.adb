@@ -1,7 +1,28 @@
+-------------------------------------------------------------------------------
+--   Copyright 2012 Julian Schutsch
+--
+--   This file is part of ParallelSim
+--
+--   ParallelSim is free software: you can redistribute it and/or modify
+--   it under the terms of the GNU Affero General Public License as published
+--   by the Free Software Foundation, either version 3 of the License, or
+--   (at your option) any later version.
+--
+--   ParallelSim is distributed in the hope that it will be useful,
+--   but WITHOUT ANY WARRANTY; without even the implied warranty of
+--   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--   GNU Affero General Public License for more details.
+--
+--   You should have received a copy of the GNU Affero General Public License
+--   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------------
+
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 
 with Processes; use Processes;
+with Config; use Config;
+with Network.Config;
 
 package body Network.Processes is
 
@@ -15,7 +36,7 @@ package body Network.Processes is
 
          Execute
            (ProgramName => Program,
-            Arguments   => "-Network.Processes.Spawn");
+            Arguments   => "-Network.Processes=Local");
 
       end loop;
 
@@ -23,17 +44,30 @@ package body Network.Processes is
    ---------------------------------------------------------------------------
 
    procedure StoreConfig
-     (Configuration : Config.Config_Type) is
+     (Configuration : in out Config_Type) is
    begin
-      null;
+      SaveToFile
+        (Item     => Configuration,
+         FileName => "_MyConfig");
    end StoreConfig;
    ---------------------------------------------------------------------------
 
    procedure LoadConfig
-     (Configuration : in out Config.Config_Type) is
+     (Configuration : in out Config_Type) is
    begin
-      null;
+      LoadFromFile
+        (Item     => Configuration,
+         FileName => "_MyConfig");
    end LoadConfig;
    ---------------------------------------------------------------------------
 
+   ProcessesImplementation : constant Network.Config.ProcessesImplementation_Type:=
+     (ImplementationIdentifier => To_Unbounded_String("Local"),
+      StoreConfig              => StoreConfig'Access,
+      LoadConfig               => LoadConfig'Access,
+      Spawn                    => Spawn'Access);
+
+begin
+   Network.Config.RegisterProcessImplementation
+     (ProcessesImplementation =>  ProcessesImplementation);
 end Network.Processes;

@@ -20,10 +20,14 @@
 -- Revision History
 --   7.Feb 2012 Julian Schutsch
 --     - Original version
+--  25.Feb 2012 Julian Schutsch
+--     - Automatic implementation selection using configuration data
 
 -- Reason for implementation
---   Central point where a configuration (see Config) can be interpreted
---   and implementations for abstract network services can be selected.
+--   ParallelSim requires a flexible configuration of network modules.
+--   This package allows selecting of arbitrary implementations using
+--   only configuration data (Config_Type).
+
 with Network.Streams;
 with Network.Processes;
 with Config; use Config;
@@ -33,6 +37,7 @@ package Network.Config is
 
    ImplementationNotFound : Exception;
    InvalidConfiguration   : Exception;
+   ConfigurationTypeParameterMissing : Exception;
 
    type StreamImplementation_Type is
       record
@@ -41,6 +46,7 @@ package Network.Config is
          FreeServer : Network.Streams.ServerDestructor;
          NewClient  : Network.Streams.ClientConstructor;
          FreeClient : Network.Streams.ClientDestructor;
+         Process    : Network.Streams.ProcessAccess;
       end record;
 
    type ProcessesImplementation_Type is
@@ -60,8 +66,15 @@ package Network.Config is
    procedure RegisterStreamImplementation
      (StreamImplementation : StreamImplementation_Type);
 
+   procedure RegisterProcessImplementation
+     (ProcessesImplementation : ProcessesImplementation_Type);
+
    function FindImplementation
-     (Configuration : Config_Type)
-     return Implementation_Type;
+     (ModuleName    : Unbounded_String;
+      Configuration : Config_Type)
+      return Implementation_Type;
+
+   procedure LoadConfiguration
+     (Configuration : in out Config_Type);
 
 end;

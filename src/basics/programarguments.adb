@@ -58,9 +58,14 @@ package body ProgramArguments is
       Argument : Unbounded_String;
       EqualPos : Natural;
    begin
+      Put("Processing Arguments");
+      New_Line;
       for i in 1..Ada.Command_Line.Argument_Count loop
          Argument:=To_Unbounded_String
            (Ada.Command_Line.Argument(i));
+         Put("in");
+         Put(To_String(Argument));
+         New_Line;
          if Element(Argument,1)='-' then
             EqualPos:=Index
               (Source  => Argument,

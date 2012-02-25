@@ -101,7 +101,7 @@ package body Processes is
 
    begin
       CProgramName := Interfaces.C.Strings.New_String(ProgramName);
-      CCommandLine := Interfaces.C.Strings.New_String(Arguments);
+      CCommandLine := Interfaces.C.Strings.New_String(ProgramName & " " & Arguments);
 
       Startup.cb := Startup'Size/8;
 
