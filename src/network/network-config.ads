@@ -35,6 +35,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package Network.Config is
 
+   pragma Elaborate_Body;
+
    ImplementationNotFound : Exception;
    InvalidConfiguration   : Exception;
    ConfigurationTypeParameterMissing : Exception;

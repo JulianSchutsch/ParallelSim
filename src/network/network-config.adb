@@ -20,6 +20,7 @@
 with Ada.Containers.Doubly_Linked_Lists;
 with Basics; use Basics;
 with ProgramArguments;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Network.Config is
 
@@ -100,8 +101,11 @@ package body Network.Config is
    procedure RegisterProcessImplementation
      (ProcessesImplementation : ProcessesImplementation_Type) is
    begin
+      Put("Register Process Implementation");
       ProcessesImplementationList.Append
         (New_Item => ProcessesImplementation);
+      Put("Done");
+      New_Line;
    end RegisterProcessImplementation;
    ---------------------------------------------------------------------------
 

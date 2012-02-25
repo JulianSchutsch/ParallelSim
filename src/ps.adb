@@ -31,6 +31,7 @@ procedure Ps is
 
 begin
 
+   Put("Create Configuration");
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Network.Control<->Element"),
@@ -43,6 +44,7 @@ begin
       Key        => To_Unbounded_String("ProcessesImplementation"),
       Value      => To_Unbounded_String("Local"));
 
+   Put("Find Implementation");
    NetworkImplementation:=Network.Config.FindImplementation
      (ModuleName    => To_Unbounded_String("Network.Control<->Element"),
       Configuration => Configuration);
@@ -50,8 +52,11 @@ begin
    NetworkImplementation.Processes.StoreConfig
      (Configuration => Configuration);
 
+   Put("Spawn Processes");
    NetworkImplementation.Processes.Spawn
      (Program => "simctr" & To_String(Processes.Suffix),
       Amount  => 1);
+   Put("Terminate PS");
+   New_Line;
 
 end Ps;
