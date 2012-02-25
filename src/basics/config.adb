@@ -30,7 +30,7 @@ package body Config is
       Name   => ModuleAccess);
 
    procedure Clear
-     (Item : in out Modules) is
+     (Item : in out Config_Type) is
 
       ModuleCursor : ModuleAccess;
       ModuleCursor2 : ModuleAccess;
@@ -51,7 +51,7 @@ package body Config is
    end Clear;
 
    procedure SaveToFile
-     (Item     : in out Modules;
+     (Item     : in out Config_Type;
       FileName : String) is
 
       use type StringStringMap.Cursor;
@@ -106,7 +106,7 @@ package body Config is
    ---------------------------------------------------------------------------
 
    procedure LoadFromFile
-     (Item     : in out Modules;
+     (Item     : in out Config_Type;
       FileName : String) is
 
       File       : Ada.Text_IO.File_Type;
@@ -158,7 +158,7 @@ package body Config is
    end LoadFromFile;
 
    procedure NewModule
-     (Item : in out Modules;
+     (Item : in out Config_Type;
       Name : Unbounded_String) is
 
       NModul : ModuleAccess;
@@ -182,7 +182,7 @@ package body Config is
    ---------------------------------------------------------------------------
 
    function GetModuleMap
-     (Item : Modules;
+     (Item : Config_Type;
       Name : Unbounded_String)
       return access StringStringMap.Map is
 

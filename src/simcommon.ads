@@ -17,5 +17,4 @@ package SimCommon is
    NetworkClientID :
    constant NetworkIDString:="ParallelSimClient  ";
 
-
 end SimCommon;

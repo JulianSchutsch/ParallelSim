@@ -7,7 +7,6 @@ package body Network.Processes is
 
    procedure Spawn
      (Program       : String;
-      Configuration : Config.Modules;
       Amount        : Positive) is
 
    begin
@@ -21,5 +20,20 @@ package body Network.Processes is
       end loop;
 
    end Spawn;
+   ---------------------------------------------------------------------------
+
+   procedure StoreConfig
+     (Configuration : Config.Config_Type) is
+   begin
+      null;
+   end StoreConfig;
+   ---------------------------------------------------------------------------
+
+   procedure LoadConfig
+     (Configuration : in out Config.Config_Type) is
+   begin
+      null;
+   end LoadConfig;
+   ---------------------------------------------------------------------------
 
 end Network.Processes;

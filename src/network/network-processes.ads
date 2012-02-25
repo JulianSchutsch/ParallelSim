@@ -36,14 +36,28 @@ package Network.Processes is
 
    type SpawnAccess is
      access procedure
-       (Program       : String;
-        Configuration : Config.Modules;
-        ProcessCount  : Positive);
+       (Program      : String;
+        ProcessCount : Positive);
 
-   -- Assumes all processes are created on the current local node.
+  type StoreConfigAccess is
+     access procedure
+       (Configuration : Config.Config_Type);
+
+   type LoadConfigAccess is
+     access procedure
+       (Configuration : in out Config_Type);
+
+   -- This is a local implementation for Spawn, StoreConfig and LoadConfig
+   -- meant to be used for programs run on a single computer
+
    procedure Spawn
-     (Program       : String;
-      Configuration : Config.Modules;
-      Amount        : Positive);
+     (Program : String;
+      Amount  : Positive);
+
+   procedure StoreConfig
+     (Configuration : Config.Config_Type);
+
+   procedure LoadConfig
+     (Configuration : in out Config.Config_Type);
 
 end Network.Processes;

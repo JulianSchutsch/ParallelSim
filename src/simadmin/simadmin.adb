@@ -2,11 +2,11 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body SimAdmin is
 
-   NetImplementation : Network.Config.Implementation;
+   NetImplementation : Network.Config.Implementation_Type;
    NetConfig         : StringStringMap.Map;
 
    procedure Initialize
-     (NetworkImplementation : Network.Config.Implementation;
+     (NetworkImplementation : Network.Config.Implementation_Type;
       Config                : StringStringMap.Map) is
    begin
       NetImplementation := NetworkImplementation;

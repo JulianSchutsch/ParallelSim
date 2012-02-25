@@ -20,18 +20,48 @@
 -- Revision History
 --   7.Feb 2012 Julian Schutsch
 --     - Original version
+
+-- Reason for implementation
+--   Central point where a configuration (see Config) can be interpreted
+--   and implementations for abstract network services can be selected.
 with Network.Streams;
 with Network.Processes;
+with Config; use Config;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package Network.Config is
 
-   type Implementation is
+   ImplementationNotFound : Exception;
+   InvalidConfiguration   : Exception;
+
+   type StreamImplementation_Type is
       record
-         NewStreamServer  : Network.Streams.ServerConstructor;
-         NewStreamClient  : Network.Streams.ClientConstructor;
-         FreeStreamServer : Network.Streams.ServerDestructor;
-         FreeStreamClient : Network.Streams.ClientDestructor;
-         SpawnProcesses   : Network.Processes.SpawnAccess;
+         ImplementationIdentifier : Unbounded_String;
+         NewServer  : Network.Streams.ServerConstructor;
+         FreeServer : Network.Streams.ServerDestructor;
+         NewClient  : Network.Streams.ClientConstructor;
+         FreeClient : Network.Streams.ClientDestructor;
       end record;
+
+   type ProcessesImplementation_Type is
+      record
+         ImplementationIdentifier : Unbounded_String;
+         StoreConfig : Network.Processes.StoreConfigAccess;
+         LoadConfig  : Network.Processes.LoadConfigAccess;
+         Spawn       : Network.Processes.SpawnAccess;
+      end record;
+
+   type Implementation_Type is
+      record
+         Stream    : StreamImplementation_Type;
+         Processes : ProcessesImplementation_Type;
+      end record;
+
+   procedure RegisterStreamImplementation
+     (StreamImplementation : StreamImplementation_Type);
+
+   function FindImplementation
+     (Configuration : Config_Type)
+     return Implementation_Type;
 
 end;

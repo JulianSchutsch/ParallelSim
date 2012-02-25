@@ -30,11 +30,11 @@ with Types;
 package body SimElement is
 
    StreamClient          : Network.Streams.ClientClassAccess;
-   NetImplementation     : Network.Config.Implementation;
+   NetImplementation     : Network.Config.Implementation_Type;
    NetConfig             : StringStringMap.Map;
 
    procedure Initialize
-     (NetworkImplementation : Network.Config.Implementation;
+     (NetworkImplementation : Network.Config.Implementation_Type;
       Config                : StringStringMap.Map) is
 
       StreamClientConfig : StringStringMap.Map;
@@ -54,7 +54,7 @@ package body SimElement is
         (To_Unbounded_String("Family"),
          Config.Element(To_Unbounded_String("IPFamily")));
 
-      StreamClient := NetworkImplementation.NewStreamClient
+      StreamClient := NetworkImplementation.Stream.NewClient
         (Config => StreamClientConfig);
 
       -- Send Program ID
@@ -71,7 +71,7 @@ package body SimElement is
 
    procedure Finalize is
    begin
-      NetImplementation.FreeStreamClient
+      NetImplementation.Stream.FreeClient
         (Item => StreamClient);
    end Finalize;
    ---------------------------------------------------------------------------

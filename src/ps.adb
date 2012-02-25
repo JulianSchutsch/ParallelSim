@@ -26,19 +26,11 @@ with ProgramArguments;
 
 procedure Ps is
 
-   NetworkImplementation: constant Network.Config.Implementation:=
-     (NewStreamServer  => BSDSockets.Streams.NewStreamServer'Access,
-      NewStreamClient  => BSDSockets.Streams.NewStreamClient'Access,
-      FreeStreamServer => BSDSockets.Streams.FreeStreamServer'Access,
-      FreeStreamClient => BSDSockets.Streams.FreeStreamClient'Access,
-      SpawnProcesses   => Network.Processes.Spawn'Access);
-
-   Conf : Config.Modules;
+   Conf : Config.Config_Type;
 
 begin
    Network.Processes.Spawn
      (Program => "simctr" & To_String(Processes.Suffix),
-      Configuration => Conf,
-      Amount => 2);
+      Amount  => 2);
 
 end Ps;

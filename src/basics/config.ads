@@ -47,28 +47,28 @@ package Config is
 
    InvalidName : Exception;
 
-   type Modules is limited private;
-   type ModulesAccess is access Modules;
+   type Config_Type is limited private;
+   type Config_Access is access Config_Type;
 
    procedure NewModule
-     (Item : in out Modules;
+     (Item : in out Config_Type;
       Name : Unbounded_String);
 
    function GetModuleMap
-     (Item : Modules;
+     (Item : Config_Type;
       Name : Unbounded_String)
       return access StringStringMap.Map;
 
    procedure SaveToFile
-     (Item     : in out Modules;
+     (Item     : in out Config_Type;
       FileName : String);
 
    procedure LoadFromFile
-     (Item     : in out Modules;
+     (Item     : in out Config_Type;
       FileName : String);
 
    procedure Clear
-     (Item : in out Modules);
+     (Item : in out Config_Type);
 
 private
 
@@ -83,7 +83,7 @@ private
          Next : ModuleAccess;
       end record;
 
-   type Modules is limited
+   type Config_Type is limited
       record
          First : ModuleAccess:=null;
       end record;

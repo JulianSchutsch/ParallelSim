@@ -30,7 +30,7 @@ with SimCommon;
 package body SimControl is
 
    StreamServer      : Network.Streams.ServerClassAccess;
-   NetImplementation : Network.Config.Implementation;
+   NetImplementation : Network.Config.Implementation_Type;
    NetConfig         : StringStringMap.Map;
 
    type StreamChannelStatus is
@@ -115,7 +115,7 @@ package body SimControl is
    ---------------------------------------------------------------------------
 
    procedure Initialize
-     (NetworkImplementation : Network.Config.Implementation;
+     (NetworkImplementation : Network.Config.Implementation_Type;
       Config                : StringStringMap.Map) is
 
       StreamServerConfig : StringStringMap.Map;
@@ -135,7 +135,7 @@ package body SimControl is
         (To_Unbounded_String("Family"),
          Config.Element(To_Unbounded_String("IPFamily")));
 
-      StreamServer := NetworkImplementation.NewStreamServer
+      StreamServer := NetworkImplementation.Stream.NewServer
         (Config => StreamServerConfig);
 
       StreamServerCB:=new StreamServerCallBack;
@@ -147,7 +147,7 @@ package body SimControl is
 
    procedure Finalize is
    begin
-      NetImplementation.FreeStreamServer
+      NetImplementation.Stream.FreeServer
         (Item => StreamServer);
    end Finalize;
    ---------------------------------------------------------------------------
