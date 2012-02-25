@@ -28,7 +28,7 @@
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 package Processes is
 
-   Suffix : Unbounded_String;
+   Suffix : Unbounded_String:=To_Unbounded_String("");
 
    procedure Execute
      (ProgramName : String;

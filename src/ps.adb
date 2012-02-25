@@ -39,6 +39,6 @@ begin
    Network.Processes.Spawn
      (Program => "simctr" & To_String(Processes.Suffix),
       Configuration => Conf,
-      Amount => 1);
+      Amount => 2);
 
 end Ps;

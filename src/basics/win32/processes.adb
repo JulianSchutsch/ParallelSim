@@ -97,7 +97,7 @@ package body Processes is
       CCommandLine : Interfaces.C.Strings.chars_ptr;
       ProcessInfo  : aliased ProcessInformation;
       Startup : aliased StartupInfo;
-      --Result : Interfaces.C.int;
+      Result : Interfaces.C.int;
 
    begin
       CProgramName := Interfaces.C.Strings.New_String(ProgramName);
@@ -118,8 +118,8 @@ package body Processes is
          Put(Integer(System.Win32.GetLastError));
       end if;
 
-  --    Result := CloseHandle(ProcessInfo.hProcess);
-  --    Result := CloseHandle(ProcessInfo.hThread);
+      Result := CloseHandle(ProcessInfo.hProcess);
+      Result := CloseHandle(ProcessInfo.hThread);
 
       Interfaces.C.Strings.Free(CProgramName);
       Interfaces.C.Strings.Free(CCommandLine);
