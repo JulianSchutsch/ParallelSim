@@ -26,59 +26,78 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with SimCommon;
 with Endianess;
 with Types;
+with ProcessLoop;
 
 package body SimElement is
 
-   StreamClient          : Network.Streams.ClientClassAccess;
-   NetImplementation     : Network.Config.Implementation_Type;
-   NetConfig             : StringStringMap.Map;
+   ControlElementNetworkImplementation : Network.Config.Implementation_Type;
+   ContentClient                       : Network.Streams.ClientClassAccess;
+
+   type ContentClientCallBack_Type is
+     new Network.Streams.ChannelCallBack with null record;
+
+   overriding
+   procedure OnFailedConnect
+     (Item  : in out ContentClientCallBack_Type;
+      Retry : in out Boolean);
+
+   overriding
+   procedure OnConnect
+     (Item : in out ContentClientCallBack_Type);
+
+   procedure OnFailedConnect
+     (Item  : in out ContentClientCallBack_Type;
+      Retry : in out Boolean) is
+   begin
+      Put("OnFailedConnect...");
+      New_Line;
+      Retry:=True;
+   end;
+
+   procedure OnConnect
+     (Item : in out ContentClientCallBack_Type) is
+   begin
+      Put("Connected!");
+      New_Line;
+   end OnConnect;
+
+   ContentClientCallBack : aliased ContentClientCallBack_Type;
 
    procedure Initialize
-     (NetworkImplementation : Network.Config.Implementation_Type;
-      Config                : StringStringMap.Map) is
-
-      StreamClientConfig : StringStringMap.Map;
-
+     (Configuration : Config.Config_Type) is
    begin
+      ControlElementNetworkImplementation
+        :=Network.Config.FindImplementation
+          (Configuration => Configuration,
+           ModuleName    => To_Unbounded_String("Control<->Element.Network"));
 
-      NetImplementation := NetworkImplementation;
-      NetConfig         := Config;
+      ControlElementNetworkImplementation.Streams.Initialize.all;
 
-      StreamClientConfig.Insert
-        (To_Unbounded_String("Host"),
-         Config.Element(To_Unbounded_String("ControlHost")));
-      StreamClientConfig.Insert
-        (To_Unbounded_String("Port"),
-         Config.Element(To_Unbounded_String("ControlStreamPort")));
-      StreamClientConfig.Insert
-        (To_Unbounded_String("Family"),
-         Config.Element(To_Unbounded_String("IPFamily")));
+      ContentClient
+        :=ControlElementNetworkImplementation.Streams.NewClient
+          (Config => Config.GetModuleMap
+               (Item => Configuration,
+                Name => To_Unbounded_String("Control.ContentClient.Network")).all);
 
-      StreamClient := NetworkImplementation.Stream.NewClient
-        (Config => StreamClientConfig);
-
-      -- Send Program ID
-      SimCommon.NetworkIDString'Write
-        (StreamClient,
-         SimCommon.NetworkElementID);
-      -- Send Version
-      Endianess.LittleEndianInteger32'Write
-        (StreamClient,
-         Endianess.ToLittleEndian(10));
+      ContentClient.CallBack:=ContentClientCallBack'Access;
 
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      NetImplementation.Stream.FreeClient
-        (Item => StreamClient);
+      ControlElementNetworkImplementation.Streams.FreeClient
+        (Item => ContentClient);
+
+      ControlElementNetworkImplementation.Streams.Finalize.all;
    end Finalize;
    ---------------------------------------------------------------------------
 
-   procedure Process is
+   function Process
+     return boolean is
    begin
-      null;
+      ProcessLoop.Process;
+      return false;
    end Process;
    ---------------------------------------------------------------------------
 

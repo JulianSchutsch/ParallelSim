@@ -43,6 +43,7 @@ package body Config is
       ModuleCursor:=Item.First;
       while ModuleCursor/=null loop
 
+         New_Line;
          Put("Module:");
          Put(ModuleCursor.Name);
          New_Line;

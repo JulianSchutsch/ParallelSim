@@ -27,134 +27,48 @@ with Types;
 with Endianess;
 with SimCommon;
 
+with ProcessLoop;
+
 package body SimControl is
 
-   StreamServer      : Network.Streams.ServerClassAccess;
-   NetImplementation : Network.Config.Implementation_Type;
-   NetConfig         : StringStringMap.Map;
-
-   type StreamChannelStatus is
-     (StreamChannelStatusWaitForID,
-      StreamChannelStatusOther);
-
-   Status     : StreamChannelStatus:=StreamChannelStatusWaitForID;
-
-   type StreamChannelCallBack is new Network.Streams.ChannelCallBack with null record;
-   type StreamChannelCallBackaccess is access StreamChannelCallBack;
-
-   overriding
-   procedure OnReceive
-     (Item : in out StreamChannelCallBack) is
-      use type SimCommon.NetworkIDString;
-      use type Types.Integer32;
-
-      NetworkID : SimCommon.NetworkIDString;
-      Version   : Endianess.LittleEndianInteger32;
-
-      Pos : Ada.Streams.Stream_Element_Offset;
-
-   begin
-      loop
-         Pos := Item.Channel.ReceivePosition;
-         case Status is
-
-            when StreamChannelStatusWaitForID =>
-
-               SimCommon.NetworkIDString'Read
-                 (Item.Channel,
-                  NetworkID);
-
-               Endianess.LittleEndianInteger32'Read
-                 (Item.Channel,
-                  Version);
-
-               if (NetworkID=SimCommon.NetworkElementID) and
-                 (Endianess.FromLittleEndian(Version)=10) then
-                  Put("Correct ID and Version");
-                  New_Line;
-                  Status:=StreamChannelStatusOther;
-               else
-                  Put("Invalid connect header...");
-                  New_Line;
-                  -- TODO: Disconnect, report incident.
-               end if;
-            when others =>
-               Put("Other Status..");
-               New_Line;
-               return; -- Dummy...
-         end case;
-      end loop;
-   exception
-      when Network.Streams.StreamOverflow =>
-         Item.Channel.ReceivePosition:=Pos;
-         Put("Stream Overflow");
-         New_Line;
-         return;
-   end OnReceive;
-   ---------------------------------------------------------------------------
-
-   type StreamServerCallBack is new Network.Streams.ServerCallBack with null record;
-   type StreamServerCallBackAccess is access StreamServerCallBack;
-
-   overriding
-   procedure OnAccept
-     (Item : in out StreamServerCallBack;
-      Chan : Network.Streams.ChannelClassAccess) is
-
-      NewCallBack : StreamChannelCallBackAccess;
-
-   begin
-
-      NewCallBack            := new StreamChannelCallBack;
-      NewCallBack.Channel    := Chan;
-
-      Chan.CallBack
-        :=Network.Streams.ChannelCallBackClassAccess(NewCallBack);
-
-   end;
-   ---------------------------------------------------------------------------
+   ControlElementNetworkImplementation : Network.Config.Implementation_Type;
+   ContentServer                       : Network.Streams.ServerClassAccess;
 
    procedure Initialize
-     (NetworkImplementation : Network.Config.Implementation_Type;
-      Config                : StringStringMap.Map) is
-
-      StreamServerConfig : StringStringMap.Map;
-      StreamServerCB     : StreamServerCallBackAccess;
+     (Configuration : Config.Config_Type) is
 
    begin
-      NetImplementation := NetworkImplementation;
-      NetConfig         := Config;
+      ControlElementNetworkImplementation
+        :=Network.Config.FindImplementation
+          (Configuration => Configuration,
+           ModuleName    => To_Unbounded_String("Control<->Element.Network"));
 
-      StreamServerConfig.Insert
-        (To_Unbounded_String("Host"),
-         Config.Element(To_Unbounded_String("ControlHost")));
-      StreamServerConfig.Insert
-        (To_Unbounded_String("Port"),
-         Config.Element(To_Unbounded_String("ControlStreamPort")));
-      StreamServerConfig.Insert
-        (To_Unbounded_String("Family"),
-         Config.Element(To_Unbounded_String("IPFamily")));
+      ControlElementNetworkImplementation.Streams.Initialize.all;
 
-      StreamServer := NetworkImplementation.Stream.NewServer
-        (Config => StreamServerConfig);
+      ContentServer
+        :=ControlElementNetworkImplementation.Streams.NewServer
+          (Config => Config.GetModuleMap
+               (Item => Configuration,
+                Name => To_Unbounded_String("Control.ContentServer.Network")).all);
 
-      StreamServerCB:=new StreamServerCallBack;
-
-      StreamServer.CallBack
-        :=Network.Streams.ServerCallBackClassAccess(StreamServerCB);
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      NetImplementation.Stream.FreeServer
-        (Item => StreamServer);
+      ControlElementNetworkImplementation.Streams.FreeServer
+        (Item => ContentServer);
+
+      ControlElementNetworkImplementation.Streams.Finalize.all;
+
    end Finalize;
    ---------------------------------------------------------------------------
 
-   procedure Process is
+   function Process
+     return boolean is
    begin
-      null;
+      ProcessLoop.Process;
+      return false;
    end Process;
    ---------------------------------------------------------------------------
 

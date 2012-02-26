@@ -25,6 +25,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with System;
 with System.Address_Image;
+with ProcessLoop;
 
 package body BSDSockets is
    use type Interfaces.C.int;
@@ -446,20 +447,24 @@ package body BSDSockets is
    end Socket;
    ---------------------------------------------------------------------------
 
-   procedure Process is
+   procedure DoProcess is
    begin
       SSelect
         (Sockets => DefaultSelectList);
-   end Process;
+   end DoProcess;
 
    procedure Initialize is
    begin
       BSDSockets.Thin.Initialize;
+      ProcessLoop.Add
+        (Proc => DoProcess'Access);
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
+      ProcessLoop.Remove
+        (Proc => DoProcess'Access);
       BSDSockets.Thin.Finalize;
    end Finalize;
    ---------------------------------------------------------------------------

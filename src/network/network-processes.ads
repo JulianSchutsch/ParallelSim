@@ -49,6 +49,12 @@ package Network.Processes is
    -- This is a local implementation for Spawn, StoreConfig and LoadConfig
    -- meant to be used for programs run on a single computer
 
+   type InitializeAccess is
+     access procedure;
+
+   type FinalizeAccess is
+     access procedure;
+
    procedure Spawn
      (Program : String;
       Amount  : Positive);

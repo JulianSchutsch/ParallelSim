@@ -57,6 +57,12 @@ package Network.Streams is
    type ProcessAccess is
      access procedure;
 
+   type InitializeAccess is
+     access procedure;
+
+   type FinalizeAccess is
+     access procedure;
+
    type ChannelCallBack;
    type ChannelCallBackClassAccess is access all ChannelCallBack'Class;
 
@@ -101,11 +107,15 @@ package Network.Streams is
    procedure OnReceive
      (Item : in out ChannelCallBack) is null;
 
+   procedure OnConnect
+     (Item : in out ChannelCallBack) is null;
+
    procedure OnDisconnect
      (Item : in out ChannelCallBack) is null;
 
    procedure OnFailedConnect
-     (Item : in out ChannelCallBack) is null;
+     (Item  : in out ChannelCallBack;
+      Retry : in out Boolean) is null;
    ---------------------------------------------------------------------------
 
    ---------------------------------------------------------------------------

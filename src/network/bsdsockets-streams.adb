@@ -22,19 +22,12 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Exceptions;
 with Network.Config;
+with ProcessLoop;
 
 package body BSDSockets.Streams is
    use type Network.Streams.ServerCallBackClassAccess;
    use type Network.Streams.ChannelCallBackClassAccess;
    use type Ada.Streams.Stream_Element_Offset;
-
-   StreamImplementation : constant Network.Config.StreamImplementation_Type:=
-     (ImplementationIdentifier => To_Unbounded_String("BSDSockets.Stream"),
-      NewServer  => NewStreamServer'Access,
-      FreeServer => FreeStreamServer'Access,
-      NewClient  => NewStreamClient'Access,
-      FreeClient => FreeStreamClient'Access,
-      Process    => Process'Access);
 
    Servers        : access Server := null;
    Clients        : access Client := null;
@@ -45,6 +38,8 @@ package body BSDSockets.Streams is
    --  loop of GetAddrInfo data.
    procedure Next
      (Item : not null access Client) is
+
+      RetryConnect : Boolean:=False;
 
    begin
       Put("Next...Connect");
@@ -71,20 +66,43 @@ package body BSDSockets.Streams is
             BSDSockets.AddEntry
               (List => BSDSockets.DefaultSelectList'Access,
                Entr => Item.SelectEntry'Access);
+            Put("Add Entry Done");
+
+            Item.ClientMode:=ClientModeConnected;
+            if Item.CallBack/=null then
+               Put("Call Connect(ON)");
+               Item.CallBack.OnConnect;
+            end if;
+            FreeAddrInfo
+              (AddrInfo => Item.CurrAddrInfo);
+            return;
 
          exception
             when E:others =>
-               Put(Ada.Exceptions.Exception_Information(E));
                CloseSocket(Socket => Item.SelectEntry.Socket);
          end;
+
+         Put("....Nexting");
+         New_Line;
 
          Item.CurrAddrInfo
            := BSDSockets.AddrInfo_Next
              (AddrInfo => Item.CurrAddrInfo);
 
       else
-         FreeAddrInfo
-           (AddrInfo => Item.CurrAddrInfo);
+         Put("Checking...");
+         if Item.CallBack/=null then
+            Item.CallBack.OnFailedConnect
+              (Retry => RetryConnect);
+         end if;
+
+         if not RetryConnect then
+            FreeAddrInfo
+              (AddrInfo => Item.CurrAddrInfo);
+         else
+            Item.CurrAddrInfo:=Item.FirstAddrInfo;
+         end if;
+
       end if;
 
    end;
@@ -241,13 +259,13 @@ package body BSDSockets.Streams is
 
       Item.CurrAddrInfo := Item.FirstAddrInfo;
 
-      Next(Item);
-
       Item.NextClient := Clients;
       if Clients/=null then
          Clients.LastClient:=Item;
       end if;
       Clients:=Item;
+
+      Item.LastTime:=Ada.Calendar.Clock;
 
       return Network.Streams.ClientClassAccess(Item);
 
@@ -374,11 +392,13 @@ package body BSDSockets.Streams is
    end Recv;
    ---------------------------------------------------------------------------
 
-   procedure Process is
+   procedure DoProcess is
 
       ServerItem        : access Server := Servers;
       ClientItem        : access Client := Clients;
       ServerChannelItem : access ServerChannel;
+
+      use type Ada.Calendar.Time;
 
    begin
 
@@ -387,6 +407,15 @@ package body BSDSockets.Streams is
          if ClientItem.SelectEntry.Readable then
             Put("Something to read...");
             New_Line;
+         else
+            if ClientItem.ClientMode=ClientModeConnecting then
+               -- TODO : Currently a timeout of 1 second is assumed
+               --        This should become a configurable value
+               if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
+                  Next
+                    (Item=>ClientItem);
+               end if;
+            end if;
          end if;
 
          if ClientItem.SelectEntry.Writeable then
@@ -428,6 +457,39 @@ package body BSDSockets.Streams is
 
    end;
    ---------------------------------------------------------------------------
+
+   InitializeCount : Natural:=0;
+
+   procedure Initialize is
+   begin
+      if InitializeCount=0 then
+         ProcessLoop.Add
+           (Proc => DoProcess'Access);
+         BSDSockets.Initialize;
+      end if;
+      InitializeCount:=InitializeCount-1;
+   end Initialize;
+   ---------------------------------------------------------------------------
+
+   procedure Finalize is
+   begin
+      InitializeCount:=InitializeCount-1;
+      if InitializeCount=0 then
+         BSDSockets.Finalize;
+         ProcessLoop.Remove
+           (Proc => DoProcess'Access);
+      end if;
+   end Finalize;
+   ---------------------------------------------------------------------------
+
+   StreamImplementation : constant Network.Config.StreamImplementation_Type:=
+     (ImplementationIdentifier => To_Unbounded_String("BSDSockets.Stream"),
+      Initialize => Initialize'Access,
+      Finalize   => Finalize'Access,
+      NewServer  => NewStreamServer'Access,
+      FreeServer => FreeStreamServer'Access,
+      NewClient  => NewStreamClient'Access,
+      FreeClient => FreeStreamClient'Access);
 
 begin
    Network.Config.RegisterStreamImplementation

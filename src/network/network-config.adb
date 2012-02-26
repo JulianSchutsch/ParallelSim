@@ -110,8 +110,8 @@ package body Network.Config is
    ---------------------------------------------------------------------------
 
    function FindImplementation
-     (ModuleName : Unbounded_String;
-      Configuration : Config_Type)
+     (Configuration : Config_Type;
+      ModuleName    : Unbounded_String)
       return Implementation_Type is
 
       use type StringStringMap.Cursor;
@@ -126,6 +126,10 @@ package body Network.Config is
         (Item => Configuration,
          Name => ModuleName);
 
+      if NetworkMap=null then
+         raise InvalidConfiguration with "Missing Modul";
+      end if;
+
       Cursor := StringStringMap.Find
         (Container => NetworkMap.all,
          Key       => To_Unbounded_String("StreamImplementation"));
@@ -134,7 +138,7 @@ package body Network.Config is
          raise InvalidConfiguration with "Missing:StreamImplementation";
       end if;
 
-      Impl.Stream:=FindStreamImplementation
+      Impl.Streams:=FindStreamImplementation
         (StringStringMap.Element(Cursor));
 
       Cursor :=StringStringMap.Find
@@ -177,5 +181,6 @@ package body Network.Config is
         (Configuration => Configuration);
 
    end LoadConfiguration;
+   ---------------------------------------------------------------------------
 
 end Network.Config;

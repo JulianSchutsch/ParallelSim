@@ -26,6 +26,7 @@ pragma Ada_2005;
 with Network.Streams;
 with Basics; use Basics;
 with Ada.Unchecked_Deallocation;
+with Ada.Calendar;
 
 package BSDSockets.Streams is
 
@@ -50,8 +51,6 @@ package BSDSockets.Streams is
    procedure FreeStreamServer
      (Item : in out Network.Streams.ServerClassAccess);
    ---------------------------------------------------------------------------
-
-   procedure Process;
 
 private
 
@@ -82,7 +81,8 @@ private
          SelectEntry   : aliased BSDSockets.SelectEntry;
          FirstAddrInfo : AddrInfoAccess;
          CurrAddrInfo  : AddrInfoAccess;
-         ClientMode    : CLientModeEnum:=ClientModeConnecting;
+         ClientMode    : ClientModeEnum:=ClientModeConnecting;
+         LastTime      : Ada.Calendar.Time;
          Port          : PortID;
          NextClient    : access Client;
          LastClient    : access Client;

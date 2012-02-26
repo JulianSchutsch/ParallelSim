@@ -220,7 +220,6 @@ package BSDSockets is
    -- Default Select List, is processed by Process procedure (below)
    DefaultSelectList : aliased SelectList;
 
-   procedure Process;
    procedure Initialize;
    procedure Finalize;
 

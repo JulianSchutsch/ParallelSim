@@ -25,15 +25,16 @@ pragma Ada_2005;
 with Network.Config;
 with Network.Streams;
 with Basics; use Basics;
+with Config;
 
 package SimElement is
 
    procedure Initialize
-     (NetworkImplementation : Network.Config.Implementation_Type;
-      Config                : StringStringMap.Map);
+     (Configuration : Config.Config_Type);
 
    procedure Finalize;
 
-   procedure Process;
+   function Process
+     return boolean;
 
 end SimElement;

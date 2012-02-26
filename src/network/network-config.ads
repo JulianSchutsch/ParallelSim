@@ -44,16 +44,19 @@ package Network.Config is
    type StreamImplementation_Type is
       record
          ImplementationIdentifier : Unbounded_String;
+         Initialize : Network.Streams.InitializeAccess;
+         Finalize   : Network.Streams.FinalizeAccess;
          NewServer  : Network.Streams.ServerConstructor;
          FreeServer : Network.Streams.ServerDestructor;
          NewClient  : Network.Streams.ClientConstructor;
          FreeClient : Network.Streams.ClientDestructor;
-         Process    : Network.Streams.ProcessAccess;
       end record;
 
    type ProcessesImplementation_Type is
       record
          ImplementationIdentifier : Unbounded_String;
+         Initialize  : Network.Processes.InitializeAccess;
+         Finalize    : Network.Processes.FinalizeAccess;
          StoreConfig : Network.Processes.StoreConfigAccess;
          LoadConfig  : Network.Processes.LoadConfigAccess;
          Spawn       : Network.Processes.SpawnAccess;
@@ -61,7 +64,7 @@ package Network.Config is
 
    type Implementation_Type is
       record
-         Stream    : StreamImplementation_Type;
+         Streams   : StreamImplementation_Type;
          Processes : ProcessesImplementation_Type;
       end record;
 
@@ -72,8 +75,8 @@ package Network.Config is
      (ProcessesImplementation : ProcessesImplementation_Type);
 
    function FindImplementation
-     (ModuleName    : Unbounded_String;
-      Configuration : Config_Type)
+     (Configuration : Config_Type;
+      ModuleName    : Unbounded_String)
       return Implementation_Type;
 
    procedure LoadConfiguration

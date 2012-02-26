@@ -25,16 +25,17 @@ pragma Ada_2005;
 with Network.Streams;
 with Network.Config;
 with Basics; use Basics;
+with Config;
 
 package SimControl is
 
    procedure Initialize
-     (NetworkImplementation : Network.Config.Implementation_Type;
-      Config                : StringStringMap.Map);
+     (Configuration : Config.Config_Type);
 
    procedure Finalize;
 
-   procedure Process;
+   function Process
+     return boolean;
 
 private
 
