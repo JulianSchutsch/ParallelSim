@@ -45,6 +45,10 @@ package body SimElement is
    procedure OnConnect
      (Item : in out ContentClientCallBack_Type);
 
+   overriding
+   procedure OnDisconnect
+     (Item : in out ContentClientCallBack_Type);
+
    procedure OnFailedConnect
      (Item  : in out ContentClientCallBack_Type;
       Retry : in out Boolean) is
@@ -53,6 +57,7 @@ package body SimElement is
       New_Line;
       Retry:=True;
    end;
+   ---------------------------------------------------------------------------
 
    procedure OnConnect
      (Item : in out ContentClientCallBack_Type) is
@@ -60,6 +65,15 @@ package body SimElement is
       Put("Connected!");
       New_Line;
    end OnConnect;
+   ---------------------------------------------------------------------------
+
+   procedure OnDisconnect
+     (Item : in out ContentClientCallBack_Type) is
+   begin
+      Put("Disconnected");
+      New_Line;
+   end OnDisconnect;
+   ---------------------------------------------------------------------------
 
    ContentClientCallBack : aliased ContentClientCallBack_Type;
 

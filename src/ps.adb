@@ -26,7 +26,7 @@ with ProgramArguments;
 
 procedure Ps is
 
-   Configuration : Config.Config_Type;
+   Configuration         : Config.Config_Type;
    NetworkImplementation : Network.Config.Implementation_Type;
 
 begin

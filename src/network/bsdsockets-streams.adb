@@ -32,8 +32,6 @@ package body BSDSockets.Streams is
    Servers        : access Server := null;
    Clients        : access Client := null;
 
-   type ServerChannelAccess is access ServerChannel;
-
    -- Procedure called by NewStreamClient to
    --  loop of GetAddrInfo data.
    procedure Next
@@ -108,20 +106,24 @@ package body BSDSockets.Streams is
    end;
    ---------------------------------------------------------------------------
 
+   -- Finalize is called when connection fails
    procedure Finalize
-     (Item : not null access ServerChannel) is
+     (Item : ServerChannelAccess) is
+
+      VarItem : ServerChannelAccess;
 
    begin
 
       BSDSockets.RemoveEntry
         (Entr => Item.SelectEntry'Access);
 
-      BSDSockets.Shutdown
-        (Socket => Item.SelectEntry.Socket,
-         Method => BSDSockets.SD_BOTH);
-
-      BSDSockets.CloseSocket
-        (Socket => Item.SelectEntry.Socket);
+      begin
+         BSDSockets.CloseSocket
+           (Socket => Item.SelectEntry.Socket);
+      exception
+         when BSDSockets.FailedCloseSocket =>
+            null;
+       end;
 
       if Item.LastChannel/=null then
          Item.LastChannel.NextChannel:=Item.NextChannel;
@@ -133,7 +135,49 @@ package body BSDSockets.Streams is
          Item.NextChannel.LastChannel:=Item.LastChannel;
       end if;
 
+      if Item.CallBack/=null then
+         Item.CallBack.OnDisconnect;
+      end if;
+
+      VarItem:=Item;
+
+      Network.Streams.Free(Network.Streams.ChannelClassAccess(VarItem));
+
    end Finalize;
+   ---------------------------------------------------------------------------
+
+   -- Finalize is called when connection fails
+   -- Client is removed from the Client list
+   procedure Finalize
+     (Item : access Client) is
+   begin
+
+      begin
+         BSDSockets.CloseSocket
+           (Socket => Item.SelectEntry.Socket);
+       exception
+          when FailedCloseSocket =>
+            null;
+      end;
+
+      if Item.LastClient/=null then
+         Item.LastClient.NextClient:=Item.NextClient;
+      else
+         Clients:=Item.NextClient;
+      end if;
+
+      if Item.NextClient/=null then
+         Item.NextClient.LastClient:=Item.LastClient;
+      end if;
+
+      Item.LastClient:=null;
+      Item.NextClient:=null;
+
+      if Item.CallBack/=null then
+         Item.CallBack.OnDisconnect;
+      end if;
+
+   end;
    ---------------------------------------------------------------------------
 
    function NewStreamServer
@@ -281,25 +325,12 @@ package body BSDSockets.Streams is
 
       Clie:=ClientAccess(Item);
 
-      BSDSockets.RemoveEntry
-        (Entr => Clie.SelectEntry'Access);
-
       BSDSockets.Shutdown
         (Socket => Clie.SelectEntry.Socket,
          Method => BSDSockets.SD_BOTH);
 
-      BSDSockets.CloseSocket
-        (Socket => Clie.SelectEntry.Socket);
-
-      if Clie.LastClient/=null then
-         Clie.LastClient.NextClient:=Clie.NextClient;
-      else
-         Clients:=Clie.NextClient;
-      end if;
-
-      if Clie.NextClient/=null then
-         Clie.NextClient.LastClient:=Clie.LastClient;
-      end if;
+      Finalize
+        (Item => Clie);
 
       Network.Streams.Free(Item);
    end FreeStreamClient;
@@ -347,14 +378,22 @@ package body BSDSockets.Streams is
 
 
    end AAccept;
-   ---------------------------------------------------------------------------
 
-   procedure Send
-     (Item : access Client) is
+   ---------------------------------------------------------------------------
+   function Send
+     (Item    : access BSDSocketChannel'Class)
+      return Boolean is
 
       SendAmount : Ada.Streams.Stream_Element_Count;
 
    begin
+      if Item.WritePosition=0 then
+         if Item.CallBack/=null then
+            Item.CallBack.OnCanSend;
+         end if;
+         return True;
+      end if;
+
       SendAmount:=BSDSockets.Send
         (Socket => Item.SelectEntry.Socket,
          Data   => Item.WrittenContent(0..Item.WritePosition-1),
@@ -364,11 +403,20 @@ package body BSDSockets.Streams is
         :=Item.WrittenContent(SendAmount..Item.WritePosition-1);
 
       Item.WritePosition := Item.WritePosition - SendAmount;
+
+      return True;
+
+   exception
+
+      when BSDSockets.FailedSend =>
+         return False;
+
    end Send;
    ---------------------------------------------------------------------------
 
-   procedure Recv
-     (Item : access ServerChannel) is
+   function Recv
+     (Item : access BSDSocketChannel'Class)
+      return Boolean is
 
       RecvAmount : Ada.Streams.Stream_Element_Count;
 
@@ -376,18 +424,25 @@ package body BSDSockets.Streams is
       Item.ReceivedContent(0..Item.AmountReceived-Item.ReceivePosition-1)
         :=Item.ReceivedContent(Item.ReceivePosition..Item.AmountReceived-1);
 
-      Item.ReceivePosition:=0;
+      Item.AmountReceived  := Item.AmountReceived-Item.ReceivePosition;
+      Item.ReceivePosition := 0;
 
       RecvAmount:=BSDSockets.Recv
         (Socket => Item.SelectEntry.Socket,
          Data   => Item.ReceivedContent(Item.AmountReceived..Item.ReceivedContent'Last),
          Flags  => BSDSockets.MSG_NONE);
 
-      Item.AmountReceived:=Item.AmountReceived+RecvAmount;
+      Item.AmountReceived := Item.AmountReceived+RecvAmount;
 
       if Item.CallBack/=null then
          Item.CallBack.OnReceive;
       end if;
+      return True;
+
+   exception
+
+      when BSDSockets.FailedRecv =>
+         return False;
 
    end Recv;
    ---------------------------------------------------------------------------
@@ -396,17 +451,25 @@ package body BSDSockets.Streams is
 
       ServerItem        : access Server := Servers;
       ClientItem        : access Client := Clients;
-      ServerChannelItem : access ServerChannel;
+      NextClientItem    : access Client;
+      ServerChannelItem : ServerChannelAccess;
+      NextServerChannelItem : ServerChannelAccess;
 
       use type Ada.Calendar.Time;
+
+      OperationSuccess : Boolean;
 
    begin
 
       while ClientItem/=null loop
 
+         NextClientItem:=ClientItem.NextClient;
+
+         OperationSuccess:=True;
+
          if ClientItem.SelectEntry.Readable then
-            Put("Something to read...");
-            New_Line;
+            OperationSuccess:=OperationSuccess and Recv
+              (Item => ClientItem);
          else
             if ClientItem.ClientMode=ClientModeConnecting then
                -- TODO : Currently a timeout of 1 second is assumed
@@ -419,18 +482,22 @@ package body BSDSockets.Streams is
          end if;
 
          if ClientItem.SelectEntry.Writeable then
-            Send
+            OperationSuccess:=OperationSuccess and Send
               (Item => ClientItem);
          end if;
 
-         ClientItem:=ClientItem.NextClient;
+         if not OperationSuccess then
+            Finalize
+              (Item => ClientItem);
+         end if;
+
+         ClientItem:=NextClientItem;
 
       end loop;
 
       while ServerItem/=null loop
 
          if ServerItem.SelectEntry.Readable then
-            New_Line;
 
             AAccept
               (Item => ServerItem);
@@ -441,12 +508,25 @@ package body BSDSockets.Streams is
 
          while ServerChannelItem/=null loop
 
+            NextServerChannelItem := ServerChannelItem.NextChannel;
+
+            OperationSuccess:=True;
+
             if ServerChannelItem.SelectEntry.Readable then
-               Recv
+               OperationSuccess:=OperationSuccess and Recv
                  (Item => ServerChannelItem);
             end if;
 
-            ServerChannelItem:=ServerChannelItem.NextChannel;
+            if ServerChannelItem.SelectEntry.Writeable then
+               OperationSuccess:=OperationSuccess and Send
+                 (Item => ServerChannelItem);
+            end if;
+
+            if not OperationSuccess then
+               Finalize(ServerChannelItem);
+            end if;
+
+            ServerChannelItem:=NextServerChannelItem;
 
          end loop;
 
@@ -463,6 +543,8 @@ package body BSDSockets.Streams is
    procedure Initialize is
    begin
       if InitializeCount=0 then
+         -- The order here is important since BSDSockets.Process should be
+         -- called before ProcessLoop.Process
          ProcessLoop.Add
            (Proc => DoProcess'Access);
          BSDSockets.Initialize;

@@ -34,6 +34,62 @@ package body SimControl is
    ControlElementNetworkImplementation : Network.Config.Implementation_Type;
    ContentServer                       : Network.Streams.ServerClassAccess;
 
+   type ContentServerChannelCallBack_Type is
+     new Network.Streams.ChannelCallBack with null record;
+
+   type ContentServerChannelCallBack_Access is
+     access all ContentServerChannelCallBack_Type;
+
+   overriding
+   procedure OnCanSend
+     (Item : in out ContentServerChannelCallBack_Type);
+
+   overriding
+   procedure OnReceive
+     (Item : in out ContentServerChannelCallBack_Type);
+
+   overriding
+   procedure OnDisconnect
+     (Item : in out ContentServerChannelCallBack_Type);
+
+   procedure OnCanSend
+     (Item : in out ContentServerChannelCallBack_Type) is
+   begin
+      Put("OnCanSend");
+      New_Line;
+   end OnCanSend;
+
+   procedure OnReceive
+     (Item : in out ContentServerChannelCallBack_Type) is
+   begin
+      Put("OnReceive");
+      New_Line;
+   end OnReceive;
+
+   procedure OnDisconnect
+     (Item : in out ContentServerChannelCallBack_Type) is
+   begin
+      Put("OnDisconnect");
+      New_Line;
+   end OnDisconnect;
+
+   type ContentServerCallBack_Type is
+     new Network.Streams.ServerCallBack with null record;
+
+   overriding
+   procedure OnAccept
+     (Item : in out ContentServerCallBack_Type;
+      Chan : Network.Streams.ChannelClassAccess) is
+
+      NewCallBack : ContentserverChannelCallBack_Access;
+
+   begin
+      NewCallBack:=new ContentServerChannelCallBack_Type;
+      Chan.CallBack:=Network.Streams.ChannelCallBackClassAccess(NewCallBack);
+   end OnAccept;
+
+   ContentServerCallBack : aliased ContentServerCallBack_Type;
+
    procedure Initialize
      (Configuration : Config.Config_Type) is
 
@@ -50,6 +106,8 @@ package body SimControl is
           (Config => Config.GetModuleMap
                (Item => Configuration,
                 Name => To_Unbounded_String("Control.ContentServer.Network")).all);
+
+      ContentServer.CallBack:=ContentServerCallBack'Access;
 
    end Initialize;
    ---------------------------------------------------------------------------

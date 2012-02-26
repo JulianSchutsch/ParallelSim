@@ -104,6 +104,9 @@ package Network.Streams is
          Channel : ChannelClassAccess;
       end record;
 
+   procedure OnCanSend
+     (Item : in out ChannelCallback) is null;
+
    procedure OnReceive
      (Item : in out ChannelCallBack) is null;
 
@@ -116,8 +119,6 @@ package Network.Streams is
    procedure OnFailedConnect
      (Item  : in out ChannelCallBack;
       Retry : in out Boolean) is null;
-   ---------------------------------------------------------------------------
-
    ---------------------------------------------------------------------------
 
    type ServerCallBack;
