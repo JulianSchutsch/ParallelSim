@@ -29,9 +29,7 @@ package body Basics is
    function StringSumHash(id: Unbounded_String) return Ada.Containers.Hash_Type is
       Sum : Ada.Containers.Hash_Type:=0;
    begin
-      Put(id);
-      New_Line;
-      for i in 0..Length(id)-1 loop
+      for i in 1..Length(id) loop
          Sum := Sum+Character'Pos(Element(id,i));
       end loop;
       return Sum;

@@ -24,6 +24,9 @@ with Processes;
 
 with ProgramArguments;
 
+with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
+with Ada.Exceptions; use Ada.Exceptions;
+
 procedure Ps is
 
    Configuration         : Config.Config_Type;
@@ -97,5 +100,14 @@ begin
       Amount  => 1);
 
    NetworkImplementation.Processes.Finalize.all;
+
+exception
+   when E:others =>
+      Put("Exception Name : " & Exception_Name(E));
+      New_Line;
+      Put("Traceback      :");
+      New_Line;
+      Put(Symbolic_TraceBack(E));
+      New_Line;
 
 end Ps;
