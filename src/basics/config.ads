@@ -48,7 +48,7 @@ package Config is
    InvalidName : Exception;
 
    type Config_Type is limited private;
-   type Config_Access is access Config_Type;
+--   type Config_Access is access Config_Type;
 
 --   procedure NewModule
 --     (Item : in out Config_Type;
@@ -88,15 +88,16 @@ private
 
    type Module is
       record
---         Name : Unbounded_String;
---         Map  : aliased StringStringMap.Map;
          Last : ModuleAccess;
          Next : ModuleAccess;
+         Name : Unbounded_String;
+--         Map  : aliased StringStringMap.Map;
       end record;
 
    type Config_Type is limited
       record
-         First : ModuleAccess:=null;
+         --         First : ModuleAccess:=null;
+         null;
       end record;
 
 end Config;
