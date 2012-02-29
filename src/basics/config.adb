@@ -25,6 +25,11 @@ with Ada.Unchecked_Deallocation;
 
 package body Config is
 
+   procedure Nothing is
+   begin
+      null;
+   end Nothing;
+
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Module,
       Name   => ModuleAccess);
@@ -32,10 +37,10 @@ package body Config is
    procedure Debug
      (Item : in out Config_Type) is
 
-      use type StringStringMap.Cursor;
+--      use type StringStringMap.Cursor;
 
       ModuleCursor : ModuleAccess;
-      MapCursor    : StringStringMap.Cursor;
+--      MapCursor    : StringStringMap.Cursor;
 
    begin
       Put("Configuration(Debug):");
@@ -45,21 +50,21 @@ package body Config is
 
          New_Line;
          Put("Module:");
-         Put(ModuleCursor.Name);
+--         Put(ModuleCursor.Name);
          New_Line;
          New_Line;
 
-         MapCursor:=ModuleCursor.Map.First;
-         while MapCursor/=StringStringMap.No_Element loop
+--         MapCursor:=ModuleCursor.Map.First;
+--         while MapCursor/=StringStringMap.No_Element loop
 
-            Put("  ");
-            Put(StringStringMap.Key(MapCursor));
-            Put(" : ");
-            Put(StringStringMap.Element(MapCursor));
-            New_Line;
-            MapCursor:=StringStringMap.Next(MapCursor);
+--            Put("  ");
+--            Put(StringStringMap.Key(MapCursor));
+--            Put(" : ");
+--            Put(StringStringMap.Element(MapCursor));
+--            New_Line;
+--            MapCursor:=StringStringMap.Next(MapCursor);
 
-         end loop;
+--         end loop;
 
          ModuleCursor:=ModuleCursor.Next;
       end loop;
@@ -71,25 +76,26 @@ package body Config is
       Key        : Unbounded_String;
       Value      : Unbounded_String) is
 
-      ModuleMap : access StringStringMap.Map;
+--      ModuleMap : access StringStringMap.Map;
 
    begin
-      ModuleMap:=GetModuleMap
-        (Item => Item,
-         Name => ModuleName);
+--      ModuleMap:=GetModuleMap
+--        (Item => Item,
+--         Name => ModuleName);
 
-      if ModuleMap=null then
-         NewModule
-           (Item => Item,
-            Name => ModuleName);
-         ModuleMap := GetModuleMap
-           (Item => Item,
-            Name => ModuleName);
-      end if;
+--      if ModuleMap=null then
+--         NewModule
+--           (Item => Item,
+--            Name => ModuleName);
+--         ModuleMap := GetModuleMap
+--           (Item => Item,
+--            Name => ModuleName);
+--      end if;
 
-      ModuleMap.Insert
-        (Key => Key,
-         New_Item => Value);
+--      ModuleMap.Insert
+--        (Key => Key,
+--         New_Item => Value);
+null;
 
    end Insert;
    ---------------------------------------------------------------------------
@@ -120,11 +126,11 @@ package body Config is
      (Item     : in out Config_Type;
       FileName : String) is
 
-      use type StringStringMap.Cursor;
+--      use type StringStringMap.Cursor;
 
       File        : Ada.Text_IO.File_Type;
       ModuleCursor : ModuleAccess;
-      MapCursor   : StringStringMap.Cursor;
+--      MapCursor   : StringStringMap.Cursor;
 
    begin
       Ada.Text_IO.Create
@@ -134,26 +140,26 @@ package body Config is
       ModuleCursor:=Item.First;
       while ModuleCursor/=null loop
 
-         Ada.Text_IO.Unbounded_IO.Put_Line
-           (File => File,
-            Item => ModuleCursor.Name);
+--         Ada.Text_IO.Unbounded_IO.Put_Line
+--           (File => File,
+--            Item => ModuleCursor.Name);
 
-         MapCursor:=ModuleCursor.Map.First;
+--         MapCursor:=ModuleCursor.Map.First;
 
-         while MapCursor/=StringStringMap.No_Element loop
+--         while MapCursor/=StringStringMap.No_Element loop
 
-            if StringStringMap.Key(MapCursor)="" then
-               raise InvalidName;
-            end if;
-            Ada.Text_IO.Unbounded_IO.Put_Line
-              (File => File,
-               Item => StringStringMap.Key(MapCursor));
-            Ada.Text_IO.Unbounded_IO.Put_Line
-              (File => File,
-               Item => StringStringMap.Element(MapCursor));
+--            if StringStringMap.Key(MapCursor)="" then
+--               raise InvalidName;
+--            end if;
+--            Ada.Text_IO.Unbounded_IO.Put_Line
+--              (File => File,
+--               Item => StringStringMap.Key(MapCursor));
+--            Ada.Text_IO.Unbounded_IO.Put_Line
+--              (File => File,
+--               Item => StringStringMap.Element(MapCursor));
 
-            MapCursor:=StringStringMap.Next(MapCursor);
-         end loop;
+--            MapCursor:=StringStringMap.Next(MapCursor);
+--         end loop;
          -- Indicate end of map
          Ada.Text_IO.Put_Line
            (File => File,
@@ -180,7 +186,7 @@ package body Config is
       Key        : Unbounded_String;
       Value      : Unbounded_String;
 
-      Map : access StringStringMap.Map;
+--      Map : access StringStringMap.Map;
 
    begin
       Ada.Text_IO.Open
@@ -195,27 +201,27 @@ package body Config is
             Item => ModuleName);
          exit modulloop when ModuleName="";
 
-         NewModule
-           (Item => Item,
-            Name => ModuleName);
+--         NewModule
+--           (Item => Item,
+--            Name => ModuleName);
 
-         Map:=GetModuleMap
-           (Item => Item,
-            Name => ModuleName);
+--         Map:=GetModuleMap
+--           (Item => Item,
+--            Name => ModuleName);
 
-         maploop:
-         loop
-            Ada.Text_IO.Unbounded_IO.Get_Line
-              (File => File,
-               Item => Key);
-            exit maploop when Key="";
-            Ada.Text_IO.Unbounded_IO.Get_Line
-              (File => File,
-               Item => Value);
-            Map.Insert
-              (Key      => Key,
-               New_Item => Value);
-         end loop maploop;
+--         maploop:
+--         loop
+--            Ada.Text_IO.Unbounded_IO.Get_Line
+--              (File => File,
+--               Item => Key);
+--            exit maploop when Key="";
+--            Ada.Text_IO.Unbounded_IO.Get_Line
+--              (File => File,
+--               Item => Value);
+--            Map.Insert
+--              (Key      => Key,
+--               New_Item => Value);
+--         end loop maploop;
 
       end loop modulloop;
 
@@ -237,7 +243,7 @@ package body Config is
          raise InvalidName;
       end if;
       NModul:=new Module;
-      NModul.Name := Name;
+--      NModul.Name := Name;
       NModul.Last := null;
       NModul.Next := Item.First;
       if Item.First/=null then
@@ -248,25 +254,25 @@ package body Config is
    end NewModule;
    ---------------------------------------------------------------------------
 
-   function GetModuleMap
-     (Item : Config_Type;
-      Name : Unbounded_String)
-      return access StringStringMap.Map is
+--   function GetModuleMap
+--     (Item : Config_Type;
+--      Name : Unbounded_String)
+--      return access StringStringMap.Map is
 
-      Cursor : ModuleAccess;
+--      Cursor : ModuleAccess;
 
-   begin
-      Cursor := Item.First;
-      while (Cursor/=null)
-        and then (Cursor.Name/=Name) loop
-         Cursor:=Cursor.Next;
-      end loop;
-      if (Cursor/=null) then
-         return Cursor.Map'Access;
-      else
-         return null;
-      end if;
-   end GetModuleMap;
+--   begin
+--      Cursor := Item.First;
+--      while (Cursor/=null)
+--        and then (Cursor.Name/=Name) loop
+--         Cursor:=Cursor.Next;
+--      end loop;
+--      if (Cursor/=null) then
+--         return Cursor.Map'Access;
+--      else
+--         return null;
+--      end if;
+--   end GetModuleMap;
    ---------------------------------------------------------------------------
 
 end Config;

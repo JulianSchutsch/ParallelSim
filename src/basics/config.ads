@@ -40,7 +40,7 @@
 --    for map keys. Values can be empty names.
 --    Special characters are not permitted at all.
 
-with Basics; use Basics;
+--with Basics; use Basics;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package Config is
@@ -50,34 +50,36 @@ package Config is
    type Config_Type is limited private;
    type Config_Access is access Config_Type;
 
-   procedure NewModule
-     (Item : in out Config_Type;
-      Name : Unbounded_String);
+--   procedure NewModule
+--     (Item : in out Config_Type;
+--      Name : Unbounded_String);
 
-   procedure Insert
-     (Item : in out Config_Type;
-      ModuleName : Unbounded_String;
-      Key        : Unbounded_String;
-      Value      : Unbounded_String);
+--   procedure Insert
+--     (Item : in out Config_Type;
+--      ModuleName : Unbounded_String;
+--      Key        : Unbounded_String;
+--      Value      : Unbounded_String);
 
-   function GetModuleMap
-     (Item : Config_Type;
-      Name : Unbounded_String)
-      return access StringStringMap.Map;
+--   function GetModuleMap
+--     (Item : Config_Type;
+--      Name : Unbounded_String)
+--      return access StringStringMap.Map;
 
-   procedure SaveToFile
-     (Item     : in out Config_Type;
-      FileName : String);
+--   procedure SaveToFile
+--     (Item     : in out Config_Type;
+--      FileName : String);
 
-   procedure LoadFromFile
-     (Item     : in out Config_Type;
-      FileName : String);
+--   procedure LoadFromFile
+--     (Item     : in out Config_Type;
+--      FileName : String);
 
-   procedure Clear
-     (Item : in out Config_Type);
+--   procedure Clear
+--     (Item : in out Config_Type);
 
-   procedure Debug
-     (Item : in out Config_Type);
+--   procedure Debug
+--     (Item : in out Config_Type);
+
+   procedure Nothing;
 
 private
 
@@ -86,8 +88,8 @@ private
 
    type Module is
       record
-         Name : Unbounded_String;
-         Map  : aliased StringStringMap.Map;
+--         Name : Unbounded_String;
+--         Map  : aliased StringStringMap.Map;
          Last : ModuleAccess;
          Next : ModuleAccess;
       end record;
