@@ -18,14 +18,10 @@
 -------------------------------------------------------------------------------
 pragma Ada_2005;
 
-with Ada.Unchecked_Deallocation;
+with Network.Config;
+with Network.Streams;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-
-with SimCommon;
-with Endianess;
-with Types;
 with ProcessLoop;
 
 package body SimRegion is
@@ -52,6 +48,7 @@ package body SimRegion is
    procedure OnFailedConnect
      (Item  : in out ContentClientCallBack_Type;
       Retry : in out Boolean) is
+      pragma Warnings(Off,Item);
    begin
       Put("OnFailedConnect...");
       New_Line;
@@ -61,6 +58,7 @@ package body SimRegion is
 
    procedure OnConnect
      (Item : in out ContentClientCallBack_Type) is
+      pragma Warnings(Off,Item);
    begin
       Put("Connected!");
       New_Line;
@@ -69,6 +67,7 @@ package body SimRegion is
 
    procedure OnDisconnect
      (Item : in out ContentClientCallBack_Type) is
+      pragma Warnings(Off,Item);
    begin
       Put("Disconnected");
       New_Line;

@@ -86,10 +86,10 @@ private
 
    type Module is
       record
-         Name : Ada.Strings.Unbounded.Unbounded_String;
-         Map  : aliased StringStringMap.Map;
          Last : ModuleAccess;
          Next : ModuleAccess;
+         Name : Ada.Strings.Unbounded.Unbounded_String;
+         Map  : aliased StringStringMap.Map;
       end record;
 
    type Config_Type is limited

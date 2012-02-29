@@ -22,9 +22,6 @@
 --     - Original version
 pragma Ada_2005;
 
-with Network.Streams;
-with Network.Config;
-with Basics; use Basics;
 with Config;
 
 package SimControl is

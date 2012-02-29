@@ -119,7 +119,13 @@ package body Processes is
       end if;
 
       Result := CloseHandle(ProcessInfo.hProcess);
+      if Result=0 then
+         raise FailedExecute with "CloseHandle for hProcess failed";
+      end if;
       Result := CloseHandle(ProcessInfo.hThread);
+      if Result=0 then
+         raise FailedExecute with "CloseHandle for hThread failed";
+      end if;
 
       Interfaces.C.Strings.Free(CProgramName);
       Interfaces.C.Strings.Free(CCommandLine);

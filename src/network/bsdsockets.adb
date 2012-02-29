@@ -18,14 +18,13 @@
 -------------------------------------------------------------------------------
 pragma Ada_2012;
 
-with BSDSockets.Thin;
-with Interfaces.C;
 with Interfaces.C.Strings;
+with BSDSockets.Thin;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with System;
-with System.Address_Image;
 with ProcessLoop;
+with Ada.Unchecked_Conversion;
 
 package body BSDSockets is
    use type Interfaces.C.int;
@@ -213,6 +212,7 @@ package body BSDSockets is
       MainCursor  : access SelectEntry:=Sockets.FirstEntry;
       StartCursor : access SelectEntry:=Sockets.FirstEntry;
       MaxSocket   : Interfaces.C.int;
+
    begin
       BSDSockets.Thin.FD_ZERO(ReadSet'Access);
       BSDSockets.Thin.FD_ZERO(WriteSet'Access);
@@ -233,6 +233,10 @@ package body BSDSockets is
                WriteSet        => WriteSet'Access,
                ExceptSet       => null,
                TimeOut         => TimeVal'Access);
+
+            if Result/=0 then
+               raise FailedSelect;
+            end if;
 
             MaxSocket := 1023; -- TODO: TEMP HACK
 

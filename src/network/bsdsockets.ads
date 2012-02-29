@@ -48,11 +48,9 @@
 pragma Ada_2012;
 
 with Interfaces.C;
-with Interfaces.C.Strings;
-with Ada.Unchecked_Conversion;
-with Ada.Streams;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with SysAddrInfo;
+with Ada.Streams;
 
 package BSDSockets is
 
@@ -70,6 +68,7 @@ package BSDSockets is
    FailedSend             : Exception;
    FailedReceive          : Exception;
    FailedRecv             : Exception;
+   FailedSelect           : Exception;
 
    type SocketID is private;
 

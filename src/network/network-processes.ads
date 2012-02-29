@@ -27,7 +27,6 @@
 --   This package provides an implementation for local (single computer)
 --   spawn.
 
-with Basics; use Basics;
 with Config; use Config;
 
 package Network.Processes is

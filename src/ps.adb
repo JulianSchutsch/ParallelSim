@@ -1,28 +1,18 @@
 pragma Ada_2005;
 
-with Endianess;
-with Types;
 with Network;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Text_IO; use Ada.Text_IO;
-with BSDSockets;
-with Basics; use Basics;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-with Network.Streams;
-with Network.Barrier;
 with Network.Config;
-with BSDSockets.Streams;
-with Network.Messages;
-with Network.Processes;
 
-with SimControl;
-with SimRegion;
-with SimAdmin;
+-- These Packets are included to provide implementations implicitly
+pragma Warnings(OFF);
+with BSDSockets.Streams;
+pragma Warnings(ON);
+
 with Config;
 with Processes;
-
-with ProgramArguments;
 
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
@@ -87,6 +77,9 @@ begin
       Configuration => Configuration);
 
    NetworkImplementation.Processes.Initialize.all;
+
+   Config.Debug
+     (Item => Configuration);
 
    NetworkImplementation.Processes.StoreConfig
      (Configuration => Configuration);

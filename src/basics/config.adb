@@ -125,6 +125,8 @@ package body Config is
       File         : Ada.Text_IO.File_Type;
       ModuleCursor : ModuleAccess;
       MapCursor    : StringStringMap.Cursor;
+      Key          : Unbounded_String;
+      Value        : Unbounded_String;
 
    begin
       Ada.Text_IO.Create
@@ -142,15 +144,20 @@ package body Config is
 
          while MapCursor/=StringStringMap.No_Element loop
 
-            if StringStringMap.Key(MapCursor)="" then
+            Key   := StringStringMap.Key(MapCursor);
+            Value := StringStringMap.Element(MapCursor);
+
+            if Key="" then
                raise InvalidName;
             end if;
+
             Ada.Text_IO.Unbounded_IO.Put_Line
               (File => File,
-               Item => StringStringMap.Key(MapCursor));
+               Item => Key);
+
             Ada.Text_IO.Unbounded_IO.Put_Line
               (File => File,
-               Item => StringStringMap.Element(MapCursor));
+               Item => Value);
 
             MapCursor:=StringStringMap.Next(MapCursor);
          end loop;

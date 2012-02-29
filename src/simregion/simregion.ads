@@ -22,9 +22,6 @@
 --     - Original version
 pragma Ada_2005;
 
-with Network.Config;
-with Network.Streams;
-with Basics; use Basics;
 with Config;
 
 package SimRegion is

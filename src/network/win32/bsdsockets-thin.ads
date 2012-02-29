@@ -36,7 +36,6 @@ with Interfaces;
 with Interfaces.C;
 with Interfaces.C.Strings;
 with System;
-with Ada.Streams;
 
 package BSDSockets.Thin is
 

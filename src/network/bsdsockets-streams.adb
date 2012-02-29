@@ -18,9 +18,7 @@
 -------------------------------------------------------------------------------
 pragma Ada_2005;
 
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Exceptions;
 with Network.Config;
 with ProcessLoop;
 
@@ -76,7 +74,7 @@ package body BSDSockets.Streams is
             return;
 
          exception
-            when E:others =>
+            when others =>
                CloseSocket(Socket => Item.SelectEntry.Socket);
          end;
 
@@ -468,7 +466,7 @@ package body BSDSockets.Streams is
          OperationSuccess:=True;
 
          if ClientItem.SelectEntry.Readable then
-            OperationSuccess:=OperationSuccess and Recv
+            OperationSuccess:=Recv
               (Item => ClientItem);
          else
             if ClientItem.ClientMode=ClientModeConnecting then
@@ -513,7 +511,7 @@ package body BSDSockets.Streams is
             OperationSuccess:=True;
 
             if ServerChannelItem.SelectEntry.Readable then
-               OperationSuccess:=OperationSuccess and Recv
+               OperationSuccess:=Recv
                  (Item => ServerChannelItem);
             end if;
 

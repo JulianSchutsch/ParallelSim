@@ -16,16 +16,12 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
-with Ada.Unchecked_Deallocation;
+
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with Ada.Streams;
-
-with Types;
-with Endianess;
-with SimCommon;
+with Network.Streams;
+with Network.Config;
 
 with ProcessLoop;
 
@@ -54,6 +50,7 @@ package body SimControl is
 
    procedure OnCanSend
      (Item : in out ContentServerChannelCallBack_Type) is
+     pragma Warnings(Off,Item);
    begin
       Put("OnCanSend");
       New_Line;
@@ -61,6 +58,7 @@ package body SimControl is
 
    procedure OnReceive
      (Item : in out ContentServerChannelCallBack_Type) is
+      pragma Warnings(Off,Item);
    begin
       Put("OnReceive");
       New_Line;
@@ -68,6 +66,7 @@ package body SimControl is
 
    procedure OnDisconnect
      (Item : in out ContentServerChannelCallBack_Type) is
+      pragma Warnings(Off,Item);
    begin
       Put("OnDisconnect");
       New_Line;
@@ -80,6 +79,7 @@ package body SimControl is
    procedure OnAccept
      (Item : in out ContentServerCallBack_Type;
       Chan : Network.Streams.ChannelClassAccess) is
+      pragma Warnings(Off,Item);
 
       NewCallBack : ContentserverChannelCallBack_Access;
 

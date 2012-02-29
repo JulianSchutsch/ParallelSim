@@ -87,6 +87,13 @@ package body Network.Config is
       while Cursor/=ProcessesImplementationList_Pack.No_Element loop
 
          Implementation:=ProcessesImplementationList_Pack.Element(Cursor);
+         Put("Implementation Id:");
+         Put(To_String(Implementation.ImplementationIdentifier));
+         New_Line;
+         Put("Test ID:");
+         Put(To_String(Identifier));
+         New_Line;
+         New_Line;
          if Implementation.ImplementationIdentifier=Identifier then
             return Implementation;
          end if;
@@ -161,9 +168,7 @@ package body Network.Config is
       use type StringStringMap.Cursor;
 
       ProcessesImplementation : ProcessesImplementation_Type;
-      ImplementationIdentifier : Unbounded_String;
-
-      Cursor : StringStringMap.Cursor;
+      Cursor                  : StringStringMap.Cursor;
 
    begin
 
@@ -174,11 +179,15 @@ package body Network.Config is
          raise ConfigurationTypeParameterMissing;
       end if;
 
+      Put("LOADCONFIG WITH ");
+      Put(To_String(StringStringMap.Element(Cursor)));
+      New_Line;
+
       ProcessesImplementation:=FindProcessesImplementation
         (Identifier => StringStringMap.Element(Cursor));
 
---      ProcessesImplementation.LoadConfig
---        (Configuration => Configuration);
+      ProcessesImplementation.LoadConfig
+        (Configuration => Configuration);
 
    end LoadConfiguration;
    ---------------------------------------------------------------------------

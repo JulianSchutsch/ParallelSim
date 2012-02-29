@@ -25,7 +25,6 @@ pragma Ada_2005;
 
 with Network.Streams;
 with Basics; use Basics;
-with Ada.Unchecked_Deallocation;
 with Ada.Calendar;
 
 package BSDSockets.Streams is

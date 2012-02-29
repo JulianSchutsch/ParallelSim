@@ -28,7 +28,7 @@ abstract project Common is
       "-g",
       "-gnata",
       "-gnatf",
-      ""
+      "-Wall"
      );
 
    Linker_Switches:=();
