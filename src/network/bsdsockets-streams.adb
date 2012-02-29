@@ -564,16 +564,17 @@ package body BSDSockets.Streams is
    end Finalize;
    ---------------------------------------------------------------------------
 
-   StreamImplementation : constant Network.Config.StreamImplementation_Type:=
-     (ImplementationIdentifier => To_Unbounded_String("BSDSockets.Stream"),
-      Initialize => Initialize'Access,
-      Finalize   => Finalize'Access,
-      NewServer  => NewStreamServer'Access,
-      FreeServer => FreeStreamServer'Access,
-      NewClient  => NewStreamClient'Access,
-      FreeClient => FreeStreamClient'Access);
+--   StreamImplementation : constant Network.Config.StreamImplementation_Type:=
+--     (ImplementationIdentifier => To_Unbounded_String("BSDSockets.Stream"),
+--      Initialize => Initialize'Access,
+--      Finalize   => Finalize'Access,
+--      NewServer  => NewStreamServer'Access,
+--      FreeServer => FreeStreamServer'Access,
+--      NewClient  => NewStreamClient'Access,
+--      FreeClient => FreeStreamClient'Access);
 
 begin
-   Network.Config.RegisterStreamImplementation
-     (StreamImplementation => StreamImplementation);
+--   Network.Config.RegisterStreamImplementation
+--     (StreamImplementation => StreamImplementation);
+null;
 end BSDSockets.Streams;

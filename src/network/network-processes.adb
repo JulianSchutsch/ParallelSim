@@ -64,15 +64,16 @@ package body Network.Processes is
    procedure Initialize is null;
    procedure Finalize is null;
 
-   ProcessesImplementation : constant Network.Config.ProcessesImplementation_Type:=
-     (ImplementationIdentifier => To_Unbounded_String("Local"),
-      Initialize               => Initialize'Access,
-      Finalize                 => Finalize'Access,
-      StoreConfig              => StoreConfig'Access,
-      LoadConfig               => LoadConfig'Access,
-      Spawn                    => Spawn'Access);
+--   ProcessesImplementation : constant Network.Config.ProcessesImplementation_Type:=
+--     (ImplementationIdentifier => To_Unbounded_String("Local"),
+--      Initialize               => Initialize'Access,
+--      Finalize                 => Finalize'Access,
+--      StoreConfig              => StoreConfig'Access,
+--      LoadConfig               => LoadConfig'Access,
+--      Spawn                    => Spawn'Access);
 
 begin
-   Network.Config.RegisterProcessImplementation
-     (ProcessesImplementation =>  ProcessesImplementation);
+--   Network.Config.RegisterProcessImplementation
+--     (ProcessesImplementation =>  ProcessesImplementation);
+null;
 end Network.Processes;

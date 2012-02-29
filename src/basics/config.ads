@@ -40,46 +40,44 @@
 --    for map keys. Values can be empty names.
 --    Special characters are not permitted at all.
 
---with Basics; use Basics;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Basics; use Basics;
+with Ada.Strings.Unbounded;-- use Ada.Strings.Unbounded;
 
 package Config is
 
    InvalidName : Exception;
 
    type Config_Type is limited private;
---   type Config_Access is access Config_Type;
+   type Config_Access is access Config_Type;
 
---   procedure NewModule
---     (Item : in out Config_Type;
---      Name : Unbounded_String);
+   procedure NewModule
+     (Item : in out Config_Type;
+      Name : Ada.Strings.Unbounded.Unbounded_String);
 
---   procedure Insert
---     (Item : in out Config_Type;
---      ModuleName : Unbounded_String;
---      Key        : Unbounded_String;
---      Value      : Unbounded_String);
+   procedure Insert
+     (Item : in out Config_Type;
+      ModuleName : Ada.Strings.Unbounded.Unbounded_String;
+      Key        : Ada.Strings.Unbounded.Unbounded_String;
+      Value      : Ada.Strings.Unbounded.Unbounded_String);
 
---   function GetModuleMap
---     (Item : Config_Type;
---      Name : Unbounded_String)
---      return access StringStringMap.Map;
+   function GetModuleMap
+     (Item : Config_Type;
+      Name : Ada.Strings.Unbounded.Unbounded_String)
+      return access StringStringMap.Map;
 
---   procedure SaveToFile
---     (Item     : in out Config_Type;
---      FileName : String);
+   procedure SaveToFile
+     (Item     : in out Config_Type;
+      FileName : String);
 
---   procedure LoadFromFile
---     (Item     : in out Config_Type;
---      FileName : String);
+   procedure LoadFromFile
+     (Item     : in out Config_Type;
+      FileName : String);
 
---   procedure Clear
---     (Item : in out Config_Type);
+   procedure Clear
+     (Item : in out Config_Type);
 
---   procedure Debug
---     (Item : in out Config_Type);
-
-   procedure Nothing;
+   procedure Debug
+     (Item : in out Config_Type);
 
 private
 
@@ -90,14 +88,13 @@ private
       record
          Last : ModuleAccess;
          Next : ModuleAccess;
-         Name : Unbounded_String;
---         Map  : aliased StringStringMap.Map;
+         Name : Ada.Strings.Unbounded.Unbounded_String;
+         Map  : aliased StringStringMap.Map;
       end record;
 
    type Config_Type is limited
       record
-         --         First : ModuleAccess:=null;
-         null;
+         First : ModuleAccess:=null;
       end record;
 
 end Config;

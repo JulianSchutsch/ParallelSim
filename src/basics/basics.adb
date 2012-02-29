@@ -18,7 +18,10 @@
 -- Revision History
 --   2.Feb 2012 Julian Schutsch
 --     - Original version
+
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Basics is
    use type Ada.Containers.Hash_Type;
@@ -26,6 +29,8 @@ package body Basics is
    function StringSumHash(id: Unbounded_String) return Ada.Containers.Hash_Type is
       Sum : Ada.Containers.Hash_Type:=0;
    begin
+      Put(id);
+      New_Line;
       for i in 0..Length(id)-1 loop
          Sum := Sum+Character'Pos(Element(id,i));
       end loop;

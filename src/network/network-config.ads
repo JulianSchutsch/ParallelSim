@@ -37,29 +37,29 @@ package Network.Config is
 
    pragma Elaborate_Body;
 
-   ImplementationNotFound : Exception;
-   InvalidConfiguration   : Exception;
+   ImplementationNotFound            : Exception;
+   InvalidConfiguration              : Exception;
    ConfigurationTypeParameterMissing : Exception;
 
    type StreamImplementation_Type is
       record
-         ImplementationIdentifier : Unbounded_String;
          Initialize : Network.Streams.InitializeAccess;
          Finalize   : Network.Streams.FinalizeAccess;
          NewServer  : Network.Streams.ServerConstructor;
          FreeServer : Network.Streams.ServerDestructor;
          NewClient  : Network.Streams.ClientConstructor;
          FreeClient : Network.Streams.ClientDestructor;
+         ImplementationIdentifier : Unbounded_String;
       end record;
 
    type ProcessesImplementation_Type is
       record
-         ImplementationIdentifier : Unbounded_String;
          Initialize  : Network.Processes.InitializeAccess;
          Finalize    : Network.Processes.FinalizeAccess;
          StoreConfig : Network.Processes.StoreConfigAccess;
          LoadConfig  : Network.Processes.LoadConfigAccess;
          Spawn       : Network.Processes.SpawnAccess;
+         ImplementationIdentifier : Unbounded_String;
       end record;
 
    type Implementation_Type is

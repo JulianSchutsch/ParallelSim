@@ -17,7 +17,7 @@ with Network.Messages;
 with Network.Processes;
 
 with SimControl;
-with SimElement;
+with SimRegion;
 with SimAdmin;
 with Config;
 with Processes;
@@ -33,13 +33,13 @@ begin
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control<->Element.Network"),
+      ModuleName => To_Unbounded_String("Control<->Region.Network"),
       Key        => To_Unbounded_String("StreamImplementation"),
       Value      => To_Unbounded_String("BSDSockets.Stream"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control<->Element.Network"),
+      ModuleName => To_Unbounded_String("Control<->Region.Network"),
       Key        => To_Unbounded_String("ProcessesImplementation"),
       Value      => To_Unbounded_String("Local"));
 
@@ -93,7 +93,7 @@ begin
       Amount  => 1);
 
    NetworkImplementation.Processes.Spawn
-     (Program => "simele" & To_String(Processes.Suffix),
+     (Program => "simreg" & To_String(Processes.Suffix),
       Amount  => 1);
 
    NetworkImplementation.Processes.Finalize.all;

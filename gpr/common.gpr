@@ -12,8 +12,7 @@ abstract project Common is
       Dir & "../src/basics/littleendian", -- Currently no plattform supported has different endianess
       Dir & "../src/network",
       Dir & "../src/simcontrol",
-      Dir & "../src/simelement",
-      Dir & "../src/simlogin",
+      Dir & "../src/simregion",
       Dir & "../src/simadmin");
 
    Object_Directory:=Dir & "../build";
@@ -22,7 +21,6 @@ abstract project Common is
 
    Compiler_Switches:=
      ("-gnato",
-      "-gnatp",
       "-fstack-check",
       "-gnatE",
       "-gnatn",

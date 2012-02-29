@@ -177,8 +177,8 @@ package body Network.Config is
       ProcessesImplementation:=FindProcessesImplementation
         (Identifier => StringStringMap.Element(Cursor));
 
-      ProcessesImplementation.LoadConfig
-        (Configuration => Configuration);
+--      ProcessesImplementation.LoadConfig
+--        (Configuration => Configuration);
 
    end LoadConfiguration;
    ---------------------------------------------------------------------------
