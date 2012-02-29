@@ -18,6 +18,8 @@
 -- Revision History
 --   2.Feb 2012 Julian Schutsch
 --     - Original version
+--  29.Feb 2012 Julian Schutsch
+--     - Fixed range
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;

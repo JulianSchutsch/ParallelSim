@@ -83,7 +83,7 @@ begin
       Value      => To_Unbounded_String("127.0.0.1"));
 
    NetworkImplementation:=Network.Config.FindImplementation
-     (ModuleName    => To_Unbounded_String("Control<->Element.Network"),
+     (ModuleName    => To_Unbounded_String("Control<->Region.Network"),
       Configuration => Configuration);
 
    NetworkImplementation.Processes.Initialize.all;
@@ -104,6 +104,8 @@ begin
 exception
    when E:others =>
       Put("Exception Name : " & Exception_Name(E));
+      New_Line;
+      Put("Message : " & Exception_Message(E));
       New_Line;
       Put("Traceback      :");
       New_Line;

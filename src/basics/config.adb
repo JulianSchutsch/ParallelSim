@@ -122,9 +122,9 @@ package body Config is
 
       use type StringStringMap.Cursor;
 
-      File        : Ada.Text_IO.File_Type;
+      File         : Ada.Text_IO.File_Type;
       ModuleCursor : ModuleAccess;
-      MapCursor   : StringStringMap.Cursor;
+      MapCursor    : StringStringMap.Cursor;
 
    begin
       Ada.Text_IO.Create
