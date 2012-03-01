@@ -101,7 +101,7 @@ package Network.Streams is
 
    type ChannelCallBack is tagged limited
       record
-         Channel : ChannelClassAccess;
+         null;
       end record;
 
    procedure OnCanSend

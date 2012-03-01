@@ -1,20 +1,11 @@
 package SimCommon is
 
-   type NetworkIDString is new String(1..19);
+   type NetworkIDString is new String(1..24);
 
-   NetworkElementID :
-   constant NetworkIDString:="ParallelSimElement ";
+   NetworkContentClientID :
+   constant NetworkIDString:="ParallelSimContentClient";
 
-   NetworkControlID :
-   constant NetworkIDString:="ParallelSimControl ";
-
-   NetworkAdminID :
-   constant NetworkIDString:="ParallelSimAdmin   ";
-
-   NetworkEntranceID :
-   constant NetworkIDString:="ParallelSimEntrance";
-
-   NetworkClientID :
-   constant NetworkIDString:="ParallelSimClient  ";
+   NetworkContentServerID :
+   constant NetworkIDString:="ParallelSimContentServer";
 
 end SimCommon;
