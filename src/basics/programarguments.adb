@@ -97,8 +97,11 @@ package body ProgramArguments is
          New_Line;
       end loop;
    end ProcessArguments;
+   ---------------------------------------------------------------------------
 
+   procedure Initialize is
+   begin
+      ProcessArguments;
+   end Initialize;
 
-begin
-   ProcessArguments;
 end ProgramArguments;

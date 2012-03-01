@@ -9,6 +9,7 @@ with Network.Config;
 -- These Packets are included to provide implementations implicitly
 with BSDSockets.Streams;
 with Network.Processes;
+with ProgramArguments;
 
 with Config;
 with Processes;
@@ -23,6 +24,7 @@ procedure Ps is
 
 begin
 
+   ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
    Network.Processes.Register;
 

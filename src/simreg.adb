@@ -16,6 +16,7 @@ procedure simreg is
    Configuration : Config.Config_Type;
 
 begin
+   ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
    Network.Processes.Register;
 

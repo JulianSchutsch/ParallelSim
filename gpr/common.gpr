@@ -28,6 +28,7 @@ abstract project Common is
       "-gnata",
       "-gnatf",
       "-gnatVn",
+      "-gnatE",
       ""
      );
 

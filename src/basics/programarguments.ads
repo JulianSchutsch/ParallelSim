@@ -22,11 +22,11 @@ with Basics; use Basics;
 
 package ProgramArguments is
 
-   pragma Elaborate_Body;
-
    VariablesMap : StringStringMap.Map;
    Parameters   : StringVector.Vector;
 
    procedure Debug;
+
+   procedure Initialize;
 
 end ProgramArguments;
