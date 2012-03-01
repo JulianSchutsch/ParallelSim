@@ -1,9 +1,9 @@
 with Config;
 with Network.Config;
-pragma Warnings(OFF);
+
 with BSDSockets.Streams;
 with Network.Processes;
-pragma Warnings(ON);
+
 with ProgramArguments;
 with SimRegion;
 
@@ -16,6 +16,9 @@ procedure simreg is
    Configuration : Config.Config_Type;
 
 begin
+   BSDSockets.Streams.Register;
+   Network.Processes.Register;
+
    ProgramArguments.Debug;
 
    Network.Config.LoadConfiguration

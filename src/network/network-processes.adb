@@ -70,7 +70,10 @@ package body Network.Processes is
       LoadConfig               => LoadConfig'Access,
       Spawn                    => Spawn'Access);
 
-begin
-   Network.Config.RegisterProcessImplementation
-     (ProcessesImplementation =>  ProcessesImplementation);
+   procedure Register is
+   begin
+      Network.Config.RegisterProcessImplementation
+        (ProcessesImplementation =>  ProcessesImplementation);
+   end Register;
+
 end Network.Processes;

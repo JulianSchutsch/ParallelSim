@@ -82,7 +82,7 @@ package body SimRegion is
       ControlRegionNetworkImplementation
         :=Network.Config.FindImplementation
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Control<->Element.Network"));
+           ModuleName    => To_Unbounded_String("Control<->Region.Network"));
 
       ControlRegionNetworkImplementation.Streams.Initialize.all;
 

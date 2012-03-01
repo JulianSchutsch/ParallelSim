@@ -27,7 +27,7 @@ package body BSDSockets.Streams is
    use type Network.Streams.ChannelCallBackClassAccess;
    use type Ada.Streams.Stream_Element_Offset;
 
-   Servers        : access Server := null;
+   Servers        : ServerAccess  := null;
    Clients        : access Client := null;
 
    -- Procedure called by NewStreamClient to
@@ -97,6 +97,7 @@ package body BSDSockets.Streams is
               (AddrInfo => Item.CurrAddrInfo);
          else
             Item.CurrAddrInfo:=Item.FirstAddrInfo;
+            Item.LastTime:=Ada.Calendar.Clock;
          end if;
 
       end if;
@@ -335,7 +336,7 @@ package body BSDSockets.Streams is
    ---------------------------------------------------------------------------
 
    procedure AAccept
-     (Item : not null access Server) is
+     (Item : not null ServerAccess) is
 
       NewSock          : BSDSockets.SocketID;
       NewServerChannel : ServerChannelAccess;
@@ -355,7 +356,7 @@ package body BSDSockets.Streams is
 
       NewServerChannel                    := new ServerChannel(Max=>1023);
       NewServerChannel.SelectEntry.Socket := NewSock;
-      NewServerChannel.Server             := ServerAccess(Item);
+      NewServerChannel.Server             := Item;
       NewServerChannel.NextChannel        := Item.FirstChannel;
       NewServerChannel.LastChannel        := null;
 
@@ -447,7 +448,7 @@ package body BSDSockets.Streams is
 
    procedure DoProcess is
 
-      ServerItem        : access Server := Servers;
+      ServerItem        : ServerAccess  := Servers;
       ClientItem        : access Client := Clients;
       NextClientItem    : access Client;
       ServerChannelItem : ServerChannelAccess;
@@ -547,7 +548,7 @@ package body BSDSockets.Streams is
            (Proc => DoProcess'Access);
          BSDSockets.Initialize;
       end if;
-      InitializeCount:=InitializeCount-1;
+      InitializeCount:=InitializeCount+1;
    end Initialize;
    ---------------------------------------------------------------------------
 
@@ -571,7 +572,11 @@ package body BSDSockets.Streams is
       NewClient  => NewStreamClient'Access,
       FreeClient => FreeStreamClient'Access);
 
-begin
-   Network.Config.RegisterStreamImplementation
-     (StreamImplementation => StreamImplementation);
+
+   procedure Register is
+   begin
+      Network.Config.RegisterStreamImplementation
+        (StreamImplementation => StreamImplementation);
+   end Register;
+
 end BSDSockets.Streams;

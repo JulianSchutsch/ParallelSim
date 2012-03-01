@@ -1,9 +1,7 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
-pragma Warnings(OFF);
 with BSDSockets.Streams;
 with Network.Processes;
-pragma Warnings(ON);
 
 with Network.Config;
 with Config;
@@ -18,6 +16,10 @@ procedure SimCtr is
    Configuration : Config.Config_Type;
 
 begin
+
+   BSDSockets.Streams.Register;
+   Network.Processes.Register;
+
    ProgramArguments.Debug;
 
    Network.Config.LoadConfiguration

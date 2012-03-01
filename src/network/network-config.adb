@@ -21,6 +21,7 @@ with Ada.Containers.Doubly_Linked_Lists;
 with Basics; use Basics;
 with ProgramArguments;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
 
 package body Network.Config is
 
@@ -82,6 +83,9 @@ package body Network.Config is
       Implementation : ProcessesImplementation_Type;
 
    begin
+
+      Put(Identifier);
+
       Cursor:=ProcessesImplementationList.First;
 
       while Cursor/=ProcessesImplementationList_Pack.No_Element loop

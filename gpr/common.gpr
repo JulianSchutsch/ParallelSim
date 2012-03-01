@@ -22,13 +22,13 @@ abstract project Common is
    Compiler_Switches:=
      ("-gnato",
       "-fstack-check",
-      "-gnatE",
       "-gnatn",
       "-funroll-loops",
       "-g",
       "-gnata",
       "-gnatf",
-      "-Wall"
+      "-gnatVn",
+      ""
      );
 
    Linker_Switches:=();

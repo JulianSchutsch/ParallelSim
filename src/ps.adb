@@ -7,9 +7,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Network.Config;
 
 -- These Packets are included to provide implementations implicitly
-pragma Warnings(OFF);
 with BSDSockets.Streams;
-pragma Warnings(ON);
+with Network.Processes;
 
 with Config;
 with Processes;
@@ -23,6 +22,9 @@ procedure Ps is
    NetworkImplementation : Network.Config.Implementation_Type;
 
 begin
+
+   BSDSockets.Streams.Register;
+   Network.Processes.Register;
 
    Config.Insert
      (Item       => Configuration,

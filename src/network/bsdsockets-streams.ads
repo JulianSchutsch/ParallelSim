@@ -52,6 +52,8 @@ package BSDSockets.Streams is
      (Item : in out Network.Streams.ServerClassAccess);
    ---------------------------------------------------------------------------
 
+   procedure Register;
+
 private
 
    type BSDSocketChannel is new Network.Streams.Channel with
@@ -74,8 +76,8 @@ private
    type Server is new Network.Streams.Server with
       record
          SelectEntry  : aliased BSDSockets.SelectEntry;
-         NextServer   : access Server;
-         LastServer   : access Server;
+         NextServer   : ServerAccess;
+         LastServer   : ServerAccess;
          FirstChannel : ServerChannelAccess;
       end record;
    ---------------------------------------------------------------------------

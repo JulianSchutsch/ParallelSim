@@ -64,4 +64,6 @@ package Network.Processes is
    procedure LoadConfig
      (Configuration : in out Config_Type);
 
+   procedure Register;
+
 end Network.Processes;
