@@ -45,6 +45,8 @@ with Ada.Strings.Unbounded;-- use Ada.Strings.Unbounded;
 
 package Config is
 
+   pragma Elaborate_Body;
+
    InvalidName : Exception;
 
    type Config_Type is limited private;
@@ -86,10 +88,10 @@ private
 
    type Module is
       record
-         Last : ModuleAccess;
-         Next : ModuleAccess;
          Name : Ada.Strings.Unbounded.Unbounded_String;
          Map  : aliased StringStringMap.Map;
+         Last : ModuleAccess:=null;
+         Next : ModuleAccess:=null;
       end record;
 
    type Config_Type is limited

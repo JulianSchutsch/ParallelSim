@@ -54,16 +54,4 @@ package Network.Processes is
    type FinalizeAccess is
      access procedure;
 
-   procedure Spawn
-     (Program : String;
-      Amount  : Positive);
-
-   procedure StoreConfig
-     (Configuration : in out Config_Type);
-
-   procedure LoadConfig
-     (Configuration : in out Config_Type);
-
-   procedure Register;
-
 end Network.Processes;

@@ -70,6 +70,7 @@ package body SimRegion is
 
    procedure OnReceive
      (Item : in out ContentClientCallBack_Type) is
+      pragma Warnings(Off,Item);
 
       use type SimCommon.NetworkIDString;
 
@@ -115,6 +116,7 @@ package body SimRegion is
 
    procedure OnCanSend
      (Item : in out ContentClientCallBack_Type) is
+      pragma Warnings(Off,Item);
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
 

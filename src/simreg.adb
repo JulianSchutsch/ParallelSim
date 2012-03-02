@@ -2,10 +2,11 @@ with Config;
 with Network.Config;
 
 with BSDSockets.Streams;
-with Network.Processes;
+with Network.Processes.Local;
 
 with ProgramArguments;
 with SimRegion;
+with Processes;
 
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
@@ -16,9 +17,10 @@ procedure simreg is
    Configuration : Config.Config_Type;
 
 begin
+   Processes.Initialize;
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
-   Network.Processes.Register;
+   Network.Processes.Local.Register;
 
    ProgramArguments.Debug;
 

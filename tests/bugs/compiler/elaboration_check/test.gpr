@@ -1,36 +1,45 @@
-with "common.gpr";
-
-project Simple is
+project Test is
 
    for Source_Dirs use
-     Common.Source_Directories;
+     (".");
 
    for Object_Dir use
-     Common.Object_Directory;
+     ".";
 
    for Exec_Dir use
-     Common.Exec_Directory;
+     ".";
 
    for Main use
-     ("simple.adb");
+     ("test.adb");
 
    for Languages use
      ("Ada");
 
    package Compiler is
       for Default_Switches ("ada") use
-        Common.Compiler_Switches;
+        ("-gnato",
+         "-fstack-check",
+         "-gnatn",
+         "-g",
+         "-gnata",
+         "-gnatf",
+         "-gnatVn",
+         "-gnatE",
+         "-Wall",
+         "-fno-inline",
+         "-O0"
+        );
 
    end Compiler;
 
    package Linker is
       for Default_Switches ("ada") use
-        Common.Linker_Switches;
+         ();
    end Linker;
 
    package Binder is
       for Default_Switches ("ada") use
-        Common.Binder_Switches;
+        ("-E");
    end Binder;
 
-end Simple;
+end Test;

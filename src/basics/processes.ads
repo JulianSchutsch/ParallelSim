@@ -30,10 +30,12 @@ package Processes is
 
    FailedExecute : Exception;
 
-   Suffix : Unbounded_String:=To_Unbounded_String("");
+   Suffix : Unbounded_String;
 
    procedure Execute
      (ProgramName : String;
       Arguments   : String);
+
+   procedure Initialize;
 
 end Processes;

@@ -50,6 +50,8 @@ with Basics; use Basics;
 
 package Network.Streams is
 
+   pragma Elaborate_Body;
+
    StreamOverflow : Exception;
    IncompleteData   : Exception;
    InvalidData      : Exception;
@@ -74,7 +76,7 @@ package Network.Streams is
          AmountReceived  : Stream_Element_Count;
          WrittenContent  : aliased Stream_Element_Array(0..Max);
          WritePosition   : Stream_Element_Offset;
-         CallBack        : ChannelCallBackClassAccess;
+         CallBack        : ChannelCallBackClassAccess:=null;
       end record;
 
    type ChannelClassAccess is access all Channel'Class;
@@ -126,7 +128,7 @@ package Network.Streams is
 
    type Server is abstract tagged
       record
-         CallBack : ServerCallBackClassAccess;
+         CallBack : ServerCallBackClassAccess:=null;
       end record;
    type ServerClassAccess is access all Server'Class;
 

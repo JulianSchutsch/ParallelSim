@@ -28,10 +28,12 @@
 --   This package allows selecting of arbitrary implementations using
 --   only configuration data (Config_Type).
 
+pragma Ada_2005;
+
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Network.Streams;
 with Network.Processes;
 with Config; use Config;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package Network.Config is
 
@@ -41,23 +43,23 @@ package Network.Config is
 
    type StreamImplementation_Type is
       record
-         Initialize : Network.Streams.InitializeAccess;
-         Finalize   : Network.Streams.FinalizeAccess;
-         NewServer  : Network.Streams.ServerConstructor;
-         FreeServer : Network.Streams.ServerDestructor;
-         NewClient  : Network.Streams.ClientConstructor;
-         FreeClient : Network.Streams.ClientDestructor;
          ImplementationIdentifier : Unbounded_String;
+         Initialize : Network.Streams.InitializeAccess:=null;
+         Finalize   : Network.Streams.FinalizeAccess:=null;
+         NewServer  : Network.Streams.ServerConstructor:=null;
+         FreeServer : Network.Streams.ServerDestructor:=null;
+         NewClient  : Network.Streams.ClientConstructor:=null;
+         FreeClient : Network.Streams.ClientDestructor:=null;
       end record;
 
    type ProcessesImplementation_Type is
       record
-         Initialize  : Network.Processes.InitializeAccess;
-         Finalize    : Network.Processes.FinalizeAccess;
-         StoreConfig : Network.Processes.StoreConfigAccess;
-         LoadConfig  : Network.Processes.LoadConfigAccess;
-         Spawn       : Network.Processes.SpawnAccess;
          ImplementationIdentifier : Unbounded_String;
+         Initialize  : Network.Processes.InitializeAccess:=null;
+         Finalize    : Network.Processes.FinalizeAccess:=null;
+         StoreConfig : Network.Processes.StoreConfigAccess:=null;
+         LoadConfig  : Network.Processes.LoadConfigAccess:=null;
+         Spawn       : Network.Processes.SpawnAccess:=null;
       end record;
 
    type Implementation_Type is

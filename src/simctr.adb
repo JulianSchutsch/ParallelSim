@@ -1,12 +1,13 @@
 with Ada.Text_IO; use Ada.Text_IO;
 
 with BSDSockets.Streams;
-with Network.Processes;
+with Network.Processes.Local;
 
 with Network.Config;
 with Config;
 with ProgramArguments;
 with SimControl;
+with Processes;
 
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
@@ -16,9 +17,10 @@ procedure SimCtr is
    Configuration : Config.Config_Type;
 
 begin
+   Processes.Initialize;
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
-   Network.Processes.Register;
+   Network.Processes.Local.Register;
 
    ProgramArguments.Debug;
 

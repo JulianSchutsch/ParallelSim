@@ -23,13 +23,14 @@ abstract project Common is
      ("-gnato",
       "-fstack-check",
       "-gnatn",
-      "-funroll-loops",
       "-g",
       "-gnata",
       "-gnatf",
       "-gnatVn",
       "-gnatE",
-      ""
+      "-Wall",
+      "-fno-inline",
+      "-O0"
      );
 
    Linker_Switches:=();
