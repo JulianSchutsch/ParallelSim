@@ -3,7 +3,7 @@
 ------------------------------------------------------------------------------
 
 -- Reason for test:
---   Weird behaviour of Unbounded_String was noticed in combination wth
+--   Weird behaviour of Unbounded_String was noticed in combination with
 --   elaboration checks.
 --   This program is the smallest program so far which reproduces this.
 
