@@ -60,7 +60,7 @@ procedure Test is
    begin
 
       TestSub
-        (Identifier => Basics.ReturnSomeString(1000));
+        (Identifier => Basics.ReturnSomeString);
 
    end Test;
    ---------------------------------------------------------------------------
