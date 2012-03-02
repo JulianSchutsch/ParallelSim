@@ -43,6 +43,7 @@
 --
 --   Which are assigned to a callback entry in Server or Channel by the
 --   using component (for example when OnAccept is called).
+pragma Ada_2005;
 
 with Ada.Streams; use Ada.Streams;
 with Ada.Unchecked_Deallocation;

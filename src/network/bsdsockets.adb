@@ -57,11 +57,11 @@ package body BSDSockets is
      (Source => System.Address,
       Target => AddrInfoAccess);
 
-   function Recv
+   procedure Recv
      (Socket : SocketID;
       Data   : in out Ada.Streams.Stream_Element_Array;
-      Flags  : SendEnum)
-      return Ada.Streams.Stream_Element_Count is
+      Flags  : SendEnum;
+      Read   : out Ada.Streams.Stream_Element_Count) is
 
       Result : Interfaces.C.int;
 
@@ -76,15 +76,15 @@ package body BSDSockets is
          raise FailedRecv;
       end if;
 
-      return Ada.Streams.Stream_Element_Count(Result);
+      Read := Ada.Streams.Stream_Element_Count(Result);
    end Recv;
    ---------------------------------------------------------------------------
 
-   function Send
+   procedure Send
      (Socket : SocketID;
       Data   : Ada.Streams.Stream_Element_Array;
-      Flags  : SendEnum)
-      return Ada.Streams.Stream_Element_Count is
+      Flags  : SendEnum;
+      Send   : out Ada.Streams.Stream_Element_Count) is
 
       Result : Interfaces.C.int;
 
@@ -99,7 +99,7 @@ package body BSDSockets is
          raise FailedSend;
       end if;
 
-      return Ada.Streams.Stream_Element_Count(Result);
+      Send := Ada.Streams.Stream_Element_Count(Result);
    end;
    ---------------------------------------------------------------------------
 
@@ -178,11 +178,11 @@ package body BSDSockets is
    end ToString;
    ---------------------------------------------------------------------------
 
-   function AAccept
-     (Socket : SocketID;
-      Host   : out Unbounded_String;
-      Port   : out PortID)
-      return SocketID is
+   procedure AAccept
+     (Socket    : SocketID;
+      Host      : out Unbounded_String;
+      Port      : out PortID;
+      NewSocket : out SocketID) is
 
       Result  : Interfaces.C.int;
       Addr    : aliased SockAddr;
@@ -199,7 +199,7 @@ package body BSDSockets is
       if Result=-1 then
          raise FailedAccept;
       end if;
-      return SocketID(Result);
+      NewSocket := SocketID(Result);
    end AAccept;
    ---------------------------------------------------------------------------
 

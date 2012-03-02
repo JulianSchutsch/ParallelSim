@@ -44,8 +44,7 @@
 --   1024 sockets on unix plattforms.
 --   On windows many select calls are generated to test for an arbitrary
 --   number of active sockets.
-
-pragma Ada_2012;
+pragma Ada_2005;
 
 with Interfaces.C;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -170,10 +169,11 @@ package BSDSockets is
       AddrInfo : not null AddrInfoAccess;
       Port     : PortID);
 
-   function AAccept
-     (Socket : SocketID;
-      Host   : out Unbounded_String;
-      Port   : out PortID) return SocketID;
+   procedure AAccept
+     (Socket    : SocketID;
+      Host      : out Unbounded_String;
+      Port      : out PortID;
+      NewSocket : out SocketID);
 
    procedure CloseSocket
      (Socket : SocketID);
@@ -189,17 +189,17 @@ package BSDSockets is
       Host          : String)
       return AddrInfoAccess;
 
-   function Send
+   procedure Send
      (Socket : SocketID;
       Data   : Ada.Streams.Stream_Element_Array;
-      Flags  : SendEnum)
-      return Ada.Streams.Stream_Element_Count;
+      Flags  : SendEnum;
+      Send   : out Ada.Streams.Stream_Element_Count);
 
-   function Recv
+   procedure Recv
      (Socket : SocketID;
       Data   : in out Ada.Streams.Stream_Element_Array;
-      Flags  : SendEnum)
-      return Ada.Streams.Stream_Element_Count;
+      Flags  : SendEnum;
+      Read   : out Ada.Streams.Stream_Element_Count);
 
    procedure FreeAddrInfo
      (AddrInfo: not null AddrInfoAccess);

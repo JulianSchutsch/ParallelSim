@@ -31,6 +31,7 @@
 --   This file should ONLY be used by the package BSDSockets.
 --   The folder containing this file should be win32 specific and be included
 --   in the build process only on win32 systems.
+pragma Ada_2005;
 
 with Interfaces;
 with Interfaces.C;

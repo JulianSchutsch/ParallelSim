@@ -17,6 +17,8 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
+pragma Ada_2005;
+
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Ada.Text_IO; use Ada.Text_IO;

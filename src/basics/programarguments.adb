@@ -20,6 +20,9 @@
 -- Revision History
 --   15.Feb 2012 Julian Schutsch
 --     - Original version
+
+pragma Ada_2005;
+
 with Ada.Command_Line;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 With Ada.Text_IO; use Ada.Text_IO;

@@ -345,10 +345,11 @@ package body BSDSockets.Streams is
 
    begin
 
-      NewSock := BSDSockets.AAccept
-        (Socket => Item.SelectEntry.Socket,
-         Host   => Host,
-         Port   => Port);
+      BSDSockets.AAccept
+        (Socket    => Item.SelectEntry.Socket,
+         Host      => Host,
+         Port      => Port,
+         NewSocket => NewSock);
 
       Put("NewSock");
       Put(BSDSockets.ToString(NewSock));
@@ -393,10 +394,11 @@ package body BSDSockets.Streams is
          return True;
       end if;
 
-      SendAmount:=BSDSockets.Send
+      BSDSockets.Send
         (Socket => Item.SelectEntry.Socket,
          Data   => Item.WrittenContent(0..Item.WritePosition-1),
-         Flags  => BSDSockets.MSG_NONE);
+         Flags  => BSDSockets.MSG_NONE,
+         Send   => SendAmount);
 
       Item.WrittenContent(0..Item.WritePosition-SendAmount-1)
         :=Item.WrittenContent(SendAmount..Item.WritePosition-1);
@@ -426,10 +428,11 @@ package body BSDSockets.Streams is
       Item.AmountReceived  := Item.AmountReceived-Item.ReceivePosition;
       Item.ReceivePosition := 0;
 
-      RecvAmount:=BSDSockets.Recv
+      BSDSockets.Recv
         (Socket => Item.SelectEntry.Socket,
          Data   => Item.ReceivedContent(Item.AmountReceived..Item.ReceivedContent'Last),
-         Flags  => BSDSockets.MSG_NONE);
+         Flags  => BSDSockets.MSG_NONE,
+         Read   => RecvAmount);
 
       Item.AmountReceived := Item.AmountReceived+RecvAmount;
 
