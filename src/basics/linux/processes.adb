@@ -64,4 +64,9 @@ package body Processes is
       end if;
    end Execute;
 
+   procedure Initialize is
+   begin
+      null;
+   end Initialize;
+
 end Processes;

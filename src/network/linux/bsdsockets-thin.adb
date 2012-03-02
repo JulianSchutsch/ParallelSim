@@ -21,13 +21,6 @@
 --   27.Jan 2012 Julian Schutsch
 --     - Original version
 
-with Interfaces;
-with Interfaces.C;
-with Interfaces.C.Strings;
-with System;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-
 package body BSDSockets.Thin is
    use type Interfaces.C.int;
 
