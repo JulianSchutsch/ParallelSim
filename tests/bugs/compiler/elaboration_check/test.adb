@@ -8,12 +8,14 @@
 --   This program is the smallest program so far which reproduces this.
 
 -- Noticed not to work with:
--- 1. Plattform : Windows 7
---    Compiler  : GNAT GPL 2011 (20110428)
+--   1. Plattform : Windows 7
+--      Compiler  : GNAT GPL 2011 (20110428)
 
 -- Noticed to work with:
 --   1. Plattform : Debian
 --      Compiler  : GNAT GPL 2011 (20110419)
+--   2. Plattform : Windows 7
+--      Compiler  : GNAT GPL 2010 (20100603)
 
 -- Settings used:
 --   Please read test.gpr
