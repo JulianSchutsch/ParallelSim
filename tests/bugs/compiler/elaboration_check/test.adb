@@ -7,11 +7,13 @@
 --   elaboration checks.
 --   This program is the smallest program so far which reproduces this.
 
--- Compilers used:
---   GNAT GPL 2011 (20110428)
+-- Noticed not to work with:
+-- 1. Plattform : Windows 7
+--    Compiler  : GNAT GPL 2011 (20110428)
 
--- Plattforms used:
---   Windows 7
+-- Noticed to work with:
+--   1. Plattform : Debian
+--      Compiler  : GNAT GPL 2011 (20110419)
 
 -- Settings used:
 --   Please read test.gpr
