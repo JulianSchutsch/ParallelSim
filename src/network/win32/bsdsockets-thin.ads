@@ -163,6 +163,14 @@ package BSDSockets.Thin is
       return Interfaces.C.int;
    pragma Import(StdCall,Shutdown,"shutdown");
 
+   procedure SetSockOpt
+     (Socket : SocketID;
+      Level  : Interfaces.C.int;
+      OptName : Interfaces.C.int;
+      OptVal  : System.Address;
+      OptLen  : Interfaces.C.int);
+   pragma Import(StdCall,SetSockOpt,"setsockopt");
+
    procedure FD_SET
      (Socket : SocketID;
       Set    : access fd_set_struct);

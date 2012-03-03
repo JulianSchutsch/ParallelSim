@@ -354,8 +354,16 @@ package body BSDSockets is
       Addr   : aliased SockAddr_In6;
       Result : Interfaces.C.int;
       HostPtr : aliased Interfaces.C.Strings.chars_ptr;
+      lPos : Interfaces.C.int;
 
    begin
+
+--      BSDSockets.Thin.SetSockOpt
+--        (Socket => Socket,
+--         Level  => 1,
+--         OptName => 1,
+--         OptVal => lPos'Address,
+--         OptLen => Interfaces.C.int'Size/8);
 
       HostPtr:=Interfaces.C.Strings.New_String(Host);
 
