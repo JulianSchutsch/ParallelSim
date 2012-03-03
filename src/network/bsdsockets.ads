@@ -256,9 +256,12 @@ private
       end record;
    pragma Convention(C,SockAddr_In);
 
+   type ByteArray is array(Integer range <>) of Interfaces.Unsigned_8;
+   pragma Convention(C,ByteArray);
+
    type In_Addr6 is
       record
-         s6_addr:Interfaces.C.char_array(0..15);
+         s6_addr:ByteArray(0..15);
       end record;
    pragma Convention(C,In_Addr6);
 

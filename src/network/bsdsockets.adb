@@ -356,6 +356,9 @@ package body BSDSockets is
       HostPtr : aliased Interfaces.C.Strings.chars_ptr;
 
    begin
+      for i in 0..15 loop
+         Addr.sin6_addr.s6_addr(i):=0;
+      end loop;
 
 --      BSDSockets.Thin.SetSockOpt
 --        (Socket => Socket,
@@ -387,7 +390,7 @@ package body BSDSockets is
       Addr.sin6_flowinfo := 0;
       Addr.sin6_scope_id := 0;
       for i in 0..15 loop
-         Put(Character'Pos(Interfaces.C.To_Ada(Addr.sin6_addr.s6_addr(Interfaces.C.size_t(i)))));
+         Put(Integer(Addr.sin6_addr.s6_addr(i)));
       end loop;
       New_Line;
 
