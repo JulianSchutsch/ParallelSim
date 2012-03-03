@@ -4,7 +4,8 @@ abstract project Common is
 
    OS : OS_Type := external("OS","Linux");
 
-   Dir := Common'Project_Dir & "/";
+--   Dir := Common'Project_Dir & "/";
+   Dir := "";
 
    Source_Directories:=
      (Dir & "../src",
@@ -57,5 +58,7 @@ abstract project Common is
              Dir & "../src/basics/linux");
 
    end case;
+
+   for Source_Dirs use ();
 
 end Common;

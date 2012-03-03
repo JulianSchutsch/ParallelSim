@@ -16,7 +16,7 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
-pragma Ada_2012;
+pragma Ada_2005;
 
 with Interfaces.C.Strings;
 with BSDSockets.Thin;
@@ -384,6 +384,8 @@ package body BSDSockets is
                                    Name    => Addr'Access,
                                    NameLen => Addr'Size/8);
       if Result/=0 then
+         Put("Error Codes");
+         Put(Integer(Result));
          Put(Integer(BSDSockets.Thin.Error));
          New_Line;
          raise FailedBind;
