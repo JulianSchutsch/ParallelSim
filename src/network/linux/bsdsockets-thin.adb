@@ -21,14 +21,15 @@
 --   27.Jan 2012 Julian Schutsch
 --     - Original version
 
+pragma Ada_2005;
+with System.OS_Lib;
+
 package body BSDSockets.Thin is
    use type Interfaces.C.int;
 
    function Error return Interfaces.C.int is
    begin
-      return 0; -- errors are of course still possible, but i am not sure how
-                -- to implement them on linux yet... (this is just a quick debug help
-                -- which must disappear
+      return Interfaces.C.int(System.OS_Lib.Errno);
    end Error;
    ---------------------------------------------------------------------------
 
