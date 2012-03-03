@@ -14,7 +14,7 @@ with ProgramArguments;
 with Config;
 with Processes;
 
-with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
+--with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
 
 procedure Ps is
@@ -105,9 +105,9 @@ exception
       New_Line;
       Put("Message : " & Exception_Message(E));
       New_Line;
-      Put("Traceback      :");
-      New_Line;
-      Put(Symbolic_TraceBack(E));
-      New_Line;
+--      Put("Traceback      :");
+--      New_Line;
+--      Put(Symbolic_TraceBack(E));
+--      New_Line;
 
 end Ps;
