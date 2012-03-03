@@ -351,10 +351,9 @@ package body BSDSockets is
       Family : AddressFamilyEnum;
       Host   : String := "") is
 
-      Addr   : aliased SockAddr_In6;
-      Result : Interfaces.C.int;
+      Addr    : aliased SockAddr_In6;
+      Result  : Interfaces.C.int;
       HostPtr : aliased Interfaces.C.Strings.chars_ptr;
-      lPos : Interfaces.C.int;
 
    begin
 
@@ -387,6 +386,10 @@ package body BSDSockets is
         (Interfaces.C.unsigned_short(Port));
       Addr.sin6_flowinfo := 0;
       Addr.sin6_scope_id := 0;
+      for i in 0..15 loop
+         Put(Character'Pos(Interfaces.C.To_Ada(Addr.sin6_addr.s6_addr(Interfaces.C.size_t(i)))));
+      end loop;
+      New_Line;
 
       Result:=BSDSockets.Thin.Bind(Socket  => Interfaces.C.int(Socket),
                                    Name    => Addr'Access,
