@@ -14,29 +14,13 @@ with Processes;
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
 
-with Config.Implementations;
-
 procedure Ps is
-
-   type Implementation_Type is
-      record
-         a: Integer;
-      end record;
-
-   package MyImplements is new Config.Implementations
-     (Implementation_Type => Implementation_Type,
-      IdentifierKey       => To_Unbounded_String("MyImpl"));
 
    Configuration         : Config.Config_Type;
 
    ProcessesImplementation : Network.Processes.Implementation_Type;
-   Test: constant Implementation_Type:=(a => 1);
 
 begin
-
-   MyImplements.Register
-     (To_Unbounded_String("Test"),
-      Test);
 
    Processes.Initialize;
    ProgramArguments.Initialize;
