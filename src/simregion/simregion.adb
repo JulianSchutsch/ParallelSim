@@ -29,47 +29,47 @@ with SimCommon;
 
 package body SimRegion is
 
-   type ContentSendStatus_Enum is
-     (ContentSendStatusIdentify,
-      ContentSendStatusReady);
+   type ControlSendStatus_Enum is
+     (ControlSendStatusIdentify,
+      ControlSendStatusReady);
 
-   type ContentReceiveStatus_Enum is
-     (ContentReceiveStatusSend,
-      ContentReceiveStatusWaitForIdentification,
-      ContentReceiveStatusReady,
-      ContentReceiveStatusInvalid);
+   type controlReceiveStatus_Enum is
+     (ControlReceiveStatusSend,
+      ControlReceiveStatusWaitForIdentification,
+      ControlReceiveStatusReady,
+      ControlReceiveStatusInvalid);
 
-   ControlRegionNetworkImplementation : Network.Config.Implementation_Type;
-   ContentClient                      : Network.Streams.ClientClassAccess;
-   ContentSendStatus    : ContentSendStatus_Enum;
-   ContentReceiveStatus : ContentReceiveStatus_Enum;
+   ControlNetworkImplementation : Network.Config.Implementation_Type;
+   ControlClient                : Network.Streams.ClientClassAccess;
+   ControlSendStatus    : ControlSendStatus_Enum;
+   ControlReceiveStatus : ControlReceiveStatus_Enum;
 
-   type ContentClientCallBack_Type is
+   type ControlClientCallBack_Type is
      new Network.Streams.ChannelCallBack with null record;
 
    overriding
    procedure OnFailedConnect
-     (Item  : in out ContentClientCallBack_Type;
+     (Item  : in out ControlClientCallBack_Type;
       Retry : in out Boolean);
 
    overriding
    procedure OnConnect
-     (Item : in out ContentClientCallBack_Type);
+     (Item : in out ControlClientCallBack_Type);
 
    overriding
    procedure OnDisconnect
-     (Item : in out ContentClientCallBack_Type);
+     (Item : in out ControlClientCallBack_Type);
 
    overriding
    procedure OnCanSend
-     (Item : in out ContentClientCallBack_Type);
+     (Item : in out ControlClientCallBack_Type);
 
    overriding
    procedure OnReceive
-     (Item : in out ContentClientCallBack_Type);
+     (Item : in out ControlClientCallBack_Type);
 
    procedure OnReceive
-     (Item : in out ContentClientCallBack_Type) is
+     (Item : in out ControlClientCallBack_Type) is
       pragma Warnings(Off,Item);
 
       use type SimCommon.NetworkIDString;
@@ -80,67 +80,67 @@ package body SimRegion is
       Put("On Receive");
       loop
          Put("*");
-         Put(Integer(ContentReceiveStatus_Enum'Pos(ContentReceiveStatus)));
-         PrevPosition := ContentClient.ReceivePosition;
-         case ContentReceiveStatus is
-            when ContentReceiveStatusSend =>
+         Put(Integer(ControlReceiveStatus_Enum'Pos(ControlReceiveStatus)));
+         PrevPosition := ControlClient.ReceivePosition;
+         case ControlReceiveStatus is
+            when ControlReceiveStatusSend =>
                return;
-            when ContentReceiveStatusWaitForIdentification =>
+            when ControlReceiveStatusWaitForIdentification =>
                declare
                   Identification : SimCommon.NetworkIDString;
                begin
                   SimCommon.NetworkIDString'Read
-                    (ContentClient,
+                    (ControlClient,
                      Identification);
-                  if Identification/=SimCommon.NetworkContentServerID then
-                     Put("Returned Identification of Content is invalid");
+                  if Identification/=SimCommon.NetworkControlServerID then
+                     Put("Returned Identification of Control is invalid");
                      New_Line;
-                     ContentReceiveStatus:=ContentReceiveStatusInvalid;
+                     ControlReceiveStatus:=ControlReceiveStatusInvalid;
                   else
-                     Put("Identification Content is valid");
+                     Put("Identification Control is valid");
                      New_Line;
-                     ContentReceiveStatus:=ContentReceiveStatusReady;
+                     ControlReceiveStatus:=ControlReceiveStatusReady;
                   end if;
                end;
-            when ContentReceiveStatusReady =>
+            when ControlReceiveStatusReady =>
                return;
-            when ContentReceiveStatusInvalid =>
+            when ControlReceiveStatusInvalid =>
                return;
          end case;
       end loop;
    exception
       when Network.Streams.StreamOverflow =>
-         ContentClient.ReceivePosition := PrevPosition;
+         ControlClient.ReceivePosition := PrevPosition;
    end OnReceive;
    ---------------------------------------------------------------------------
 
    procedure OnCanSend
-     (Item : in out ContentClientCallBack_Type) is
+     (Item : in out ControlClientCallBack_Type) is
       pragma Warnings(Off,Item);
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
 
    begin
       loop
-         PrevPosition := ContentClient.WritePosition;
-         case ContentSendStatus is
-            when ContentSendStatusIdentify =>
+         PrevPosition := ControlClient.WritePosition;
+         case ControlSendStatus is
+            when ControlSendStatusIdentify =>
                SimCommon.NetworkIDString'Write
-                 (ContentClient,
-                  SimCommon.NetworkContentClientID);
-               ContentReceiveStatus:=ContentReceiveStatusWaitForIdentification;
-            when ContentSendStatusReady =>
+                 (ControlClient,
+                  SimCommon.NetworkControlClientID);
+               ControlReceiveStatus:=ControlReceiveStatusWaitForIdentification;
+            when ControlSendStatusReady =>
                return;
          end case;
       end loop;
    exception
       when Network.Streams.StreamOverflow =>
-         ContentClient.WritePosition:=PrevPosition;
+         ControlClient.WritePosition:=PrevPosition;
    end OnCanSend;
    ---------------------------------------------------------------------------
 
    procedure OnFailedConnect
-     (Item  : in out ContentClientCallBack_Type;
+     (Item  : in out ControlClientCallBack_Type;
       Retry : in out Boolean) is
       pragma Warnings(Off,Item);
    begin
@@ -151,18 +151,18 @@ package body SimRegion is
    ---------------------------------------------------------------------------
 
    procedure OnConnect
-     (Item : in out ContentClientCallBack_Type) is
+     (Item : in out ControlClientCallBack_Type) is
       pragma Warnings(Off,Item);
    begin
       Put("Connected!");
       New_Line;
-      ContentSendStatus    := ContentSendStatusIdentify;
-      ContentReceiveStatus := ContentReceiveStatusSend;
+      ControlSendStatus    := ControlSendStatusIdentify;
+      ControlReceiveStatus := ControlReceiveStatusSend;
    end OnConnect;
    ---------------------------------------------------------------------------
 
    procedure OnDisconnect
-     (Item : in out ContentClientCallBack_Type) is
+     (Item : in out ControlClientCallBack_Type) is
       pragma Warnings(Off,Item);
    begin
       Put("Disconnected");
@@ -170,36 +170,36 @@ package body SimRegion is
    end OnDisconnect;
    ---------------------------------------------------------------------------
 
-   ContentClientCallBack : aliased ContentClientCallBack_Type;
+   ControlClientCallBack : aliased ControlClientCallBack_Type;
 
    procedure Initialize
      (Configuration : Config.Config_Type) is
    begin
 
-      ControlRegionNetworkImplementation
+      ControlNetworkImplementation
         :=Network.Config.FindImplementation
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Control<->Region.Network"));
+           ModuleName    => To_Unbounded_String("Control.Network"));
 
-      ControlRegionNetworkImplementation.Streams.Initialize.all;
+      ControlNetworkImplementation.Streams.Initialize.all;
 
-      ContentClient
-        :=ControlRegionNetworkImplementation.Streams.NewClient
+      ControlClient
+        :=ControlNetworkImplementation.Streams.NewClient
           (Config => Config.GetModuleMap
                (Item => Configuration,
-                Name => To_Unbounded_String("Control.ContentClient.Network")).all);
+                Name => To_Unbounded_String("Control.ControlClient.Network")).all);
 
-      ContentClient.CallBack:=ContentClientCallBack'Access;
+      ControlClient.CallBack:=ControlClientCallBack'Access;
 
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      ControlRegionNetworkImplementation.Streams.FreeClient
-        (Item => ContentClient);
+      ControlNetworkImplementation.Streams.FreeClient
+        (Item => ControlClient);
 
-      ControlRegionNetworkImplementation.Streams.Finalize.all;
+      ControlNetworkImplementation.Streams.Finalize.all;
    end Finalize;
    ---------------------------------------------------------------------------
 

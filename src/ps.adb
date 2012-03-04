@@ -6,7 +6,6 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Network.Config;
 
--- These Packets are included to provide implementations implicitly
 with BSDSockets.Streams;
 with Network.Processes.Local;
 with ProgramArguments;
@@ -14,7 +13,7 @@ with ProgramArguments;
 with Config;
 with Processes;
 
---with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
+with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
 
 procedure Ps is
@@ -31,54 +30,56 @@ begin
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control<->Region.Network"),
+      ModuleName => To_Unbounded_String("Control.Network"),
       Key        => To_Unbounded_String("StreamImplementation"),
       Value      => To_Unbounded_String("BSDSockets.Stream"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control<->Region.Network"),
+      ModuleName => To_Unbounded_String("Control.Network"),
       Key        => To_Unbounded_String("ProcessesImplementation"),
       Value      => To_Unbounded_String("Local"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ContentServer.Network"),
+      ModuleName => To_Unbounded_String("Control.ControlServer.Network"),
       Key        => To_Unbounded_String("Family"),
       Value      => To_Unbounded_String("IPv4"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ContentServer.Network"),
+      ModuleName => To_Unbounded_String("Control.ControlServer.Network"),
       Key        => To_Unbounded_String("Port"),
       Value      => To_Unbounded_String("10001"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ContentServer.Network"),
+      ModuleName => To_Unbounded_String("Control.ControlServer.Network"),
       Key        => To_Unbounded_String("Host"),
       Value      => To_Unbounded_String("0.0.0.0"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ContentClient.Network"),
+      ModuleName => To_Unbounded_String("Control.ControlClient.Network"),
       Key        => To_Unbounded_String("Family"),
       Value      => To_Unbounded_String("IPv4"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ContentClient.Network"),
+      ModuleName => To_Unbounded_String("Control.ControlClient.Network"),
       Key        => To_Unbounded_String("Port"),
       Value      => To_Unbounded_String("10001"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ContentClient.Network"),
+      ModuleName => To_Unbounded_String("Control.ControlClient.Network"),
       Key        => To_Unbounded_String("Host"),
       Value      => To_Unbounded_String("127.0.0.1"));
 
+   -- The network for spawning isn't necessarily the same as the Control
+   -- This should be a different module in the future.
    NetworkImplementation:=Network.Config.FindImplementation
-     (ModuleName    => To_Unbounded_String("Control<->Region.Network"),
+     (ModuleName    => To_Unbounded_String("Control.Network"),
       Configuration => Configuration);
 
    NetworkImplementation.Processes.Initialize.all;
@@ -105,9 +106,9 @@ exception
       New_Line;
       Put("Message : " & Exception_Message(E));
       New_Line;
---      Put("Traceback      :");
---      New_Line;
---      Put(Symbolic_TraceBack(E));
---      New_Line;
+      Put("Traceback      :");
+      New_Line;
+      Put(Symbolic_TraceBack(E));
+      New_Line;
 
 end Ps;

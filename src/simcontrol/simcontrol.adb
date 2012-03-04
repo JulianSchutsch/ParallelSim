@@ -32,44 +32,44 @@ with SimCommon;
 
 package body SimControl is
 
-   type ContentReceiveStatus is
-     (ContentReceiveStatusWaitForIdentification,
-      ContentReceiveStatusReady,
-      ContentReceiveStatusInvalid);
+   type ControlReceiveStatus is
+     (ControlReceiveStatusWaitForIdentification,
+      ControlReceiveStatusReady,
+      ControlReceiveStatusInvalid);
 
-   type ContentSendStatus is
-     (ContentSendStatusReceive,
-      ContentSendStatusIdentify,
-      ContentSendStatusReady);
+   type ControlSendStatus is
+     (ControlSendStatusReceive,
+      ControlSendStatusIdentify,
+      ControlSendStatusReady);
 
-   ControlElementNetworkImplementation : Network.Config.Implementation_Type;
-   ContentServer                       : Network.Streams.ServerClassAccess;
+   ControlNetworkImplementation : Network.Config.Implementation_Type;
+   ControlServer                : Network.Streams.ServerClassAccess;
 
-   type ContentServerChannelCallBack_Type is
+   type ControlServerChannelCallBack_Type is
      new Network.Streams.ChannelCallBack with
       record
          Channel       : Network.Streams.ChannelClassAccess;
-         ReceiveStatus : ContentReceiveStatus;
-         SendStatus    : ContentSendStatus;
+         ReceiveStatus : ControlReceiveStatus;
+         SendStatus    : ControlSendStatus;
       end record;
 
-   type ContentServerChannelCallBack_Access is
-     access all ContentServerChannelCallBack_Type;
+   type ControlServerChannelCallBack_Access is
+     access all ControlServerChannelCallBack_Type;
 
    overriding
    procedure OnCanSend
-     (Item : in out ContentServerChannelCallBack_Type);
+     (Item : in out ControlServerChannelCallBack_Type);
 
    overriding
    procedure OnReceive
-     (Item : in out ContentServerChannelCallBack_Type);
+     (Item : in out ControlServerChannelCallBack_Type);
 
    overriding
    procedure OnDisconnect
-     (Item : in out ContentServerChannelCallBack_Type);
+     (Item : in out ControlServerChannelCallBack_Type);
 
    procedure OnCanSend
-     (Item : in out ContentServerChannelCallBack_Type) is
+     (Item : in out ControlServerChannelCallBack_Type) is
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
 
@@ -77,16 +77,16 @@ package body SimControl is
       loop
          PrevPosition := Item.Channel.WritePosition;
          case Item.SendStatus is
-            when ContentSendStatusReceive =>
+            when ControlSendStatusReceive =>
                return;
-            when ContentSendStatusIdentify =>
+            when ControlSendStatusIdentify =>
                SimCommon.NetworkIDString'Write
                  (Item.Channel,
-                  SimCommon.NetworkContentServerID);
-               Item.SendStatus := ContentSendStatusReady;
+                  SimCommon.NetworkControlServerID);
+               Item.SendStatus := ControlSendStatusReady;
                Put("Identify as ContentServer");
                New_Line;
-            when ContentSendStatusReady =>
+            when ControlSendStatusReady =>
                return;
          end case;
       end loop;
@@ -97,7 +97,7 @@ package body SimControl is
    ---------------------------------------------------------------------------
 
    procedure OnReceive
-     (Item : in out ContentServerChannelCallBack_Type) is
+     (Item : in out ControlServerChannelCallBack_Type) is
 
       use type SimCommon.NetworkIDString;
 
@@ -107,26 +107,26 @@ package body SimControl is
       loop
          PrevPosition := Item.Channel.ReceivePosition;
          case Item.ReceiveStatus is
-            when ContentReceiveStatusWaitForIdentification =>
+            when ControlReceiveStatusWaitForIdentification =>
                declare
                   Identification : SimCommon.NetworkIDString;
                begin
                   SimCommon.NetworkIDString'Read
                     (Item.Channel,
                      Identification);
-                  if Identification/=SimCommon.NetworkContentClientID then
+                  if Identification/=SimCommon.NetworkControlClientID then
                      Put("Identification of incomming connection is incorrect");
                      New_Line;
-                     Item.ReceiveStatus:=ContentReceiveStatusInvalid;
+                     Item.ReceiveStatus:=ControlReceiveStatusInvalid;
                   else
                      Put("Identification accepted");
-                     Item.ReceiveStatus:=ContentReceiveStatusReady;
-                     Item.SendStatus:=ContentSendStatusIdentify;
+                     Item.ReceiveStatus:=ControlReceiveStatusReady;
+                     Item.SendStatus:=ControlSendStatusIdentify;
                   end if;
                end;
-            when ContentReceiveStatusReady =>
+            when ControlReceiveStatusReady =>
                return;
-            when ContentReceiveStatusInvalid =>
+            when ControlReceiveStatusInvalid =>
                return;
          end case;
       end loop;
@@ -137,7 +137,7 @@ package body SimControl is
    ---------------------------------------------------------------------------
 
    procedure OnDisconnect
-     (Item : in out ContentServerChannelCallBack_Type) is
+     (Item : in out ControlServerChannelCallBack_Type) is
       pragma Warnings(Off,Item);
    begin
       Put("OnDisconnect");
@@ -145,55 +145,56 @@ package body SimControl is
    end OnDisconnect;
    ---------------------------------------------------------------------------
 
-   type ContentServerCallBack_Type is
+   type ControlServerCallBack_Type is
      new Network.Streams.ServerCallBack with null record;
 
    overriding
    procedure OnAccept
-     (Item : in out ContentServerCallBack_Type;
+     (Item : in out ControlServerCallBack_Type;
       Chan : Network.Streams.ChannelClassAccess) is
       pragma Warnings(Off,Item);
 
-      NewCallBack : ContentserverChannelCallBack_Access;
+      NewCallBack : ControlserverChannelCallBack_Access;
 
    begin
-      NewCallBack:=new ContentServerChannelCallBack_Type;
-      NewCallBack.ReceiveStatus := ContentReceiveStatusWaitForIdentification;
-      NewCallBack.SendStatus    := ContentSendStatusReceive;
-      NewCallBack.Channel:=Chan;
+      NewCallBack:=new ControlServerChannelCallBack_Type;
+      NewCallBack.ReceiveStatus := ControlReceiveStatusWaitForIdentification;
+      NewCallBack.SendStatus    := ControlSendStatusReceive;
+      NewCallBack.Channel       := Chan;
       Chan.CallBack:=Network.Streams.ChannelCallBackClassAccess(NewCallBack);
    end OnAccept;
    ---------------------------------------------------------------------------
 
-   ContentServerCallBack : aliased ContentServerCallBack_Type;
+   ControlServerCallBack : aliased ControlServerCallBack_Type;
 
    procedure Initialize
      (Configuration : Config.Config_Type) is
 
    begin
-      ControlElementNetworkImplementation
+      ControlNetworkImplementation
         :=Network.Config.FindImplementation
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Control<->Region.Network"));
+           ModuleName    => To_Unbounded_String("Control.Network"));
 
-      ControlElementNetworkImplementation.Streams.Initialize.all;
+      ControlNetworkImplementation.Streams.Initialize.all;
 
-      ContentServer
-        :=ControlElementNetworkImplementation.Streams.NewServer
+      ControlServer
+        :=ControlNetworkImplementation.Streams.NewServer
           (Config => Config.GetModuleMap
                (Item => Configuration,
-                Name => To_Unbounded_String("Control.ContentServer.Network")).all);
+                Name => To_Unbounded_String
+                  ("Control.ControlServer.Network")).all);
 
-      ContentServer.CallBack:=ContentServerCallBack'Access;
+      ControlServer.CallBack:=ControlServerCallBack'Access;
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      ControlElementNetworkImplementation.Streams.FreeServer
-        (Item => ContentServer);
+      ControlNetworkImplementation.Streams.FreeServer
+        (Item => ControlServer);
 
-      ControlElementNetworkImplementation.Streams.Finalize.all;
+      ControlNetworkImplementation.Streams.Finalize.all;
 
    end Finalize;
    ---------------------------------------------------------------------------
