@@ -40,12 +40,12 @@ package body SimRegion is
       ControlReceiveStatusInvalid);
 
    ControlNetworkImplementation : Network.Config.Implementation_Type;
-   ControlClient                : Network.Streams.ClientClassAccess;
+   ControlClient                : Network.Streams.Client_ClassAccess;
    ControlSendStatus    : ControlSendStatus_Enum;
    ControlReceiveStatus : ControlReceiveStatus_Enum;
 
    type ControlClientCallBack_Type is
-     new Network.Streams.ChannelCallBack with null record;
+     new Network.Streams.ChannelCallBack_Type with null record;
 
    overriding
    procedure OnFailedConnect
@@ -187,7 +187,7 @@ package body SimRegion is
         :=ControlNetworkImplementation.Streams.NewClient
           (Config => Config.GetModuleMap
                (Item => Configuration,
-                Name => To_Unbounded_String("Control.ControlClient.Network")).all);
+                Name => To_Unbounded_String("Control.Client.Network")).all);
 
       ControlClient.CallBack:=ControlClientCallBack'Access;
 

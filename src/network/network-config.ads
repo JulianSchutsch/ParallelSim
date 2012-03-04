@@ -44,22 +44,22 @@ package Network.Config is
    type StreamImplementation_Type is
       record
          ImplementationIdentifier : Unbounded_String;
-         Initialize : Network.Streams.InitializeAccess:=null;
-         Finalize   : Network.Streams.FinalizeAccess:=null;
-         NewServer  : Network.Streams.ServerConstructor:=null;
-         FreeServer : Network.Streams.ServerDestructor:=null;
-         NewClient  : Network.Streams.ClientConstructor:=null;
-         FreeClient : Network.Streams.ClientDestructor:=null;
+         Initialize : Network.Streams.Initialize_Access:=null;
+         Finalize   : Network.Streams.Finalize_Access:=null;
+         NewServer  : Network.Streams.Server_Constructor:=null;
+         FreeServer : Network.Streams.Server_Destructor:=null;
+         NewClient  : Network.Streams.Client_Constructor:=null;
+         FreeClient : Network.Streams.Client_Destructor:=null;
       end record;
 
    type ProcessesImplementation_Type is
       record
          ImplementationIdentifier : Unbounded_String;
-         Initialize  : Network.Processes.InitializeAccess:=null;
-         Finalize    : Network.Processes.FinalizeAccess:=null;
-         StoreConfig : Network.Processes.StoreConfigAccess:=null;
-         LoadConfig  : Network.Processes.LoadConfigAccess:=null;
-         Spawn       : Network.Processes.SpawnAccess:=null;
+         Initialize  : Network.Processes.Initialize_Access:=null;
+         Finalize    : Network.Processes.Finalize_Access:=null;
+         StoreConfig : Network.Processes.StoreConfig_Access:=null;
+         LoadConfig  : Network.Processes.LoadConfig_Access:=null;
+         Spawn       : Network.Processes.Spawn_Access:=null;
       end record;
 
    type Implementation_Type is

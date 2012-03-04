@@ -23,17 +23,17 @@ with Network.Config;
 with ProcessLoop;
 
 package body BSDSockets.Streams is
-   use type Network.Streams.ServerCallBackClassAccess;
-   use type Network.Streams.ChannelCallBackClassAccess;
+   use type Network.Streams.ServerCallBack_ClassAccess;
+   use type Network.Streams.ChannelCallBack_ClassAccess;
    use type Ada.Streams.Stream_Element_Offset;
 
-   Servers        : ServerAccess  := null;
-   Clients        : access Client := null;
+   Servers        : Server_Access  := null;
+   Clients        : Client_Access := null;
 
    -- Procedure called by NewStreamClient to
    --  loop of GetAddrInfo data.
    procedure Next
-     (Item : not null access Client) is
+     (Item : not null Client_Access) is
 
       RetryConnect : Boolean:=False;
 
@@ -107,9 +107,9 @@ package body BSDSockets.Streams is
 
    -- Finalize is called when connection fails
    procedure Finalize
-     (Item : ServerChannelAccess) is
+     (Item : ServerChannel_Access) is
 
-      VarItem : ServerChannelAccess;
+      VarItem : ServerChannel_Access;
 
    begin
 
@@ -140,7 +140,7 @@ package body BSDSockets.Streams is
 
       VarItem:=Item;
 
-      Network.Streams.Free(Network.Streams.ChannelClassAccess(VarItem));
+      Network.Streams.Free(Network.Streams.Channel_ClassAccess(VarItem));
 
    end Finalize;
    ---------------------------------------------------------------------------
@@ -148,7 +148,7 @@ package body BSDSockets.Streams is
    -- Finalize is called when connection fails
    -- Client is removed from the Client list
    procedure Finalize
-     (Item : access Client) is
+     (Item : Client_Access) is
    begin
 
       begin
@@ -181,9 +181,9 @@ package body BSDSockets.Streams is
 
    function NewStreamServer
      (Config : StringStringMap.Map)
-      return Network.Streams.ServerClassAccess is
+      return Network.Streams.Server_ClassAccess is
 
-      Item : ServerAccess;
+      Item : Server_Access;
       PortStr   : Unbounded_String;
       FamilyStr : Unbounded_String;
       Host      : Unbounded_String;
@@ -192,7 +192,7 @@ package body BSDSockets.Streams is
 
    begin
 
-      Item := new Server;
+      Item := new Server_Type;
 
       PortStr   := Config.Element(To_Unbounded_String("Port"));
       FamilyStr := Config.Element(To_Unbounded_String("Family"));
@@ -231,19 +231,19 @@ package body BSDSockets.Streams is
          Servers.LastServer:=Item;
       end if;
       Servers:=Item;
-      return Network.Streams.ServerClassAccess(Item);
+      return Network.Streams.Server_ClassAccess(Item);
 
    end NewStreamServer;
    ---------------------------------------------------------------------------
 
    procedure FreeStreamServer
-     (Item : in out Network.Streams.ServerClassAccess) is
+     (Item : in out Network.Streams.Server_ClassAccess) is
 
-      Serv : ServerAccess;
+      Serv : Server_Access;
 
    begin
 
-      Serv:=ServerAccess(Item);
+      Serv:=Server_Access(Item);
 
       if Serv.LastServer/=null then
          Serv.LastServer.NextServer:=Serv.NextServer;
@@ -267,9 +267,9 @@ package body BSDSockets.Streams is
 
    function NewStreamClient
      (Config : StringStringMap.Map)
-      return Network.Streams.ClientClassAccess is
+      return Network.Streams.Client_ClassAccess is
 
-      Item      : ClientAccess;
+      Item      : Client_Access;
       PortStr   : Unbounded_String;
       FamilyStr : Unbounded_String;
       Host      : Unbounded_String;
@@ -278,7 +278,7 @@ package body BSDSockets.Streams is
 
    begin
 
-      Item:=new Client(Max=>1023);
+      Item:=new Client_Type(Max=>1023);
 
       PortStr   := Config.Element(To_Unbounded_String("Port"));
       FamilyStr := Config.Element(To_Unbounded_String("Family"));
@@ -310,19 +310,19 @@ package body BSDSockets.Streams is
 
       Item.LastTime:=Ada.Calendar.Clock;
 
-      return Network.Streams.ClientClassAccess(Item);
+      return Network.Streams.Client_ClassAccess(Item);
 
    end newStreamClient;
    ---------------------------------------------------------------------------
 
    procedure FreeStreamClient
-     (Item : in out Network.Streams.ClientClassAccess) is
+     (Item : in out Network.Streams.Client_ClassAccess) is
 
-      Clie : ClientAccess;
+      Clie : Client_Access;
 
    begin
 
-      Clie:=ClientAccess(Item);
+      Clie:=Client_Access(Item);
 
       BSDSockets.Shutdown
         (Socket => Clie.SelectEntry.Socket,
@@ -336,10 +336,10 @@ package body BSDSockets.Streams is
    ---------------------------------------------------------------------------
 
    procedure AAccept
-     (Item : not null ServerAccess) is
+     (Item : not null Server_Access) is
 
       NewSock          : BSDSockets.SocketID;
-      NewServerChannel : ServerChannelAccess;
+      NewServerChannel : ServerChannel_Access;
       Host             : Unbounded_String;
       Port             : BSDSockets.PortID;
 
@@ -355,7 +355,7 @@ package body BSDSockets.Streams is
       Put(BSDSockets.ToString(NewSock));
       New_Line;
 
-      NewServerChannel                    := new ServerChannel(Max=>1023);
+      NewServerChannel                    := new ServerChannel_Type(Max=>1023);
       NewServerChannel.SelectEntry.Socket := NewSock;
       NewServerChannel.Server             := Item;
       NewServerChannel.NextChannel        := Item.FirstChannel;
@@ -373,7 +373,7 @@ package body BSDSockets.Streams is
 
       if Item.CallBack/=null then
          Item.CallBack.OnAccept
-           (Chan => Network.Streams.ChannelClassAccess(NewServerChannel));
+           (Chan => Network.Streams.Channel_ClassAccess(NewServerChannel));
       end if;
 
 
@@ -381,7 +381,7 @@ package body BSDSockets.Streams is
 
    ---------------------------------------------------------------------------
    function Send
-     (Item    : access BSDSocketChannel'Class)
+     (Item    : access BSDSocketChannel_Type'Class)
       return Boolean is
 
       SendAmount : Ada.Streams.Stream_Element_Count;
@@ -416,7 +416,7 @@ package body BSDSockets.Streams is
    ---------------------------------------------------------------------------
 
    function Recv
-     (Item : access BSDSocketChannel'Class)
+     (Item : access BSDSocketChannel_Type'Class)
       return Boolean is
 
       RecvAmount : Ada.Streams.Stream_Element_Count;
@@ -449,13 +449,13 @@ package body BSDSockets.Streams is
    end Recv;
    ---------------------------------------------------------------------------
 
-   procedure DoProcess is
+   procedure Process is
 
-      ServerItem        : ServerAccess  := Servers;
-      ClientItem        : access Client := Clients;
-      NextClientItem    : access Client;
-      ServerChannelItem : ServerChannelAccess;
-      NextServerChannelItem : ServerChannelAccess;
+      ServerItem            : Server_Access := Servers;
+      ClientItem            : Client_Access := Clients;
+      NextClientItem        : Client_Access;
+      ServerChannelItem     : ServerChannel_Access;
+      NextServerChannelItem : ServerChannel_Access;
 
       use type Ada.Calendar.Time;
 
@@ -548,7 +548,7 @@ package body BSDSockets.Streams is
          -- The order here is important since BSDSockets.Process should be
          -- called before ProcessLoop.Process
          ProcessLoop.Add
-           (Proc => DoProcess'Access);
+           (Proc => Process'Access);
          BSDSockets.Initialize;
       end if;
       InitializeCount:=InitializeCount+1;
@@ -561,7 +561,7 @@ package body BSDSockets.Streams is
       if InitializeCount=0 then
          BSDSockets.Finalize;
          ProcessLoop.Remove
-           (Proc => DoProcess'Access);
+           (Proc => Process'Access);
       end if;
    end Finalize;
    ---------------------------------------------------------------------------

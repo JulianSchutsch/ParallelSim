@@ -60,16 +60,16 @@ package Network.Streams is
    type ProcessAccess is
      access procedure;
 
-   type InitializeAccess is
+   type Initialize_Access is
      access procedure;
 
-   type FinalizeAccess is
+   type Finalize_Access is
      access procedure;
 
-   type ChannelCallBack;
-   type ChannelCallBackClassAccess is access all ChannelCallBack'Class;
+   type ChannelCallBack_Type;
+   type ChannelCallBack_ClassAccess is access all ChannelCallBack_Type'Class;
 
-   type Channel(Max: Stream_Element_Count) is
+   type Channel_Type(Max: Stream_Element_Count) is
      abstract new Root_Stream_Type with
       record
          ReceivedContent : aliased Stream_Element_Array(0..Max);
@@ -77,87 +77,87 @@ package Network.Streams is
          AmountReceived  : Stream_Element_Count;
          WrittenContent  : aliased Stream_Element_Array(0..Max);
          WritePosition   : Stream_Element_Offset;
-         CallBack        : ChannelCallBackClassAccess:=null;
+         CallBack        : ChannelCallBack_ClassAccess:=null;
       end record;
 
-   type ChannelClassAccess is access all Channel'Class;
-   type ClientClassAccess is access all Channel'Class;
+   type Channel_ClassAccess is access all Channel_Type'Class;
+   type Client_ClassAccess is access all Channel_Type'Class;
 
-   type ClientConstructor is access function
+   type Client_Constructor is access function
      (Config : StringStringMap.Map)
-      return ClientClassAccess;
+      return Client_ClassAccess;
 
-   type ClientDestructor is access procedure
-     (Item : in out ClientClassAccess);
+   type Client_Destructor is access procedure
+     (Item : in out Client_ClassAccess);
 
    overriding
    procedure Read
-     (Stream : in out Channel;
+     (Stream : in out Channel_Type;
       Item   : out Stream_Element_Array;
       Last   : out Stream_Element_Offset);
 
    overriding
    procedure Write
-     (Stream : in out Channel;
+     (Stream : in out Channel_Type;
       Item   : in Stream_Element_Array);
    ---------------------------------------------------------------------------
 
-   type ChannelCallBack is tagged limited
+   type ChannelCallBack_Type is tagged limited
       record
          null;
       end record;
 
    procedure OnCanSend
-     (Item : in out ChannelCallback) is null;
+     (Item : in out ChannelCallBack_Type) is null;
 
    procedure OnReceive
-     (Item : in out ChannelCallBack) is null;
+     (Item : in out ChannelCallBack_Type) is null;
 
    procedure OnConnect
-     (Item : in out ChannelCallBack) is null;
+     (Item : in out ChannelCallBack_Type) is null;
 
    procedure OnDisconnect
-     (Item : in out ChannelCallBack) is null;
+     (Item : in out ChannelCallBack_Type) is null;
 
    procedure OnFailedConnect
-     (Item  : in out ChannelCallBack;
+     (Item  : in out ChannelCallBack_Type;
       Retry : in out Boolean) is null;
    ---------------------------------------------------------------------------
 
-   type ServerCallBack;
-   type ServerCallBackClassAccess is access all ServerCallBack'Class;
+   type ServerCallBack_Type;
+   type ServerCallBack_ClassAccess is access all ServerCallBack_Type'Class;
 
-   type Server is abstract tagged
+   type Server_Type is abstract tagged
       record
-         CallBack : ServerCallBackClassAccess:=null;
+         CallBack : ServerCallBack_ClassAccess:=null;
       end record;
-   type ServerClassAccess is access all Server'Class;
+   type Server_ClassAccess is access all Server_Type'Class;
 
-   type ServerConstructor is access function
+   type Server_Constructor is access function
      (Config : StringStringMap.Map)
-      return ServerClassAccess;
+      return Server_ClassAccess;
 
-   type ServerDestructor is access procedure
-     (Item : in out ServerClassAccess);
+   type Server_Destructor is access procedure
+     (Item : in out Server_ClassAccess);
    ---------------------------------------------------------------------------
 
-   type ServerCallBack is tagged null record;
+   type ServerCallBack_Type is tagged null record;
 
    procedure OnAccept
-     (Item : in out ServerCallBack;
-      Chan : ChannelClassAccess) is null;
+     (Item : in out ServerCallBack_Type;
+      Chan : Channel_ClassAccess) is null;
    ---------------------------------------------------------------------------
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Channel'Class,
-      Name   => ChannelClassAccess);
+     (Object => Channel_Type'Class,
+      Name   => Channel_ClassAccess);
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Channel'Class,
-      Name   => ClientClassAccess);
+     (Object => Channel_Type'Class,
+      Name   => Client_ClassAccess);
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Server'Class,
-      Name   => ServerClassAccess);
+     (Object => Server_Type'Class,
+      Name   => Server_ClassAccess);
 
 end Network.Streams;

@@ -30,6 +30,48 @@ begin
 
    Config.Insert
      (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Admin.Network"),
+      Key        => To_Unbounded_String("StreamImplementation"),
+      Value      => To_Unbounded_String("BSDSockets.Streams"));
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Admin.Server.Network"),
+      Key        => To_Unbounded_String("Family"),
+      Value      => To_Unbounded_String("IPv4"));
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Admin.Server.Network"),
+      Key        => To_Unbounded_String("Host"),
+      Value      => To_Unbounded_String("0.0.0.0"));
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Admin.Server.Network"),
+      Key        => To_Unbounded_String("Port"),
+      Value      => To_Unbounded_String("10002"));
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Admin.Client.Network"),
+      Key        => To_Unbounded_String("Family"),
+      Value      => To_Unbounded_String("IPv4"));
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Admin.Client.Network"),
+      Key        => To_Unbounded_String("Host"),
+      Value      => To_Unbounded_String("127.0.0.1"));
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Admin.Client.Network"),
+      Key        => To_Unbounded_String("Port"),
+      Value      => To_Unbounded_String("10002"));
+
+   Config.Insert
+     (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Network"),
       Key        => To_Unbounded_String("StreamImplementation"),
       Value      => To_Unbounded_String("BSDSockets.Stream"));
@@ -42,37 +84,37 @@ begin
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ControlServer.Network"),
+      ModuleName => To_Unbounded_String("Control.Server.Network"),
       Key        => To_Unbounded_String("Family"),
       Value      => To_Unbounded_String("IPv4"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ControlServer.Network"),
+      ModuleName => To_Unbounded_String("Control.Server.Network"),
       Key        => To_Unbounded_String("Port"),
       Value      => To_Unbounded_String("10001"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ControlServer.Network"),
+      ModuleName => To_Unbounded_String("Control.Server.Network"),
       Key        => To_Unbounded_String("Host"),
       Value      => To_Unbounded_String("0.0.0.0"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ControlClient.Network"),
+      ModuleName => To_Unbounded_String("Control.Client.Network"),
       Key        => To_Unbounded_String("Family"),
       Value      => To_Unbounded_String("IPv4"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ControlClient.Network"),
+      ModuleName => To_Unbounded_String("Control.Client.Network"),
       Key        => To_Unbounded_String("Port"),
       Value      => To_Unbounded_String("10001"));
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.ControlClient.Network"),
+      ModuleName => To_Unbounded_String("Control.Client.Network"),
       Key        => To_Unbounded_String("Host"),
       Value      => To_Unbounded_String("127.0.0.1"));
 

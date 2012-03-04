@@ -29,56 +29,56 @@ with Ada.Calendar;
 
 package BSDSockets.Streams is
 
-   type BSDSocketChannel is new Network.Streams.Channel with private;
-   type Client is new BSDSocketChannel with private;
-   type ClientAccess is access all Client;
+   type BSDSocketChannel_Type is new Network.Streams.Channel_Type with private;
+   type Client_Type is new BSDSocketChannel_Type with private;
+   type Client_Access is access all Client_Type;
 
    function NewStreamClient
      (Config : StringStringMap.Map)
-      return Network.Streams.ClientClassAccess;
+      return Network.Streams.Client_ClassAccess;
 
    procedure FreeStreamClient
-     (Item : in out Network.Streams.ClientClassAccess);
+     (Item : in out Network.Streams.Client_ClassAccess);
    ---------------------------------------------------------------------------
 
-   type Server is new Network.Streams.Server with private;
-   type ServerAccess is access all Server;
+   type Server_Type is new Network.Streams.Server_Type with private;
+   type Server_Access is access all Server_Type;
 
    function NewStreamServer
      (Config : StringStringMap.Map)
-      return Network.Streams.ServerClassAccess;
+      return Network.Streams.Server_ClassAccess;
 
    procedure FreeStreamServer
-     (Item : in out Network.Streams.ServerClassAccess);
+     (Item : in out Network.Streams.Server_ClassAccess);
    ---------------------------------------------------------------------------
 
    procedure Register;
 
 private
 
-   type BSDSocketChannel is new Network.Streams.Channel with
+   type BSDSocketChannel_Type is new Network.Streams.Channel_Type with
       record
          SelectEntry : aliased BSDSockets.SelectEntry;
       end record;
 
-   type ServerChannel;
+   type ServerChannel_Type;
 
-   type ServerChannelAccess is access all ServerChannel;
+   type ServerChannel_Access is access all ServerChannel_Type;
 
-   type ServerChannel is new BSDSocketChannel with
+   type ServerChannel_Type is new BSDSocketChannel_Type with
       record
-         NextChannel : ServerChannelAccess;
-         LastChannel : ServerChannelAccess;
-         Server      : ServerAccess;
+         NextChannel : ServerChannel_Access;
+         LastChannel : ServerChannel_Access;
+         Server      : Server_Access;
       end record;
    ---------------------------------------------------------------------------
 
-   type Server is new Network.Streams.Server with
+   type Server_Type is new Network.Streams.Server_Type with
       record
          SelectEntry  : aliased BSDSockets.SelectEntry;
-         NextServer   : ServerAccess;
-         LastServer   : ServerAccess;
-         FirstChannel : ServerChannelAccess;
+         NextServer   : Server_Access;
+         LastServer   : Server_Access;
+         FirstChannel : ServerChannel_Access;
       end record;
    ---------------------------------------------------------------------------
 
@@ -86,15 +86,15 @@ private
      (ClientModeConnecting,
       ClientModeConnected);
 
-   type Client is new BSDSocketChannel with
+   type Client_Type is new BSDSocketChannel_Type with
       record
          FirstAddrInfo : AddrInfoAccess;
          CurrAddrInfo  : AddrInfoAccess;
          ClientMode    : ClientModeEnum:=ClientModeConnecting;
          LastTime      : Ada.Calendar.Time;
          Port          : PortID;
-         NextClient    : access Client;
-         LastClient    : access Client;
+         NextClient    : Client_Access;
+         LastClient    : Client_Access;
       end record;
    ---------------------------------------------------------------------------
 

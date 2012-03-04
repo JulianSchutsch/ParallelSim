@@ -30,6 +30,8 @@ with Ada.Streams;
 with ProcessLoop;
 with SimCommon;
 
+with SimControl.AdminServer;
+
 package body SimControl is
 
    type ControlReceiveStatus is
@@ -43,12 +45,12 @@ package body SimControl is
       ControlSendStatusReady);
 
    ControlNetworkImplementation : Network.Config.Implementation_Type;
-   ControlServer                : Network.Streams.ServerClassAccess;
+   ControlServer                : Network.Streams.Server_ClassAccess;
 
    type ControlServerChannelCallBack_Type is
-     new Network.Streams.ChannelCallBack with
+     new Network.Streams.ChannelCallBack_Type with
       record
-         Channel       : Network.Streams.ChannelClassAccess;
+         Channel       : Network.Streams.Channel_ClassAccess;
          ReceiveStatus : ControlReceiveStatus;
          SendStatus    : ControlSendStatus;
       end record;
@@ -146,12 +148,12 @@ package body SimControl is
    ---------------------------------------------------------------------------
 
    type ControlServerCallBack_Type is
-     new Network.Streams.ServerCallBack with null record;
+     new Network.Streams.ServerCallBack_Type with null record;
 
    overriding
    procedure OnAccept
      (Item : in out ControlServerCallBack_Type;
-      Chan : Network.Streams.ChannelClassAccess) is
+      Chan : Network.Streams.Channel_ClassAccess) is
       pragma Warnings(Off,Item);
 
       NewCallBack : ControlserverChannelCallBack_Access;
@@ -161,7 +163,7 @@ package body SimControl is
       NewCallBack.ReceiveStatus := ControlReceiveStatusWaitForIdentification;
       NewCallBack.SendStatus    := ControlSendStatusReceive;
       NewCallBack.Channel       := Chan;
-      Chan.CallBack:=Network.Streams.ChannelCallBackClassAccess(NewCallBack);
+      Chan.CallBack:=Network.Streams.ChannelCallBack_ClassAccess(NewCallBack);
    end OnAccept;
    ---------------------------------------------------------------------------
 
@@ -171,6 +173,9 @@ package body SimControl is
      (Configuration : Config.Config_Type) is
 
    begin
+      SimControl.AdminServer.Initialize
+        (Configuration => Configuration);
+
       ControlNetworkImplementation
         :=Network.Config.FindImplementation
           (Configuration => Configuration,
@@ -183,7 +188,7 @@ package body SimControl is
           (Config => Config.GetModuleMap
                (Item => Configuration,
                 Name => To_Unbounded_String
-                  ("Control.ControlServer.Network")).all);
+                  ("Control.Server.Network")).all);
 
       ControlServer.CallBack:=ControlServerCallBack'Access;
    end Initialize;
@@ -195,6 +200,8 @@ package body SimControl is
         (Item => ControlServer);
 
       ControlNetworkImplementation.Streams.Finalize.all;
+
+      SimControl.AdminServer.Finalize;
 
    end Finalize;
    ---------------------------------------------------------------------------

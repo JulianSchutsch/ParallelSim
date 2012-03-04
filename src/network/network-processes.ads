@@ -33,25 +33,25 @@ package Network.Processes is
 
    FailedSpawn : Exception;
 
-   type SpawnAccess is
+   type Spawn_Access is
      access procedure
        (Program : String;
         Amount  : Positive);
 
-  type StoreConfigAccess is
+  type StoreConfig_Access is
      access procedure
        (Configuration : in out Config_Type);
 
-  type LoadConfigAccess is
+  type LoadConfig_Access is
      access procedure
        (Configuration : in out Config_Type);
    -- This is a local implementation for Spawn, StoreConfig and LoadConfig
    -- meant to be used for programs run on a single computer
 
-   type InitializeAccess is
+   type Initialize_Access is
      access procedure;
 
-   type FinalizeAccess is
+   type Finalize_Access is
      access procedure;
 
 end Network.Processes;
