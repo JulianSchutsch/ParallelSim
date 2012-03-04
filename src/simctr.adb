@@ -1,9 +1,9 @@
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with BSDSockets.Streams;
 with Network.Processes.Local;
 
-with Network.Config;
 with Config;
 with ProgramArguments;
 with SimControl;
@@ -14,7 +14,8 @@ with Ada.Exceptions; use Ada.Exceptions;
 
 procedure SimCtr is
 
-   Configuration : Config.Config_Type;
+   Configuration           : Config.Config_Type;
+   ProcessesImplementation : Network.Processes.Implementation_Type;
 
 begin
    Processes.Initialize;
@@ -24,7 +25,12 @@ begin
 
    ProgramArguments.Debug;
 
-   Network.Config.LoadConfiguration
+   ProcessesImplementation
+     := Network.Processes.Implementations.Find
+       (Configuration => ProgramArguments.Configuration,
+        ModuleName    => To_Unbounded_String("Arguments"));
+
+   ProcessesImplementation.LoadConfig
      (Configuration => Configuration);
 
    Config.Debug

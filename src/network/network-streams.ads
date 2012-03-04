@@ -45,9 +45,11 @@
 --   using component (for example when OnAccept is called).
 pragma Ada_2005;
 
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Streams; use Ada.Streams;
 with Ada.Unchecked_Deallocation;
 with Basics; use Basics;
+with Config.Implementations;
 
 package Network.Streams is
 
@@ -159,5 +161,20 @@ package Network.Streams is
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Server_Type'Class,
       Name   => Server_ClassAccess);
+   ---------------------------------------------------------------------------
+
+   type Implementation_Type is
+      record
+         Initialize : Network.Streams.Initialize_Access:=null;
+         Finalize   : Network.Streams.Finalize_Access:=null;
+         NewServer  : Network.Streams.Server_Constructor:=null;
+         FreeServer : Network.Streams.Server_Destructor:=null;
+         NewClient  : Network.Streams.Client_Constructor:=null;
+         FreeClient : Network.Streams.Client_Destructor:=null;
+      end record;
+
+   package Implementations is new Config.Implementations
+     (Implementation_Type => Implementation_Type,
+      IdentifierKey       => To_Unbounded_String("StreamImplementation"));
 
 end Network.Streams;

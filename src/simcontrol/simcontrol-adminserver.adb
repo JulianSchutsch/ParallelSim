@@ -22,7 +22,6 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 
-with Network.Config;
 with Network.Streams;
 
 with Ada.Streams;
@@ -74,7 +73,7 @@ package body SimControl.AdminServer is
       Channel : Network.Streams.Channel_ClassAccess);
    ---------------------------------------------------------------------------
 
-   NetworkImplementation : Network.Config.Implementation_Type;
+   StreamImplementation : Network.Streams.Implementation_Type;
    Server         : Network.Streams.Server_ClassAccess;
    ServerCallBack : aliased ServercallBack_Type;
    ---------------------------------------------------------------------------
@@ -177,15 +176,15 @@ package body SimControl.AdminServer is
    procedure Initialize
      (Configuration : Config.Config_Type) is
    begin
-      NetworkImplementation:=
-        Network.Config.FindImplementation
+      StreamImplementation:=
+        Network.Streams.Implementations.Find
           (Configuration => Configuration,
            ModuleName    => To_Unbounded_String("Admin.Network"));
 
-      NetworkImplementation.Streams.Initialize.all;
+      StreamImplementation.Initialize.all;
 
       Server
-        :=NetworkImplementation.Streams.NewServer
+        :=StreamImplementation.NewServer
           (Config => Config.GetModuleMap
                (Item => Configuration,
                 Name => To_Unbounded_String
@@ -197,9 +196,9 @@ package body SimControl.AdminServer is
 
    procedure Finalize is
    begin
-      NetworkImplementation.Streams.FreeServer
+      StreamImplementation.FreeServer
         (Item => Server);
-      NetworkImplementation.Streams.Finalize.all;
+      StreamImplementation.Finalize.all;
    end Finalize;
    ---------------------------------------------------------------------------
 

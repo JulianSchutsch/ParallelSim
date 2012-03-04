@@ -23,7 +23,6 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Ada.Text_IO; use Ada.Text_IO;
 with Network.Streams;
-with Network.Config;
 
 with Ada.Streams;
 
@@ -44,7 +43,7 @@ package body SimControl is
       ControlSendStatusIdentify,
       ControlSendStatusReady);
 
-   ControlNetworkImplementation : Network.Config.Implementation_Type;
+   ControlNetworkImplementation : Network.Streams.Implementation_Type;
    ControlServer                : Network.Streams.Server_ClassAccess;
 
    type ControlServerChannelCallBack_Type is
@@ -178,14 +177,14 @@ package body SimControl is
         (Configuration => Configuration);
 
       ControlNetworkImplementation
-        :=Network.Config.FindImplementation
+        :=Network.Streams.Implementations.Find
           (Configuration => Configuration,
            ModuleName    => To_Unbounded_String("Control.Network"));
 
-      ControlNetworkImplementation.Streams.Initialize.all;
+      ControlNetworkImplementation.Initialize.all;
 
       ControlServer
-        :=ControlNetworkImplementation.Streams.NewServer
+        :=ControlNetworkImplementation.NewServer
           (Config => Config.GetModuleMap
                (Item => Configuration,
                 Name => To_Unbounded_String
@@ -197,10 +196,10 @@ package body SimControl is
 
    procedure Finalize is
    begin
-      ControlNetworkImplementation.Streams.FreeServer
+      ControlNetworkImplementation.FreeServer
         (Item => ControlServer);
 
-      ControlNetworkImplementation.Streams.Finalize.all;
+      ControlNetworkImplementation.Finalize.all;
 
       SimControl.AdminServer.Finalize;
 

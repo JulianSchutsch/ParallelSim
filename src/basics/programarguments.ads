@@ -19,11 +19,12 @@
 pragma Ada_2005;
 
 with Basics; use Basics;
+with Config; use Config;
 
 package ProgramArguments is
 
-   VariablesMap : StringStringMap.Map;
-   Parameters   : StringVector.Vector;
+   Configuration : Config_Type;
+   Parameters    : StringVector.Vector;
 
    procedure Debug;
 

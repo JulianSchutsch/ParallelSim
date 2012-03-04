@@ -22,13 +22,12 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Ada.Calendar;
-with Network.Config;
 with Network.Streams;
 with ProcessLoop;
 
 package body SimAdmin is
 
-   NetworkImplementation : Network.Config.Implementation_Type;
+   StreamImplementation : Network.Streams.Implementation_Type;
    Client : Network.Streams.Client_ClassAccess;
 
    procedure WaitForConnection is
@@ -51,15 +50,15 @@ package body SimAdmin is
      (Configuration : Config.Config_Type) is
    begin
 
-      NetworkImplementation
-        := Network.Config.FindImplementation
+      StreamImplementation
+        := Network.Streams.Implementations.Find
           (Configuration => Configuration,
            ModuleName    => To_Unbounded_String("Admin.Network"));
 
-      NetworkImplementation.Streams.Initialize.all;
+      StreamImplementation.Initialize.all;
 
       Client
-        :=NetworkImplementation.Streams.NewClient
+        :=StreamImplementation.NewClient
           (Config.GetModuleMap
                (Item => Configuration,
                 Name => To_Unbounded_String("Admin.Client.Network")).all);
@@ -69,9 +68,9 @@ package body SimAdmin is
 
    procedure Finalize is
    begin
-      NetworkImplementation.Streams.FreeClient
+      StreamImplementation.FreeClient
         (Item => Client);
-      NetworkImplementation.Streams.Finalize.all;
+      StreamImplementation.Finalize.all;
    end Finalize;
    ---------------------------------------------------------------------------
 

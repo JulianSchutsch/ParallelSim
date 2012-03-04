@@ -24,7 +24,6 @@
 pragma Ada_2005;
 
 with Processes; use Processes;
-with Network.Config;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package body Network.Processes.Local is
@@ -67,9 +66,8 @@ package body Network.Processes.Local is
    procedure Initialize is null;
    procedure Finalize is null;
 
-   ProcessesImplementation : constant Network.Config.ProcessesImplementation_Type:=
-     (ImplementationIdentifier => To_Unbounded_String("Local"),
-      Initialize               => Initialize'Access,
+   Implementation : constant Network.Processes.Implementation_Type:=
+     (Initialize               => Initialize'Access,
       Finalize                 => Finalize'Access,
       StoreConfig              => StoreConfig'Access,
       LoadConfig               => LoadConfig'Access,
@@ -77,8 +75,9 @@ package body Network.Processes.Local is
 
    procedure Register is
    begin
-      Network.Config.RegisterProcessImplementation
-        (ProcessesImplementation =>  ProcessesImplementation);
+      Network.Processes.Implementations.Register
+        (Identifier => To_Unbounded_String("Local"),
+         Implementation => Implementation);
    end Register;
 
 end Network.Processes.Local;

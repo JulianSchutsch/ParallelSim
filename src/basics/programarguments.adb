@@ -30,9 +30,13 @@ With Ada.Text_IO; use Ada.Text_IO;
 package body ProgramArguments is
 
    procedure Debug is
+
       use type StringStringMap.Cursor;
       use type StringVector.Cursor;
+
+      Map       : access StringStringMap.Map;
       MapCursor : StringStringMap.Cursor;
+
    begin
 
       Put("Program Parameters:");
@@ -43,9 +47,13 @@ package body ProgramArguments is
          New_Line;
       end loop;
 
+      Map:=Config.GetModuleMap
+        (Item => Configuration,
+         Name => To_Unbounded_String("Arguments"));
+
       Put("Program Variables:");
       New_Line;
-      MapCursor:=StringStringMap.First(VariablesMap);
+      MapCursor:=StringStringMap.First(Map.all);
       while MapCursor/=StringStringMap.No_Element loop
          Put(" ");
          Put(To_String(StringStringMap.Key(MapCursor)));
@@ -58,9 +66,19 @@ package body ProgramArguments is
    end Debug;
 
    procedure ProcessArguments is
+
       Argument : Unbounded_String;
       EqualPos : Natural;
+      Map      : access StringStringMap.Map;
+
    begin
+      Config.NewModule
+        (Item => Configuration,
+         Name => To_Unbounded_String("Arguments"));
+      Map:=Config.GetModuleMap
+        (Item => Configuration,
+         Name => To_Unbounded_String("Arguments"));
+
       Put("Processing Arguments");
       New_Line;
       for i in 1..Ada.Command_Line.Argument_Count loop
@@ -75,7 +93,7 @@ package body ProgramArguments is
                Pattern => "=",
                From    => 1);
             if EqualPos/=0 then
-               VariablesMap.Insert
+               Map.Insert
                  (Unbounded_Slice
                     (Source => Argument,
                      Low    => 2,
@@ -85,7 +103,7 @@ package body ProgramArguments is
                      Low    => EqualPos+1,
                      High   => Length(Argument)));
             else
-               VariablesMap.Insert
+               Map.Insert
                  (Unbounded_Slice
                     (Source => Argument,
                      Low    => 2,

@@ -1,5 +1,4 @@
 with Config;
-with Network.Config;
 
 with BSDSockets.Streams;
 with Network.Processes.Local;
@@ -11,10 +10,12 @@ with Processes;
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 procedure simreg is
 
    Configuration : Config.Config_Type;
+   ProcessesImplementation : Network.Processes.Implementation_Type;
 
 begin
    Processes.Initialize;
@@ -24,7 +25,11 @@ begin
 
    ProgramArguments.Debug;
 
-   Network.Config.LoadConfiguration
+   ProcessesImplementation
+     :=Network.Processes.Implementations.Find
+       (Configuration => ProgramArguments.Configuration,
+        ModuleName    => To_Unbounded_String("Arguments"));
+   ProcessesImplementation.LoadConfig
      (Configuration => Configuration);
 
    Config.Debug

@@ -4,8 +4,6 @@ with Network;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-with Network.Config;
-
 with BSDSockets.Streams;
 with Network.Processes.Local;
 with ProgramArguments;
@@ -16,12 +14,29 @@ with Processes;
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
 
+with Config.Implementations;
+
 procedure Ps is
 
+   type Implementation_Type is
+      record
+         a: Integer;
+      end record;
+
+   package MyImplements is new Config.Implementations
+     (Implementation_Type => Implementation_Type,
+      IdentifierKey       => To_Unbounded_String("MyImpl"));
+
    Configuration         : Config.Config_Type;
-   NetworkImplementation : Network.Config.Implementation_Type;
+
+   ProcessesImplementation : Network.Processes.Implementation_Type;
+   Test: constant Implementation_Type:=(a => 1);
 
 begin
+
+   MyImplements.Register
+     (To_Unbounded_String("Test"),
+      Test);
 
    Processes.Initialize;
    ProgramArguments.Initialize;
@@ -124,29 +139,29 @@ begin
       Key        => To_Unbounded_String("Host"),
       Value      => To_Unbounded_String("127.0.0.1"));
 
+   ProcessesImplementation:=Network.Processes.Implementations.Find
+     (Configuration => Configuration,
+      ModuleName    => To_Unbounded_String("Control.Network"));
    -- The network for spawning isn't necessarily the same as the Control
    -- This should be a different module in the future.
-   NetworkImplementation:=Network.Config.FindImplementation
-     (ModuleName    => To_Unbounded_String("Control.Network"),
-      Configuration => Configuration);
 
-   NetworkImplementation.Processes.Initialize.all;
+   ProcessesImplementation.Initialize.all;
 
    Config.Debug
      (Item => Configuration);
 
-   NetworkImplementation.Processes.StoreConfig
+   ProcessesImplementation.StoreConfig
      (Configuration => Configuration);
 
-   NetworkImplementation.Processes.Spawn
+   ProcessesImplementation.Spawn
      (Program => "simctr" & To_String(Processes.Suffix),
       Amount  => 1);
 
-   NetworkImplementation.Processes.Spawn
+   ProcessesImplementation.Spawn
      (Program => "simreg" & To_String(Processes.Suffix),
       Amount  => 1);
 
-   NetworkImplementation.Processes.Finalize.all;
+   ProcessesImplementation.Finalize.all;
 
 exception
    when E:others =>

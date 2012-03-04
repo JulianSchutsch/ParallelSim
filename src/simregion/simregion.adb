@@ -18,7 +18,6 @@
 -------------------------------------------------------------------------------
 pragma Ada_2005;
 
-with Network.Config;
 with Network.Streams;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
@@ -40,7 +39,7 @@ package body SimRegion is
       ControlReceiveStatusReady,
       ControlReceiveStatusInvalid);
 
-   ControlNetworkImplementation : Network.Config.Implementation_Type;
+   ControlNetworkImplementation : Network.Streams.Implementation_Type;
    ControlClient                : Network.Streams.Client_ClassAccess;
    ControlSendStatus    : ControlSendStatus_Enum;
    ControlReceiveStatus : ControlReceiveStatus_Enum;
@@ -185,14 +184,14 @@ package body SimRegion is
    begin
 
       ControlNetworkImplementation
-        :=Network.Config.FindImplementation
+        :=Network.Streams.Implementations.Find
           (Configuration => Configuration,
            ModuleName    => To_Unbounded_String("Control.Network"));
 
-      ControlNetworkImplementation.Streams.Initialize.all;
+      ControlNetworkImplementation.Initialize.all;
 
       ControlClient
-        :=ControlNetworkImplementation.Streams.NewClient
+        :=ControlNetworkImplementation.NewClient
           (Config => Config.GetModuleMap
                (Item => Configuration,
                 Name => To_Unbounded_String("Control.Client.Network")).all);
@@ -204,10 +203,10 @@ package body SimRegion is
 
    procedure Finalize is
    begin
-      ControlNetworkImplementation.Streams.FreeClient
+      ControlNetworkImplementation.FreeClient
         (Item => ControlClient);
 
-      ControlNetworkImplementation.Streams.Finalize.all;
+      ControlNetworkImplementation.Finalize.all;
    end Finalize;
    ---------------------------------------------------------------------------
 

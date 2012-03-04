@@ -58,7 +58,7 @@ package Config is
       Name : Ada.Strings.Unbounded.Unbounded_String);
 
    procedure Insert
-     (Item : in out Config_Type;
+     (Item       : in out Config_Type;
       ModuleName : Ada.Strings.Unbounded.Unbounded_String;
       Key        : Ada.Strings.Unbounded.Unbounded_String;
       Value      : Ada.Strings.Unbounded.Unbounded_String);

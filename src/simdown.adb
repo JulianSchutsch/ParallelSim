@@ -10,7 +10,6 @@ with Processes;
 with ProgramArguments; use ProgramArguments;
 with BSDSockets.Streams;
 with Network.Processes.Local;
-with Network.Config;
 
 with SimAdmin;
 with Config;
@@ -18,6 +17,7 @@ with Config;
 procedure SimDown is
 
    Configuration : Config.Config_Type;
+   ProcessesImplementation : Network.Processes.Implementation_Type;
 
 begin
    Processes.Initialize;
@@ -27,11 +27,18 @@ begin
 
    -- TEMP : Assuming Network.Processes=Local, not necessary for the
    --        future, but since this is only a temp help program ok.
-   ProgramArguments.VariablesMap.Insert
-     (Key       => To_Unbounded_String("Network.Processes"),
-      New_Item  => To_Unbounded_String("Local"));
+   Config.Insert
+     (Item       => ProgramArguments.Configuration,
+      ModuleName => To_Unbounded_String("Arguments"),
+      Key        => To_Unbounded_String("ProcessesImplementation"),
+      Value      => To_Unbounded_String("Local"));
 
-   Network.Config.LoadConfiguration
+   ProcessesImplementation
+     :=Network.Processes.Implementations.Find
+       (Configuration => Configuration,
+        ModuleName    => To_Unbounded_String("Arguments"));
+
+   ProcessesImplementation.LoadConfig
      (Configuration => Configuration);
 
    Config.Debug

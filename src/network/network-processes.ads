@@ -27,7 +27,11 @@
 --   This package provides an implementation for local (single computer)
 --   spawn.
 
+pragma Ada_2005;
+
 with Config; use Config;
+with Config.Implementations;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package Network.Processes is
 
@@ -53,5 +57,19 @@ package Network.Processes is
 
    type Finalize_Access is
      access procedure;
+   ---------------------------------------------------------------------------
+
+   type Implementation_Type is
+      record
+         Initialize  : Network.Processes.Initialize_Access:=null;
+         Finalize    : Network.Processes.Finalize_Access:=null;
+         StoreConfig : Network.Processes.StoreConfig_Access:=null;
+         LoadConfig  : Network.Processes.LoadConfig_Access:=null;
+         Spawn       : Network.Processes.Spawn_Access:=null;
+      end record;
+
+   package Implementations is new Config.Implementations
+     (Implementation_Type => Implementation_Type,
+      IdentifierKey       => To_Unbounded_String("ProcessesImplementation"));
 
 end Network.Processes;
