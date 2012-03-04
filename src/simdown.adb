@@ -27,16 +27,10 @@ begin
 
    -- TEMP : Assuming Network.Processes=Local, not necessary for the
    --        future, but since this is only a temp help program ok.
-   Config.Insert
-     (Item       => ProgramArguments.Configuration,
-      ModuleName => To_Unbounded_String("Arguments"),
-      Key        => To_Unbounded_String("ProcessesImplementation"),
-      Value      => To_Unbounded_String("Local"));
 
    ProcessesImplementation
      :=Network.Processes.Implementations.Find
-       (Configuration => Configuration,
-        ModuleName    => To_Unbounded_String("Arguments"));
+       (ImplementationName => To_Unbounded_String("Local"));
 
    ProcessesImplementation.LoadConfig
      (Configuration => Configuration);

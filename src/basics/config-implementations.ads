@@ -19,4 +19,8 @@ package Config.Implementations is
       ModuleName    : Unbounded_String)
       return Implementation_Type;
 
+   function Find
+     (ImplementationName : Unbounded_String)
+      return Implementation_Type;
+
 end Config.Implementations;

@@ -38,7 +38,7 @@ package body Network.Processes.Local is
 
          Execute
            (ProgramName => Program,
-            Arguments   => "-Network.Processes=Local");
+            Arguments   => "-ProcessesImplementation=Local");
 
       end loop;
 

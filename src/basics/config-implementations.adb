@@ -30,37 +30,43 @@ package body Config.Implementations is
 
    end Register;
    ---------------------------------------------------------------------------
-
    function Find
-     (Configuration : Config_Type;
-      ModuleName    : Unbounded_String)
+     (ImplementationName : Unbounded_String)
       return Implementation_Type is
 
       use type List_Pack.Cursor;
 
-      ModuleMap          : access StringStringMap.Map;
-      IdentifierValue    : Unbounded_String;
       Cursor             : List_Pack.Cursor;
       ImplementationDesc : ImplementationDesc_Type;
 
    begin
-      ModuleMap:=GetModuleMap
-        (Item => Configuration,
-         Name => ModuleName);
-      IdentifierValue:=ModuleMap.Element
-        (Key => IdentifierKey);
-
       Cursor:=List.First;
       while Cursor/=List_Pack.No_Element loop
          ImplementationDesc:=List_Pack.Element(Cursor);
-         if ImplementationDesc.Identifier=IdentifierValue then
+         if ImplementationDesc.Identifier=ImplementationName then
             return ImplementationDesc.Implementation;
          end if;
          Cursor :=List_Pack.Next(Cursor);
       end loop;
 
       raise ImplementationNotFound;
+   end Find;
 
+   function Find
+     (Configuration : Config_Type;
+      ModuleName    : Unbounded_String)
+      return Implementation_Type is
+
+      ModuleMap          : access StringStringMap.Map;
+
+   begin
+      ModuleMap:=GetModuleMap
+        (Item => Configuration,
+         Name => ModuleName);
+
+      return Find
+        (ImplementationName => ModuleMap.Element
+           (Key => IdentifierKey));
    end Find;
    ---------------------------------------------------------------------------
 

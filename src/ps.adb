@@ -51,12 +51,6 @@ begin
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Admin.Network"),
-      Key        => To_Unbounded_String("ProcessesImplementation"),
-      Value      => To_Unbounded_String("Local"));
-
-   Config.Insert
-     (Item       => Configuration,
       ModuleName => To_Unbounded_String("Admin.Server.Network"),
       Key        => To_Unbounded_String("Family"),
       Value      => To_Unbounded_String("IPv4"));
@@ -99,12 +93,6 @@ begin
 
    Config.Insert
      (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.Network"),
-      Key        => To_Unbounded_String("ProcessesImplementation"),
-      Value      => To_Unbounded_String("Local"));
-
-   Config.Insert
-     (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Server.Network"),
       Key        => To_Unbounded_String("Family"),
       Value      => To_Unbounded_String("IPv4"));
@@ -140,8 +128,7 @@ begin
       Value      => To_Unbounded_String("127.0.0.1"));
 
    ProcessesImplementation:=Network.Processes.Implementations.Find
-     (Configuration => Configuration,
-      ModuleName    => To_Unbounded_String("Control.Network"));
+     (ImplementationName => To_Unbounded_String("Local"));
    -- The network for spawning isn't necessarily the same as the Control
    -- This should be a different module in the future.
 
