@@ -1,31 +1,87 @@
+-------------------------------------------------------------------------------
+--   Copyright 2012 Julian Schutsch
+--
+--   This file is part of ParallelSim
+--
+--   ParallelSim is free software: you can redistribute it and/or modify
+--   it under the terms of the GNU Affero General Public License as published
+--   by the Free Software Foundation, either version 3 of the License, or
+--   (at your option) any later version.
+--
+--   ParallelSim is distributed in the hope that it will be useful,
+--   but WITHOUT ANY WARRANTY; without even the implied warranty of
+--   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--   GNU Affero General Public License for more details.
+--
+--   You should have received a copy of the GNU Affero General Public License
+--   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------------
+pragma Ada_2005;
+
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+
+with Ada.Calendar;
+with Network.Config;
+with Network.Streams;
+with ProcessLoop;
 
 package body SimAdmin is
 
-   NetImplementation : Network.Config.Implementation_Type;
-   NetConfig         : StringStringMap.Map;
+   NetworkImplementation : Network.Config.Implementation_Type;
+   Client : Network.Streams.Client_ClassAccess;
+
+   procedure WaitForConnection is
+
+      use type Ada.Calendar.Time;
+
+      StartTime : Ada.Calendar.Time;
+
+   begin
+      -- Terminate loop after 3 seconds
+      StartTime := Ada.Calendar.Clock;
+      loop
+         ProcessLoop.Process;
+         exit when (Ada.Calendar.Clock-StartTime)>15.0;
+      end loop;
+   end WaitForConnection;
+   ---------------------------------------------------------------------------
 
    procedure Initialize
-     (NetworkImplementation : Network.Config.Implementation_Type;
-      Config                : StringStringMap.Map) is
+     (Configuration : Config.Config_Type) is
    begin
-      NetImplementation := NetworkImplementation;
-      NetConfig         := Config;
+
+      NetworkImplementation
+        := Network.Config.FindImplementation
+          (Configuration => Configuration,
+           ModuleName    => To_Unbounded_String("Admin.Network"));
+
+      NetworkImplementation.Streams.Initialize.all;
+
+      Client
+        :=NetworkImplementation.Streams.NewClient
+          (Config.GetModuleMap
+               (Item => Configuration,
+                Name => To_Unbounded_String("Admin.Client.Network")).all);
+
    end Initialize;
+   ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      null;
+      NetworkImplementation.Streams.FreeClient
+        (Item => Client);
+      NetworkImplementation.Streams.Finalize.all;
    end Finalize;
+   ---------------------------------------------------------------------------
 
    function Process
      return Boolean is
 
-      Char : Character;
    begin
-      Get(Char);
+      Put("X");
       return false;
    end Process;
-
+   ---------------------------------------------------------------------------
 
 end SimAdmin;

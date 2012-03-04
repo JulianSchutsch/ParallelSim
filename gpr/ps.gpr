@@ -12,7 +12,7 @@ project Ps is
      Common.Exec_Directory;
 
    for Main use
-     ("ps.adb","simctr.adb","simreg.adb");
+     ("ps.adb","simctr.adb","simreg.adb","simdown.adb");
 
    for Languages use
      ("Ada");

@@ -320,6 +320,8 @@ package body BSDSockets is
          ppResult     => AddrInfoPointer'Access);
 
       if Result/=0 then
+         Put(Integer(Result));
+         New_Line;
          Put(Integer(BSDSockets.Thin.Error));
          New_Line;
          raise FailedGetAddrInfo;

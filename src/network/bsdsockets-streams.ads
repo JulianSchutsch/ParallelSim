@@ -84,7 +84,8 @@ private
 
    type ClientModeEnum is
      (ClientModeConnecting,
-      ClientModeConnected);
+      ClientModeConnected,
+      ClientModeFailedConnect);
 
    type Client_Type is new BSDSocketChannel_Type with
       record

@@ -64,6 +64,7 @@ package body Config is
          ModuleCursor:=ModuleCursor.Next;
       end loop;
    end Debug;
+   ---------------------------------------------------------------------------
 
    procedure Insert
      (Item : in out Config_Type;

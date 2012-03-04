@@ -32,7 +32,13 @@ begin
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Admin.Network"),
       Key        => To_Unbounded_String("StreamImplementation"),
-      Value      => To_Unbounded_String("BSDSockets.Streams"));
+      Value      => To_Unbounded_String("BSDSockets.Stream"));
+
+   Config.Insert
+     (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Admin.Network"),
+      Key        => To_Unbounded_String("ProcessesImplementation"),
+      Value      => To_Unbounded_String("Local"));
 
    Config.Insert
      (Item       => Configuration,

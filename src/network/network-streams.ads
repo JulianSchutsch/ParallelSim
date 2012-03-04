@@ -73,10 +73,10 @@ package Network.Streams is
      abstract new Root_Stream_Type with
       record
          ReceivedContent : aliased Stream_Element_Array(0..Max);
-         ReceivePosition : Stream_Element_Offset;
-         AmountReceived  : Stream_Element_Count;
+         ReceivePosition : Stream_Element_Offset:=0;
+         AmountReceived  : Stream_Element_Count:=0;
          WrittenContent  : aliased Stream_Element_Array(0..Max);
-         WritePosition   : Stream_Element_Offset;
+         WritePosition   : Stream_Element_Offset:=0;
          CallBack        : ChannelCallBack_ClassAccess:=null;
       end record;
 
@@ -144,8 +144,8 @@ package Network.Streams is
    type ServerCallBack_Type is tagged null record;
 
    procedure OnAccept
-     (Item : in out ServerCallBack_Type;
-      Chan : Channel_ClassAccess) is null;
+     (Item    : in out ServerCallBack_Type;
+      Channel : Channel_ClassAccess) is null;
    ---------------------------------------------------------------------------
 
    procedure Free is new Ada.Unchecked_Deallocation

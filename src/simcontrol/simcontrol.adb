@@ -86,6 +86,7 @@ package body SimControl is
                  (Item.Channel,
                   SimCommon.NetworkControlServerID);
                Item.SendStatus := ControlSendStatusReady;
+               Item.ReceiveStatus := ControlReceiveStatusReady;
                Put("Identify as ContentServer");
                New_Line;
             when ControlSendStatusReady =>
@@ -152,18 +153,18 @@ package body SimControl is
 
    overriding
    procedure OnAccept
-     (Item : in out ControlServerCallBack_Type;
-      Chan : Network.Streams.Channel_ClassAccess) is
+     (Item    : in out ControlServerCallBack_Type;
+      Channel : Network.Streams.Channel_ClassAccess) is
       pragma Warnings(Off,Item);
 
-      NewCallBack : ControlserverChannelCallBack_Access;
+      NewCallBack : ControlServerChannelCallBack_Access;
 
    begin
       NewCallBack:=new ControlServerChannelCallBack_Type;
       NewCallBack.ReceiveStatus := ControlReceiveStatusWaitForIdentification;
       NewCallBack.SendStatus    := ControlSendStatusReceive;
-      NewCallBack.Channel       := Chan;
-      Chan.CallBack:=Network.Streams.ChannelCallBack_ClassAccess(NewCallBack);
+      NewCallBack.Channel       := Channel;
+      Channel.CallBack:=Network.Streams.ChannelCallBack_ClassAccess(NewCallBack);
    end OnAccept;
    ---------------------------------------------------------------------------
 

@@ -19,6 +19,7 @@
 pragma Ada_2005;
 
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Network.Config;
 with ProcessLoop;
 
@@ -70,7 +71,7 @@ package body BSDSockets.Streams is
                Item.CallBack.OnConnect;
             end if;
             FreeAddrInfo
-              (AddrInfo => Item.CurrAddrInfo);
+              (AddrInfo => Item.FirstAddrInfo);
             return;
 
          exception
@@ -94,10 +95,11 @@ package body BSDSockets.Streams is
 
          if not RetryConnect then
             FreeAddrInfo
-              (AddrInfo => Item.CurrAddrInfo);
+              (AddrInfo => Item.FirstAddrInfo);
+            Item.ClientMode:=ClientModeFailedConnect;
          else
-            Item.CurrAddrInfo:=Item.FirstAddrInfo;
-            Item.LastTime:=Ada.Calendar.Clock;
+            Item.CurrAddrInfo := Item.FirstAddrInfo;
+            Item.LastTime     := Ada.Calendar.Clock;
          end if;
 
       end if;
@@ -318,20 +320,26 @@ package body BSDSockets.Streams is
    procedure FreeStreamClient
      (Item : in out Network.Streams.Client_ClassAccess) is
 
-      Clie : Client_Access;
+      Client : Client_Access;
 
    begin
 
-      Clie:=Client_Access(Item);
+      Client:=Client_Access(Item);
 
-      BSDSockets.Shutdown
-        (Socket => Clie.SelectEntry.Socket,
-         Method => BSDSockets.SD_BOTH);
+      begin
+         BSDSockets.Shutdown
+           (Socket => Client.SelectEntry.Socket,
+            Method => BSDSockets.SD_BOTH);
+      exception
+         when BSDSockets.FailedShutdown =>
+            null;
+      end;
 
       Finalize
-        (Item => Clie);
+        (Item => Client);
 
       Network.Streams.Free(Item);
+
    end FreeStreamClient;
    ---------------------------------------------------------------------------
 
@@ -373,7 +381,7 @@ package body BSDSockets.Streams is
 
       if Item.CallBack/=null then
          Item.CallBack.OnAccept
-           (Chan => Network.Streams.Channel_ClassAccess(NewServerChannel));
+           (Channel => Network.Streams.Channel_ClassAccess(NewServerChannel));
       end if;
 
 
@@ -393,6 +401,10 @@ package body BSDSockets.Streams is
          end if;
          return True;
       end if;
+      Put("Real Send : ");
+      Put(Integer(Item.WritePosition));
+      Put(Integer(Item.WrittenContent'Last));
+      New_Line;
 
       BSDSockets.Send
         (Socket => Item.SelectEntry.Socket,
@@ -404,6 +416,9 @@ package body BSDSockets.Streams is
         :=Item.WrittenContent(SendAmount..Item.WritePosition-1);
 
       Item.WritePosition := Item.WritePosition - SendAmount;
+      Put("Done Send:");
+      Put(Integer(Item.WritePosition));
+      New_Line;
 
       return True;
 
@@ -484,8 +499,9 @@ package body BSDSockets.Streams is
          end if;
 
          if ClientItem.SelectEntry.Writeable then
-            OperationSuccess:=OperationSuccess and Send
-              (Item => ClientItem);
+            OperationSuccess
+              :=Send(Item => ClientItem)
+              and OperationSuccess;
          end if;
 
          if not OperationSuccess then
@@ -520,8 +536,9 @@ package body BSDSockets.Streams is
             end if;
 
             if ServerChannelItem.SelectEntry.Writeable then
-               OperationSuccess:=OperationSuccess and Send
-                 (Item => ServerChannelItem);
+               OperationSuccess
+                 :=Send(Item => ServerChannelItem)
+                 and OperationSuccess;
             end if;
 
             if not OperationSuccess then

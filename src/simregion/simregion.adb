@@ -31,6 +31,7 @@ package body SimRegion is
 
    type ControlSendStatus_Enum is
      (ControlSendStatusIdentify,
+      ControlSendStatusReceive,
       ControlSendStatusReady);
 
    type controlReceiveStatus_Enum is
@@ -102,6 +103,9 @@ package body SimRegion is
                      ControlReceiveStatus:=ControlReceiveStatusReady;
                   end if;
                end;
+               -- NOT YET VALID
+               ControlReceiveStatus := ControlReceiveStatusReady;
+               ControlSendStatus    := ControlSendStatusReady;
             when ControlReceiveStatusReady =>
                return;
             when ControlReceiveStatusInvalid =>
@@ -128,7 +132,11 @@ package body SimRegion is
                SimCommon.NetworkIDString'Write
                  (ControlClient,
                   SimCommon.NetworkControlClientID);
+               -- Check
                ControlReceiveStatus:=ControlReceiveStatusWaitForIdentification;
+               ControlSendStatus:=ControlSendStatusReceive;
+            when ControlSendStatusReceive =>
+               return;
             when ControlSendStatusReady =>
                return;
          end case;
