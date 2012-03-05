@@ -16,6 +16,7 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
+
 pragma Ada_2005;
 
 with Ada.Text_IO; use Ada.Text_IO;

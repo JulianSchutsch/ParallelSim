@@ -186,18 +186,24 @@ package body BSDSockets is
       NewSocket : out SocketID) is
 
       Result  : Interfaces.C.int;
-      Addr    : aliased SockAddr;
+      Addr    : aliased SockAddr_In6;
       AddrLen : aliased Interfaces.C.int;
 
    begin
-      AddrLen := SockAddr'Size/8;
+      AddrLen := SockAddr_In6'Size/8;
+      Put("LEN");
+      Put(Integer(AddrLen));
+      New_Line;
       Result  := BSDSockets.Thin.AAccept
         (Socket  => Interfaces.C.int(Socket),
          Addr    => Addr'Access,
          AddrLen => AddrLen'Access);
-      Host := To_Unbounded_String("");
-      Port := 0;
+      Host := BSDSockets.Thin.AddressToString
+        (Addr    => Addr'Access,
+         AddrLen => Positive(AddrLen));
+      Port := PortID(BSDSockets.Thin.NTOHS(Addr.sin6_port));
       if Result=-1 then
+         Put(Integer(BSDSockets.Thin.Error));
          raise FailedAccept;
       end if;
       NewSocket := SocketID(Result);
@@ -392,10 +398,6 @@ package body BSDSockets is
         (Interfaces.C.unsigned_short(Port));
       Addr.sin6_flowinfo := 0;
       Addr.sin6_scope_id := 0;
-      for i in 0..15 loop
-         Put(Integer(Addr.sin6_addr.s6_addr(i)));
-      end loop;
-      New_Line;
 
       Result:=BSDSockets.Thin.Bind(Socket  => Interfaces.C.int(Socket),
                                    Name    => Addr'Access,

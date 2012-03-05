@@ -75,6 +75,7 @@ private
 
    type Server_Type is new Network.Streams.Server_Type with
       record
+         Family       : Unbounded_String;
          SelectEntry  : aliased BSDSockets.SelectEntry;
          NextServer   : Server_Access;
          LastServer   : Server_Access;

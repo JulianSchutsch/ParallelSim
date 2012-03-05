@@ -1,3 +1,30 @@
+-------------------------------------------------------------------------------
+--   Copyright 2012 Julian Schutsch
+--
+--   This file is part of ParallelSim
+--
+--   ParallelSim is free software: you can redistribute it and/or modify
+--   it under the terms of the GNU Affero General Public License as published
+--   by the Free Software Foundation, either version 3 of the License, or
+--   (at your option) any later version.
+--
+--   ParallelSim is distributed in the hope that it will be useful,
+--   but WITHOUT ANY WARRANTY; without even the implied warranty of
+--   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--   GNU Affero General Public License for more details.
+--
+--   You should have received a copy of the GNU Affero General Public License
+--   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------------
+
+-- Revision History
+--   4.Mar 2012 Julian Schutsch
+--     - Original version
+
+-- Reason for implementation
+--   Requirement for a high level logging sytem which can be customized for
+--   example to work over network connections.
+
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -8,6 +35,7 @@ package Logging is
    type Level_Enum is
      (LevelException,
       LevelFailure,
+      LevelInvalid,
       LevelDebug,
       LevelEvent,
       LevelRareEvent,

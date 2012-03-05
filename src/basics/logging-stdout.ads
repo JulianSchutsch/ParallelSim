@@ -21,6 +21,9 @@
 --   5.Mar 2012 Julian Schutsch
 --     - Original version
 
+-- Reason for implementation
+--   Simple console based logging implementation.
+
 pragma Ada_2005;
 
 package Logging.StdOut is

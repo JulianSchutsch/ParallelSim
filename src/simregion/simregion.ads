@@ -20,6 +20,7 @@
 -- Revision History
 --   7.Feb 2012 Julian Schutsch
 --     - Original version
+
 pragma Ada_2005;
 
 with Config;

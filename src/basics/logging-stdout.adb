@@ -73,15 +73,13 @@ package body Logging.StdOut is
       pragma Warnings(Off,Level); -- TEMP
    begin
       Put("[");
-      Put(Item.ModuleName);
-      for i in 20..Length(Item.ModuleName) loop
-         Put(" ");
-      end loop;
+      Put(Head
+        (Source => Item.ModuleName,
+         Count  => 20));
       Put("][");
-      Put(Item.ChannelName);
-      for i in 20..Length(Item.ChannelName) loop
-         Put(" ");
-      end loop;
+      Put(Head
+        (Source => Item.ChannelName,
+         Count => 20));
       Put("]:");
       Put(Message);
       New_Line;

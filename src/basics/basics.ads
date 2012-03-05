@@ -18,6 +18,11 @@
 -- Revision History
 --   2.Feb 2012 Julian Schutsch
 --     - Original version
+--  29.Feb 2012 Julian Schutsch
+--     - Fixed range
+--   5.Feb 2012 Julian Schutsch
+--     - Added Put and ConcatElements function for StringStringMap
+
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -40,5 +45,12 @@ package Basics is
       "=" => "=");
 
    type StringArray is array (Positive range <>) of Unbounded_String;
+
+   procedure Put
+     (Item : StringStringMap.Map);
+
+   function ConcatElements
+     (Item : StringStringMap.Map)
+     return Unbounded_String;
 
 end Basics;

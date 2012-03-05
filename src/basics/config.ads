@@ -39,6 +39,7 @@
 --    Do not use empty names ("") as keys neither for module names nor
 --    for map keys. Values can be empty names.
 --    Special characters are not permitted at all.
+
 pragma Ada_2005;
 
 with Basics; use Basics;

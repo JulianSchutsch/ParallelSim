@@ -16,11 +16,12 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
+
 pragma Ada_2005;
 
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with ProcessLoop;
+with Ada.Strings;
 
 package body BSDSockets.Streams is
    use type Network.Streams.ServerCallBack_ClassAccess;
@@ -196,6 +197,8 @@ package body BSDSockets.Streams is
          end if;
       end if;
 
+      Item.Family:=FamilyStr;
+
       Item.SelectEntry.Socket := Socket
         (AddressFamily => Family,
          SocketType    => SOCK_STREAM,
@@ -345,15 +348,22 @@ package body BSDSockets.Streams is
          Port      => Port,
          NewSocket => NewSock);
 
-      Put("NewSock");
-      Put(BSDSockets.ToString(NewSock));
-      New_Line;
-
       NewServerChannel                    := new ServerChannel_Type(Max=>1023);
       NewServerChannel.SelectEntry.Socket := NewSock;
       NewServerChannel.Server             := Item;
       NewServerChannel.NextChannel        := Item.FirstChannel;
       NewServerChannel.LastChannel        := null;
+      NewServerChannel.PeerAddress.Insert
+        (Key => To_Unbounded_String("Host"),
+         New_Item => Host);
+      NewServerChannel.PeerAddress.Insert
+        (Key      => To_Unbounded_String("Port"),
+         New_Item => Trim
+           (Source => To_Unbounded_String(BSDSockets.PortID'Image(Port)),
+            Side   => Ada.Strings.Left));
+      NewServerChannel.PeerAddress.Insert
+        (Key      => To_Unbounded_String("Family"),
+         New_Item => Item.Family);
 
       if NewServerChannel.NextChannel/=null then
          NewServerChannel.NextChannel.LastChannel:=NewServerChannel;
@@ -387,10 +397,6 @@ package body BSDSockets.Streams is
          end if;
          return True;
       end if;
-      Put("Real Send : ");
-      Put(Integer(Item.WritePosition));
-      Put(Integer(Item.WrittenContent'Last));
-      New_Line;
 
       BSDSockets.Send
         (Socket => Item.SelectEntry.Socket,
@@ -402,9 +408,6 @@ package body BSDSockets.Streams is
         :=Item.WrittenContent(SendAmount..Item.WritePosition-1);
 
       Item.WritePosition := Item.WritePosition - SendAmount;
-      Put("Done Send:");
-      Put(Integer(Item.WritePosition));
-      New_Line;
 
       return True;
 

@@ -106,10 +106,20 @@ package BSDSockets.Thin is
       Buffer        : access In_Addr6)
       return Interfaces.C.int;
 
+  function AddressToString
+     (Addr    : access SockAddr_In6;
+      AddrLen : Natural)
+      return Unbounded_String;
+
    function HTONS
      (HostShort : Interfaces.C.unsigned_short)
       return Interfaces.C.unsigned_short;
    pragma Import(StdCall,HTONS,"htons");
+
+   function NTOHS
+     (NetShort : Interfaces.C.unsigned_short)
+      return Interfaces.C.unsigned_short;
+   pragma Import(StdCall,NTOHS,"ntohs");
 
    -- Select prefixed with S because Select is reserved word
    function SSelect
@@ -124,7 +134,7 @@ package BSDSockets.Thin is
    -- Accept prefixed with A because Accept is reserved word
    function AAccept
      (Socket  : Interfaces.C.int;
-      Addr    : access SockAddr;
+      Addr    : access SockAddr_In6;
       AddrLen : access Interfaces.C.int)
       return Interfaces.C.int;
    pragma Import(StdCall,AAccept,"accept");

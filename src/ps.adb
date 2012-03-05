@@ -20,6 +20,12 @@ procedure Ps is
    Configuration           : Config.Config_Type;
    ProcessesImplementation : Network.Processes.Implementation_Type;
 
+   Family            : constant String:="IPv4";
+   BindHost          : constant String:="0.0.0.0";
+   RemoteHost        : constant String:="127.0.0.1";
+   AdminServerPort   : constant String:="10002";
+   ControlServerPort : constant String:="10001";
+
 begin
 
    Processes.Initialize;
@@ -38,37 +44,37 @@ begin
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Admin.Server.Network"),
       Key        => To_Unbounded_String("Family"),
-      Value      => To_Unbounded_String("IPv4"));
+      Value      => To_Unbounded_String(Family));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Admin.Server.Network"),
       Key        => To_Unbounded_String("Host"),
-      Value      => To_Unbounded_String("0.0.0.0"));
+      Value      => To_Unbounded_String(BindHost));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Admin.Server.Network"),
       Key        => To_Unbounded_String("Port"),
-      Value      => To_Unbounded_String("10002"));
+      Value      => To_Unbounded_String(AdminServerPort));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Admin.Client.Network"),
       Key        => To_Unbounded_String("Family"),
-      Value      => To_Unbounded_String("IPv4"));
+      Value      => To_Unbounded_String(Family));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Admin.Client.Network"),
       Key        => To_Unbounded_String("Host"),
-      Value      => To_Unbounded_String("127.0.0.1"));
+      Value      => To_Unbounded_String(RemoteHost));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Admin.Client.Network"),
       Key        => To_Unbounded_String("Port"),
-      Value      => To_Unbounded_String("10002"));
+      Value      => To_Unbounded_String(AdminServerPort));
 
    Config.Insert
      (Item       => Configuration,
@@ -86,37 +92,37 @@ begin
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Server.Network"),
       Key        => To_Unbounded_String("Family"),
-      Value      => To_Unbounded_String("IPv4"));
+      Value      => To_Unbounded_String(Family));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Server.Network"),
       Key        => To_Unbounded_String("Port"),
-      Value      => To_Unbounded_String("10001"));
+      Value      => To_Unbounded_String(ControlServerPort));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Server.Network"),
       Key        => To_Unbounded_String("Host"),
-      Value      => To_Unbounded_String("0.0.0.0"));
+      Value      => To_Unbounded_String(BindHost));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Client.Network"),
       Key        => To_Unbounded_String("Family"),
-      Value      => To_Unbounded_String("IPv4"));
+      Value      => To_Unbounded_String(Family));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Client.Network"),
       Key        => To_Unbounded_String("Port"),
-      Value      => To_Unbounded_String("10001"));
+      Value      => To_Unbounded_String(ControlServerPort));
 
    Config.Insert
      (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Client.Network"),
       Key        => To_Unbounded_String("Host"),
-      Value      => To_Unbounded_String("127.0.0.1"));
+      Value      => To_Unbounded_String(RemoteHost));
 
    ProcessesImplementation:=Network.Processes.Implementations.Find
      (ImplementationName => To_Unbounded_String("Local"));

@@ -17,7 +17,10 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
+pragma Ada_2005;
+
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Strings;
 
 package body BSDSockets.Thin is
    use type Interfaces.C.int;
@@ -58,9 +61,71 @@ package body BSDSockets.Thin is
       AddressFamily   : Interfaces.C.int;
       lpProtocolInfo  : System.Address;
       lpAddress       : access SockAddr_In6;
-      lpAddressLength : access Interfaces.c.int)
+      lpAddressLength : access Interfaces.C.int)
       return Interfaces.C.int;
    pragma Import(StdCall,WSAStringToAddressA,"WSAStringToAddressA");
+   ---------------------------------------------------------------------------
+
+   function WSAAddressToStringA
+     (lpsaAddress             : access SockAddr_In6;
+      dwAddressLength         : Interfaces.Unsigned_32;
+      lpProtocolInfo          : System.Address;
+      lpszAddressString       : Interfaces.C.Strings.chars_ptr;
+      lpdwAddressStringLength : access Interfaces.Unsigned_32)
+      return Interfaces.C.int;
+   pragma Import(StdCall,WSAAddressToStringA,"WSAAddressToStringA");
+   ---------------------------------------------------------------------------
+
+   function AddressToString
+     (Addr    : access SockAddr_In6;
+      AddrLen : Natural)
+      return Unbounded_String is
+
+      use type Interfaces.Unsigned_32;
+
+      ReturnVal  : Interfaces.C.int;
+      AddrString : Interfaces.C.char_array(0..46);
+      pragma Warnings(Off,AddrString);
+      AddrPtr    : Interfaces.C.Strings.chars_ptr;
+      Len        : aliased Interfaces.Unsigned_32:=46;
+
+      Result : Unbounded_String;
+
+   begin
+      AddrPtr:=Interfaces.C.Strings.New_Char_Array(AddrString);
+
+      ReturnVal:=WSAAddressToStringA
+        (lpsaAddress             => Addr,
+         dwAddressLength         => Interfaces.Unsigned_32(AddrLen),
+         lpProtocolInfo          => System.Null_Address,
+         lpszAddressString       => AddrPtr,
+         lpdwAddressStringLength => Len'Access);
+
+      if ReturnVal=0 then
+         Result:=To_Unbounded_String(Interfaces.C.To_Ada
+           (Interfaces.C.Strings.Value
+              (Item   => AddrPtr)));
+         -- The result includes a remove port which has to be removed
+         Result:=Head
+           (Source=>Result,
+            Count =>Index
+              (Source=>Result,
+               Pattern=>":",
+               From=>Length(Result),
+               Going=>Ada.Strings.Backward));
+         -- For IPv6 Windows puts the address in square brackets which need
+         -- to be removed.
+         if Element(Result,1)='[' then
+            Result:=Unbounded_Slice
+              (Source => Result,
+               Low    => 2,
+               High   => Length(Result)-2);
+         end if;
+         return Result;
+      else
+         return To_Unbounded_String("");
+      end if;
+   end AddressToString;
    ---------------------------------------------------------------------------
 
    function INET_PTON

@@ -74,6 +74,7 @@ package Network.Streams is
    type Channel_Type(Max: Stream_Element_Count) is
      abstract new Root_Stream_Type with
       record
+         PeerAddress     : StringStringMap.Map;
          ReceivedContent : aliased Stream_Element_Array(0..Max);
          ReceivePosition : Stream_Element_Offset:=0;
          AmountReceived  : Stream_Element_Count:=0;
