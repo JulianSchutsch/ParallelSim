@@ -23,27 +23,23 @@
 
 pragma Ada_2005;
 
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+package Logging.StdOut is
 
-generic
-   type Implementation_Type is private;
-   IdentifierKey : Unbounded_String;
+   type Channel_Type is new Logging.Channel_Type with private;
 
-package Config.Implementations is
+   overriding
+   procedure Write
+     (Item    : in out Channel_Type;
+      Message : Unbounded_String);
 
-   ImplementationNotFound : Exception;
+   procedure Register;
 
-   procedure Register
-     (Identifier     : Unbounded_String;
-      Implementation : Implementation_Type);
+private
 
-   function Find
-     (Configuration : Config_Type;
-      ModuleName    : Unbounded_String)
-      return Implementation_Type;
+   type Channel_Type is new Logging.Channel_Type with
+      record
+         ModuleName  : Unbounded_String;
+         ChannelName : Unbounded_String;
+      end record;
 
-   function Find
-     (ImplementationName : Unbounded_String)
-      return Implementation_Type;
-
-end Config.Implementations;
+end Logging.StdOut;

@@ -16,6 +16,11 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
+
+-- Revision History
+--   15.Feb 2012 Julian Schutsch
+--     - Original version
+
 pragma Ada_2005;
 
 with Basics; use Basics;

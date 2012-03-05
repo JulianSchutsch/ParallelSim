@@ -13,11 +13,11 @@ with Processes;
 
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
+with Logging.StdOut;
 
 procedure Ps is
 
-   Configuration         : Config.Config_Type;
-
+   Configuration           : Config.Config_Type;
    ProcessesImplementation : Network.Processes.Implementation_Type;
 
 begin
@@ -26,6 +26,7 @@ begin
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
    Network.Processes.Local.Register;
+   Logging.StdOut.Register;
 
    Config.Insert
      (Item       => Configuration,

@@ -17,10 +17,6 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
--- Revision History
---   15.Feb 2012 Julian Schutsch
---     - Original version
-
 pragma Ada_2005;
 
 with Ada.Command_Line;
@@ -64,8 +60,9 @@ package body ProgramArguments is
       end loop;
 
    end Debug;
+   ---------------------------------------------------------------------------
 
-   procedure ProcessArguments is
+   procedure Initialize is
 
       Argument : Unbounded_String;
       EqualPos : Natural;
@@ -117,12 +114,7 @@ package body ProgramArguments is
          end if;
          New_Line;
       end loop;
-   end ProcessArguments;
-   ---------------------------------------------------------------------------
-
-   procedure Initialize is
-   begin
-      ProcessArguments;
    end Initialize;
+   ---------------------------------------------------------------------------
 
 end ProgramArguments;
