@@ -12,6 +12,8 @@ with Ada.Exceptions; use Ada.Exceptions;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
+with Logging.StdOut;
+
 procedure simreg is
 
    Configuration : Config.Config_Type;
@@ -22,6 +24,7 @@ begin
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
    Network.Processes.Local.Register;
+   Logging.StdOut.Register;
 
    ProgramArguments.Debug;
 

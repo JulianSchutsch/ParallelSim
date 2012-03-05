@@ -72,6 +72,12 @@ begin
 
    Config.Insert
      (Item       => Configuration,
+      ModuleName => To_Unbounded_String("Logging"),
+      Key        => To_Unbounded_String("Implementation"),
+      Value      => To_Unbounded_String("StdOut"));
+
+   Config.Insert
+     (Item       => Configuration,
       ModuleName => To_Unbounded_String("Control.Network"),
       Key        => To_Unbounded_String("StreamImplementation"),
       Value      => To_Unbounded_String("BSDSockets.Stream"));

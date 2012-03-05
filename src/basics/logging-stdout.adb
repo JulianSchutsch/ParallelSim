@@ -25,15 +25,52 @@ with Ada.Unchecked_Deallocation;
 
 package body Logging.StdOut is
 
+   type Context_Type is new Logging.Context_Type with
+      record
+         ModuleName : Unbounded_String;
+         Debugging  : Boolean;
+      end record;
+   type Context_Access is access all Context_Type;
+
+   overriding
+   procedure NewChannel
+     (Item        : in out Context_Type;
+      ChannelName : Unbounded_String;
+      Channel     : out Channel_ClassAccess);
+   ---------------------------------------------------------------------------
+
+   type Channel_Type is new Logging.Channel_Type with
+      record
+         ModuleName  : Unbounded_String;
+         ChannelName : Unbounded_String;
+      end record;
    type Channel_Access is access all Channel_Type;
+
+   overriding
+   procedure Write
+     (Item    : in out Channel_Type;
+      Level   : Level_Enum;
+      Message : String);
+
+   overriding
+   procedure FreeChannel
+     (Item : not null access Channel_Type);
+   ---------------------------------------------------------------------------
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => Context_Type,
+      Name   => Context_Access);
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Channel_Type,
       Name   => Channel_Access);
+   ---------------------------------------------------------------------------
 
    procedure Write
      (Item    : in out Channel_Type;
-      Message : Unbounded_String) is
+      Level   : Level_Enum;
+      Message : String) is
+      pragma Warnings(Off,Level); -- TEMP
    begin
       Put("[");
       Put(Item.ModuleName);
@@ -47,26 +84,12 @@ package body Logging.StdOut is
       end loop;
       Put("]:");
       Put(Message);
+      New_Line;
    end Write;
    ---------------------------------------------------------------------------
 
-   function NewChannel
-     (ModuleName  : Unbounded_String;
-      ChannelName : Unbounded_String)
-      return Channel_ClassAccess is
-
-      NewChannel : Channel_Access;
-
-   begin
-      NewChannel := new Channel_Type;
-      NewChannel.ModuleName  := ModuleName;
-      NewChannel.ChannelName := ChannelName;
-      return Channel_ClassAccess(NewChannel);
-   end;
-   ---------------------------------------------------------------------------
-
    procedure FreeChannel
-     (Item : Logging.Channel_ClassAccess) is
+     (Item : not null access Channel_Type) is
 
       Channel : Channel_Access;
 
@@ -76,9 +99,53 @@ package body Logging.StdOut is
    end FreeChannel;
    ---------------------------------------------------------------------------
 
+   procedure NewChannel
+     (Item        : in out Context_Type;
+      ChannelName : Unbounded_String;
+      Channel     : out Channel_ClassAccess) is
+
+      pragma Warnings(Off,Item);
+
+      NewChannel : Channel_Access;
+
+   begin
+      NewChannel := new Channel_Type;
+      NewChannel.ChannelName := ChannelName;
+      NewChannel.ModuleName  := Item.ModuleName;
+      Channel:=Channel_ClassAccess(NewChannel);
+   end;
+   ---------------------------------------------------------------------------
+
+   function NewContext
+     (Configuration : Config.Config_Type;
+      ModuleName    : Unbounded_String)
+      return Context_ClassAccess is
+      pragma Warnings(Off,Configuration);
+
+      NewContext : Context_Access;
+
+   begin
+      NewContext := new Context_Type;
+      NewContext.Debugging := true;
+      NewContext.ModuleName := ModuleName;
+      return Context_ClassAccess(NewContext);
+   end NewContext;
+   ---------------------------------------------------------------------------
+
+   procedure FreeContext
+     (Item : Context_ClassAccess) is
+
+      Context : Context_Access;
+
+   begin
+      Context:=Context_Access(Item);
+      Free(Context);
+   end FreeContext;
+   ---------------------------------------------------------------------------
+
    Implementation : constant Implementation_Type:=
-     (NewChannel  => NewChannel'Access,
-      FreeChannel => FreeChannel'Access);
+     (NewContext  => NewContext'Access,
+      FreeContext => FreeContext'Access);
 
    procedure Register is
    begin

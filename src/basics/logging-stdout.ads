@@ -25,21 +25,6 @@ pragma Ada_2005;
 
 package Logging.StdOut is
 
-   type Channel_Type is new Logging.Channel_Type with private;
-
-   overriding
-   procedure Write
-     (Item    : in out Channel_Type;
-      Message : Unbounded_String);
-
    procedure Register;
-
-private
-
-   type Channel_Type is new Logging.Channel_Type with
-      record
-         ModuleName  : Unbounded_String;
-         ChannelName : Unbounded_String;
-      end record;
 
 end Logging.StdOut;

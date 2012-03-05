@@ -25,51 +25,55 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with ProcessLoop;
 with Ada.Streams;
 with SimCommon;
+with Logging;
 
 package body SimRegion is
 
-   type ControlSendStatus_Enum is
-     (ControlSendStatusIdentify,
-      ControlSendStatusReceive,
-      ControlSendStatusReady);
+   type SendStatus_Enum is
+     (SendStatusIdentify,
+      SendStatusReceive,
+      SendStatusReady);
 
-   type controlReceiveStatus_Enum is
-     (ControlReceiveStatusSend,
-      ControlReceiveStatusWaitForIdentification,
-      ControlReceiveStatusReady,
-      ControlReceiveStatusInvalid);
+   type ReceiveStatus_Enum is
+     (ReceiveStatusSend,
+      ReceiveStatusWaitForIdentification,
+      ReceiveStatusReady,
+      ReceiveStatusInvalid);
 
-   ControlNetworkImplementation : Network.Streams.Implementation_Type;
-   ControlClient                : Network.Streams.Client_ClassAccess;
-   ControlSendStatus    : ControlSendStatus_Enum;
-   ControlReceiveStatus : ControlReceiveStatus_Enum;
+   StreamImplementation : Network.Streams.Implementation_Type;
+   Client               : Network.Streams.Client_ClassAccess;
+   SendStatus           : SendStatus_Enum;
+   ReceiveStatus        : ReceiveStatus_Enum;
+   LogImplementation    : Logging.Implementation_Type;
+   LogContext           : Logging.Context_ClassAccess;
+   LogChannel           : Logging.Channel_ClassAccess;
 
-   type ControlClientCallBack_Type is
+   type ClientCallBack_Type is
      new Network.Streams.ChannelCallBack_Type with null record;
 
    overriding
    procedure OnFailedConnect
-     (Item  : in out ControlClientCallBack_Type;
+     (Item  : in out ClientCallBack_Type;
       Retry : in out Boolean);
 
    overriding
    procedure OnConnect
-     (Item : in out ControlClientCallBack_Type);
+     (Item : in out ClientCallBack_Type);
 
    overriding
    procedure OnDisconnect
-     (Item : in out ControlClientCallBack_Type);
+     (Item : in out ClientCallBack_Type);
 
    overriding
    procedure OnCanSend
-     (Item : in out ControlClientCallBack_Type);
+     (Item : in out ClientCallBack_Type);
 
    overriding
    procedure OnReceive
-     (Item : in out ControlClientCallBack_Type);
+     (Item : in out ClientCallBack_Type);
 
    procedure OnReceive
-     (Item : in out ControlClientCallBack_Type) is
+     (Item : in out ClientCallBack_Type) is
       pragma Warnings(Off,Item);
 
       use type SimCommon.NetworkIDString;
@@ -80,133 +84,148 @@ package body SimRegion is
       Put("On Receive");
       loop
          Put("*");
-         Put(Integer(ControlReceiveStatus_Enum'Pos(ControlReceiveStatus)));
-         PrevPosition := ControlClient.ReceivePosition;
-         case ControlReceiveStatus is
-            when ControlReceiveStatusSend =>
+         Put(Integer(ReceiveStatus_Enum'Pos(ReceiveStatus)));
+         PrevPosition := Client.ReceivePosition;
+         case ReceiveStatus is
+            when ReceiveStatusSend =>
                return;
-            when ControlReceiveStatusWaitForIdentification =>
+            when ReceiveStatusWaitForIdentification =>
                declare
                   Identification : SimCommon.NetworkIDString;
                begin
                   SimCommon.NetworkIDString'Read
-                    (ControlClient,
+                    (Client,
                      Identification);
                   if Identification/=SimCommon.NetworkControlServerID then
                      Put("Returned Identification of Control is invalid");
                      New_Line;
-                     ControlReceiveStatus:=ControlReceiveStatusInvalid;
+                     ReceiveStatus:=ReceiveStatusInvalid;
                   else
                      Put("Identification Control is valid");
                      New_Line;
-                     ControlReceiveStatus:=ControlReceiveStatusReady;
+                     ReceiveStatus:=ReceiveStatusReady;
                   end if;
                end;
                -- NOT YET VALID
-               ControlReceiveStatus := ControlReceiveStatusReady;
-               ControlSendStatus    := ControlSendStatusReady;
-            when ControlReceiveStatusReady =>
+               ReceiveStatus := ReceiveStatusReady;
+               SendStatus    := SendStatusReady;
+            when ReceiveStatusReady =>
                return;
-            when ControlReceiveStatusInvalid =>
+            when ReceiveStatusInvalid =>
                return;
          end case;
       end loop;
    exception
       when Network.Streams.StreamOverflow =>
-         ControlClient.ReceivePosition := PrevPosition;
+         Client.ReceivePosition := PrevPosition;
    end OnReceive;
    ---------------------------------------------------------------------------
 
    procedure OnCanSend
-     (Item : in out ControlClientCallBack_Type) is
+     (Item : in out ClientCallBack_Type) is
       pragma Warnings(Off,Item);
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
 
    begin
       loop
-         PrevPosition := ControlClient.WritePosition;
-         case ControlSendStatus is
-            when ControlSendStatusIdentify =>
+         PrevPosition := Client.WritePosition;
+         case SendStatus is
+            when SendStatusIdentify =>
                SimCommon.NetworkIDString'Write
-                 (ControlClient,
+                 (Client,
                   SimCommon.NetworkControlClientID);
                -- Check
-               ControlReceiveStatus:=ControlReceiveStatusWaitForIdentification;
-               ControlSendStatus:=ControlSendStatusReceive;
-            when ControlSendStatusReceive =>
+               ReceiveStatus := ReceiveStatusWaitForIdentification;
+               SendStatus    := SendStatusReceive;
+            when SendStatusReceive =>
                return;
-            when ControlSendStatusReady =>
+            when SendStatusReady =>
                return;
          end case;
       end loop;
    exception
       when Network.Streams.StreamOverflow =>
-         ControlClient.WritePosition:=PrevPosition;
+         Client.WritePosition:=PrevPosition;
    end OnCanSend;
    ---------------------------------------------------------------------------
 
    procedure OnFailedConnect
-     (Item  : in out ControlClientCallBack_Type;
+     (Item  : in out ClientCallBack_Type;
       Retry : in out Boolean) is
       pragma Warnings(Off,Item);
    begin
-      Put("OnFailedConnect...");
-      New_Line;
+      LogChannel.Write
+        (Level   => Logging.LevelFailure,
+         Message => "Failed to connect to Control network");
       Retry:=True;
    end;
    ---------------------------------------------------------------------------
 
    procedure OnConnect
-     (Item : in out ControlClientCallBack_Type) is
+     (Item : in out ClientCallBack_Type) is
       pragma Warnings(Off,Item);
    begin
-      Put("Connected!");
-      New_Line;
-      ControlSendStatus    := ControlSendStatusIdentify;
-      ControlReceiveStatus := ControlReceiveStatusSend;
+      LogChannel.Write
+        (Level   => Logging.LevelEvent,
+         Message => "Connected to Control network");
+      SendStatus    := SendStatusIdentify;
+      ReceiveStatus := ReceiveStatusSend;
    end OnConnect;
    ---------------------------------------------------------------------------
 
    procedure OnDisconnect
-     (Item : in out ControlClientCallBack_Type) is
+     (Item : in out ClientCallBack_Type) is
       pragma Warnings(Off,Item);
    begin
-      Put("Disconnected");
-      New_Line;
+      LogChannel.Write
+        (Level   => Logging.LevelEvent,
+         Message => "Disconnected from Control network");
    end OnDisconnect;
    ---------------------------------------------------------------------------
 
-   ControlClientCallBack : aliased ControlClientCallBack_Type;
+   ClientCallBack : aliased ClientCallBack_Type;
 
    procedure Initialize
      (Configuration : Config.Config_Type) is
    begin
 
-      ControlNetworkImplementation
+      LogImplementation
+        :=Logging.Implementations.Find
+          (Configuration => Configuration,
+           ModuleName    => To_Unbounded_String("Logging"));
+      LogContext:=LogImplementation.NewContext
+        (Configuration => Configuration,
+         ModuleName    => To_Unbounded_String("Region.Control"));
+
+      LogContext.NewChannel
+        (ChannelName => To_Unbounded_String(""),
+         Channel     => LogChannel);
+
+      StreamImplementation
         :=Network.Streams.Implementations.Find
           (Configuration => Configuration,
            ModuleName    => To_Unbounded_String("Control.Network"));
 
-      ControlNetworkImplementation.Initialize.all;
+      StreamImplementation.Initialize.all;
 
-      ControlClient
-        :=ControlNetworkImplementation.NewClient
+      Client
+        :=StreamImplementation.NewClient
           (Config => Config.GetModuleMap
                (Item => Configuration,
                 Name => To_Unbounded_String("Control.Client.Network")).all);
 
-      ControlClient.CallBack:=ControlClientCallBack'Access;
+      Client.CallBack:=ClientCallBack'Access;
 
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      ControlNetworkImplementation.FreeClient
-        (Item => ControlClient);
+      StreamImplementation.FreeClient
+        (Item => Client);
 
-      ControlNetworkImplementation.Finalize.all;
+      StreamImplementation.Finalize.all;
    end Finalize;
    ---------------------------------------------------------------------------
 

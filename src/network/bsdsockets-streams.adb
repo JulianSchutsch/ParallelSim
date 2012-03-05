@@ -38,35 +38,24 @@ package body BSDSockets.Streams is
       RetryConnect : Boolean:=False;
 
    begin
-      Put("Next...Connect");
       New_Line;
       if Item.CurrAddrInfo/=null then
 
          begin
-            Put("SelectEntry.Assign(Socket)");
-            New_Line;
-
             Item.SelectEntry.Socket:=Socket
               (AddrInfo => Item.CurrAddrInfo);
-
-            Put("Calling Connect");
-            New_Line;
 
             Connect
               (Socket   => Item.SelectEntry.Socket,
                AddrInfo => Item.CurrAddrInfo,
                Port     => Item.Port);
 
-            Put("Add Entry for Client");
-
             BSDSockets.AddEntry
               (List => BSDSockets.DefaultSelectList'Access,
                Entr => Item.SelectEntry'Access);
-            Put("Add Entry Done");
 
             Item.ClientMode:=ClientModeConnected;
             if Item.CallBack/=null then
-               Put("Call Connect(ON)");
                Item.CallBack.OnConnect;
             end if;
             FreeAddrInfo
@@ -78,7 +67,6 @@ package body BSDSockets.Streams is
                CloseSocket(Socket => Item.SelectEntry.Socket);
          end;
 
-         Put("....Nexting");
          New_Line;
 
          Item.CurrAddrInfo
@@ -86,7 +74,6 @@ package body BSDSockets.Streams is
              (AddrInfo => Item.CurrAddrInfo);
 
       else
-         Put("Checking...");
          if Item.CallBack/=null then
             Item.CallBack.OnFailedConnect
               (Retry => RetryConnect);

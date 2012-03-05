@@ -8,6 +8,7 @@ with Config;
 with ProgramArguments;
 with SimControl;
 with Processes;
+with Logging.StdOut;
 
 with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
 with Ada.Exceptions; use Ada.Exceptions;
@@ -22,6 +23,7 @@ begin
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
    Network.Processes.Local.Register;
+   Logging.StdOut.Register;
 
    ProgramArguments.Debug;
 
