@@ -27,6 +27,66 @@ with System.OS_Lib;
 package body BSDSockets.Thin is
    use type Interfaces.C.int;
 
+   c_AF_INET : Interfaces.C.int;
+   pragma Import(C,c_AF_INET,"c_AF_INET");
+   c_AF_INET6:Interfaces.C.int;
+   pragma Import(C,c_AF_INET6,"c_AF_INET6");
+
+   function DecypherAddressFamily
+     (AddressFamily : AddressFamilyEnum)
+      return Interfaces.C.int is
+   begin
+      case AddressFamily is
+         when AF_INET =>
+            return c_AF_INET;
+         when AF_INET6 =>
+            return c_AF_INET6;
+      end case;
+   end DecypherAddressFamily;
+
+   function INET_PTON
+     (AddressFamily : Interfaces.C.int;
+      Addr          : access In_Addr6;
+      AddrString    : Interfaces.C.Strings.chars_ptr;
+      AddrLength    : Interfaces.C.size_t)
+      return Interfaces.C.int;
+   pragma Import(C,INET_PTON,"inet_pton");
+
+   function AddressToString
+     (Addr    : access SockAddr_In6;
+      AddrLen : Natural)
+      return Unbounded_String is
+
+      pragma Warnings(Off,AddrLen);
+
+      ReturnVal : Interfaces.C.int;
+      AddrString : Interfaces.C.char_array(0..46);
+      pragma Warnings(Off,AddrString);
+      AddrPtr    : Interfaces.C.Strings.chars_ptr;
+
+      Result : Unbounded_String;
+
+   begin
+      AddrPtr:=Interfaces.C.Strings.New_Char_Array(AddrString);
+
+      ReturnVal:=INET_PTON
+        (AddressFamily => Interfaces.C.int(Addr.sin6_family),
+         Addr          => Addr.sin6_addr'Access,
+         AddrString    => AddrPtr,
+         AddrLength    => 47);
+
+      if ReturnVal=1 then
+         Result :=To_Unbounded_String(Interfaces.C.To_Ada
+           (Interfaces.C.Strings.Value
+              (Item => AddrPtr)));
+      else
+         Result:=To_Unbounded_String("");
+      end if;
+      Interfaces.C.Strings.Free
+        (Item => AddrPtr);
+      return Result;
+   end AddressToString;
+
    function Error return Interfaces.C.int is
    begin
       return Interfaces.C.int(System.OS_Lib.Errno);

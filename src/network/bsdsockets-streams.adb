@@ -22,6 +22,7 @@ pragma Ada_2005;
 with Ada.Text_IO; use Ada.Text_IO;
 with ProcessLoop;
 with Ada.Strings;
+with Ada.Exceptions; use Ada.Exceptions;
 
 package body BSDSockets.Streams is
    use type Network.Streams.ServerCallBack_ClassAccess;
@@ -39,6 +40,7 @@ package body BSDSockets.Streams is
       RetryConnect : Boolean:=False;
 
    begin
+      Put("NExt");
       New_Line;
       if Item.CurrAddrInfo/=null then
 
@@ -64,7 +66,11 @@ package body BSDSockets.Streams is
             return;
 
          exception
-            when others =>
+            when E:others =>
+               Put("Exception Name : " & Exception_Name(E));
+               New_Line;
+               Put("Message : " & Exception_Message(E));
+               New_Line;
                CloseSocket(Socket => Item.SelectEntry.Socket);
          end;
 

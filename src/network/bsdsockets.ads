@@ -241,21 +241,6 @@ private
       end record;
    pragma Convention(C,SockAddr);
 
-   type In_Addr is
-      record
-         S_Addr : Interfaces.C.unsigned_long;
-      end record;
-   pragma Convention(C,In_Addr);
-
-   type SockAddr_In is
-      record
-         sin_family : Interfaces.C.short;
-         sin_port   : Interfaces.C.unsigned_short;
-         sin_addr   : In_Addr;
-         sin_zero   : Interfaces.C.char_array(0..7);
-      end record;
-   pragma Convention(C,SockAddr_In);
-
    type ByteArray is array(Integer range <>) of Interfaces.Unsigned_8;
    pragma Convention(C,ByteArray);
 
@@ -269,19 +254,13 @@ private
       record
          sin6_family   : Interfaces.C.short;
          sin6_port     : Interfaces.C.unsigned_short;
-         sin6_flowinfo : Interfaces.C.unsigned_long;
+         sin6_flowinfo : Interfaces.Unsigned_32;
          sin6_addr     : aliased In_Addr6;
-         sin6_scope_id : Interfaces.C.unsigned_long;
+         sin6_scope_id : Interfaces.Unsigned_32;
       end record;
    pragma Convention(C,Sockaddr_In6);
 
    type SocketID is new Interfaces.C.int;
-
-   -- Representation --
-   for AddressFamilyEnum use
-     (AF_INET      => 2,
-      AF_INET6     => 23);
-   for AddressFamilyEnum'Size use Interfaces.C.int'Size;
 
    -- Representation --
    for SocketTypeEnum use

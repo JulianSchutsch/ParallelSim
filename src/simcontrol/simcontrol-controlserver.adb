@@ -98,9 +98,9 @@ package body SimControl.ControlServer is
       PrevPosition : Ada.Streams.Stream_Element_Offset;
 
    begin
-      Item.LogChannel.Write
-        (Level   =>  Logging.LevelCommonEvent,
-         Message => "Receive");
+--      Item.LogChannel.Write
+--        (Level   =>  Logging.LevelCommonEvent,
+--         Message => "Receive");
       loop
          PrevPosition := Item.Channel.ReceivePosition;
          case Item.ReceiveStatus is

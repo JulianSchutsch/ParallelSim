@@ -29,10 +29,6 @@ with Ada.Unchecked_Conversion;
 package body BSDSockets is
    use type Interfaces.C.int;
 
-   function AddressFamilyToInt is new Ada.Unchecked_Conversion
-     (Source => AddressFamilyEnum,
-      Target => Interfaces.C.int);
-
    function SocketTypeToInt is new Ada.Unchecked_Conversion
      (Source => SocketTypeEnum,
       Target => Interfaces.C.int);
@@ -311,7 +307,7 @@ package body BSDSockets is
       Hints           : aliased AddrInfo;
    begin
       Hints.ai_flags     := 0;
-      Hints.ai_family    := AddressFamilyToInt(AddressFamily);
+      Hints.ai_family    := BSDSockets.Thin.DecypherAddressFamily(AddressFamily);
       Hints.ai_socktype  := SocketTypeToInt(SocketType);
       Hints.ai_protocol  := ProtocolToInt(Protocol);
       Hints.ai_addrlen   := 0;
@@ -363,25 +359,42 @@ package body BSDSockets is
       Addr    : aliased SockAddr_In6;
       Result  : Interfaces.C.int;
       HostPtr : aliased Interfaces.C.Strings.chars_ptr;
+--      OptTrue : aliased Interfaces.C.int:=1;
 
    begin
+      Put("Bind To ");
+      Put(Host);
       for i in 0..15 loop
          Addr.sin6_addr.s6_addr(i):=0;
       end loop;
 
---      BSDSockets.Thin.SetSockOpt
---        (Socket => Socket,
---         Level  => 1,
---         OptName => 1,
---         OptVal => lPos'Address,
+--      Result:=BSDSockets.Thin.SetSockOpt
+--        (Socket => Interfaces.C.int(Socket),
+--         Level  => BSDSockets.Thin.SOL_SOCKET,
+--         OptName => BSDSockets.Thin.SO_REUSEADDR,
+--         OptVal  => OptTrue'Address,
 --         OptLen => Interfaces.C.int'Size/8);
+--      if Result/=0 then
+--         Put(Integer(BSDSockets.Thin.Error));
+--         New_Line;
+--         raise FAILEDBIND;
+--      end if;
 
       HostPtr:=Interfaces.C.Strings.New_String(Host);
 
       Result:=BSDSockets.Thin.INET_PTON
-        (AddressFamily => AddressFamilyToInt(Family),
+        (AddressFamily => BSDSockets.Thin.DecypherAddressFamily(Family),
          AddrString    => HostPtr,
          Buffer        => Addr.sin6_addr'Access);
+      Put("BindErrors_?");
+      Put(Integer(BSDSockets.Thin.Error));
+      New_Line;
+      for i in 0..15 loop
+         Put(Integer(Addr.sin6_addr.s6_addr(i)));
+      end loop;
+      New_Line;
+
+      Interfaces.C.Strings.Free(Item=>HostPtr);
 
       if Result/=1 then
          Put("Failed because address translation failed");
@@ -391,9 +404,14 @@ package body BSDSockets is
          raise FailedBind;
       end if;
 
-      Interfaces.C.Strings.Free(Item=>HostPtr);
+      Put("::::");
+      Put(Integer(BSDSockets.Thin.DecypherAddressFamily(Family)));
+      Put(Integer(Port));
+      Put(Integer(SockAddr_In6'Size/8));
+      Put(Integer(In_Addr6'Size/8));
+      New_Line;
 
-      Addr.sin6_family   := Interfaces.C.short(AddressFamilyToInt(Family));
+      Addr.sin6_family   := Interfaces.C.short(BSDSockets.Thin.DecypherAddressFamily(Family));
       Addr.sin6_port     := BSDSockets.Thin.HTONS
         (Interfaces.C.unsigned_short(Port));
       Addr.sin6_flowinfo := 0;
@@ -409,6 +427,9 @@ package body BSDSockets is
          New_Line;
          raise FailedBind;
       end if;
+      Put("BindErrors?");
+      Put(Integer(BSDSockets.Thin.Error));
+      New_Line;
    end Bind;
    ---------------------------------------------------------------------------
 
@@ -416,7 +437,16 @@ package body BSDSockets is
      (Socket   : SocketID;
       AddrInfo : not null AddrInfoAccess;
       Port     : PortID) is
-     use type System.Address; -- HACK
+      use type System.Address; -- HACK
+
+      -- This is a dangerous conversion since it converts between different
+      -- sized data types.
+      -- It is assumed size_t'Size>int'Size
+      pragma Warnings(Off);
+      function SizeTToInt is new Ada.Unchecked_Conversion
+        (Source => Interfaces.C.size_t,
+         Target => Interfaces.C.int);
+      pragma Warnings(On);
 
       Result : Interfaces.C.int;
 
@@ -425,9 +455,15 @@ package body BSDSockets is
       AddressToSockAddrAccess(AddrInfo.ai_addr).sa_port := BSDSockets.Thin.HTONS
         (Interfaces.C.unsigned_short(Port));
 
+      Put(Integer(AddrInfo.ai_flags));
+      Put(Integer(AddrInfo.ai_family));
+      Put(Integer(AddrInfo.ai_socktype));
+      Put(Integer(AddrInfo.ai_protocol));
+      Put(Integer(SizeTToInt(AddrInfo.ai_addrlen)));
+      New_Line;
       Result:=BSDSockets.Thin.Connect(Interfaces.C.int(Socket),
                                       AddressToSockAddrAccess(AddrInfo.ai_addr),
-                                      Interfaces.C.int(AddrInfo.ai_addrlen));
+                                      SizeTToInt(AddrInfo.ai_addrlen));
 
       if Result/=0 then
          Put(Integer(BSDSockets.Thin.Error));
@@ -461,7 +497,7 @@ package body BSDSockets is
       Value         : Interfaces.C.int;
 
    begin
-      Value:=BSDSockets.Thin.Socket(AddressFamilyToInt(AddressFamily),
+      Value:=BSDSockets.Thin.Socket(BSDSockets.Thin.DecypherAddressFamily(AddressFamily),
                                     SocketTypeToInt(SocketType),
                                     ProtocolToInt(Protocol));
       if Value=-1 then

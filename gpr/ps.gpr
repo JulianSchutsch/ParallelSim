@@ -15,7 +15,7 @@ project Ps is
      ("ps.adb","simctr.adb","simreg.adb","simdown.adb");
 
    for Languages use
-     ("Ada");
+     ("Ada","C");
 
    package Compiler is
       for Default_Switches ("ada") use

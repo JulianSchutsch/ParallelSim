@@ -37,5 +37,6 @@ package SysAddrInfo is
          ai_canonname : Interfaces.C.Strings.chars_ptr;
          ai_next      : System.Address;
       end record;
+   pragma Convention(C,AddrInfo);
 
 end SysAddrInfo;

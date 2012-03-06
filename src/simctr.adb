@@ -25,8 +25,6 @@ begin
    Network.Processes.Local.Register;
    Logging.StdOut.Register;
 
-   ProgramArguments.Debug;
-
    ProcessesImplementation
      := Network.Processes.Implementations.Find
        (Configuration => ProgramArguments.Configuration,
@@ -34,9 +32,6 @@ begin
 
    ProcessesImplementation.LoadConfig
      (Configuration => Configuration);
-
-   Config.Debug
-     (Item => Configuration);
 
    SimControl.Initialize
      (Configuration =>  Configuration);

@@ -20,14 +20,13 @@ procedure Ps is
    Configuration           : Config.Config_Type;
    ProcessesImplementation : Network.Processes.Implementation_Type;
 
-   Family            : constant String:="IPv4";
-   BindHost          : constant String:="0.0.0.0";
-   RemoteHost        : constant String:="127.0.0.1";
+   Family            : constant String:="IPv6";
+   BindHost          : constant String:="::";
+   RemoteHost        : constant String:="::1";
    AdminServerPort   : constant String:="10002";
    ControlServerPort : constant String:="10001";
 
 begin
-
    Processes.Initialize;
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;

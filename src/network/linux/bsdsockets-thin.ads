@@ -28,6 +28,9 @@ with System;
 
 package BSDSockets.Thin is
 
+   SOL_SOCKET   : constant Interfaces.C.int:=1;
+   SO_REUSEADDR : constant Interfaces.C.int:=2;
+
    function Error return Interfaces.C.int;
 
    FD_SETSIZE: constant Natural:=1024;
@@ -67,6 +70,15 @@ package BSDSockets.Thin is
       return Interfaces.C.int;
    pragma Import(C,Listen,"listen");
 
+   function SetSockOpt
+     (Socket : Interfaces.C.int;
+      Level  : Interfaces.C.int;
+      OptName : Interfaces.C.int;
+      OptVal  : System.Address;
+      OptLen  : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(C,SetSockOpt,"setsockopt");
+
    function INET_PTON
      (AddressFamily : Interfaces.C.int;
       AddrString    : Interfaces.C.Strings.chars_ptr;
@@ -74,10 +86,20 @@ package BSDSockets.Thin is
       return Interfaces.C.int;
    pragma Import(C,INET_PTON,"inet_pton");
 
+   function AddressToString
+     (Addr    : access SockAddr_In6;
+      AddrLen : Natural)
+      return Unbounded_String;
+
    function HTONS
      (HostShort : Interfaces.C.unsigned_short)
       return Interfaces.C.unsigned_short;
    pragma Import(C,HTONS,"htons");
+
+   function NTOHS
+     (NetShort : Interfaces.C.unsigned_short)
+      return Interfaces.C.unsigned_short;
+   pragma Import(C,NTOHS,"ntohs");
 
    function Recv
      (Socket : Interfaces.C.int;
@@ -108,7 +130,7 @@ package BSDSockets.Thin is
 
    function AAccept
      (Socket  : Interfaces.C.int;
-      Addr    : access SockAddr;
+      Addr    : access SockAddr_In6;
       AddrLen : access Interfaces.C.int)
       return Interfaces.C.int;
    pragma Import(C,AAccept,"accept");
@@ -156,6 +178,10 @@ package BSDSockets.Thin is
 
    procedure FD_ZERO
      (Set : access fd_set_struct);
+
+   function DecypherAddressFamily
+     (AddressFamily : AddressFamilyEnum)
+      return Interfaces.C.int;
 
    procedure Initialize is null;
    procedure Finalize is null;
