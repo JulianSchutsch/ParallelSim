@@ -1,4 +1,3 @@
-with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with BSDSockets.Streams;
@@ -9,9 +8,7 @@ with ProgramArguments;
 with SimControl;
 with Processes;
 with Logging.StdOut;
-
-with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
-with Ada.Exceptions; use Ada.Exceptions;
+with ExceptionOutput;
 
 procedure SimCtr is
 
@@ -43,14 +40,7 @@ begin
    SimControl.Finalize;
 exception
    when E:others =>
-      Put("Exception Name : " & Exception_Name(E));
-      New_Line;
-      Put("Message : " & Exception_Message(E));
-      New_Line;
-      Put("Traceback      :");
-      New_Line;
-      Put(Symbolic_TraceBack(E));
-      New_Line;
+      ExceptionOutput.Put(E);
       loop
          null;
       end loop;

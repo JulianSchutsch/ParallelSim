@@ -35,4 +35,7 @@ package SimRegion is
    function Process
      return boolean;
 
+private
+   Terminated : Boolean;
+
 end SimRegion;

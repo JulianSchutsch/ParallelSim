@@ -25,26 +25,19 @@ with Ada.Unchecked_Deallocation;
 
 package body Logging.StdOut is
 
-   type Context_Type is new Logging.Context_Type with
-      record
-         ModuleName : Unbounded_String;
-         Debugging  : Boolean;
-      end record;
+   type Context_Type;
    type Context_Access is access all Context_Type;
 
-   overriding
-   procedure NewChannel
-     (Item        : in out Context_Type;
-      ChannelName : Unbounded_String;
-      Channel     : out Channel_ClassAccess);
-   ---------------------------------------------------------------------------
-
+   type Channel_Type;
+   type Channel_Access is access all Channel_Type;
    type Channel_Type is new Logging.Channel_Type with
       record
          ModuleName  : Unbounded_String;
          ChannelName : Unbounded_String;
+         Context     : Context_Access;
+         NextChannel : Channel_Access:=null;
+         LastChannel : Channel_Access:=null;
       end record;
-   type Channel_Access is access all Channel_Type;
 
    overriding
    procedure Write
@@ -55,6 +48,20 @@ package body Logging.StdOut is
    overriding
    procedure FreeChannel
      (Item : not null access Channel_Type);
+   ---------------------------------------------------------------------------
+
+   type Context_Type is new Logging.Context_Type with
+      record
+         ModuleName : Unbounded_String;
+         Debugging  : Boolean;
+         Channels   : Channel_Access;
+      end record;
+
+   overriding
+   procedure NewChannel
+     (Item        : access Context_Type;
+      ChannelName : Unbounded_String;
+      Channel     : out Channel_ClassAccess);
    ---------------------------------------------------------------------------
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -93,12 +100,20 @@ package body Logging.StdOut is
 
    begin
       Channel := Channel_Access(Item);
+      if Channel.LastChannel/=null then
+         Channel.LastChannel.NextChannel:=Channel.NextChannel;
+      else
+         Channel.Context.Channels:=Channel.NextChannel;
+      end if;
+      if Channel.NextChannel/=null then
+         Channel.NextChannel.LastChannel:=Channel.LastChannel;
+      end if;
       Free(Channel);
    end FreeChannel;
    ---------------------------------------------------------------------------
 
    procedure NewChannel
-     (Item        : in out Context_Type;
+     (Item        : access Context_Type;
       ChannelName : Unbounded_String;
       Channel     : out Channel_ClassAccess) is
 
@@ -110,6 +125,12 @@ package body Logging.StdOut is
       NewChannel := new Channel_Type;
       NewChannel.ChannelName := ChannelName;
       NewChannel.ModuleName  := Item.ModuleName;
+      NewChannel.Context     := Context_Access(Item);
+      NewChannel.NextChannel := Item.Channels;
+      if Item.Channels/=null then
+         Item.Channels.LastChannel:=NewChannel;
+      end if;
+      Item.Channels:=NewChannel;
       Channel:=Channel_ClassAccess(NewChannel);
    end;
    ---------------------------------------------------------------------------

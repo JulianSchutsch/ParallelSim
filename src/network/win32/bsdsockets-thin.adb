@@ -26,6 +26,18 @@ package body BSDSockets.Thin is
    use type Interfaces.C.int;
    use type Interfaces.C.unsigned;
 
+   function DecypherAddressFamily
+     (AddressFamily : AddressFamilyEnum)
+      return Interfaces.C.int is
+   begin
+      case AddressFamily is
+         when AF_INET =>
+            return 2;
+         when AF_INET6 =>
+            return 23;
+      end case;
+   end DecypherAddressFamily;
+
    type WSAData is
       record
          wVersion       : Interfaces.Unsigned_16;

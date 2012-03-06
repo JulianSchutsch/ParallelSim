@@ -45,6 +45,7 @@ package body SimRegion.ControlClient is
    LogImplementation    : Logging.Implementation_Type;
    LogContext           : Logging.Context_ClassAccess;
    LogChannel           : Logging.Channel_ClassAccess;
+   ConnectTriesLeft     : Natural;
 
    type ClientCallBack_Type is
      new Network.Streams.ChannelCallBack_Type with null record;
@@ -101,7 +102,7 @@ package body SimRegion.ControlClient is
                   else
                      LogChannel.Write
                        (Level   => Logging.LevelEvent,
-                        Message => "Identification (Control server) is valid");
+                        Message => "Identification (Control) send by the server is valid");
                      ReceiveStatus:=ReceiveStatusReady;
                   end if;
                end;
@@ -131,6 +132,9 @@ package body SimRegion.ControlClient is
          PrevPosition := Client.WritePosition;
          case SendStatus is
             when SendStatusIdentify =>
+               LogChannel.Write
+                 (Level   => Logging.LevelDebug,
+                  Message => "Sending Control-Client identification");
                SimCommon.NetworkIDString'Write
                  (Client,
                   SimCommon.NetworkControlClientID);
@@ -157,7 +161,13 @@ package body SimRegion.ControlClient is
       LogChannel.Write
         (Level   => Logging.LevelFailure,
          Message => "Failed to connect to Control network");
-      Retry:=True;
+      if ConnectTriesLeft>0 then
+         ConnecttriesLeft:=ConnectTriesLeft-1;
+         Retry:=True;
+      else
+         Retry      := False;
+         Terminated := True;
+      end if;
    end;
    ---------------------------------------------------------------------------
 
@@ -207,6 +217,8 @@ package body SimRegion.ControlClient is
            ModuleName    => To_Unbounded_String("Control.Network"));
 
       StreamImplementation.Initialize.all;
+
+      ConnectTriesLeft:=4;
 
       Client
         :=StreamImplementation.NewClient

@@ -151,6 +151,7 @@ package Network.Streams is
       Channel : Channel_ClassAccess) is null;
    ---------------------------------------------------------------------------
 
+   -- TODO: These should not be public
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Channel_Type'Class,
       Name   => Channel_ClassAccess);
@@ -162,6 +163,11 @@ package Network.Streams is
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Server_Type'Class,
       Name   => Server_ClassAccess);
+   ---------------------------------------------------------------------------
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => ChannelCallBack_Type'Class,
+      Name   => ChannelCallBack_ClassAccess);
    ---------------------------------------------------------------------------
 
    type Implementation_Type is

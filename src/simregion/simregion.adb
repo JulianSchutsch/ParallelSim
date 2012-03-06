@@ -44,7 +44,7 @@ package body SimRegion is
      return boolean is
    begin
       ProcessLoop.Process;
-      return false;
+      return Terminated;
    end Process;
    ---------------------------------------------------------------------------
 

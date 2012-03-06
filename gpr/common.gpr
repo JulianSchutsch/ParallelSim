@@ -1,8 +1,10 @@
 abstract project Common is
 
+   type Backtrace_Type is ("On","Off");
    type OS_Type is ("Windows_NT","Linux");
 
    OS : OS_Type := external("OS","Linux");
+   Backtrace : Backtrace_Type := external("Backtrace","Off");
 
 --   Dir := Common'Project_Dir & "/";
    Dir := "";
@@ -34,6 +36,8 @@ abstract project Common is
       "-O0"
      );
 
+   LanguagesUsed:=("Ada");
+
    Linker_Switches:=();
 
    Binder_Switches:=
@@ -44,18 +48,35 @@ abstract project Common is
       when "Windows_NT" =>
 
          Source_Directories:=Source_Directories &
-            (Dir & "../src/network/win32",
-             Dir & "../src/basics/win32");
+           (Dir & "../src/network/win32",
+            Dir & "../src/basics/win32");
 
          Linker_Switches:=Linker_Switches &
-            ("-lws2_32",
-             "-lkernel32");
+           ("-lws2_32",
+            "-lkernel32");
 
       when "Linux" =>
 
          Source_Directories:=Source_Directories &
-            (Dir & "../src/network/linux",
-             Dir & "../src/basics/linux");
+           (Dir & "../src/network/linux",
+            Dir & "../src/basics/linux");
+
+         LanguagesUsed:=LanguagesUsed &
+           ("C");
+
+   end case;
+
+   case Backtrace is
+
+      when "On" =>
+
+         Source_Directories:=Source_Directories &
+           ("../src/basics/backtrace");
+
+      when "Off" =>
+
+         Source_Directories:=Source_Directories &
+           ("../src/basics/nobacktrace");
 
    end case;
 

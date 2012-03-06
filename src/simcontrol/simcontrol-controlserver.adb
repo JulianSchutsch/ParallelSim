@@ -3,7 +3,6 @@ pragma Ada_2005;
 with Network.Streams;
 with Ada.Streams;
 with SimCommon;
-with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Logging;
 with Basics; use Basics;
@@ -73,13 +72,15 @@ package body SimControl.ControlServer is
             when SendStatusReceive =>
                return;
             when SendStatusIdentify =>
+               Item.LogChannel.Write
+                 (Level => Logging.LevelEvent,
+                  Message => "Send Control-Server identification");
+
                SimCommon.NetworkIDString'Write
                  (Item.Channel,
                   SimCommon.NetworkControlServerID);
                Item.SendStatus    := SendStatusReady;
                Item.ReceiveStatus := ReceiveStatusReady;
-               Put("Identify as ContentServer");
-               New_Line;
             when SendStatusReady =>
                return;
          end case;
@@ -98,9 +99,6 @@ package body SimControl.ControlServer is
       PrevPosition : Ada.Streams.Stream_Element_Offset;
 
    begin
---      Item.LogChannel.Write
---        (Level   =>  Logging.LevelCommonEvent,
---         Message => "Receive");
       loop
          PrevPosition := Item.Channel.ReceivePosition;
          case Item.ReceiveStatus is
@@ -112,11 +110,16 @@ package body SimControl.ControlServer is
                     (Item.Channel,
                      Identification);
                   if Identification/=SimCommon.NetworkControlClientID then
-                     Put("Identification of incomming connection is incorrect");
-                     New_Line;
+                     Item.LogChannel.Write
+                       (Level   => Logging.LevelInvalid,
+                        Message => "Control-Client identification invalid");
+                     -- TODO : Invalidate SendStatus as well
                      Item.ReceiveStatus := ReceiveStatusInvalid;
+                     return;
                   else
-                     Put("Identification accepted");
+                     Item.LogChannel.Write
+                       (Level   =>  Logging.LevelEvent,
+                        Message => "Control-Client identification valid");
                      Item.ReceiveStatus := ReceiveStatusReady;
                      Item.SendStatus    := SendStatusIdentify;
                   end if;
@@ -137,11 +140,10 @@ package body SimControl.ControlServer is
      (Item : in out ServerChannelCallBack_Type) is
       pragma Warnings(Off,Item);
    begin
-      LogMainChannel.Write
+      Item.LogChannel.Write
         (Level   => Logging.LevelEvent,
          Message => "Disconnected Client");
-      -- TODO: Free all stuff associated, for example the
-      --       callback object
+      Item.LogChannel.FreeChannel;
    end OnDisconnect;
    ---------------------------------------------------------------------------
 

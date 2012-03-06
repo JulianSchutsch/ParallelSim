@@ -40,8 +40,6 @@ package body BSDSockets.Streams is
       RetryConnect : Boolean:=False;
 
    begin
-      Put("NExt");
-      New_Line;
       if Item.CurrAddrInfo/=null then
 
          begin
@@ -66,6 +64,8 @@ package body BSDSockets.Streams is
             return;
 
          exception
+            when FailedConnect =>
+               CloseSocket(Socket => Item.SelectEntry.Socket);
             when E:others =>
                Put("Exception Name : " & Exception_Name(E));
                New_Line;
@@ -131,6 +131,7 @@ package body BSDSockets.Streams is
 
       if Item.CallBack/=null then
          Item.CallBack.OnDisconnect;
+         Network.Streams.Free(Item.CallBack);
       end if;
 
       VarItem:=Item;
@@ -320,6 +321,10 @@ package body BSDSockets.Streams is
    begin
 
       Client:=Client_Access(Item);
+
+      if Client.CallBack/=null then
+         Network.Streams.Free(Client.CallBack);
+      end if;
 
       begin
          BSDSockets.Shutdown

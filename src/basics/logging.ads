@@ -57,7 +57,7 @@ package Logging is
    type Context_ClassAccess is access all Context_Type'Class;
 
    procedure NewChannel
-     (Item        : in out Context_Type;
+     (Item        : access Context_Type;
       ChannelName : Unbounded_String;
       Channel     : out Channel_ClassAccess) is abstract;
    ---------------------------------------------------------------------------

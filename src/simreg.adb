@@ -7,9 +7,7 @@ with ProgramArguments;
 with SimRegion;
 with Processes;
 
-with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
-with Ada.Exceptions; use Ada.Exceptions;
-with Ada.Text_IO; use Ada.Text_IO;
+with ExceptionOutput;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Logging.StdOut;
@@ -48,14 +46,7 @@ begin
    SimRegion.Finalize;
 exception
    when E:others =>
-      Put("Exception Name : " & Exception_Name(E));
-      New_Line;
-      Put("Message : " & Exception_Message(E));
-      New_Line;
-      Put("Traceback      :");
-      New_Line;
-      Put(Symbolic_TraceBack(E));
-      New_Line;
+      ExceptionOutput.Put(E);
       loop
          null;
       end loop;

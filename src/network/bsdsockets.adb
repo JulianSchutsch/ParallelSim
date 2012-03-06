@@ -187,9 +187,6 @@ package body BSDSockets is
 
    begin
       AddrLen := SockAddr_In6'Size/8;
-      Put("LEN");
-      Put(Integer(AddrLen));
-      New_Line;
       Result  := BSDSockets.Thin.AAccept
         (Socket  => Interfaces.C.int(Socket),
          Addr    => Addr'Access,
@@ -362,8 +359,6 @@ package body BSDSockets is
 --      OptTrue : aliased Interfaces.C.int:=1;
 
    begin
-      Put("Bind To ");
-      Put(Host);
       for i in 0..15 loop
          Addr.sin6_addr.s6_addr(i):=0;
       end loop;
@@ -386,13 +381,10 @@ package body BSDSockets is
         (AddressFamily => BSDSockets.Thin.DecypherAddressFamily(Family),
          AddrString    => HostPtr,
          Buffer        => Addr.sin6_addr'Access);
-      Put("BindErrors_?");
-      Put(Integer(BSDSockets.Thin.Error));
-      New_Line;
-      for i in 0..15 loop
-         Put(Integer(Addr.sin6_addr.s6_addr(i)));
-      end loop;
-      New_Line;
+--      for i in 0..15 loop
+--         Put(Integer(Addr.sin6_addr.s6_addr(i)));
+--      end loop;
+--      New_Line;
 
       Interfaces.C.Strings.Free(Item=>HostPtr);
 
@@ -404,12 +396,12 @@ package body BSDSockets is
          raise FailedBind;
       end if;
 
-      Put("::::");
-      Put(Integer(BSDSockets.Thin.DecypherAddressFamily(Family)));
-      Put(Integer(Port));
-      Put(Integer(SockAddr_In6'Size/8));
-      Put(Integer(In_Addr6'Size/8));
-      New_Line;
+--      Put("::::");
+--      Put(Integer(BSDSockets.Thin.DecypherAddressFamily(Family)));
+--      Put(Integer(Port));
+--      Put(Integer(SockAddr_In6'Size/8));
+--      Put(Integer(In_Addr6'Size/8));
+--      New_Line;
 
       Addr.sin6_family   := Interfaces.C.short(BSDSockets.Thin.DecypherAddressFamily(Family));
       Addr.sin6_port     := BSDSockets.Thin.HTONS
@@ -427,9 +419,6 @@ package body BSDSockets is
          New_Line;
          raise FailedBind;
       end if;
-      Put("BindErrors?");
-      Put(Integer(BSDSockets.Thin.Error));
-      New_Line;
    end Bind;
    ---------------------------------------------------------------------------
 
@@ -455,19 +444,18 @@ package body BSDSockets is
       AddressToSockAddrAccess(AddrInfo.ai_addr).sa_port := BSDSockets.Thin.HTONS
         (Interfaces.C.unsigned_short(Port));
 
-      Put(Integer(AddrInfo.ai_flags));
-      Put(Integer(AddrInfo.ai_family));
-      Put(Integer(AddrInfo.ai_socktype));
-      Put(Integer(AddrInfo.ai_protocol));
-      Put(Integer(SizeTToInt(AddrInfo.ai_addrlen)));
-      New_Line;
+--      Put(Integer(AddrInfo.ai_flags));
+--      Put(Integer(AddrInfo.ai_family));
+--      Put(Integer(AddrInfo.ai_socktype));
+--      Put(Integer(AddrInfo.ai_protocol));
+--      Put(Integer(SizeTToInt(AddrInfo.ai_addrlen)));
+--      New_Line;
       Result:=BSDSockets.Thin.Connect(Interfaces.C.int(Socket),
                                       AddressToSockAddrAccess(AddrInfo.ai_addr),
                                       SizeTToInt(AddrInfo.ai_addrlen));
 
       if Result/=0 then
-         Put(Integer(BSDSockets.Thin.Error));
-         raise FailedConnect;
+         raise FailedConnect with "Error:"&Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
 
    end Connect;

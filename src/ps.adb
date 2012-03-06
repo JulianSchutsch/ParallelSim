@@ -1,7 +1,6 @@
 pragma Ada_2005;
 
 with Network;
-with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with BSDSockets.Streams;
@@ -11,9 +10,9 @@ with ProgramArguments;
 with Config;
 with Processes;
 
-with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
-with Ada.Exceptions; use Ada.Exceptions;
 with Logging.StdOut;
+
+with ExceptionOutput;
 
 procedure Ps is
 
@@ -148,13 +147,6 @@ begin
 
 exception
    when E:others =>
-      Put("Exception Name : " & Exception_Name(E));
-      New_Line;
-      Put("Message : " & Exception_Message(E));
-      New_Line;
-      Put("Traceback      :");
-      New_Line;
-      Put(Symbolic_TraceBack(E));
-      New_Line;
+      ExceptionOutput.Put(E);
 
 end Ps;

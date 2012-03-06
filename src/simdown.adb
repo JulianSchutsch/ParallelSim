@@ -1,15 +1,12 @@
 pragma Ada_2005;
 
-with GNAT.Traceback.Symbolic; use GNAT.Traceback.Symbolic;
-
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Exceptions; use Ada.Exceptions;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Processes;
 with ProgramArguments; use ProgramArguments;
 with BSDSockets.Streams;
 with Network.Processes.Local;
+With ExceptionOutput;
 
 with SimAdmin;
 with Config;
@@ -47,12 +44,5 @@ begin
 
 exception
    when E:others =>
-      Put("Exception Name : " & Exception_Name(E));
-      New_Line;
-      Put("Message : " & Exception_Message(E));
-      New_Line;
-      Put("Traceback      :");
-      New_Line;
-      Put(Symbolic_TraceBack(E));
-      New_Line;
+      ExceptionOutPut.Put(E);
 end SimDown;

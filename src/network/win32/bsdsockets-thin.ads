@@ -111,6 +111,10 @@ package BSDSockets.Thin is
       AddrLen : Natural)
       return Unbounded_String;
 
+   function DecypherAddressFamily
+     (AddressFamily : AddressFamilyEnum)
+      return Interfaces.C.int;
+
    function HTONS
      (HostShort : Interfaces.C.unsigned_short)
       return Interfaces.C.unsigned_short;
