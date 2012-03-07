@@ -7,6 +7,7 @@ with ProgramArguments; use ProgramArguments;
 with BSDSockets.Streams;
 with Network.Processes.Local;
 With ExceptionOutput;
+with Logging.StdOut;
 
 with SimAdmin;
 with Config;
@@ -21,6 +22,7 @@ begin
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
    Network.Processes.Local.Register;
+   Logging.StdOut.Register;
 
    -- TEMP : Assuming Network.Processes=Local, not necessary for the
    --        future, but since this is only a temp help program ok.

@@ -21,12 +21,14 @@ pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
 
 with Network.Streams;
-
+with Endianess;
 with Ada.Streams;
-
+with Types;
 with SimCommon;
+with AdminProtocol;
 
 package body SimControl.AdminServer is
 
@@ -74,9 +76,31 @@ package body SimControl.AdminServer is
    ---------------------------------------------------------------------------
 
    StreamImplementation : Network.Streams.Implementation_Type;
-   Server         : Network.Streams.Server_ClassAccess;
-   ServerCallBack : aliased ServercallBack_Type;
+   Server               : Network.Streams.Server_ClassAccess;
+   ServerCallBack       : aliased ServercallBack_Type;
+   CurrentCommand       : Types.Integer32;
    ---------------------------------------------------------------------------
+
+   procedure Cmd_AdminServerMessage
+     (Item : in ServerChannelCallBack_Type) is
+
+      Message : Unbounded_String;
+
+   begin
+      Unbounded_String'Read
+        (Item.Channel,
+         Message);
+      Put(Message);
+      New_Line;
+   end Cmd_AdminServerMessage;
+   ---------------------------------------------------------------------------
+
+   type CmdArray is array (AdminProtocol.Cmd_NativeType range <>) of
+     access procedure
+       (Item : in ServerChannelCallBack_Type);
+
+   Cmds:constant CmdArray:=
+     (AdminProtocol.CmdMessage=>Cmd_AdminServerMessage'Access);
 
    procedure OnReceive
      (Item : in out ServerChannelCallBack_Type) is
@@ -108,6 +132,17 @@ package body SimControl.AdminServer is
             when ReceiveStatusSend =>
                raise ServerStatusError;
             when ReceiveStatusWaitForCommand =>
+               declare
+                  Command : AdminProtocol.Cmd_NetworkType;
+               begin
+                  AdminProtocol.Cmd_NetworkType'Read
+                    (Item.Channel,
+                     Command);
+                  CurrentCommand:=Endianess.From(Command);
+                  if CurrentCommand not in Cmds'Range then
+                     Put("Invalid Command!");
+                  end if;
+               end;
                return;-- TODO : Implement commands.
          end case;
       end loop;
@@ -152,7 +187,9 @@ package body SimControl.AdminServer is
    begin
       Put("Disconnect for Admin interface");
       New_Line;
+      Network.Streams.Free(Item.Channel.CallBack);
    end OnDisconnect;
+   ---------------------------------------------------------------------------
 
    procedure OnAccept
      (Item : in out ServerCallBack_Type;

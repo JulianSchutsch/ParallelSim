@@ -16,7 +16,8 @@ abstract project Common is
       Dir & "../src/network",
       Dir & "../src/simcontrol",
       Dir & "../src/simregion",
-      Dir & "../src/simadmin");
+      Dir & "../src/simadmin",
+      Dir & "../src/protocols");
 
    Object_Directory:=Dir & "../build";
 

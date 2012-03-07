@@ -21,6 +21,15 @@
 --   25.Jan 2012 Julian Schutsch
 --     - Original version
 
+-- Reason for implementation
+--   Simplify writting correct network protocol implementations.
+
+-- Usage
+--   Only use these types for your network protocol and use To and From to
+--   obtain native integers of the same size as defined in Types.
+--   It is not possible to work directly with the provided types which
+--   is also part of the security.
+
 pragma Ada_2005;
 
 with Types; use Types;
@@ -43,21 +52,21 @@ package Endianess is
    type BigEndianCardinal32 is private;
    type BigEndianCardinal64 is private;
 
-   function ToLittleEndian(Integer: Integer16) return LittleEndianInteger16;
-   function ToLittleEndian(Integer: Integer32) return LittleEndianInteger32;
-   function ToLittleEndian(Integer: Integer64) return LittleEndianInteger64;
+   function To(Integer: Integer16) return LittleEndianInteger16;
+   function To(Integer: Integer32) return LittleEndianInteger32;
+   function To(Integer: Integer64) return LittleEndianInteger64;
 
-   function FromLittleEndian(Integer: LittleEndianInteger16) return Integer16;
-   function FromLittleEndian(Integer: LittleEndianInteger32) return Integer32;
-   function FromLittleEndian(Integer: LittleEndianInteger64) return Integer64;
+   function From(Integer: LittleEndianInteger16) return Integer16;
+   function From(Integer: LittleEndianInteger32) return Integer32;
+   function From(Integer: LittleEndianInteger64) return Integer64;
 
-   function ToBigEndian(Integer: Integer16) return BigEndianInteger16;
-   function ToBigEndian(Integer: Integer32) return BigEndianInteger32;
-   function ToBigEndian(Integer: Integer64) return BigEndianInteger64;
+   function To(Integer: Integer16) return BigEndianInteger16;
+   function To(Integer: Integer32) return BigEndianInteger32;
+   function To(Integer: Integer64) return BigEndianInteger64;
 
-   function FromBigEndian(Integer: BigEndianInteger16) return Integer16;
-   function FromBigEndian(Integer: BigEndianInteger32) return Integer32;
-   function FromBigEndian(Integer: BigEndianInteger64) return Integer64;
+   function From(Integer: BigEndianInteger16) return Integer16;
+   function From(Integer: BigEndianInteger32) return Integer32;
+   function From(Integer: BigEndianInteger64) return Integer64;
 
 private
 

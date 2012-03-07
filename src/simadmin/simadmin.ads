@@ -24,10 +24,16 @@
 pragma Ada_2005;
 
 with Config;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package SimAdmin is
 
+   NotConnected : Exception;
+
    procedure WaitForConnection;
+
+   procedure SendMessage
+     (Message : Unbounded_String);
 
    procedure Initialize
      (Configuration : Config.Config_Type);

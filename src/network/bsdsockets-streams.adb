@@ -131,7 +131,6 @@ package body BSDSockets.Streams is
 
       if Item.CallBack/=null then
          Item.CallBack.OnDisconnect;
-         Network.Streams.Free(Item.CallBack);
       end if;
 
       VarItem:=Item;
@@ -171,6 +170,8 @@ package body BSDSockets.Streams is
       if Item.CallBack/=null then
          Item.CallBack.OnDisconnect;
       end if;
+
+      Item.ClientMode:=ClientModeDisconnected;
 
    end;
    ---------------------------------------------------------------------------
@@ -341,6 +342,20 @@ package body BSDSockets.Streams is
       Network.Streams.Free(Item);
 
    end FreeStreamClient;
+   ---------------------------------------------------------------------------
+
+   procedure Disconnect
+     (Item : access ServerChannel_Type) is
+   begin
+      Finalize(ServerChannel_Access(Item));
+   end Disconnect;
+   ---------------------------------------------------------------------------
+
+   procedure Disconnect
+     (Item : access Client_Type) is
+   begin
+      Finalize(Client_Access(Item));
+   end;
    ---------------------------------------------------------------------------
 
    procedure AAccept

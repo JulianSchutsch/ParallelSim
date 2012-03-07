@@ -144,6 +144,7 @@ package body SimControl.ControlServer is
         (Level   => Logging.LevelEvent,
          Message => "Disconnected Client");
       Item.LogChannel.FreeChannel;
+      Network.Streams.Free(Item.Channel.CallBack);
    end OnDisconnect;
    ---------------------------------------------------------------------------
 

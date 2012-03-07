@@ -71,6 +71,10 @@ private
          LastChannel : ServerChannel_Access;
          Server      : Server_Access;
       end record;
+
+   overriding
+   procedure Disconnect
+     (Item : access ServerChannel_Type);
    ---------------------------------------------------------------------------
 
    type Server_Type is new Network.Streams.Server_Type with
@@ -86,7 +90,8 @@ private
    type ClientModeEnum is
      (ClientModeConnecting,
       ClientModeConnected,
-      ClientModeFailedConnect);
+      ClientModeFailedConnect,
+      ClientModeDisconnected);
 
    type Client_Type is new BSDSocketChannel_Type with
       record
@@ -98,6 +103,10 @@ private
          NextClient    : Client_Access;
          LastClient    : Client_Access;
       end record;
+
+   overriding
+   procedure Disconnect
+     (Item : access Client_Type);
    ---------------------------------------------------------------------------
 
 end BSDSockets.Streams;

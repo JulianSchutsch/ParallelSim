@@ -93,6 +93,9 @@ package Network.Streams is
    type Client_Destructor is access procedure
      (Item : in out Client_ClassAccess);
 
+   procedure Disconnect
+     (Item : access Channel_Type) is null;
+
    overriding
    procedure Read
      (Stream : in out Channel_Type;
