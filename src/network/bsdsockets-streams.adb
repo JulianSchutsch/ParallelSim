@@ -325,10 +325,6 @@ package body BSDSockets.Streams is
 
       Client:=Client_Access(Item);
 
-      if Client.CallBack/=null then
-         Network.Streams.Free(Client.CallBack);
-      end if;
-
       begin
          BSDSockets.Shutdown
            (Socket => Client.SelectEntry.Socket,
