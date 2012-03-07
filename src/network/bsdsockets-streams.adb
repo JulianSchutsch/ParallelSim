@@ -260,6 +260,8 @@ package body BSDSockets.Streams is
       BSDSockets.CloseSocket
         (Socket => Serv.SelectEntry.Socket);
 
+      -- TODO: This looks like we forgotten to free all the channels
+      -- associated with the server!
       Network.Streams.Free(Item);
    end FreeStreamServer;
    ---------------------------------------------------------------------------

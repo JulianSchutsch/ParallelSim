@@ -21,7 +21,7 @@
 --   25.Jan 2012 Julian Schutsch
 --     - Original version
 
-pragma Ada_2012;
+pragma Ada_2005;
 
 with Interfaces; use Interfaces;
 
