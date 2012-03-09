@@ -31,6 +31,7 @@ package AdminProtocol is
    subtype ServerCmd_NativeType is Types.Integer32;
    subtype ServerCmd_NetworkType is Endianess.LittleEndianInteger32;
 
-   ServerCmdMessage : constant ServerCmd_NativeType:=0;
+   ServerCmdMessage  : constant ServerCmd_NativeType:=0;
+   ServerCmdShutdown : constant ServerCmd_NativeType:=1;
 
 end AdminProtocol;

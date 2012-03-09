@@ -50,7 +50,8 @@ package Basics is
      (Item : StringStringMap.Map);
 
    function ConcatElements
-     (Item : StringStringMap.Map)
+     (Item      : StringStringMap.Map;
+      Separator : Unbounded_String)
      return Unbounded_String;
 
 end Basics;

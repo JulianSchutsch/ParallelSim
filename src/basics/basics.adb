@@ -53,7 +53,8 @@ package body Basics is
    ---------------------------------------------------------------------------
 
    function ConcatElements
-     (Item : StringStringMap.Map)
+     (Item      : StringStringMap.Map;
+      Separator : Unbounded_String)
       return Unbounded_String is
 
       use type StringStringMap.Cursor;
@@ -64,6 +65,9 @@ package body Basics is
    begin
       Cursor:=Item.First;
       while Cursor/=StringStringMap.No_Element loop
+         if NewString/="" then
+            NewString:=NewString & Separator;
+         end if;
          NewString:=NewString & StringStringMap.Element(Cursor);
          Cursor:=StringStringMap.Next(Cursor);
       end loop;

@@ -50,7 +50,7 @@ package body SimControl is
      return boolean is
    begin
       ProcessLoop.Process;
-      return false;
+      return Terminated;
    end Process;
    ---------------------------------------------------------------------------
 

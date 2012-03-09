@@ -72,6 +72,18 @@ package body SimAdmin is
          Message : Unbounded_String;
       end record;
    type MsgMessage_Access is access MsgMessage_Type;
+   overriding
+   function Execute
+     (Item      : access MsgMessage_Type)
+      return Boolean;
+
+   type MsgShutdown_Type is new TaskQueue.Task_Type with null record;
+   type MsgShutdown_Access is access MsgShutdown_Type;
+   overriding
+   function Execute
+     (Item : access MsgShutdown_Type)
+      return Boolean;
+
 
    StreamImplementation : Network.Streams.Implementation_Type;
    Client               : Network.Streams.Client_ClassAccess;
@@ -90,9 +102,8 @@ package body SimAdmin is
 
    ---------------------------------------------------------------------------
 
-   overriding
    function Execute
-     (Item      : access MsgMessage_Type)
+     (Item : access MsgMessage_Type)
       return Boolean is
    begin
       LogChannel.Write
@@ -107,6 +118,22 @@ package body SimAdmin is
          Item.Message);
       return True;
    end Execute;
+   ---------------------------------------------------------------------------
+
+   function Execute
+     (Item : access MsgShutdown_Type)
+      return Boolean is
+      pragma Warnings(Off,Item);
+   begin
+      LogChannel.Write
+        (Level => Logging.LevelEvent,
+         Message => "Send shutdown message to Admin server");
+      AdminProtocol.ServerCmd_NetworkType'Write
+        (Client,
+         Endianess.To(AdminProtocol.ServerCmdShutdown));
+      return True;
+   end Execute;
+   ---------------------------------------------------------------------------
 
    procedure OnCanSend
      (Item : in out ClientCallBack_Type) is
@@ -294,6 +321,16 @@ package body SimAdmin is
 
    end Initialize;
    ---------------------------------------------------------------------------
+   procedure SendShutdown is
+      Msg : MsgShutdown_Access;
+   begin
+      Msg:=new MsgShutdown_Type;
+      TaskQueue.AddTask
+        (Queue => SendQueue'Access,
+         Item  => TaskQueue.Task_ClassAccess(Msg));
+   end SendShutdown;
+   ---------------------------------------------------------------------------
+
    procedure SendMessage
      (Message : Unbounded_String) is
       Msg : MsgMessage_Access;

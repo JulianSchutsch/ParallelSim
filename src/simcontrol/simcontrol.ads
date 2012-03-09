@@ -36,4 +36,8 @@ package SimControl is
 
 private
 
+   -- Flags used by all modules to indicate the SimControl should shutdown
+   -- gracefully
+   Terminated : Boolean;
+
 end SimControl;

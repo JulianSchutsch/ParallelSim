@@ -20,8 +20,6 @@ pragma Ada_2005;
 
 with Interfaces.C.Strings;
 with BSDSockets.Thin;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with System;
 with ProcessLoop;
 with Ada.Unchecked_Conversion;
@@ -124,8 +122,8 @@ package body BSDSockets is
         (Socket => Interfaces.C.int(Socket),
          Method => ShutdownMethodToInt(Method));
       if Result/=0 then
-         Put(Integer(BSDSockets.Thin.Error));
-         raise FailedShutdown;
+         raise FailedShutdown with "Error Code:"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
    end Shutdown;
    ---------------------------------------------------------------------------
@@ -196,8 +194,8 @@ package body BSDSockets is
          AddrLen => Positive(AddrLen));
       Port := PortID(BSDSockets.Thin.NTOHS(Addr.sin6_port));
       if Result=-1 then
-         Put(Integer(BSDSockets.Thin.Error));
-         raise FailedAccept;
+         raise FailedAccept with "Error Code:"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
       NewSocket := SocketID(Result);
    end AAccept;
@@ -320,11 +318,8 @@ package body BSDSockets is
          ppResult     => AddrInfoPointer'Access);
 
       if Result/=0 then
-         Put(Integer(Result));
-         New_Line;
-         Put(Integer(BSDSockets.Thin.Error));
-         New_Line;
-         raise FailedGetAddrInfo;
+         raise FailedGetAddrInfo with "Error Code"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
       return AddrInfoPointer;
    end GetAddrInfo;
@@ -340,9 +335,8 @@ package body BSDSockets is
       Result:=BSDSockets.Thin.Listen(Socket  => Interfaces.C.int(Socket),
                                      Backlog => Interfaces.C.int(Backlog));
       if Result/=0 then
-         Put("Error Code");
-         Put(Integer(BSDSockets.Thin.Error));
-         raise FailedListen;
+         raise FailedListen with "Error Code:"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
    end;
    ---------------------------------------------------------------------------
@@ -389,11 +383,8 @@ package body BSDSockets is
       Interfaces.C.Strings.Free(Item=>HostPtr);
 
       if Result/=1 then
-         Put("Failed because address translation failed");
-         Put(Integer(Result));
-         Put(Integer(BSDSockets.Thin.Error));
-         New_Line;
-         raise FailedBind;
+         raise FailedBind with "Failed Address translation with Error Code:"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
 
 --      Put("::::");
@@ -413,11 +404,8 @@ package body BSDSockets is
                                    Name    => Addr'Access,
                                    NameLen => Addr'Size/8);
       if Result/=0 then
-         Put("Error Codes");
-         Put(Integer(Result));
-         Put(Integer(BSDSockets.Thin.Error));
-         New_Line;
-         raise FailedBind;
+         raise FailedBind with "Failed Bind with Error Code:"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
    end Bind;
    ---------------------------------------------------------------------------
@@ -455,7 +443,8 @@ package body BSDSockets is
                                       SizeTToInt(AddrInfo.ai_addrlen));
 
       if Result/=0 then
-         raise FailedConnect with "Error:"&Interfaces.C.int'Image(BSDSockets.Thin.Error);
+         raise FailedConnect with "Error Code:"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
 
    end Connect;
@@ -489,8 +478,8 @@ package body BSDSockets is
                                     SocketTypeToInt(SocketType),
                                     ProtocolToInt(Protocol));
       if Value=-1 then
-         Put(Integer(BSDSockets.Thin.Error));
-         raise FailedSocket;
+         raise FailedSocket with "Error Code:"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
       return SocketID(Value);
    end Socket;

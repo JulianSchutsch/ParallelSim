@@ -37,6 +37,7 @@ package SimAdmin is
 
    procedure SendMessage
      (Message : Unbounded_String);
+   procedure SendShutdown;
 
    procedure Initialize
      (Configuration : Config.Config_Type);
