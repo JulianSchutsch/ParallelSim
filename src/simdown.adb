@@ -41,8 +41,8 @@ begin
      (Configuration => Configuration);
 
    if SimAdmin.WaitForConnection then
---      SimAdmin.SendMessage
---        (Message => To_Unbounded_String("Wie gehts?"));
+      SimAdmin.SendMessage
+        (Message => To_Unbounded_String("Shutdown command sending..."));
       SimAdmin.SendShutdown;
       SimAdmin.WaitForCompletion;
    end if;

@@ -113,9 +113,16 @@ package body SimAdmin is
       AdminProtocol.ServerCmd_NetworkType'Write
         (Client,
          Endianess.To(AdminProtocol.ServerCmdMessage));
-      Unbounded_String'Write
+
+      AdminProtocol.ServerCmd_Msg_NetworkType'Write
         (Client,
-         Item.Message);
+         Endianess.To
+           (AdminProtocol.ServerCmd_Msg_NativeType(Length(Item.Message))));
+
+      String'Write
+        (Client,
+         To_String(Item.Message));
+
       return True;
    end Execute;
    ---------------------------------------------------------------------------
@@ -324,6 +331,9 @@ package body SimAdmin is
    procedure SendShutdown is
       Msg : MsgShutdown_Access;
    begin
+      if not Connected then
+         raise NotConnected;
+      end if;
       Msg:=new MsgShutdown_Type;
       TaskQueue.AddTask
         (Queue => SendQueue'Access,
@@ -335,6 +345,12 @@ package body SimAdmin is
      (Message : Unbounded_String) is
       Msg : MsgMessage_Access;
    begin
+      if not Connected then
+         raise NotConnected;
+      end if;
+      if Length(Message)>128 then
+         raise FailedSend with "Message too long. Must not exceed 128 characters";
+      end if;
       Msg:=new MsgMessage_Type;
       Msg.Message:=Message;
       TaskQueue.AddTask

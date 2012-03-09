@@ -29,6 +29,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 package SimAdmin is
 
    NotConnected : Exception;
+   FailedSend   : Exception;
 
    function WaitForConnection
      return Boolean;

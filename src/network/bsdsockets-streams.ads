@@ -81,9 +81,9 @@ private
       record
          Family       : Unbounded_String;
          SelectEntry  : aliased BSDSockets.SelectEntry;
-         NextServer   : Server_Access;
-         LastServer   : Server_Access;
-         FirstChannel : ServerChannel_Access;
+         NextServer   : Server_Access:=null;
+         LastServer   : Server_Access:=null;
+         FirstChannel : ServerChannel_Access:=null;
       end record;
    ---------------------------------------------------------------------------
 
@@ -95,13 +95,13 @@ private
 
    type Client_Type is new BSDSocketChannel_Type with
       record
-         FirstAddrInfo : AddrInfoAccess;
-         CurrAddrInfo  : AddrInfoAccess;
+         FirstAddrInfo : AddrInfoAccess:=null;
+         CurrAddrInfo  : AddrInfoAccess:=null;
          ClientMode    : ClientModeEnum:=ClientModeConnecting;
          LastTime      : Ada.Calendar.Time;
          Port          : PortID;
-         NextClient    : Client_Access;
-         LastClient    : Client_Access;
+         NextClient    : Client_Access:=null;
+         LastClient    : Client_Access:=null;
       end record;
 
    overriding

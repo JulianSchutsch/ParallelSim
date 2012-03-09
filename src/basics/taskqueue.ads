@@ -62,7 +62,8 @@ private
 
    type Queue_Type is limited
       record
-         Tasks : Task_ClassAccess:=null;
+         Tasks    : Task_ClassAccess:=null;
+         LastTask : Task_ClassAccess:=null;
       end record;
 
 end TaskQueue;

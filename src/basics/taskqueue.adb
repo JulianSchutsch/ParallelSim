@@ -44,12 +44,14 @@ package body TaskQueue is
          raise TaskAllreadyInList;
       end if;
       Item.Queue:=Queue;
-      Item.Next:=Queue.Tasks;
-      Item.Last:=null;
-      if Item.Next/=null then
-         Item.Next.Last:=Item;
+      Item.Next:=null;
+      Item.Last:=Queue.LastTask;
+      if Item.Last/=null then
+         Item.Last.Next:=Item;
+      else
+         Queue.Tasks:=Item;
       end if;
-      Queue.Tasks := Item;
+      Queue.LastTask := Item;
    end AddTask;
    ---------------------------------------------------------------------------
 
@@ -60,7 +62,18 @@ package body TaskQueue is
 
    begin
       if Item.Queue/=null then
-         null;
+         if Item.Next/=null then
+            Item.Next.Last:=Item.Last;
+         else
+            Item.Queue.LastTask:=Item.Last;
+         end if;
+         if Item.Last/=null then
+            Item.Last.Next:=Item.Next;
+         else
+            Item.Queue.Tasks:=Item.Next;
+         end if;
+         -- Security
+         Item.Queue:=null;
       end if;
       ItemVal := Item;
       Free(ItemVal);
@@ -78,6 +91,8 @@ package body TaskQueue is
       end if;
       if Element.Next/=null then
          Element.Next.Last:=null;
+      else
+         Queue.LastTask:=null;
       end if;
       Queue.Tasks   := Element.Next;
       Element.Queue := null;

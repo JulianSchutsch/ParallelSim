@@ -90,15 +90,40 @@ package body SimControl.AdminServer is
      (Item : in ServerChannelCallBack_Type)
       return Boolean is
 
-      Message : Unbounded_String;
+      use type AdminProtocol.ServerCmd_Msg_NativeType;
+
+      Message       : String(1..128);
+      NetMessageLen : AdminProtocol.ServerCmd_Msg_NetworkType;
+      MessageLen    : AdminProtocol.ServerCmd_Msg_NativeType;
 
    begin
-      Unbounded_String'Read
+
+      Endianess.LittleEndianInteger32'Read
         (Item.Channel,
-         Message);
+         NetMessageLen);
+
+      MessageLen := Endianess.From(NetMessageLen);
+      if (MessageLen<0)
+        or (MessageLen>AdminProtocol.ServerCmd_Msg_MaxLength) then
+         Item.LogChannel.Write
+           (Level => Logging.LevelInvalid,
+            Message => "Invalid Length for Message packet");
+         -- TODO : Instruct this channel to be deleted
+         return True;
+      end if;
+      Item.LogChannel.Write
+        (Level => Logging.LevelDebug,
+         Message => AdminProtocol.ServerCmd_NativeType'Image
+           (MessageLen));
+
+      String'Read
+        (Item.Channel,
+         Message(1..Integer(MessageLen)));
+
       Item.LogChannel.Write
         (Level => Logging.LevelEvent,
-         Message => To_String("Message:" & Message));
+         Message => "Message:" & Message(1..Integer(MessageLen)));
+
       return True;
    end Cmd_AdminServerMessage;
    ---------------------------------------------------------------------------
