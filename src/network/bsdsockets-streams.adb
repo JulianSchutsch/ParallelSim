@@ -20,6 +20,7 @@
 pragma Ada_2005;
 
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with ProcessLoop;
 with Ada.Strings;
 with Ada.Exceptions; use Ada.Exceptions;
@@ -419,8 +420,12 @@ package body BSDSockets.Streams is
          if Item.CallBack/=null then
             Item.CallBack.OnCanSend;
          end if;
-         return True;
+         if Item.WritePosition=0 then
+            return True;
+         end if;
       end if;
+      Put("Sending:");
+      Put(Integer(Item.WritePosition));
 
       BSDSockets.Send
         (Socket => Item.SelectEntry.Socket,
@@ -432,6 +437,8 @@ package body BSDSockets.Streams is
         :=Item.WrittenContent(SendAmount..Item.WritePosition-1);
 
       Item.WritePosition := Item.WritePosition - SendAmount;
+      Put(Integer(Item.WritePosition));
+      New_Line;
 
       return True;
 
@@ -450,11 +457,13 @@ package body BSDSockets.Streams is
       RecvAmount : Ada.Streams.Stream_Element_Count;
 
    begin
+      if Item.ReceivePosition/=0 then
+         Put(Integer(Item.ReceivePosition));
+      end if;
       Item.ReceivedContent(0..Item.AmountReceived-Item.ReceivePosition-1)
         :=Item.ReceivedContent(Item.ReceivePosition..Item.AmountReceived-1);
 
       Item.AmountReceived  := Item.AmountReceived-Item.ReceivePosition;
-      Item.ReceivePosition := 0;
 
       BSDSockets.Recv
         (Socket => Item.SelectEntry.Socket,
@@ -463,6 +472,15 @@ package body BSDSockets.Streams is
          Read   => RecvAmount);
 
       Item.AmountReceived := Item.AmountReceived+RecvAmount;
+      if RecvAmount/=0 then
+         Put("Received Something");
+         Put(Integer(Item.ReceivePosition));
+         Put(Integer(RecvAmount));
+         Put(Integer(Item.AmountReceived));
+         New_Line;
+      end if;
+
+      Item.ReceivePosition := 0;
 
       if Item.CallBack/=null then
          Item.CallBack.OnReceive;

@@ -21,19 +21,59 @@
 --   3.Feb 2012 Julian Schutsch
 --     - Original version
 
+pragma Ada_2005;
+
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body Network.Streams is
+
+   procedure DebugSend
+     (Stream : Channel_Type'Class) is
+   begin
+      Put("Debug Send:");
+      Put(" 0..");
+      Put(Integer(Stream.WritePosition));
+      New_Line;
+      New_Line;
+      for i in 0..Stream.WritePosition-1 loop
+         Put(" ");
+         Put(Integer(Stream.WrittenContent(i)));
+         New_Line;
+      end loop;
+   end DebugSend;
+   ---------------------------------------------------------------------------
+
+   procedure DebugReceive
+     (Stream : Channel_Type'Class) is
+   begin
+      Put("Debug Receive:");
+      Put(" 0..");
+      Put(Integer(Stream.AmountReceived)-1);
+      New_Line;
+      New_Line;
+      for i in 0..Stream.AmountReceived-1 loop
+         Put(" ");
+         Put(Integer(Stream.ReceivedContent(i)));
+         New_Line;
+      end loop;
+   end DebugReceive;
+   ---------------------------------------------------------------------------
 
    procedure Read
      (Stream : in out Channel_Type;
       Item   : out Stream_Element_Array;
       Last   : out Stream_Element_Offset) is
    begin
+      Put("(");
       Last := Stream.ReceivePosition+Item'Last;
       if Last>Stream.AmountReceived then
+         Put("]");
          raise StreamOverflow;
       end if;
       Item := Stream.ReceivedContent(Stream.ReceivePosition..Last-1);
       Stream.ReceivePosition := Last;
+      Put(")");
    end Read;
    ---------------------------------------------------------------------------
 

@@ -22,6 +22,7 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 with Network.Streams;
 with Endianess;
@@ -29,13 +30,15 @@ with Ada.Streams;
 with Types;
 with SimCommon;
 with AdminProtocol;
+with Logging;
 
 package body SimControl.AdminServer is
 
    type ReceiveStatus_Enum is
      (ReceiveStatusWaitForIdentification,
       ReceiveStatusSend,
-      ReceiveStatusWaitForCommand);
+      ReceiveStatusWaitForCommand,
+      ReceiveStatusProcessCommand);
 
    type SendStatus_Enum is
      (SendStatusReceive,
@@ -79,10 +82,14 @@ package body SimControl.AdminServer is
    Server               : Network.Streams.Server_ClassAccess;
    ServerCallBack       : aliased ServercallBack_Type;
    CurrentCommand       : Types.Integer32;
+   LogImplementation    : Logging.Implementation_Type;
+   LogContext           : Logging.Context_ClassAccess;
+   LogMainChannel       : Logging.Channel_ClassAccess;
    ---------------------------------------------------------------------------
 
-   procedure Cmd_AdminServerMessage
-     (Item : in ServerChannelCallBack_Type) is
+   function Cmd_AdminServerMessage
+     (Item : in ServerChannelCallBack_Type)
+      return Boolean is
 
       Message : Unbounded_String;
 
@@ -92,15 +99,18 @@ package body SimControl.AdminServer is
          Message);
       Put(Message);
       New_Line;
+      return True;
    end Cmd_AdminServerMessage;
    ---------------------------------------------------------------------------
 
-   type CmdArray is array (AdminProtocol.Cmd_NativeType range <>) of
-     access procedure
-       (Item : in ServerChannelCallBack_Type);
+   type CmdArray is array (AdminProtocol.ServerCmd_NativeType range <>) of
+     access function
+       (Item : in ServerChannelCallBack_Type) return Boolean;
 
    Cmds:constant CmdArray:=
-     (AdminProtocol.CmdMessage=>Cmd_AdminServerMessage'Access);
+     (AdminProtocol.ServerCmdMessage=>Cmd_AdminServerMessage'Access);
+
+   DebugOnce : Boolean:=False;
 
    procedure OnReceive
      (Item : in out ServerChannelCallBack_Type) is
@@ -110,6 +120,7 @@ package body SimControl.AdminServer is
       PrevPosition : Ada.Streams.Stream_Element_Offset;
 
    begin
+      Put("OnReceive");
       loop
          PrevPosition:=Item.Channel.ReceivePosition;
          case Item.ReceiveStatus is
@@ -133,17 +144,38 @@ package body SimControl.AdminServer is
                raise ServerStatusError;
             when ReceiveStatusWaitForCommand =>
                declare
-                  Command : AdminProtocol.Cmd_NetworkType;
+                  Command : AdminProtocol.ServerCmd_NetworkType;
                begin
-                  AdminProtocol.Cmd_NetworkType'Read
+                  if not DebugOnce then
+                     Network.Streams.DebugReceive
+                       (Stream => Item.Channel.all);
+                     DebugOnce:=true;
+                  end if;
+                  Put("Get COmmand");
+                  Put(Integer(Item.Channel.ReceivePosition));
+                  AdminProtocol.ServerCmd_NetworkType'Read
                     (Item.Channel,
                      Command);
                   CurrentCommand:=Endianess.From(Command);
+                  Put("Command Receive");
+                  Put(Integer(CurrentCommand));
                   if CurrentCommand not in Cmds'Range then
-                     Put("Invalid Command!");
+                     Put("Invalid Command");
+                     return;
                   end if;
+                  New_Line;
+                  Item.ReceiveStatus:=ReceiveStatusProcessCommand;
+                  Put("Done Get Command");
+                  New_Line;
                end;
-               return;-- TODO : Implement commands.
+            when ReceiveStatusProcessCommand =>
+               Put("Process Command");
+               if Cmds(CurrentCommand).all
+                 (Item=> Item) then
+                  Item.ReceiveStatus:=ReceiveStatusWaitForCommand;
+               end if;
+               Put(" ProcessDone");
+               New_Line;
          end case;
       end loop;
    exception
@@ -171,6 +203,7 @@ package body SimControl.AdminServer is
                   SimCommon.NetworkAdminServerID);
                Item.ReceiveStatus := ReceiveStatusWaitForCommand;
                Item.SendStatus    := SendStatusReady;
+               return;
             when SendStatusReady =>
                return;
          end case;
@@ -213,6 +246,17 @@ package body SimControl.AdminServer is
    procedure Initialize
      (Configuration : Config.Config_Type) is
    begin
+      LogImplementation:=
+        Logging.Implementations.Find
+          (Configuration => Configuration,
+           ModuleName    => To_Unbounded_String("Logging"));
+      LogContext:=LogImplementation.NewContext
+        (Configuration => Configuration,
+         ModuleName    => To_Unbounded_String("Control.Admin"));
+      LogContext.NewChannel
+        (ChannelName => To_Unbounded_String("Server"),
+         Channel     => LogMainChannel);
+
       StreamImplementation:=
         Network.Streams.Implementations.Find
           (Configuration => Configuration,
@@ -236,6 +280,9 @@ package body SimControl.AdminServer is
       StreamImplementation.FreeServer
         (Item => Server);
       StreamImplementation.Finalize.all;
+
+      LogImplementation.FreeContext
+        (Item => LogContext);
    end Finalize;
    ---------------------------------------------------------------------------
 

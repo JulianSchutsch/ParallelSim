@@ -106,6 +106,12 @@ package Network.Streams is
    procedure Write
      (Stream : in out Channel_Type;
       Item   : in Stream_Element_Array);
+
+   procedure DebugReceive
+     (Stream : Channel_Type'Class);
+
+   procedure DebugSend
+     (Stream : Channel_Type'Class);
    ---------------------------------------------------------------------------
 
    type ChannelCallBack_Type is tagged limited

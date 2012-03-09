@@ -30,7 +30,10 @@ package SimAdmin is
 
    NotConnected : Exception;
 
-   procedure WaitForConnection;
+   function WaitForConnection
+     return Boolean;
+
+   procedure WaitForCompletion;
 
    procedure SendMessage
      (Message : Unbounded_String);

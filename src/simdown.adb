@@ -40,7 +40,11 @@ begin
    SimAdmin.Initialize
      (Configuration => Configuration);
 
-   SimAdmin.WaitForConnection;
+   if SimAdmin.WaitForConnection then
+      SimAdmin.SendMessage
+        (Message => To_Unbounded_String("Wie gehts?"));
+      SimAdmin.WaitForCompletion;
+   end if;
 
    SimAdmin.Finalize;
 
