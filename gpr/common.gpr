@@ -31,7 +31,7 @@ abstract project Common is
       "-gnata",
       "-gnatf",
       "-gnatVn",
-      "-gnatE",
+      "",
       "-Wall",
       "-fno-inline",
       "-O0"
@@ -39,7 +39,7 @@ abstract project Common is
 
    LanguagesUsed:=("Ada");
 
-   Linker_Switches:=();
+   Linker_Switches:=("-lgmem");
 
    Binder_Switches:=
      ("-E");

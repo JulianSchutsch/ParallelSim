@@ -31,6 +31,7 @@ with Types;
 with SimCommon;
 with AdminProtocol;
 with Logging;
+with System.Address_Image;
 
 package body SimControl.AdminServer is
 
@@ -151,13 +152,16 @@ package body SimControl.AdminServer is
                        (Stream => Item.Channel.all);
                      DebugOnce:=true;
                   end if;
-                  Put("Get COmmand");
+                  Put("Get Command");
+                  Put(System.Address_Image(Item.Channel.all'Address));
+                  New_Line;
                   Put(Integer(Item.Channel.ReceivePosition));
                   AdminProtocol.ServerCmd_NetworkType'Read
                     (Item.Channel,
                      Command);
+                  Put("***");
                   CurrentCommand:=Endianess.From(Command);
-                  Put("Command Receive");
+--                  Put("Command Receive");
                   Put(Integer(CurrentCommand));
                   if CurrentCommand not in Cmds'Range then
                      Put("Invalid Command");
@@ -165,7 +169,7 @@ package body SimControl.AdminServer is
                   end if;
                   New_Line;
                   Item.ReceiveStatus:=ReceiveStatusProcessCommand;
-                  Put("Done Get Command");
+                  --                  Put("Done Get Command");
                   New_Line;
                end;
             when ReceiveStatusProcessCommand =>
@@ -181,6 +185,9 @@ package body SimControl.AdminServer is
    exception
       when Network.Streams.StreamOverflow =>
          Item.Channel.ReceivePosition := PrevPosition;
+      when others =>
+         Put("Some Exception in the loop");
+         raise;
    end OnReceive;
    ---------------------------------------------------------------------------
 

@@ -20,7 +20,10 @@
 pragma Ada_2005;
 
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Strings;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Unchecked_Conversion;
+with System.Address_Image;
+--with Ada.Strings;
 
 package body BSDSockets.Thin is
    use type Interfaces.C.int;
@@ -88,6 +91,10 @@ package body BSDSockets.Thin is
    pragma Import(StdCall,WSAAddressToStringA,"WSAAddressToStringA");
    ---------------------------------------------------------------------------
 
+   function Ptr is new Ada.Unchecked_Conversion
+     (Source => Interfaces.C.Strings.chars_ptr,
+      Target => System.Address);
+
    function AddressToString
      (Addr    : access SockAddr_In6;
       AddrLen : Natural)
@@ -96,27 +103,32 @@ package body BSDSockets.Thin is
       use type Interfaces.Unsigned_32;
 
       ReturnVal  : Interfaces.C.int;
-      AddrString : Interfaces.C.char_array(0..46);
+      -- The buffer should be big enough with 0..46, but crashes were seen
+      -- with this. 100 Bytes seem to be enough to circumvent bugs here.
+      AddrString : String(1..47):=(1..47 => ' ');
       pragma Warnings(Off,AddrString);
       AddrPtr    : Interfaces.C.Strings.chars_ptr;
-      Len        : aliased Interfaces.Unsigned_32:=46;
+      Len        : aliased Interfaces.Unsigned_32
+        :=Interfaces.Unsigned_32(AddrString'Last);
 
       Result : Unbounded_String;
 
    begin
-      AddrPtr:=Interfaces.C.Strings.New_Char_Array(AddrString);
-
+      AddrPtr:=Interfaces.C.Strings.New_String(AddrString);
       ReturnVal:=WSAAddressToStringA
         (lpsaAddress             => Addr,
          dwAddressLength         => Interfaces.Unsigned_32(AddrLen),
          lpProtocolInfo          => System.Null_Address,
          lpszAddressString       => AddrPtr,
          lpdwAddressStringLength => Len'Access);
-
       if ReturnVal=0 then
-         Result:=To_Unbounded_String(Interfaces.C.To_Ada
-           (Interfaces.C.Strings.Value
-              (Item   => AddrPtr)));
+         Put("Content:");
+         Put(Interfaces.C.Strings.Value(AddrPtr));
+         New_Line;
+         Put("Convert To Result Str");
+         New_Line;
+         Result:=To_Unbounded_String(Interfaces.C.Strings.Value(AddrPtr));
+
          -- The result includes a remove port which has to be removed
          Result:=Head
            (Source=>Result,
@@ -127,16 +139,23 @@ package body BSDSockets.Thin is
                Going=>Ada.Strings.Backward));
          -- For IPv6 Windows puts the address in square brackets which need
          -- to be removed.
-         if Element(Result,1)='[' then
+         if Result/="" and then (Element(Result,1)='[') then
             Result:=Unbounded_Slice
               (Source => Result,
                Low    => 2,
-               High   => Length(Result)-2);
+               High   => Length(Result)-1);
          end if;
-         return Result;
       else
-         return To_Unbounded_String("");
+         Result:=To_Unbounded_String("");
       end if;
+      New_Line;
+      Put("Free ");
+      Put(System.Address_Image(Ptr(AddrPtr)));
+      Put(Integer(Interfaces.C.Strings.Strlen(AddrPtr)));
+      Interfaces.C.Strings.Free
+        (Item => AddrPtr);
+      Put("RET");
+      return Result;
    end AddressToString;
    ---------------------------------------------------------------------------
 

@@ -69,7 +69,7 @@ package body BSDSockets is
          Len    => Data'Length,
          Flags  => SendEnumToInt(Flags));
 
-      if Result<0 then
+      if Result<=0 then
          raise FailedRecv;
       end if;
 

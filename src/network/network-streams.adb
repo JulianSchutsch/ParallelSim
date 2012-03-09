@@ -65,15 +65,12 @@ package body Network.Streams is
       Item   : out Stream_Element_Array;
       Last   : out Stream_Element_Offset) is
    begin
-      Put("(");
       Last := Stream.ReceivePosition+Item'Last;
       if Last>Stream.AmountReceived then
-         Put("]");
          raise StreamOverflow;
       end if;
       Item := Stream.ReceivedContent(Stream.ReceivePosition..Last-1);
       Stream.ReceivePosition := Last;
-      Put(")");
    end Read;
    ---------------------------------------------------------------------------
 

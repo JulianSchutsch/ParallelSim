@@ -24,6 +24,7 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with ProcessLoop;
 with Ada.Strings;
 with Ada.Exceptions; use Ada.Exceptions;
+with System.Address_Image;
 
 package body BSDSockets.Streams is
    use type Network.Streams.ServerCallBack_ClassAccess;
@@ -366,39 +367,58 @@ package body BSDSockets.Streams is
       Port             : BSDSockets.PortID;
 
    begin
+      Put("BSDSockets.Accept");
+      New_Line;
 
       BSDSockets.AAccept
         (Socket    => Item.SelectEntry.Socket,
          Host      => Host,
          Port      => Port,
          NewSocket => NewSock);
+      Put("Create Server Channel");
+      New_Line;
 
       NewServerChannel                    := new ServerChannel_Type(Max=>1023);
+      Put("Init Server Channel");
+      New_Line;
       NewServerChannel.SelectEntry.Socket := NewSock;
       NewServerChannel.Server             := Item;
       NewServerChannel.NextChannel        := Item.FirstChannel;
       NewServerChannel.LastChannel        := null;
+      Put(To_String(Host));
+      Put(BSDSockets.PortID'Image(Port));
+      Put(To_String(Item.Family));
+
+      Put("Inserting");
       NewServerChannel.PeerAddress.Insert
         (Key => To_Unbounded_String("Host"),
          New_Item => Host);
+      Put("I2");
       NewServerChannel.PeerAddress.Insert
         (Key      => To_Unbounded_String("Port"),
          New_Item => Trim
            (Source => To_Unbounded_String(BSDSockets.PortID'Image(Port)),
             Side   => Ada.Strings.Left));
+      Put("I3");
       NewServerChannel.PeerAddress.Insert
         (Key      => To_Unbounded_String("Family"),
          New_Item => Item.Family);
+      Put("Insert");
+      New_Line;
 
       if NewServerChannel.NextChannel/=null then
          NewServerChannel.NextChannel.LastChannel:=NewServerChannel;
       end if;
 
       Item.FirstChannel := NewServerChannel;
+      Put("Register");
+      New_Line;
 
       BSDSockets.AddEntry
         (List => BSDSockets.DefaultSelectList'Access,
          Entr => NewServerChannel.SelectEntry'Access);
+      Put("CallBack");
+      New_Line;
 
       if Item.CallBack/=null then
          Item.CallBack.OnAccept
@@ -482,8 +502,10 @@ package body BSDSockets.Streams is
 
       Item.ReceivePosition := 0;
 
-      if Item.CallBack/=null then
-         Item.CallBack.OnReceive;
+      if Item.AmountReceived/=0 then
+         if Item.CallBack/=null then
+            Item.CallBack.OnReceive;
+         end if;
       end if;
       return True;
 
@@ -547,15 +569,21 @@ package body BSDSockets.Streams is
       while ServerItem/=null loop
 
          if ServerItem.SelectEntry.Readable then
+            Put("Test for Accept");
+            New_Line;
 
             AAccept
               (Item => ServerItem);
+            Put("Accept Survived");
+            New_Line;
 
          end if;
 
          ServerChannelItem:=ServerItem.FirstChannel;
 
          while ServerChannelItem/=null loop
+            Put(System.Address_Image(ServerChannelItem.all'Address));
+            New_Line;
 
             NextServerChannelItem := ServerChannelItem.NextChannel;
 
