@@ -1,6 +1,6 @@
 package body SimClient is
    procedure Initialize
-     (Configuration) is
+     (Configuration : Config.Config_Type) is
    begin
       null;
    end Initialize;

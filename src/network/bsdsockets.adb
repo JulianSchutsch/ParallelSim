@@ -256,7 +256,7 @@ package body BSDSockets is
          MainCursor := MainCursor.Priv.Next;
       end loop;
 
-      if Fill/=0 then
+      if Fill /= 0 then
          Result := BSDSockets.Thin.SSelect
            (NumberOfSockets => MaxSocket+1,
             ReadSet         => ReadSet'Access,
@@ -264,7 +264,7 @@ package body BSDSockets is
             ExceptSet       => null,
             TimeOut         => TimeVal'Access);
 
-         while Fill/=0 loop
+         while Fill /= 0 loop
             StartCursor.Readable := BSDSockets.Thin.FD_ISSET
               (Socket => StartCursor.Socket,
                Set    => ReadSet'Access)/=0;
