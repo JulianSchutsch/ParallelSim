@@ -52,7 +52,8 @@ abstract project Common is
 
          Source_Directories:=Source_Directories &
            (Dir & "../src/network/win32",
-            Dir & "../src/basics/win32");
+            Dir & "../src/basics/win32",
+            Dir & "../src/gui/win32");
 
          Linker_Switches:=Linker_Switches &
            ("-lws2_32",
