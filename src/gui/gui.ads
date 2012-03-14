@@ -30,6 +30,8 @@ with Basics; use Basics;
 
 package GUI is
 
+   FailedToCreateContext : Exception;
+
    type Object_Type is tagged private;
    type Object_ClassAccess is access all Object_Type'Class;
 
