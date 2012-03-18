@@ -25,7 +25,7 @@ begin
    ProcessesImplementation
      := Network.Processes.Implementations.Find
        (Configuration => ProgramArguments.Configuration,
-        ModuleName    => To_Unbounded_String("Arguments"));
+        Node          => To_Unbounded_String("Arguments"));
 
    ProcessesImplementation.LoadConfig
      (Configuration => Configuration);

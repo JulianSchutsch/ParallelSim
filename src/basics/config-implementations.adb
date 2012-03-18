@@ -74,19 +74,14 @@ package body Config.Implementations is
 
    function Find
      (Configuration : Config_Type;
-      ModuleName    : Unbounded_String)
+      Node          : Unbounded_String)
       return Implementation_Type is
 
-      ModuleMap          : access StringStringMap.Map;
-
    begin
-      ModuleMap:=GetModuleMap
-        (Item => Configuration,
-         Name => ModuleName);
 
       return Find
-        (ImplementationName => ModuleMap.Element
-           (Key => IdentifierKey));
+        (ImplementationName => Configuration.Element
+           (Key => Node&"."&IdentifierKey));
    end Find;
    ---------------------------------------------------------------------------
 

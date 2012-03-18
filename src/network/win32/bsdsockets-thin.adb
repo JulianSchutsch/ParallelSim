@@ -112,6 +112,7 @@ package body BSDSockets.Thin is
          lpProtocolInfo          => System.Null_Address,
          lpszAddressString       => AddrPtr,
          lpdwAddressStringLength => Len'Access);
+
       if ReturnVal=0 then
          Result:=To_Unbounded_String(Interfaces.C.Strings.Value(AddrPtr));
 

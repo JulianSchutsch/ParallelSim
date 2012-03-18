@@ -1,4 +1,7 @@
+pragma Ada_2005;
+
 package body SimClient is
+
    procedure Initialize
      (Configuration : Config.Config_Type) is
    begin

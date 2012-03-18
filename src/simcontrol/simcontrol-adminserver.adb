@@ -291,7 +291,7 @@ package body SimControl.AdminServer is
       LogImplementation:=
         Logging.Implementations.Find
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Logging"));
+           Node          => To_Unbounded_String("Logging"));
       LogContext:=LogImplementation.NewContext
         (Configuration => Configuration,
          ModuleName    => To_Unbounded_String("Control.Admin"));
@@ -302,16 +302,14 @@ package body SimControl.AdminServer is
       StreamImplementation:=
         Network.Streams.Implementations.Find
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Admin.Network"));
+           Node          => To_Unbounded_String("Admin.Network"));
 
       StreamImplementation.Initialize.all;
 
       Server
         :=StreamImplementation.NewServer
-          (Config => Config.GetModuleMap
-               (Item => Configuration,
-                Name => To_Unbounded_String
-                  ("Admin.Server.Network")).all);
+          (Configuration => Configuration,
+           Node          => To_Unbounded_String("Admin.Server.Network"));
 
       Server.CallBack := ServerCallBack'Access;
    end Initialize;

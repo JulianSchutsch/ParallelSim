@@ -30,9 +30,6 @@ package body ProgramArguments is
       use type StringStringMap.Cursor;
       use type StringVector.Cursor;
 
-      Map       : access StringStringMap.Map;
-      MapCursor : StringStringMap.Cursor;
-
    begin
 
       Put("Program Parameters:");
@@ -43,21 +40,7 @@ package body ProgramArguments is
          New_Line;
       end loop;
 
-      Map:=Config.GetModuleMap
-        (Item => Configuration,
-         Name => To_Unbounded_String("Arguments"));
-
-      Put("Program Variables:");
-      New_Line;
-      MapCursor:=StringStringMap.First(Map.all);
-      while MapCursor/=StringStringMap.No_Element loop
-         Put(" ");
-         Put(To_String(StringStringMap.Key(MapCursor)));
-         Put(" : ");
-         Put(To_String(StringStringMap.Element(MapCursor)));
-         New_Line;
-         MapCursor:=StringStringMap.Next(MapCursor);
-      end loop;
+      Config.Debug(Configuration);
 
    end Debug;
    ---------------------------------------------------------------------------
@@ -66,15 +49,8 @@ package body ProgramArguments is
 
       Argument : Unbounded_String;
       EqualPos : Natural;
-      Map      : access StringStringMap.Map;
 
    begin
-      Config.NewModule
-        (Item => Configuration,
-         Name => To_Unbounded_String("Arguments"));
-      Map:=Config.GetModuleMap
-        (Item => Configuration,
-         Name => To_Unbounded_String("Arguments"));
 
       Put("Processing Arguments");
       New_Line;
@@ -90,8 +66,8 @@ package body ProgramArguments is
                Pattern => "=",
                From    => 1);
             if EqualPos/=0 then
-               Map.Insert
-                 (Unbounded_Slice
+               Configuration.Insert
+                 ("Arguments."&Unbounded_Slice
                     (Source => Argument,
                      Low    => 2,
                      High   => EqualPos-1),
@@ -100,8 +76,8 @@ package body ProgramArguments is
                      Low    => EqualPos+1,
                      High   => Length(Argument)));
             else
-               Map.Insert
-                 (Unbounded_Slice
+               Configuration.Insert
+                 ("Arguments."&Unbounded_Slice
                     (Source => Argument,
                      Low    => 2,
                      High   => Length(Argument)),

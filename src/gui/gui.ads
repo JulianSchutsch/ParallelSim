@@ -67,6 +67,7 @@ package GUI is
    type Context_Destructor is
      access procedure
        (Context : Context_ClassAccess);
+   ---------------------------------------------------------------------------
 
    type Implementation_Type is
       record

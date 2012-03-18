@@ -202,7 +202,7 @@ package body SimRegion.ControlClient is
       LogImplementation
         :=Logging.Implementations.Find
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Logging"));
+           Node          => To_Unbounded_String("Logging"));
       LogContext:=LogImplementation.NewContext
         (Configuration => Configuration,
          ModuleName    => To_Unbounded_String("Region.Control"));
@@ -214,7 +214,7 @@ package body SimRegion.ControlClient is
       StreamImplementation
         :=Network.Streams.Implementations.Find
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Control.Network"));
+           Node          => To_Unbounded_String("Control.Network"));
 
       StreamImplementation.Initialize.all;
 
@@ -222,9 +222,8 @@ package body SimRegion.ControlClient is
 
       Client
         :=StreamImplementation.NewClient
-          (Config => Config.GetModuleMap
-               (Item => Configuration,
-                Name => To_Unbounded_String("Control.Client.Network")).all);
+          (Configuration => Configuration,
+           Node          => To_Unbounded_String("Control.Client.Network"));
 
       Client.CallBack:=ClientCallBack'Access;
 

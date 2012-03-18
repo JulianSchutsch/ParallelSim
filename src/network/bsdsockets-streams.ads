@@ -24,7 +24,6 @@
 pragma Ada_2005;
 
 with Network.Streams;
-with Basics; use Basics;
 with Ada.Calendar;
 
 package BSDSockets.Streams is
@@ -33,23 +32,11 @@ package BSDSockets.Streams is
    type Client_Type is new BSDSocketChannel_Type with private;
    type Client_Access is access all Client_Type;
 
-   function NewStreamClient
-     (Config : StringStringMap.Map)
-      return Network.Streams.Client_ClassAccess;
-
-   procedure FreeStreamClient
-     (Item : in out Network.Streams.Client_ClassAccess);
    ---------------------------------------------------------------------------
 
    type Server_Type is new Network.Streams.Server_Type with private;
    type Server_Access is access all Server_Type;
 
-   function NewStreamServer
-     (Config : StringStringMap.Map)
-      return Network.Streams.Server_ClassAccess;
-
-   procedure FreeStreamServer
-     (Item : in out Network.Streams.Server_ClassAccess);
    ---------------------------------------------------------------------------
 
    procedure Register;

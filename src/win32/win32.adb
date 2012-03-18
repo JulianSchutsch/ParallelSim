@@ -22,7 +22,4 @@ package body Win32 is
       return Value;
    end MAKEINTRESOURCE;
 
-begin
-   IDI_WINLOGO := MAKEINTRESOURCE(wInteger => 32517);
-   IDC_ARROW   := MAKEINTRESOURCE(wInteger => 32512);
 end Win32;

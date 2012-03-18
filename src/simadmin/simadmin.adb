@@ -301,10 +301,9 @@ package body SimAdmin is
    procedure Initialize
      (Configuration : Config.Config_Type) is
    begin
-
       LogImplementation:=Logging.Implementations.Find
         (Configuration  => Configuration,
-         ModuleName     => To_Unbounded_String("Logging"));
+         Node           => To_Unbounded_String("Logging"));
       LogContext:=LogImplementation.NewContext
         (Configuration => Configuration,
          ModuleName => To_Unbounded_String("Admin"));
@@ -315,15 +314,14 @@ package body SimAdmin is
       StreamImplementation
         := Network.Streams.Implementations.Find
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Admin.Network"));
+           Node          => To_Unbounded_String("Admin.Network"));
 
       StreamImplementation.Initialize.all;
 
       Client
         :=StreamImplementation.NewClient
-          (Config.GetModuleMap
-               (Item => Configuration,
-                Name => To_Unbounded_String("Admin.Client.Network")).all);
+          (Configuration => Configuration,
+           Node          => To_Unbounded_String("Admin.Client.Network"));
       Client.CallBack:=ClientCallBack'Access;
 
    end Initialize;

@@ -33,94 +33,79 @@ begin
    Logging.StdOut.Register;
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Admin.Network"),
-      Key        => To_Unbounded_String("StreamImplementation"),
-      Value      => To_Unbounded_String("BSDSockets.Stream"));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Admin.Network.StreamImplementation"),
+      New_Item  => To_Unbounded_String("BSDSockets.Stream"));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Admin.Server.Network"),
-      Key        => To_Unbounded_String("Family"),
-      Value      => To_Unbounded_String(Family));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Admin.Server.Network.Family"),
+      New_Item  => To_Unbounded_String(Family));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Admin.Server.Network"),
-      Key        => To_Unbounded_String("Host"),
-      Value      => To_Unbounded_String(BindHost));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Admin.Server.Network.Host"),
+      New_Item  => To_Unbounded_String(BindHost));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Admin.Server.Network"),
-      Key        => To_Unbounded_String("Port"),
-      Value      => To_Unbounded_String(AdminServerPort));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Admin.Server.Network.Port"),
+      New_Item  => To_Unbounded_String(AdminServerPort));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Admin.Client.Network"),
-      Key        => To_Unbounded_String("Family"),
-      Value      => To_Unbounded_String(Family));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Admin.Client.Network.Family"),
+      New_Item  => To_Unbounded_String(Family));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Admin.Client.Network"),
-      Key        => To_Unbounded_String("Host"),
-      Value      => To_Unbounded_String(RemoteHost));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Admin.Client.Network.Host"),
+      New_Item  => To_Unbounded_String(RemoteHost));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Admin.Client.Network"),
-      Key        => To_Unbounded_String("Port"),
-      Value      => To_Unbounded_String(AdminServerPort));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Admin.Client.Network.Port"),
+      New_Item  => To_Unbounded_String(AdminServerPort));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Logging"),
-      Key        => To_Unbounded_String("Implementation"),
-      Value      => To_Unbounded_String("StdOut"));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Logging.Implementation"),
+      New_Item  => To_Unbounded_String("StdOut"));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.Network"),
-      Key        => To_Unbounded_String("StreamImplementation"),
-      Value      => To_Unbounded_String("BSDSockets.Stream"));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Control.Network.StreamImplementation"),
+      New_Item  => To_Unbounded_String("BSDSockets.Stream"));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.Server.Network"),
-      Key        => To_Unbounded_String("Family"),
-      Value      => To_Unbounded_String(Family));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Control.Server.Network.Family"),
+      New_Item  => To_Unbounded_String(Family));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.Server.Network"),
-      Key        => To_Unbounded_String("Port"),
-      Value      => To_Unbounded_String(ControlServerPort));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Control.Server.Network.Port"),
+      New_Item  => To_Unbounded_String(ControlServerPort));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.Server.Network"),
-      Key        => To_Unbounded_String("Host"),
-      Value      => To_Unbounded_String(BindHost));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Control.Server.Network.Host"),
+      New_Item  => To_Unbounded_String(BindHost));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.Client.Network"),
-      Key        => To_Unbounded_String("Family"),
-      Value      => To_Unbounded_String(Family));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Control.Client.Network.Family"),
+      New_Item  => To_Unbounded_String(Family));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.Client.Network"),
-      Key        => To_Unbounded_String("Port"),
-      Value      => To_Unbounded_String(ControlServerPort));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Control.Client.Network.Port"),
+      New_Item  => To_Unbounded_String(ControlServerPort));
 
    Config.Insert
-     (Item       => Configuration,
-      ModuleName => To_Unbounded_String("Control.Client.Network"),
-      Key        => To_Unbounded_String("Host"),
-      Value      => To_Unbounded_String(RemoteHost));
+     (Container => Configuration,
+      Key       => To_Unbounded_String("Control.Client.Network.Host"),
+      New_Item  => To_Unbounded_String(RemoteHost));
 
    ProcessesImplementation:=Network.Processes.Implementations.Find
      (ImplementationName => To_Unbounded_String("Local"));

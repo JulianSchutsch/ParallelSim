@@ -80,9 +80,6 @@ package Win32 is
    PFD_TYPE_RGBA      : constant:=0;
    PFD_MAIN_PLANE     : constant:=0;
 
-   IDI_WINLOGO : LPCTSTR_Type;
-   IDC_ARROW   : LPCTSTR_Type;
-
    type WNDPROC_Access is
      access function
        (hWnd    : HWND_Type;

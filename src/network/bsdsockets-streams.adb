@@ -21,6 +21,7 @@ pragma Ada_2005;
 
 with ProcessLoop;
 with Ada.Strings;
+with Config;
 
 package body BSDSockets.Streams is
    use type Network.Streams.ServerCallBack_ClassAccess;
@@ -170,7 +171,8 @@ package body BSDSockets.Streams is
    ---------------------------------------------------------------------------
 
    function NewStreamServer
-     (Config : StringStringMap.Map)
+     (Configuration : Config.Config_Type;
+      Node          : Unbounded_String)
       return Network.Streams.Server_ClassAccess is
 
       Item : Server_Access;
@@ -184,9 +186,9 @@ package body BSDSockets.Streams is
 
       Item := new Server_Type;
 
-      PortStr   := Config.Element(To_Unbounded_String("Port"));
-      FamilyStr := Config.Element(To_Unbounded_String("Family"));
-      Host      := Config.Element(To_Unbounded_String("Host"));
+      PortStr   := Configuration.Element(Node&".Port");
+      FamilyStr := Configuration.Element(Node&".Family");
+      Host      := Configuration.Element(Node&".Host");
       Port      := PortID'Value(To_String(PortStr));
       if FamilyStr="IPv4" then
          Family:=AF_INET;
@@ -260,7 +262,8 @@ package body BSDSockets.Streams is
    ---------------------------------------------------------------------------
 
    function NewStreamClient
-     (Config : StringStringMap.Map)
+     (Configuration : Config.Config_Type;
+      Node          : Unbounded_String)
       return Network.Streams.Client_ClassAccess is
 
       Item      : Client_Access;
@@ -274,9 +277,9 @@ package body BSDSockets.Streams is
 
       Item:=new Client_Type(Max=>1023);
 
-      PortStr   := Config.Element(To_Unbounded_String("Port"));
-      FamilyStr := Config.Element(To_Unbounded_String("Family"));
-      Host      := Config.Element(To_Unbounded_String("Host"));
+      PortStr   := Configuration.Element(Node&".Port");
+      FamilyStr := Configuration.Element(Node&".Family");
+      Host      := Configuration.Element(Node&".Host");
       Item.Port := PortID'Value(To_String(PortStr));
       if FamilyStr="IPv4" then
          Family:=AF_INET;

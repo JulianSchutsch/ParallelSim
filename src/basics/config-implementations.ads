@@ -54,7 +54,7 @@ package Config.Implementations is
    -- IdentifierKey and returns an implementation with that identifier.
    function Find
      (Configuration : Config_Type;
-      ModuleName    : Unbounded_String)
+      Node          : Unbounded_String)
       return Implementation_Type;
 
    -- Find returns an implementation with ImplementationName as identifier.

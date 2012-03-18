@@ -87,7 +87,8 @@ package Network.Streams is
    type Client_ClassAccess is access all Channel_Type'Class;
 
    type Client_Constructor is access function
-     (Config : StringStringMap.Map)
+     (Configuration : Config.Config_Type;
+      Node          : Unbounded_String)
       return Client_ClassAccess;
 
    type Client_Destructor is access procedure
@@ -146,7 +147,8 @@ package Network.Streams is
    type Server_ClassAccess is access all Server_Type'Class;
 
    type Server_Constructor is access function
-     (Config : StringStringMap.Map)
+     (Configuration : Config.Config_Type;
+      Node          : Unbounded_String)
       return Server_ClassAccess;
 
    type Server_Destructor is access procedure

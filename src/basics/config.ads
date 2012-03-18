@@ -40,10 +40,9 @@
 --    for map keys. Values can be empty names.
 --    Special characters are not permitted at all.
 
-pragma Ada_2005;
+pragma Ada_2012;
 
 with Basics; use Basics;
-with Ada.Strings.Unbounded;-- use Ada.Strings.Unbounded;
 
 package Config is
 
@@ -51,23 +50,8 @@ package Config is
 
    InvalidName : Exception;
 
-   type Config_Type is limited private;
+   type Config_Type is new StringStringMap.Map with null record;
    type Config_Access is access Config_Type;
-
-   procedure NewModule
-     (Item : in out Config_Type;
-      Name : Ada.Strings.Unbounded.Unbounded_String);
-
-   procedure Insert
-     (Item       : in out Config_Type;
-      ModuleName : Ada.Strings.Unbounded.Unbounded_String;
-      Key        : Ada.Strings.Unbounded.Unbounded_String;
-      Value      : Ada.Strings.Unbounded.Unbounded_String);
-
-   function GetModuleMap
-     (Item : Config_Type;
-      Name : Ada.Strings.Unbounded.Unbounded_String)
-      return access StringStringMap.Map;
 
    procedure SaveToFile
      (Item     : in out Config_Type;
@@ -77,28 +61,7 @@ package Config is
      (Item     : in out Config_Type;
       FileName : String);
 
-   procedure Clear
-     (Item : in out Config_Type);
-
    procedure Debug
      (Item : in out Config_Type);
-
-private
-
-   type Module;
-   type ModuleAccess is access Module;
-
-   type Module is
-      record
-         Name : Ada.Strings.Unbounded.Unbounded_String;
-         Map  : aliased StringStringMap.Map;
-         Last : ModuleAccess:=null;
-         Next : ModuleAccess:=null;
-      end record;
-
-   type Config_Type is limited
-      record
-         First : ModuleAccess:=null;
-      end record;
 
 end Config;

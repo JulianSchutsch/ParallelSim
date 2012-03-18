@@ -160,9 +160,13 @@ package body SimControl.ControlServer is
       NewCallBack.ReceiveStatus := ReceiveStatusWaitForIdentification;
       NewCallBack.SendStatus    := SendStatusReceive;
       NewCallBack.Channel       := Channel;
+
       LogContext.NewChannel
-        (ChannelName => ConcatElements(Channel.PeerAddress),
+        (ChannelName => ConcatElements
+           (Item      => Channel.PeerAddress,
+            Separator => To_Unbounded_String(";")),
          Channel     => NewCallBack.LogChannel);
+
       Channel.CallBack:=Network.Streams.ChannelCallBack_ClassAccess(NewCallBack);
       LogMainChannel.Write
         (Level   => Logging.LevelEvent,
@@ -179,11 +183,11 @@ package body SimControl.ControlServer is
       LogImplementation
         :=Logging.Implementations.Find
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Logging"));
+           Node          => To_Unbounded_String("Logging"));
       LogContext
         :=LogImplementation.NewContext
           (Configuration => Configuration,
-           ModuleName => To_Unbounded_String("Control.Control"));
+           ModuleName    => To_Unbounded_String("Control.Control"));
 
       LogContext.NewChannel
           (ChannelName => To_Unbounded_String("Server"),
@@ -192,16 +196,14 @@ package body SimControl.ControlServer is
       StreamImplementation
         :=Network.Streams.Implementations.Find
           (Configuration => Configuration,
-           ModuleName    => To_Unbounded_String("Control.Network"));
+           Node          => To_Unbounded_String("Control.Network"));
 
       StreamImplementation.Initialize.all;
 
       Server
         :=StreamImplementation.NewServer
-          (Config => Config.GetModuleMap
-               (Item => Configuration,
-                Name => To_Unbounded_String
-                  ("Control.Server.Network")).all);
+          (Configuration => Configuration,
+           Node          => To_Unbounded_String("Control.Server.Network"));
 
       Server.CallBack:=ServerCallBack'Access;
 
