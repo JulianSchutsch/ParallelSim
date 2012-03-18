@@ -23,7 +23,7 @@
 
 pragma Ada_2005;
 
-with Bounds;
+with BoundsCalc; use BoundsCalc;
 with Config.Implementations;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Basics; use Basics;
@@ -32,22 +32,44 @@ package GUI is
 
    FailedToCreateContext : Exception;
 
-   type Object_Type is tagged private;
+   type Object_Type;
    type Object_ClassAccess is access all Object_Type'Class;
 
+   type Context_Type;
+   type Context_ClassAccess is access all Context_Type'Class;
+   ---------------------------------------------------------------------------
+
+   type Object_Private is private;
+   type Object_Type is tagged
+      record
+         CallBackObject : AnyObject_ClassAccess;
+         Context        : Context_ClassAccess;
+         Priv           : Object_Private;
+      end record;
+
    procedure SetBounds
-     (Object    : in out Object_Type'Class;
-      NewBounds : Bounds.Bounds_Type);
+     (Object : in out Object_Type'Class;
+      Bounds : Bounds_Type);
 
    function GetBounds
      (Object : Object_Type'Class)
-      return Bounds.Bounds_Type;
+      return Bounds_Type;
+   ---------------------------------------------------------------------------
+
+   type OnCloseContext_Access is
+     access procedure (CallBackObject : AnyObject_ClassAccess);
+
+   type Context_Type is tagged
+      record
+         CallBackObject : AnyObject_ClassAccess := null;
+         OnClose        : OnCloseContext_Access := null;
+         RootObject     : Object_ClassAccess    := null;
+         -- Read only
+         Bounds         : Bounds_Type;
+      end record;
 
    type Canvas_Type is tagged private;
    type Canvas_ClassAccess is access all Canvas_Type'Class;
-
-   type Context_Type is new Object_Type with private;
-   type Context_ClassAccess is access all Context_Type'Class;
 
    procedure NewCanvas
      (Context : in out Context_Type;
@@ -81,16 +103,16 @@ package GUI is
 
 private
 
-   type Object_Type is tagged
+   procedure Resize
+     (Context : in out Context_Type;
+      Height  : Integer;
+      Width   : Integer);
+
+   type Object_Private is
       record
          Canvasse  : Canvas_ClassAccess;
-         RelBounds : Bounds.Bounds_Type;
-         AbsBounds : Bounds.AbsBounds_Type;
-      end record;
-
-   type Context_Type is new Object_Type with
-      record
-         null;
+         Bounds    : Bounds_Type;
+         AbsBounds : AbsBounds_Type;
       end record;
 
    type Canvas_Type is tagged

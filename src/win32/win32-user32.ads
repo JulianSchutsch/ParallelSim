@@ -1,3 +1,26 @@
+-------------------------------------------------------------------------------
+--   Copyright 2012 Julian Schutsch
+--
+--   This file is part of ParallelSim
+--
+--   ParallelSim is free software: you can redistribute it and/or modify
+--   it under the terms of the GNU Affero General Public License as published
+--   by the Free Software Foundation, either version 3 of the License, or
+--   (at your option) any later version.
+--
+--   ParallelSim is distributed in the hope that it will be useful,
+--   but WITHOUT ANY WARRANTY; without even the implied warranty of
+--   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--   GNU Affero General Public License for more details.
+--
+--   You should have received a copy of the GNU Affero General Public License
+--   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------------
+
+-- Revision History
+--   18.Mar 2012 Julian Schutsch
+--     - Original version
+
 pragma Ada_2005;
 
 package Win32.User32 is
@@ -51,6 +74,12 @@ package Win32.User32 is
       return LONG_Type;
    pragma Import(StdCall,SetWindowLongPtr,"SetWindowLongA");
 
+   function GetWindowLongPtr
+     (hWnd : HWND_Type;
+      nIndex : Interfaces.C.int)
+      return LONG_PTR_Type;
+   pragma Import(StdCall,GetWindowLongPtr,"GetWindowLongA");
+
    function SetForegroundWindow
      (hWnd : HWND_Type)
       return BOOL_Type;
@@ -59,8 +88,14 @@ package Win32.User32 is
    function LoadIcon
      (hInstance  : HINSTANCE_Type;
       lpIconName : LPCTSTR_Type)
-      return HICON_TYPE;
+      return HICON_Type;
    pragma Import(StdCall,LoadIcon,"LoadIconA");
+
+   function LoadCursor
+     (hInstance : HINSTANCE_Type;
+      lpCursorName : LPCTSTR_Type)
+      return HCURSOR_Type;
+   pragma Import(StdCall,LoadCursor,"LoadCursorA");
 
    function RegisterClass
      (lpWndClass : access WNDCLASS_Type)

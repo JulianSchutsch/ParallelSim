@@ -21,19 +21,33 @@ pragma Ada_2005;
 
 package body GUI is
 
-   procedure SetBounds
-     (Object    : in out Object_Type'Class;
-      NewBounds : Bounds.Bounds_Type) is
+   procedure Resize
+     (Context : in out Context_Type;
+      Height  : Integer;
+      Width   : Integer) is
    begin
-      Object.RelBounds:=NewBounds;
+      Context.Bounds:=
+        (Top     => 0,
+         Left    => 0,
+         Height  => Height,
+         Width   => Width,
+         Visible => True);
+   end Resize;
+   ---------------------------------------------------------------------------
+
+   procedure SetBounds
+     (Object : in out Object_Type'Class;
+      Bounds : Bounds_Type) is
+   begin
+      Object.Priv.Bounds:=Bounds;
    end SetBounds;
    ---------------------------------------------------------------------------
 
    function GetBounds
      (Object : Object_Type'Class)
-      return Bounds.Bounds_Type is
+      return Bounds_Type is
    begin
-      return Object.RelBounds;
+      return Object.Priv.Bounds;
    end GetBounds;
    ---------------------------------------------------------------------------
 

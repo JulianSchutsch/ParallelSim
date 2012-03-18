@@ -31,6 +31,9 @@ with Ada.Containers.Vectors;
 
 package Basics is
 
+   type AnyObject_Type is tagged null record;
+   type AnyObject_ClassAccess is access all AnyObject_Type'Class;
+
    function StringSumHash(id: Unbounded_String) return Ada.Containers.Hash_Type;
 
    package StringStringMap is new Ada.Containers.Hashed_maps

@@ -1,3 +1,26 @@
+-------------------------------------------------------------------------------
+--   Copyright 2012 Julian Schutsch
+--
+--   This file is part of ParallelSim
+--
+--   ParallelSim is free software: you can redistribute it and/or modify
+--   it under the terms of the GNU Affero General Public License as published
+--   by the Free Software Foundation, either version 3 of the License, or
+--   (at your option) any later version.
+--
+--   ParallelSim is distributed in the hope that it will be useful,
+--   but WITHOUT ANY WARRANTY; without even the implied warranty of
+--   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--   GNU Affero General Public License for more details.
+--
+--   You should have received a copy of the GNU Affero General Public License
+--   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------------
+
+-- Revision History
+--   18.Mar 2012 Julian Schutsch
+--     - Original version
+
 pragma Ada_2005;
 
 with Interfaces;
@@ -38,6 +61,20 @@ package Win32 is
    function MAKEINTRESOURCE
      (wInteger : WORD_Type)
       return LPCTSTR_Type;
+   function GET_X_LPARAM
+     (lParam : LPARAM_Type)
+      return Integer;
+   function GET_Y_LPARAM
+     (lParam : LPARAM_Type)
+      return Integer;
+
+   function LOWORD
+     (lParam : LPARAM_Type)
+      return WORD_Type;
+
+   function HIWORD
+     (lParam : LPARAM_Type)
+      return WORD_Type;
 
    CS_HREDRAW : constant UINT_Type:=2;
    CS_VREDRAW : constant UINT_Type:=1;
@@ -76,9 +113,16 @@ package Win32 is
    PM_NOYIELD  : constant := 2;
 
    PFD_DRAW_TO_WINDOW : constant:=4;
-   PFD_SUPPORT_OPENGL : constant:=32;
+   PFD_SUPPORT_OPENGL : constant:=16#20#;
    PFD_TYPE_RGBA      : constant:=0;
    PFD_MAIN_PLANE     : constant:=0;
+
+   IDI_WINLOGO : constant:=32517;
+   IDI_ASTERISK : constant:=32516;
+   IDI_APPLICATION : constant:=32512;
+   IDI_ERROR : constant:=32513;
+   IDI_EXCLAMATION : constant:=32515;
+   IDC_ARROW   : constant:=32512;
 
    type WNDPROC_Access is
      access function
@@ -91,33 +135,33 @@ package Win32 is
 
    type WNDCLASS_Type is
       record
-         style         : UINT_Type:=0;
-         lpfnWndProc   : WNDPROC_Access:=null;
-         cbClsExtra    : Interfaces.C.int:=0;
-         cbWndExtra    : Interfaces.C.int:=0;
-         hInstance     : HINSTANCE_Type:=0;
-         hIcon         : HICON_Type:=0;
-         hCursor       : HCURSOR_Type:=0;
-         hbrBackground : HBRUSH_Type:=0;
-         lpszMenuName  : LPCTSTR_Type:=Interfaces.C.Strings.Null_Ptr;
-         lpszClassName : LPCTSTR_Type:=Interfaces.C.Strings.Null_Ptr;
+         style         : UINT_Type        := 0;
+         lpfnWndProc   : WNDPROC_Access   := null;
+         cbClsExtra    : Interfaces.C.int := 0;
+         cbWndExtra    : Interfaces.C.int := 0;
+         hInstance     : HINSTANCE_Type   := 0;
+         hIcon         : HICON_Type       := 0;
+         hCursor       : HCURSOR_Type     := 0;
+         hbrBackground : HBRUSH_Type      := 0;
+         lpszMenuName  : LPCTSTR_Type     := Interfaces.C.Strings.Null_Ptr;
+         lpszClassName : LPCTSTR_Type     := Interfaces.C.Strings.Null_Ptr;
       end record;
    pragma Convention(C,WNDCLASS_Type);
 
    type CREATESTRUCT_Type is
       record
-         lpCreateParams : System.Address;
-         hInstance      : HINSTANCE_Type;
-         hMenu          : HMENU_Type;
-         hwndParent     : HWND_Type;
-         cy             : Interfaces.C.int;
-         cx             : Interfaces.C.int;
-         y              : Interfaces.C.int;
-         x              : Interfaces.C.int;
-         style          : LONG_Type;
-         lpszName       : LPCTSTR_Type;
-         lpszClass      : LPCTSTR_Type;
-         dwExStyle      : DWORD_Type;
+         lpCreateParams : System.Address:=System.Null_Address;
+         hInstance      : HINSTANCE_Type:=0;
+         hMenu          : HMENU_Type:=0;
+         hwndParent     : HWND_Type:=0;
+         cy             : Interfaces.C.int:=0;
+         cx             : Interfaces.C.int:=0;
+         y              : Interfaces.C.int:=0;
+         x              : Interfaces.C.int:=0;
+         style          : LONG_Type:=0;
+         lpszName       : LPCTSTR_Type:=Interfaces.C.Strings.Null_Ptr;
+         lpszClass      : LPCTSTR_Type:=Interfaces.C.Strings.Null_Ptr;
+         dwExStyle      : DWORD_Type:=0;
       end record;
    type CREATESTRUCT_Access is access CREATESTRUCT_Type;
    pragma Convention(C,CREATESTRUCT_Type);
