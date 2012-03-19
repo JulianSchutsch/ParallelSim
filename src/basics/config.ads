@@ -40,7 +40,7 @@
 --    for map keys. Values can be empty names.
 --    Special characters are not permitted at all.
 
-pragma Ada_2012;
+pragma Ada_2005;
 
 with Basics; use Basics;
 

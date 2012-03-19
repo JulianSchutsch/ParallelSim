@@ -26,17 +26,19 @@ pragma Ada_2005;
 with Interfaces.C;
 package OpenGL is
 
-   type GLint is new Interfaces.C.int;
-   type GLsizei is new Interfaces.C.int;
+   type GLint_Type is new Interfaces.C.int;
+   type GLint_Access is access all GLint_Type;
+   type GLsizei_Type is new Interfaces.C.int;
+   type GLsizei_Access is access all GLsizei_Type;
 
    procedure glFinish;
    pragma Import(StdCall,glFinish,"glFinish");
 
    procedure glViewport
-     (x      : GLint;
-      y      : GLint;
-      width  : GLsizei;
-      height : GLsizei);
+     (x      : GLint_Type;
+      y      : GLint_Type;
+      width  : GLsizei_Type;
+      height : GLsizei_Type);
    pragma Import(StdCall,glViewport,"glViewport");
 
 end OpenGL;

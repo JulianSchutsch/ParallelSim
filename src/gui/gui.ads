@@ -83,7 +83,8 @@ package GUI is
    ---------------------------------------------------------------------------
    type Context_Constructor is
      access function
-       (Configuration : StringStringMap.Map)
+       (Configuration : Config.Config_Type;
+        Node          : Unbounded_String)
         return Context_ClassAccess;
 
    type Context_Destructor is

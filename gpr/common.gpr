@@ -68,7 +68,13 @@ abstract project Common is
 
          Source_Directories:=Source_Directories &
            (Dir & "../src/network/linux",
-            Dir & "../src/basics/linux");
+            Dir & "../src/basics/linux",
+            Dir & "../src/gui/linux",
+            Dir & "../src/xlib");
+
+         Linker_Switches:=Linker_Switches &
+           ("-lX11",
+            "-lGL");
 
          LanguagesUsed:=LanguagesUsed &
            ("C");

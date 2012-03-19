@@ -23,8 +23,6 @@ package body SimClientGUI is
    procedure Initialize
      (Configuration : Config.Config_Type) is
 
-      ConfigMap : StringStringMap.Map;
-
    begin
 
       Terminated:=False;
@@ -36,7 +34,8 @@ package body SimClientGUI is
 
       GUIContext
         :=GUIImplementation.NewContext
-          (Configuration => ConfigMap);
+          (Configuration => Configuration,
+           Node          => To_Unbounded_String("GUI"));
 
       GUIContext.OnClose:=OnCloseContext'Access;
 
