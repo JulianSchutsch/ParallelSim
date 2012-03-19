@@ -368,9 +368,12 @@ package body GUI.OpenGL.Native is
    ---------------------------------------------------------------------------
 
    function NewContext
-     (Configuration : StringStringMap.Map)
+     (Configuration : Config.Config_Type;
+      Node          : Unbounded_String)
       return Context_ClassAccess is
-      pragma Warnings(Off,Configuration);
+
+      pragma Unreferenced(Configuration);
+      pragma Unreferenced(Node);
 
       use type Win32.UINT_Type;
       use type Interfaces.C.int;
@@ -440,9 +443,12 @@ package body GUI.OpenGL.Native is
 
       if Win32.User32.RegisterClass
         (lpWndClass => WndClass'Access)=0 then
+
+         FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
            with "RegisterClass failed with "
              &Win32.DWORD_Type'Image(Win32.GetLastError);
+
       end if;
 
       -- Create the window with the previously created window class
