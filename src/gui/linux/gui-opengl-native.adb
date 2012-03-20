@@ -36,6 +36,9 @@ package body GUI.OpenGL.Native is
          GLXMinor            : aliased GLint_Type;
          Screen              : Interfaces.C.int;
          Visual              : XLib.XVisualInfo_Access;
+         ColorMap            : XLib.ColorMap_Type;
+         Window              : XLib.Window_Type;
+         DeleteWindowAtom    : XLib.Atom_Type;
       end record;
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -99,8 +102,10 @@ package body GUI.OpenGL.Native is
       return Context_ClassAccess is
 
       use type Xlib.Display_Access;
-      use type XLib.XVisualInfo_Access;
+      use type Xlib.XVisualInfo_Access;
       use type Interfaces.C.int;
+      use type Interfaces.C.long;
+      use type Xlib.Window_Type;
 
       pragma Unreferenced(Configuration);
       pragma Unreferenced(Node);
@@ -168,6 +173,83 @@ package body GUI.OpenGL.Native is
            with "Failed call to glXChooseVisual";
       end if;
 
+      Context.ColorMap := Xlib.XCreateColormap
+        (display => Context.Display,
+         window  => Xlib.RootWindow
+           (display => Context.Display,
+            screen  => Context.Visual.screen),
+         visual  => Context.Visual.visual,
+         alloc   => Xlib.AllocNone);
+
+      declare
+         Attr : aliased XLib.XSetWindowAttributes_Type;
+      begin
+         Attr.colormap:=Context.ColorMap;
+         Attr.border_pixel:=16#FFFFFFFF#;
+         -- This sum of events should work, but OR would be the better
+         -- choice
+         Attr.event_mask:=
+           Xlib.StructureNotifyMask
+           + Xlib.ExposureMask
+           + Xlib.KeyPressMask
+           + XLib.KeyReleaseMask
+           + Xlib.ButtonPressMask
+           + Xlib.ButtonReleaseMask
+           + Xlib.PointerMotionMask;
+
+         Context.Window:=Xlib.XCreateWindow
+           (display => Context.Display,
+            parent  => Xlib.RootWindow
+              (display => Context.Display,
+               screen  => Context.Visual.screen),
+            x       => 0,
+            y       => 0,
+            width   => 640,
+            height  => 480,
+            border_width => 0,
+            depth   => Context.Visual.depth,
+            class   => Xlib.InputOutput,
+            visual  => Context.Visual.visual,
+            valuemask => Xlib.CWBackPixel
+                        +Xlib.CWBorderPixel
+                        +Xlib.CWColorMap
+                        +Xlib.CWEventMask,
+            attributes => Attr'Unchecked_Access);
+
+      end;
+
+      if Context.Window=0 then
+         FreeContext(Context_ClassAccess(Context));
+         raise FailedToCreateContext
+           with "Call to XCreateWindow returned no window";
+      end if;
+
+      declare
+         SizeHints : aliased Xlib.XSizeHints_Type;
+      begin
+         SizeHints.width  := 400;
+         SizeHints.height := 400;
+         SizeHints.flags  := Xlib.USSize+XLib.USPosition;
+         Xlib.XSetNormalHints
+           (display => Context.Display,
+            window  => Context.Window,
+            hints   => SizeHints'Unchecked_Access);
+--         Xlib.XSetStandardProperties
+--           (display => Context.Display,
+--            window  => Context.Window,
+
+      end;
+
+      declare
+         AtomName : Interfaces.C.Strings.chars_ptr
+           :=Interfaces.C.Strings.New_String("WM_DELETE_WINDOW");
+      begin
+         Context.DeleteWindowAtom:=XLib.XInternAtom
+           (display => Context.Display,
+            atom_name => AtomName,
+            only_if_exists => 1);
+         Interfaces.C.Strings.Free(AtomName);
+      end;
 
       Put("OK...SO FAR");
       New_Line;
