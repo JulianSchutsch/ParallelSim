@@ -75,4 +75,9 @@ package glX is
       return Interfaces.C.int; -- FOR BOOLEAN
    pragma Import(C,glXMakeCurrent,"glXMakeCurrent");
 
+   procedure glXDestroyContext
+     (dpy : Display_Access;
+      ctx : GLXContext_Access);
+   pragma Import(C,glXDestroyContext,"glXDestroyContext");
+
 end glX;

@@ -410,4 +410,13 @@ package Xlib is
       event_return : XEvent_Access);
    pragma Import(C,XNextEvent,"XNextEvent");
 
+   procedure XDestroyWindow
+     (display : Display_Access;
+      window  : Window_Type);
+   pragma Import(C,XDestroyWindow,"XDestroyWindow");
+
+   procedure XCloseDisplay
+     (display : Display_Access);
+   pragma Import(C,XCloseDisplay,"XCloseDisplay");
+
 end XLib;

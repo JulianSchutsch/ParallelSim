@@ -160,10 +160,41 @@ package body GUI.OpenGL.Native is
    procedure FreeContext
      (Context : Context_ClassAccess) is
 
+      use type glX.GLXContext_Access;
+      use type Interfaces.C.int;
+      use type Xlib.Window_Type;
+      use type Xlib.Display_Access;
+
       Cont : Context_Access;
 
    begin
       Cont:=Context_Access(Context);
+      if Cont.GLXContext/=null then
+
+         if glX.glXMakeCurrent
+           (dpy      => Cont.Display,
+            drawable => 0,
+            context  => Null)=0 then
+            raise FailedToDestroyContext
+              with "Failed Call to glXMakeCurrent using drawable=0";
+         end if;
+
+         glX.glXDestroyContext
+           (dpy => Cont.Display,
+            ctx => Cont.GLXContext);
+
+      end if;
+
+      if Cont.Window/=0 then
+         Xlib.XDestroyWindow
+           (display => Cont.Display,
+            window  => Cont.Window);
+      end if;
+
+      if Cont.Display/=null then
+         Xlib.XCloseDisplay
+           (display => Cont.Display);
+      end if;
       -- Remove Context from the contexts list
       if Cont.LastContext/=null then
          Cont.LastContext.NextContext:=Cont.NextContext;
