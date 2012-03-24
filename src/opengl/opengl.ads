@@ -24,12 +24,29 @@
 pragma Ada_2005;
 
 with Interfaces.C;
+with Interfaces;
+
 package OpenGL is
 
+   OpenGLError : Exception;
+
+   -- Portability : Maybe risky and non portable when using anything but
+   --               the GNAT compiler
+   type GLdouble is new Long_Float;
+   type GLclampf is new Float;
+
+   type GLbitfield_Type is new Interfaces.C.unsigned;
    type GLint_Type is new Interfaces.C.int;
    type GLint_Access is access all GLint_Type;
    type GLsizei_Type is new Interfaces.C.int;
    type GLsizei_Access is access all GLsizei_Type;
+   type GLenum_Type is new Interfaces.Unsigned_32;
+
+   GL_MODELVIEW  : constant GLenum_Type:=16#1700#;
+   GL_PROJECTION : constant GLenum_Type:=16#1701#;
+
+   GL_COLOR_BUFFER_BIT : constant GLbitfield_Type:=16#4000#;
+   GL_DEPTH_BUFFER_BIT : constant GLbitfield_Type:=16#100#;
 
    procedure glFinish;
    pragma Import(StdCall,glFinish,"glFinish");
@@ -40,5 +57,38 @@ package OpenGL is
       width  : GLsizei_Type;
       height : GLsizei_Type);
    pragma Import(StdCall,glViewport,"glViewport");
+
+   procedure glMatrixMode
+     (mode : GLenum_Type);
+   pragma Import(StdCall,glMatrixMode,"glMatrixMode");
+
+   procedure glLoadIdentity;
+   pragma Import(StdCall,glLoadIdentity,"glLoadIdentity");
+
+   procedure glOrtho
+     (left    : GLdouble;
+      right   : GLdouble;
+      bottom  : GLdouble;
+      top     : GLdouble;
+      nearVal : GLdouble;
+      farVal  : GLdouble);
+   pragma Import(StdCall,glOrtho,"glOrtho");
+
+   procedure glClearColor
+     (red   : GLclampf;
+      green : GLclampf;
+      blue  : GLclampf;
+      alpha : GLclampf);
+   pragma Import(StdCall,glClearColor,"glClearColor");
+
+   procedure glClear
+     (mask : GLbitfield_Type);
+   pragma Import(StdCall,glClear,"glClear");
+
+   function glGetError
+     return GLenum_Type;
+   pragma Import(StdCall,glGetError,"glGetError");
+
+   procedure AssertError;
 
 end OpenGL;
