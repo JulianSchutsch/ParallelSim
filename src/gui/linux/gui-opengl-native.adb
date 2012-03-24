@@ -164,11 +164,18 @@ package body GUI.OpenGL.Native is
       use type Interfaces.C.int;
       use type Xlib.Window_Type;
       use type Xlib.Display_Access;
+      use type Xlib.XVisualInfo_Access;
 
       Cont : Context_Access;
 
    begin
       Cont:=Context_Access(Context);
+
+      if Cont.Visual/=null then
+         Xlib.XFree
+           (Cont.Visual.all'Address);
+      end if;
+
       if Cont.GLXContext/=null then
 
          if glX.glXMakeCurrent

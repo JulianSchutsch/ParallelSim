@@ -23,6 +23,7 @@
 
 pragma Ada_2005;
 with Interfaces.C.Strings;
+with System;
 
 package Xlib is
 
@@ -418,5 +419,9 @@ package Xlib is
    procedure XCloseDisplay
      (display : Display_Access);
    pragma Import(C,XCloseDisplay,"XCloseDisplay");
+
+   procedure XFree
+     (data : System.Address);
+   pragma Import(C,XFree,"XFree");
 
 end XLib;
