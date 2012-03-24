@@ -1,3 +1,26 @@
+-------------------------------------------------------------------------------
+--   Copyright 2012 Julian Schutsch
+--
+--   This file is part of ParallelSim
+--
+--   ParallelSim is free software: you can redistribute it and/or modify
+--   it under the terms of the GNU Affero General Public License as published
+--   by the Free Software Foundation, either version 3 of the License, or
+--   (at your option) any later version.
+--
+--   ParallelSim is distributed in the hope that it will be useful,
+--   but WITHOUT ANY WARRANTY; without even the implied warranty of
+--   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--   GNU Affero General Public License for more details.
+--
+--   You should have received a copy of the GNU Affero General Public License
+--   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------------
+
+-- Revision History
+--   24.Mar 2012 Julian Schutsch
+--     - Original version
+
 pragma Ada_2005;
 with Interfaces.C.Strings;
 
@@ -29,6 +52,17 @@ package Xlib is
 
    type Atom_Type is new Interfaces.C.long;
    type Atom_Access is access all Atom_Type;
+
+   type XIC_Type is null record;
+   type XIC_Access is access all XIC_Type;
+
+   type XIM_Type is null record;
+   type XIM_Access is access all XIM_Type;
+
+   type Status_Type is new Interfaces.C.int;
+
+   type XrmDatabase_Type is null record;
+   type XrmDatabase_Access is access all XrmDatabase_Type;
 
    type XVisualInfo_Type is
       record
@@ -107,6 +141,148 @@ package Xlib is
    pragma Convention(C,XSizeHints_Type);
    type XSizeHints_Access is access all XSizeHints_Type;
 
+   type XClientMessageEvent_Type is
+      record
+         Message_Type : Atom_Type;
+         format       : Interfaces.C.int;
+         b            : String(1..20);
+      end record;
+   pragma Convention(C,XClientMessageEvent_Type);
+
+   type XExposeEvent_Type is
+      record
+         x          : Interfaces.C.int;
+         y          : Interfaces.C.int;
+         width      : Interfaces.C.int;
+         height     : Interfaces.C.int;
+         count      : Interfaces.C.int;
+      end record;
+   pragma Convention(C,XExposeEvent_Type);
+
+   type XButtonEvent_Type is
+      record
+         root        : Window_Type;
+         subwindow   : Window_Type;
+         time        : Interfaces.Unsigned_32;
+         x           : Interfaces.C.int;
+         y           : Interfaces.C.int;
+         x_root      : Interfaces.C.int;
+         y_root      : Interfaces.C.int;
+         state       : Interfaces.C.unsigned;
+         button      : Interfaces.C.unsigned;
+         same_screen : Interfaces.C.int;
+      end record;
+   pragma Convention(C,XButtonEvent_Type);
+
+   type XMotionEvent_Type is
+      record
+         root        : Window_Type;
+         subwindow   : Window_Type;
+         time        : Interfaces.Unsigned_32;
+         x           : Interfaces.C.int;
+         y           : Interfaces.C.int;
+         x_root      : Interfaces.C.int;
+         y_root      : Interfaces.C.int;
+         state       : Interfaces.C.unsigned;
+         is_hint     : Interfaces.C.char;
+         same_screen : Interfaces.Unsigned_32;
+      end record;
+   pragma Convention(C,XMotionEvent_Type);
+
+   type XKeyEvent_Type is
+      record
+         root        : Window_Type;
+         subwindow   : Window_Type;
+         time        : Interfaces.Unsigned_32;
+         x           : Interfaces.C.int;
+         y           : Interfaces.C.int;
+         x_root      : Interfaces.C.int;
+         y_root      : Interfaces.C.int;
+         state       : Interfaces.C.unsigned;
+         keycode     : Interfaces.C.unsigned;
+         same_screen : Interfaces.C.int;
+      end record;
+   pragma Convention(C,XKeyEvent_Type);
+
+   type XConfigureEvent_Type is
+      record
+         -- event is now window in XEvent_Type
+         window : Window_Type;
+         x : Interfaces.C.int;
+         y : Interfaces.C.int;
+      end record;
+   pragma Convention(C,XConfigureEvent_Type);
+
+   type XReparentEvent_Type is
+      record
+         window            : Window_Type;
+         x                 : Interfaces.C.int;
+         y                 : Interfaces.C.int;
+         width             : Interfaces.C.int;
+         height            : Interfaces.C.int;
+         border_width      : Interfaces.C.int;
+         above             : Window_Type;
+         override_redirect : Interfaces.C.int;
+      end record;
+   pragma Convention(C,XReparentEvent_Type);
+
+   type XResizeRequestEvent_Type is
+      record
+         width : Interfaces.C.int;
+         height : Interfaces.C.int;
+      end record;
+   pragma Convention(C,XResizeRequestEvent_Type);
+
+   type EventType_Enum is
+     (EventTypeUnknown,
+      EventTypeClientMessage,
+      EventTypeExpose,
+      EventTypeButtonPress,
+      EventTypeButtonRelease,
+      EventTypeMotionNotify,
+      EventTypeKeyPress,
+      EventTypeKeyRelease,
+      EventTypeConfigureNotify,
+      EventTypeResizeRequest,
+      EventTypeReparentNotify);
+
+   type XEvent_Type(EventType : EventType_Enum:=EventTypeUnknown) is
+      record
+         ttype      : Interfaces.C.int;
+         serial     : Interfaces.C.long;
+         send_event : Interfaces.C.int;
+         display    : Display_Access;
+         window     : Window_Type;
+         case EventType is
+            when EventTypeUnknown =>
+               data  : String(1..1020);
+            when EventTypeClientMessage =>
+               ClientMessage : XClientMessageEvent_Type;
+            when EventTypeExpose =>
+               Expose : XExposeEvent_Type;
+            when EventTypeButtonPress =>
+               ButtonPress : XButtonEvent_Type;
+            when EventTypeButtonRelease =>
+               ButtonRelease : XButtonEvent_Type;
+            when EventTypeMotionNotify =>
+               ButtonMotion : XMotionEvent_Type;
+            when EventTypeKeyPress =>
+               KeyPress : XKeyEvent_Type;
+            when EventTypeKeyRelease =>
+               KeyRelease : XKeyEvent_Type;
+            when EventTypeConfigureNotify =>
+               Configure : XConfigureEvent_Type;
+            when EventTypeResizerequest =>
+               ResizeRequest : XResizeRequestEvent_Type;
+            when EventTypeReparentNotify =>
+               Reparent : XReparentEvent_Type;
+         end case;
+      end record;
+   pragma Unchecked_Union(XEvent_Type);
+   pragma Convention(C,XEvent_Type);
+
+   type XEvent_Access is access all XEvent_Type;
+
    function XOpenDisplay
      (display_name : Interfaces.C.Strings.chars_ptr)
       return Display_Access;
@@ -178,5 +354,46 @@ package Xlib is
       only_if_exists : Interfaces.C.int)
       return Atom_Type;
    pragma Import(C,XInternAtom,"XInternAtom");
+
+   procedure XMapWindow
+     (display : Display_Access;
+      window  : Window_Type);
+   pragma Import(C,XMapWindow,"XMapWindow");
+
+   function XSetWMProtocols
+     (display   : Display_Access;
+      window    : Window_Type;
+      protocols : Atom_Access;
+      count     : Integer)
+      return Status_Type;
+   pragma Import(C,XSetWMProtocols,"XSetWMProtocols");
+
+   function XOpenIM
+     (display   : Display_Access;
+      db        : XrmDatabase_Access;
+      res_name  : Interfaces.C.Strings.chars_ptr;
+      res_class : Interfaces.C.Strings.chars_ptr)
+      return XIM_Access;
+   pragma Import(C,XOpenIM,"XOpenIM");
+
+   XIMPreeditNothing : constant := 8;
+   XIMStatusNothing  : constant := 16#400#;
+
+   function XCreateIC_1
+     (im : XIM_Access;
+      window : Window_Type;
+      inputstyle : Interfaces.C.int)
+      return XIC_Access;
+   pragma Import(C,XCreateIC_1,"_XCreateIC_1");
+
+   function XPending
+     (display : Display_Access)
+      return Interfaces.C.int;
+   pragma Import(C,XPending,"XPending");
+
+   procedure XNextEvent
+     (display : Display_Access;
+      event_return : XEvent_Access);
+   pragma Import(C,XNextEvent,"XNextEvent");
 
 end XLib;

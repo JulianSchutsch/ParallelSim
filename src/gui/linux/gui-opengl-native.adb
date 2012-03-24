@@ -28,25 +28,67 @@ package body GUI.OpenGL.Native is
    type Context_Access is access all Context_Type;
    type Context_Type is new GUI.OpenGL.Context_Type with
       record
-         Display             : XLib.Display_Access:=Null;
-         NextContext         : Context_Access:=Null;
-         LastContext         : Context_Access:=Null;
-         DestroyedSignalSend : Boolean:=True;
-         GLXMajor            : aliased GLint_Type;
-         GLXMinor            : aliased GLint_Type;
-         Screen              : Interfaces.C.int;
-         Visual              : XLib.XVisualInfo_Access;
-         ColorMap            : XLib.ColorMap_Type;
-         Window              : XLib.Window_Type;
-         DeleteWindowAtom    : XLib.Atom_Type;
+         Display             : XLib.Display_Access     := Null;
+         NextContext         : Context_Access          := Null;
+         LastContext         : Context_Access          := Null;
+         DestroyedSignalSend : Boolean                 := False;
+         GLXMajor            : aliased GLint_Type      := 0;
+         GLXMinor            : aliased GLint_Type      := 0;
+         Screen              : Interfaces.C.int        := 0;
+         Visual              : XLib.XVisualInfo_Access := Null;
+         ColorMap            : XLib.ColorMap_Type      := 0;
+         Window              : XLib.Window_Type        := 0;
+         DeleteWindowAtom    : aliased XLib.Atom_Type  := 0;
+         GLXContext          : glX.GLXContext_Access   := Null;
+         InputIM             : Xlib.XIM_Access         := Null;
+         InputContext        : Xlib.XIC_Access         := Null;
       end record;
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Context_Type,
       Name   => Context_Access);
    ---------------------------------------------------------------------------
-
    Contexts : Context_Access:=null;
+
+   procedure Process
+     (Context : Context_Access) is
+
+      use type Interfaces.C.int;
+
+      EventCount : Interfaces.C.int;
+
+      Event : aliased Xlib.XEvent_Type;
+
+   begin
+      if glX.glxMakeCurrent
+        (dpy      => Context.Display,
+         drawable => glX.GLXDrawable_Type(Context.Window),
+         context  => Context.GLXContext)=0 then
+         raise InvalidContext
+           with "glxMakeCurrent failed";
+      end if;
+
+      loop
+
+         EventCount:=Xlib.XPending
+           (display => Context.Display);
+
+         while EventCount>0 loop
+            EventCount := EventCount-1;
+
+            -- WARNING : Unchecked access necessary since Xlib makes use
+            --           of the passed structure as temporary buffer,
+            --           which is local to this Context.
+            Xlib.XNextEvent
+              (display => Context.Display,
+               event_return => Event'Unchecked_Access);
+--            case Event.ttype is
+--               when
+         end loop;
+
+      end loop;
+   end Process;
+   ---------------------------------------------------------------------------
 
    procedure Process is
       Context     : Context_Access;
@@ -57,7 +99,7 @@ package body GUI.OpenGL.Native is
       while Context/=null loop
 
          NextContext:=Context.NextContext;
-         -- DO SOMETHING FANCY WITH THE CONTEXT
+         Process(Context);
          if Context.DestroyedSignalSend
            and Context.OnClose/=null then
             Context.OnClose(Context.CallBackObject);
@@ -106,6 +148,10 @@ package body GUI.OpenGL.Native is
       use type Interfaces.C.int;
       use type Interfaces.C.long;
       use type Xlib.Window_Type;
+      use type Xlib.Atom_Type;
+      use type Xlib.Status_Type;
+      use type Xlib.XIM_Access;
+      use type Xlib.XIC_Access;
 
       pragma Unreferenced(Configuration);
       pragma Unreferenced(Node);
@@ -250,9 +296,68 @@ package body GUI.OpenGL.Native is
             only_if_exists => 1);
          Interfaces.C.Strings.Free(AtomName);
       end;
+      if Context.DeleteWindowAtom=0 then
+         FreeContext(Context_ClassAccess(Context));
+         raise FailedToCreateContext
+           with "Call to XInternAtom with WM_DELETE_WINDOW failed";
+      end if;
 
-      Put("OK...SO FAR");
-      New_Line;
+      if Xlib.XSetWMProtocols
+        (display   => Context.Display,
+         window    => Context.Window,
+         protocols => Context.DeleteWindowAtom'Access,
+         count     => 1)=0 then
+         FreeContext(Context_ClassAccess(Context));
+         raise FailedToCreateContext
+           with "Call to XSetWMProtocols failed";
+      end if;
+
+      Context.GLXContext:=glX.glXCreateContext
+        (dpy       => Context.Display,
+         vis       => Context.Visual,
+         shareList => null,
+         direct    => 1);
+
+      if Context=null then
+         FreeContext(Context_ClassAccess(Context));
+         raise FailedToCreateContext
+           with "Call to XCreateContext failed";
+      end if;
+
+      Xlib.XMapWindow
+        (display => Context.Display,
+         window  => Context.Window);
+
+      if glX.glxMakeCurrent
+        (dpy      => Context.Display,
+         drawable => GLX.GLXDrawable_Type(Context.Window),
+         context  => Context.GLXContext)=0 then
+         FreeContext(Context_ClassAccess(Context));
+         raise FailedToCreateContext
+           with "Call to glxMakeCurrent failed";
+      end if;
+
+      Context.InputIM:=Xlib.XOpenIM
+        (display   => Context.Display,
+         db        => null,
+         res_name  => Interfaces.C.Strings.Null_Ptr,
+         res_class => Interfaces.C.Strings.Null_Ptr);
+
+      if Context.InputIM=null then
+         FreeContext(Context_ClassAccess(Context));
+         raise FailedToCreateContext
+           with "Failed to create input IM with XOpenIM";
+      end if;
+
+      Context.InputContext:=Xlib.XCreateIC_1
+        (im => Context.InputIM,
+         window => Context.Window,
+         inputstyle => Xlib.XIMPreeditNothing+Xlib.XIMStatusNothing);
+      if Context.InputContext=null then
+         FreeContext(Context_ClassAccess(Context));
+         raise FailedToCreateContext
+           with "Failed to create Input Context with XCreateIC";
+      end if;
 
       return Context_ClassAccess(Context);
    end NewContext;

@@ -31,6 +31,7 @@ with Basics; use Basics;
 package GUI is
 
    FailedToCreateContext : Exception;
+   InvalidContext : Exception;
 
    type Object_Type;
    type Object_ClassAccess is access all Object_Type'Class;
