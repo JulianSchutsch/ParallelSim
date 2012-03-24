@@ -54,6 +54,8 @@ package body GUI.OpenGL.Native is
      (Context : Context_Access) is
 
       use type Interfaces.C.int;
+      use type Interfaces.C.long;
+      use type Xlib.Window_Type;
 
       EventCount : Interfaces.C.int;
 
@@ -68,23 +70,66 @@ package body GUI.OpenGL.Native is
            with "glxMakeCurrent failed";
       end if;
 
-      loop
+      EventCount:=Xlib.XPending
+        (display => Context.Display);
 
-         EventCount:=Xlib.XPending
-           (display => Context.Display);
+      while EventCount>0 loop
+         EventCount := EventCount-1;
 
-         while EventCount>0 loop
-            EventCount := EventCount-1;
+         -- WARNING : Unchecked access necessary since Xlib makes use
+         --           of the passed structure as temporary buffer,
+         --           which is local to this Context.
+         Xlib.XNextEvent
+           (display => Context.Display,
+            event_return => Event'Unchecked_Access);
 
-            -- WARNING : Unchecked access necessary since Xlib makes use
-            --           of the passed structure as temporary buffer,
-            --           which is local to this Context.
-            Xlib.XNextEvent
-              (display => Context.Display,
-               event_return => Event'Unchecked_Access);
---            case Event.ttype is
---               when
-         end loop;
+         case Event.ttype is
+
+            when Xlib.ClientMessage =>
+
+               Put("ClientMessage");
+               Put(Integer(event.ClientMessage.l(0)));
+               Put(Integer(Integer(Context.DeleteWindowAtom)));
+               New_Line;
+
+               if Event.ClientMessage.l(0)
+                 =Interfaces.C.long(Context.DeleteWindowAtom) then
+                  Context.DestroyedSignalSend:=True;
+                  return;
+               end if;
+
+            when Xlib.Expose =>
+               null;
+
+            when Xlib.ButtonPress =>
+               null;
+
+            when Xlib.ButtonRelease =>
+               null;
+
+            when Xlib.MotionNotify =>
+               null;
+
+            when Xlib.KeyPress =>
+               null;
+
+            when Xlib.KeyRelease =>
+               null;
+
+            when Xlib.ConfigureNotify =>
+               null;
+
+            when Xlib.ResizeRequest =>
+               null;
+
+            when Xlib.ReparentNotify =>
+               null;
+
+            when others =>
+               Put("Unknown Event Type:");
+               Put(Integer(Event.ttype));
+               New_Line;
+         end case;
 
       end loop;
    end Process;

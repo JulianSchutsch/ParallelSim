@@ -141,11 +141,14 @@ package Xlib is
    pragma Convention(C,XSizeHints_Type);
    type XSizeHints_Access is access all XSizeHints_Type;
 
+   type LongArray is array(Natural range <>) of Interfaces.C.long;
+   pragma Convention(C,LongArray);
+
    type XClientMessageEvent_Type is
       record
          Message_Type : Atom_Type;
          format       : Interfaces.C.int;
-         b            : String(1..20);
+         l            : LongArray(0..4);
       end record;
    pragma Convention(C,XClientMessageEvent_Type);
 
@@ -246,11 +249,22 @@ package Xlib is
       EventTypeResizeRequest,
       EventTypeReparentNotify);
 
+   ClientMessage   : constant:=33;
+   Expose          : constant:=12;
+   ButtonPress     : constant:=14;
+   ButtonRelease   : constant:=5;
+   MotionNotify    : constant:=6;
+   KeyPress        : constant:=2;
+   KeyRelease      : constant:=3;
+   ConfigureNotify : constant:=22;
+   ResizeRequest   : constant:=25;
+   ReparentNotify  : constant:=21;
+
    type XEvent_Type(EventType : EventType_Enum:=EventTypeUnknown) is
       record
          ttype      : Interfaces.C.int;
          serial     : Interfaces.C.long;
-         send_event : Interfaces.C.int;
+         send_event : Boolean;
          display    : Display_Access;
          window     : Window_Type;
          case EventType is
