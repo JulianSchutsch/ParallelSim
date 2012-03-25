@@ -32,8 +32,8 @@ package OpenGL is
 
    -- Portability : Maybe risky and non portable when using anything but
    --               the GNAT compiler
-   type GLdouble is new Long_Float;
-   type GLclampf is new Float;
+   type GLdouble_Type is new Long_Float;
+   type GLclampf_Type is new Float;
 
    type GLbitfield_Type is new Interfaces.C.unsigned;
    type GLint_Type is new Interfaces.C.int;
@@ -45,8 +45,18 @@ package OpenGL is
    GL_MODELVIEW  : constant GLenum_Type:=16#1700#;
    GL_PROJECTION : constant GLenum_Type:=16#1701#;
 
+   GL_SCISSOR_TEST : constant GLenum_Type:=16#C11#;
+   GL_DEPTH_TEST   : constant GLenum_Type:=16#B71#;
+   GL_BLEND        : constant GLenum_Type:=16#BE2#;
+   GL_TEXTURE_2D   : constant GLenum_Type:=16#DE1#;
+
+   GL_SRC_ALPHA           : constant GLenum_Type:=16#302#;
+   GL_ONE_MINUS_SRC_ALPHA : constant GLenum_Type:=16#303#;
+   GL_GREATER             : constant GLenum_Type:=16#204#;
+
    GL_COLOR_BUFFER_BIT : constant GLbitfield_Type:=16#4000#;
    GL_DEPTH_BUFFER_BIT : constant GLbitfield_Type:=16#100#;
+
 
    procedure glFinish;
    pragma Import(StdCall,glFinish,"glFinish");
@@ -66,28 +76,46 @@ package OpenGL is
    pragma Import(StdCall,glLoadIdentity,"glLoadIdentity");
 
    procedure glOrtho
-     (left    : GLdouble;
-      right   : GLdouble;
-      bottom  : GLdouble;
-      top     : GLdouble;
-      nearVal : GLdouble;
-      farVal  : GLdouble);
+     (left    : GLdouble_Type;
+      right   : GLdouble_Type;
+      bottom  : GLdouble_Type;
+      top     : GLdouble_Type;
+      nearVal : GLdouble_Type;
+      farVal  : GLdouble_Type);
    pragma Import(StdCall,glOrtho,"glOrtho");
 
    procedure glClearColor
-     (red   : GLclampf;
-      green : GLclampf;
-      blue  : GLclampf;
-      alpha : GLclampf);
+     (red   : GLclampf_Type;
+      green : GLclampf_Type;
+      blue  : GLclampf_Type;
+      alpha : GLclampf_Type);
    pragma Import(StdCall,glClearColor,"glClearColor");
 
    procedure glClear
      (mask : GLbitfield_Type);
    pragma Import(StdCall,glClear,"glClear");
 
+   procedure glEnable
+     (cap : GLenum_Type);
+   pragma Import(StdCall,glEnable,"glEnable");
+
+   procedure glDisable
+     (cap : GLenum_Type);
+   pragma Import(StdCall,glDisable,"glDisable");
+
    function glGetError
      return GLenum_Type;
    pragma Import(StdCall,glGetError,"glGetError");
+
+   procedure glBlendFunc
+     (sfactor : GLenum_Type;
+      dfactor : GLenum_Type);
+   pragma Import(StdCall,glBlendFUnc,"glBlendFunc");
+
+   procedure glAlphaFunc
+     (func : GLenum_Type;
+      ref  : GLclampf_Type);
+   pragma Import(StdCall,glAlphaFunc,"glAlphaFunc");
 
    procedure AssertError;
 

@@ -20,8 +20,6 @@
 pragma Ada_2005;
 
 with GUI.OpenGL.Native;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with OpenGL; use OpenGL;
 
 package body GUI.OpenGL is
@@ -30,10 +28,11 @@ package body GUI.OpenGL is
      (Context : in out Context_Type) is
 
    begin
-      Put("Paint Called");
-      Put(Context.Bounds.Width);
-      Put(Context.Bounds.Height);
-      New_Line;
+      if (Context.Bounds.Width<=0)
+        or (Context.Bounds.Height<=0) then
+         return;
+      end if;
+
       glViewPort
         (x => 0,
          y => 0,
@@ -44,8 +43,8 @@ package body GUI.OpenGL is
       glLoadIdentity;
       glOrtho
         (left    => 0.0,
-         right   => GLdouble(Context.Bounds.Width),
-         bottom  => GLdouble(Context.Bounds.Height),
+         right   => GLdouble_Type(Context.Bounds.Width),
+         bottom  => GLdouble_Type(Context.Bounds.Height),
          top     => 0.0,
          nearVal => -1.0,
          farVal  => 1.0);
@@ -60,8 +59,16 @@ package body GUI.OpenGL is
          alpha => 1.0);
 
       glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-      Put(Integer(glGetError));
-      New_Line;
+      glDisable(GL_SCISSOR_TEST);
+      glDisable(GL_DEPTH_TEST);
+      glEnable(GL_TEXTURE_2D);
+      glBlendFunc
+        (sfactor => GL_SRC_ALPHA,
+         dfactor => GL_ONE_MINUS_SRC_ALPHA);
+      glAlphaFunc
+        (func => GL_GREATER,
+         ref  => 0.1);
+      Standard.OpenGL.AssertError;
    end Paint;
 
    procedure Register is
