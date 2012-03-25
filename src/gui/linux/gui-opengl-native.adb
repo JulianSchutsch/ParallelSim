@@ -42,6 +42,7 @@ package body GUI.OpenGL.Native is
          GLXContext          : glX.GLXContext_Access   := Null;
          InputIM             : Xlib.XIM_Access         := Null;
          InputContext        : Xlib.XIC_Access         := Null;
+         DoubleBuffered      : Boolean                 := True;
       end record;
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -99,7 +100,15 @@ package body GUI.OpenGL.Native is
                end if;
 
             when Xlib.Expose =>
-               null;
+
+               GUI.OpenGL.Paint(GUI.OpenGL.Context_Type(Context.all));
+               if Context.DoubleBuffered then
+                  glX.glXSwapBuffers
+                    (dpy => Context.Display,
+                     drawable => glX.GLXDrawable_Type(Context.Window));
+               else
+                  glFinish;
+               end if;
 
             when Xlib.ButtonPress =>
                null;

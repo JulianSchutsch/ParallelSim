@@ -80,4 +80,9 @@ package glX is
       ctx : GLXContext_Access);
    pragma Import(C,glXDestroyContext,"glXDestroyContext");
 
+   procedure glXSwapBuffers
+     (dpy      : Display_Access;
+      drawable : GLXDrawable_Type);
+   pragma Import(C,glXSwapBuffers,"glXSwapBuffers");
+
 end glX;
