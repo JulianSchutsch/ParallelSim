@@ -34,8 +34,8 @@ package body GUI.OpenGL is
       end if;
 
       glViewPort
-        (x => 0,
-         y => 0,
+        (x      => 0,
+         y      => 0,
          width  => GLsizei_Type(Context.Bounds.Width),
          height => GLsizei_Type(Context.Bounds.Height));
 
@@ -70,10 +70,12 @@ package body GUI.OpenGL is
          ref  => 0.1);
       Standard.OpenGL.AssertError;
    end Paint;
+   ---------------------------------------------------------------------------
 
    procedure Register is
    begin
       GUI.OpenGL.Native.Register;
    end Register;
+   ---------------------------------------------------------------------------
 
 end GUI.OpenGL;
