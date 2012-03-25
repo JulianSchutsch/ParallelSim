@@ -126,10 +126,25 @@ package body GUI.OpenGL.Native is
                null;
 
             when Xlib.ConfigureNotify =>
-               null;
+               Context.Bounds:=
+                 (Top     => 0,
+                  Left    => 0,
+                  Height  => Integer(Event.Configure.height),
+                  Width   => Integer(Event.Configure.width),
+                  Visible => True);
+               -- TODO: Send update signal
 
             when Xlib.ResizeRequest =>
-               null;
+
+               Put("Resize");
+               New_Line;
+               Context.Bounds:=
+                 (Top     => 0,
+                  Left    => 0,
+                  Height  => Integer(Event.ResizeRequest.height),
+                  Width   => Integer(Event.ResizeRequest.width),
+                  Visible => True);
+               -- TODO: Send update signal
 
             when Xlib.ReparentNotify =>
                null;

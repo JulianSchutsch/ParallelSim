@@ -211,14 +211,6 @@ package Xlib is
    type XConfigureEvent_Type is
       record
          -- event is now window in XEvent_Type
-         window : Window_Type;
-         x : Interfaces.C.int;
-         y : Interfaces.C.int;
-      end record;
-   pragma Convention(C,XConfigureEvent_Type);
-
-   type XReparentEvent_Type is
-      record
          window            : Window_Type;
          x                 : Interfaces.C.int;
          y                 : Interfaces.C.int;
@@ -227,6 +219,14 @@ package Xlib is
          border_width      : Interfaces.C.int;
          above             : Window_Type;
          override_redirect : Interfaces.C.int;
+      end record;
+   pragma Convention(C,XConfigureEvent_Type);
+
+   type XReparentEvent_Type is
+      record
+         window : Window_Type;
+         x      : Interfaces.C.int;
+         y      : Interfaces.C.int;
       end record;
    pragma Convention(C,XReparentEvent_Type);
 
