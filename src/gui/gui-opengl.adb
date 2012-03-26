@@ -145,9 +145,6 @@ package body GUI.OpenGL is
                      glBindTexture
                        (target  => GL_TEXTURE_2D,
                         texture => CanvasCursor.TextureID);
-                     Put("Bind:");
-                     Put(Integer(CanvasCursor.TextureID));
-                     New_Line;
 
                      if CanvasCursor.Modified then
 
@@ -169,10 +166,6 @@ package body GUI.OpenGL is
                            Standard.OpenGL.AssertError;
 
                      end if;
-
-                     Put("Canvas");
-                     BoundsCalc.Put
-                       (Item => CanvasCursor.Bounds);
 
                      NestBounds
                        (ParentAbsBounds => ObjectAbsBounds,
