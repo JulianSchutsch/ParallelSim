@@ -9,8 +9,8 @@ project Ps is
    for Exec_Dir use Common.Exec_Directory;
    for Main use ("ps.adb", "simctr.adb", "simreg.adb", "simdown.adb", "client");
    for Languages use Common.Languagesused;
-   Backtrace : Backtrace_Type := external ("Backtrace");
-   OS : Os_Type := external ("OS");
+   Backtrace : Backtrace_Type := external ("Backtrace","Off");
+   OS : Os_Type := external ("OS","Linux");
 
    package Compiler is
       for Default_Switches ("ada") use Common.Compiler_Switches;
