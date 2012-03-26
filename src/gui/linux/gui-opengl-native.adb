@@ -43,6 +43,7 @@ package body GUI.OpenGL.Native is
          InputIM             : Xlib.XIM_Access         := Null;
          InputContext        : Xlib.XIC_Access         := Null;
          DoubleBuffered      : Boolean                 := True;
+         ContextInitialized  : Boolean                 := False;
       end record;
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -126,12 +127,10 @@ package body GUI.OpenGL.Native is
                null;
 
             when Xlib.ConfigureNotify =>
-               Context.Bounds:=
-                 (Top     => 0,
-                  Left    => 0,
+               GUI.Resize
+                 (Context => Context_ClassAccess(Context),
                   Height  => Integer(Event.Configure.height),
-                  Width   => Integer(Event.Configure.width),
-                  Visible => True);
+                  Width   => Integer(Event.Configure.width));
                -- TODO: Send update signal
 
             when Xlib.ResizeRequest =>
@@ -194,6 +193,12 @@ package body GUI.OpenGL.Native is
 
    begin
       Cont:=Context_Access(Context);
+
+      -- Deinitialize basic window environment
+      if Cont.ContextInitialized then
+         GUI.Finalize
+           (Context => GUI.Context_Type(Cont.all));
+      end if;
 
       if Cont.Visual/=null then
          Xlib.XFree
@@ -465,6 +470,12 @@ package body GUI.OpenGL.Native is
          raise FailedToCreateContext
            with "Failed to create Input Context with XCreateIC";
       end if;
+
+      -- Initialize basic window environment
+      GUI.Initialize
+        (Context => Context_ClassAccess(Context));
+
+      Context.ContextInitialized:=True;
 
       return Context_ClassAccess(Context);
    end NewContext;
