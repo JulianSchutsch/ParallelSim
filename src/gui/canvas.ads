@@ -18,33 +18,27 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   18.Mar 2012 Julian Schutsch
+--   26.Mar 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-package GUI.OpenGL is
-   procedure Register;
-private
-   type Context_Type is new GUI.Context_Type with
+with Interfaces;
+
+package Canvas is
+
+   type Color_Type is new Interfaces.Unsigned_32;
+   type Image_Type is array(Natural range <>,Natural range <>) of Color_Type;
+   type Image_Access is access all Image_Type;
+
+   type BasicCanvas_Type is tagged
       record
-         null;
+         Image    : Image_Access := null;
+         Modified : Boolean      := True;
       end record;
 
-   overriding
-   procedure NewCanvas
-     (Context : in out Context_Type;
-      Object  : Object_ClassAccess;
-      Height  : Natural;
-      Width   : Natural;
-      Canvas  : out Canvas_ClassAccess);
+   procedure Clear
+     (Canvas : in out BasicCanvas_Type;
+      Color  : Color_Type);
 
-   overriding
-   procedure FreeCanvas
-     (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess);
-
-   procedure Paint
-     (Context : in out Context_Type);
-
-end GUI.OpenGL;
+end Canvas;

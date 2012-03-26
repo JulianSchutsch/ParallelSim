@@ -17,34 +17,30 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
--- Revision History
---   18.Mar 2012 Julian Schutsch
---     - Original version
-
 pragma Ada_2005;
 
-package GUI.OpenGL is
-   procedure Register;
-private
-   type Context_Type is new GUI.Context_Type with
-      record
-         null;
-      end record;
+package body GUI.Window is
 
-   overriding
-   procedure NewCanvas
-     (Context : in out Context_Type;
-      Object  : Object_ClassAccess;
-      Height  : Natural;
-      Width   : Natural;
-      Canvas  : out Canvas_ClassAccess);
+   procedure Initialize
+     (Item    : Window_Access;
+      Parent  : Object_ClassAccess) is
+   begin
 
-   overriding
-   procedure FreeCanvas
-     (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess);
+      GUI.Initialize
+        (Item   => Object_Access(Item),
+         Parent => Parent);
 
-   procedure Paint
-     (Context : in out Context_Type);
+   end Initialize;
+   ---------------------------------------------------------------------------
 
-end GUI.OpenGL;
+   procedure Finalize
+     (Item : access Window_Type) is
+   begin
+
+      GUI.Finalize
+        (Item => Object_Access(Item));
+
+   end Finalize;
+   ---------------------------------------------------------------------------
+
+end GUI.Window;

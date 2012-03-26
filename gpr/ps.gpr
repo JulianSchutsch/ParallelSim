@@ -2,35 +2,48 @@ with "common.gpr";
 
 project Ps is
 
-   for Source_Dirs use
-     Common.Source_Directories;
-
-   for Object_Dir use
-     Common.Object_Directory;
-
-   for Exec_Dir use
-     Common.Exec_Directory;
-
-   for Main use
-     ("ps.adb","simctr.adb","simreg.adb","simdown.adb","client");
-
-   for Languages use
-     Common.LanguagesUsed;
+   type Os_Type is
+      ("Windows_NT", "Linux");
+   type Backtrace_Type is
+      ("On", "Off");
+   for Exec_Dir use Common.Exec_Directory;
+   for Main use ("ps.adb", "simctr.adb", "simreg.adb", "simdown.adb", "client");
+   for Languages use Common.Languagesused;
+   Backtrace : Backtrace_Type := external ("Backtrace");
+   OS : Os_Type := external ("OS");
 
    package Compiler is
-      for Default_Switches ("ada") use
-        Common.Compiler_Switches;
-
+      for Default_Switches ("ada") use Common.Compiler_Switches;
    end Compiler;
 
    package Linker is
-      for Default_Switches ("ada") use
-        Common.Linker_Switches;
+      for Default_Switches ("ada") use Common.Linker_Switches;
    end Linker;
 
    package Binder is
-      for Default_Switches ("ada") use
-        Common.Binder_Switches;
+      for Default_Switches ("ada") use Common.Binder_Switches;
    end Binder;
 
+   case Backtrace is
+
+      when "On" =>
+
+         case OS is
+
+            when "Windows_NT" =>
+               for Object_Dir use "..\build";
+               for Source_Dirs use ("..\src", "..\src\basics", "..\src\basics\littleendian", "..\src\network", "..\src\simcontrol", "..\src\simregion", "..\src\simadmin", "..\src\protocols", "..\src\simclient", "..\src\gui", "..\src\opengl", 
+"..\src\gui\themes\yellowblue", "..\src\network\win32", "..\src\basics\win32", "..\src\gui\win32", "..\src\win32", "..\src\basics\nobacktrace");
+
+            when "Linux" =>
+               for Object_Dir use Common.Object_Directory;
+               for Source_Dirs use Common.Source_Directories;
+         end case;
+
+      when "Off" =>
+         for Object_Dir use Common.Object_Directory;
+         for Source_Dirs use Common.Source_Directories;
+   end case;
+
 end Ps;
+

@@ -25,6 +25,7 @@ pragma Ada_2005;
 
 with Interfaces.C;
 with Interfaces;
+with System;
 
 package OpenGL is
 
@@ -32,11 +33,14 @@ package OpenGL is
 
    -- Portability : Maybe risky and non portable when using anything but
    --               the GNAT compiler
-   type GLdouble_Type is new Long_Float;
-   type GLclampf_Type is new Float;
+   subtype GLdouble_Type is Long_Float;
+   subtype GLfloat is Float;
+   subtype GLclampf_Type is Float;
+   subtype GLfloat_Type is Float;
 
    type GLbitfield_Type is new Interfaces.C.unsigned;
    type GLint_Type is new Interfaces.C.int;
+   type GLuint_Type is new Interfaces.C.unsigned;
    type GLint_Access is access all GLint_Type;
    type GLsizei_Type is new Interfaces.C.int;
    type GLsizei_Access is access all GLsizei_Type;
@@ -57,6 +61,11 @@ package OpenGL is
    GL_COLOR_BUFFER_BIT : constant GLbitfield_Type:=16#4000#;
    GL_DEPTH_BUFFER_BIT : constant GLbitfield_Type:=16#100#;
 
+   GL_RGBA            : constant:=16#1908#;
+   GL_UNSIGNED_BYTE   : constant:=16#1401#;
+   GL_BGRA            : constant:=16#80E1#;
+
+   GL_QUADS : constant GLenum_Type:=7;
 
    procedure glFinish;
    pragma Import(StdCall,glFinish,"glFinish");
@@ -116,6 +125,50 @@ package OpenGL is
      (func : GLenum_Type;
       ref  : GLclampf_Type);
    pragma Import(StdCall,glAlphaFunc,"glAlphaFunc");
+
+   procedure glTexImage2D
+     (target : GLenum_Type;
+      level  : GLint_Type;
+      internalFormat : GLint_Type;
+      width          : GLsizei_Type;
+      height         : GLsizei_Type;
+      border         : GLint_Type;
+      format         : GLenum_Type;
+      ttype          : GLenum_Type;
+      data           : System.Address);
+   pragma Import(StdCall,glTexImage2D,"glTexImage2D");
+
+   procedure glBegin
+     (mode : GLenum_Type);
+   pragma Import(StdCall,glBegin,"glBegin");
+
+   procedure glEnd;
+   pragma Import(StdCall,glEnd,"glEnd");
+
+   procedure glTexCoord2f
+     (s : GLfloat_Type;
+      t : GLfloat_Type);
+   pragma Import(StdCall,glTexCoord2f,"glTexCoord2f");
+
+   procedure glVertex2f
+     (x : GLfloat_Type;
+      y : GLfloat_Type);
+   pragma Import(StdCall,glVertex2f,"glVertex2f");
+
+   procedure glBindTexture
+     (target  : GLenum_Type;
+      texture : GLuint_Type);
+   pragma Import(StdCall,glBindTexture,"glBindTexture");
+
+   procedure glGenTextures
+     (n        : GLsizei_Type;
+      textures : access GLuint_Type);
+   pragma Import(StdCall,glGenTextures,"glGenTextures");
+
+   procedure glDeleteTextures
+     (n        : GLsizei_Type;
+      textures : access GLuint_Type);
+   pragma Import(StdCall,glDeleteTextures,"glDeleteTextures");
 
    procedure AssertError;
 

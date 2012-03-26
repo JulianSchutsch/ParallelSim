@@ -18,33 +18,21 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   18.Mar 2012 Julian Schutsch
+--   25.Mar 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-package GUI.OpenGL is
-   procedure Register;
-private
-   type Context_Type is new GUI.Context_Type with
+with GUI.Window;
+package GUI.Themes is
+
+   type Implementation_Type is
       record
-         null;
+         NewWindow : GUI.Window.Window_Constructor:=null;
       end record;
 
-   overriding
-   procedure NewCanvas
-     (Context : in out Context_Type;
-      Object  : Object_ClassAccess;
-      Height  : Natural;
-      Width   : Natural;
-      Canvas  : out Canvas_ClassAccess);
+   package Implementations is new Config.Implementations
+     (Implementation_Type => Implementation_Type,
+      IdentifierKey       => To_Unbounded_String("Theme"));
 
-   overriding
-   procedure FreeCanvas
-     (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess);
-
-   procedure Paint
-     (Context : in out Context_Type);
-
-end GUI.OpenGL;
+end GUI.Themes;

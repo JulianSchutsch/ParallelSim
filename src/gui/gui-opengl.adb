@@ -21,11 +21,197 @@ pragma Ada_2005;
 
 with GUI.OpenGL.Native;
 with OpenGL; use OpenGL;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body GUI.OpenGL is
 
+   type Canvas_Type is new GUI.Canvas_Type with
+      record
+         TextureID : aliased GLuint_Type;
+         Height    : Natural;
+         Width     : Natural;
+         TextureHeight : Natural;
+         TextureWidth  : Natural;
+      end record;
+   type Canvas_Access is access all Canvas_Type;
+
+   procedure NewCanvas
+     (Context : in out Context_Type;
+      Object  : Object_ClassAccess;
+      Height  : Natural;
+      Width   : Natural;
+      Canvas  : out Canvas_ClassAccess) is
+      pragma Unreferenced(Context);
+
+      NewCanv : Canvas_Access;
+   begin
+
+      NewCanv        := new Canvas_Type;
+      NewCanv.Height := Height;
+      NewCanv.Width  := Width;
+      NewCanv.TextureHeight:=RoundUpPowerOf2(Height);
+      NewCanv.TextureWidth:=RoundUpPowerOf2(Width);
+      NewCanv.Image  := new Standard.Canvas.Image_Type
+        (0..NewCanv.TextureHeight-1,
+         0..NewCanv.TextureWidth-1);
+
+      glGentextures
+        (n => 1,
+         textures => NewCanv.TextureID'Access);
+      Put("Texture :");
+      Put(Integer(NewCanv.TextureID));
+      New_Line;
+
+      GUI.AddCanvas
+        (Object => Object,
+         Canvas => Canvas_ClassAccess(NewCanv));
+
+      Canvas:=Canvas_ClassAccess(NewCanv);
+
+   end NewCanvas;
+   ---------------------------------------------------------------------------
+
+   procedure FreeCanvas
+     (Context : in out Context_Type;
+      Canvas  : in out Canvas_ClassAccess) is
+
+      pragma Unreferenced(Context);
+
+   begin
+      GUI.RemoveCanvas
+        (Canvas => Canvas);
+   end FreeCanvas;
+   ---------------------------------------------------------------------------
+
    procedure Paint
      (Context : in out Context_Type) is
+
+      procedure ProcessTree
+        (Object : Object_ClassAccess) is
+         p : Object_ClassAccess;
+
+         ObjectAbsBounds : AbsBounds_Type;
+         CanvasAbsBounds : AbsBounds_Type;
+         CanvasCursor    : Canvas_Access;
+
+      begin
+
+         p := Object;
+
+         while p/=null loop
+
+            case p.Render is
+
+               when RenderCanvasse =>
+
+                  ObjectAbsBounds:=p.Priv.AbsBounds;
+
+                  CanvasCursor:=Canvas_Access(p.Priv.Canvasse);
+
+                  while CanvasCursor/=null loop
+
+                     glBindTexture
+                       (target  => GL_TEXTURE_2D,
+                        texture => CanvasCursor.TextureID);
+                     Put("Bind:");
+                     Put(Integer(CanvasCursor.TextureID));
+                     New_Line;
+
+                     if CanvasCursor.Modified then
+
+                        CanvasCursor.Modified:=False;
+
+                        glTexImage2D
+                          (target => GL_TEXTURE_2D,
+                           level  => 0,
+                           internalFormat => GL_RGBA,
+                           width  => GLsizei_Type(CanvasCursor.TextureWidth),
+                           height => GLsizei_Type(CanvasCursor.TextureHeight),
+                           border => 0,
+                           format => GL_BGRA,
+                           ttype  => GL_UNSIGNED_BYTE,
+                           data   => CanvasCursor.Image'Address);
+
+                     end if;
+
+                     NestBounds
+                       (ParentAbsBounds => ObjectAbsBounds,
+                        RectBounds      =>
+                          (Top     => 0,
+                           Left    => 0,
+                           Height  => CanvasCursor.Height,
+                           Width   => CanvasCursor.Width,
+                           Visible => True),
+                        ResultBounds => CanvasAbsBounds);
+
+                     declare
+                        Texx1 : constant GLfloat_Type
+                          :=GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
+                          /GLfloat_Type(CanvasCursor.Width);
+
+                        Texx2 : constant GLfloat_Type
+                          :=(GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
+                            +GLfloat_Type(CanvasAbsBounds.AbsWidth))
+                            /GLfloat_Type(CanvasCursor.Width);
+
+                        Texy1 : constant GLfloat_Type
+                            :=GLfloat_Type(CanvasAbsBounds.AbsSubTop)
+                            /GLfloat_Type(CanvasCursor.Height);
+
+                        Texy2 : constant GLfloat_Type
+                            :=(GLfloat_Type(CanvasAbsBounds.AbsSubTop)
+                              +GLfloat_Type(CanvasAbsBounds.AbsHeight))
+                            /GLfloat_Type(CanvasCursor.Height);
+
+                     begin
+                        glBegin(GL_QUADS);
+                        glTexCoord2f(Texx1,Texy1);
+                        glVertex2f
+                          (GLfloat_Type(CanvasAbsBounds.AbsLeft),
+                           GLfloat_Type(CanvasAbsBounds.AbsTop));
+                        glTexCoord2f(Texx1,Texy2);
+                        glVertex2f
+                          (GLfloat_Type(CanvasAbsBounds.AbsLeft),
+                           GLfloat_Type(CanvasAbsBounds.AbsTop+CanvasAbsBounds.AbsHeight));
+                        glTexCoord2f(Texx2,Texy2);
+                        glVertex2f
+                          (GLfloat_Type(CanvasAbsBounds.AbsLeft+CanvasAbsBounds.AbsWidth),
+                           GLfloat_Type(CanvasAbsBounds.AbsTop+CanvasAbsBounds.AbsHeight));
+                        glTexCoord2f(Texx2,Texy1);
+                        glVertex2f
+                          (GLfloat_Type(CanvasAbsBounds.AbsLeft+CanvasAbsBounds.AbsWidth),
+                           GLfloat_Type(canvasAbsBounds.AbsTop));
+                        glEnd;
+                     end;
+
+                     CanvasCursor:=Canvas_Access(CanvasCursor.Next);
+
+                  end loop;
+
+               when RenderCustom =>
+                  null;
+
+            end case;
+
+            if p.Priv.LastChild/=null then
+
+               p:=p.Priv.LastChild;
+
+            else
+
+               while (p/=null) and then (p.Priv.Next/=null) loop
+                  p:=p.Priv.Parent;
+               end loop;
+
+               if p/=null then
+                  p:=p.Priv.Next;
+               end if;
+
+            end if;
+         end loop;
+
+      end ProcessTree;
 
    begin
       if (Context.Bounds.Width<=0)
@@ -68,6 +254,10 @@ package body GUI.OpenGL is
       glAlphaFunc
         (func => GL_GREATER,
          ref  => 0.1);
+
+      ProcessTree(Context.WindowArea);
+      ProcessTree(Context.ModalArea);
+      ProcessTree(Context.ContextMenuArea);
       Standard.OpenGL.AssertError;
    end Paint;
    ---------------------------------------------------------------------------

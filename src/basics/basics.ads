@@ -55,6 +55,10 @@ package Basics is
    function ConcatElements
      (Item      : StringStringMap.Map;
       Separator : Unbounded_String)
-     return Unbounded_String;
+      return Unbounded_String;
+
+   function RoundUpPowerOf2
+     (Value : Natural)
+      return Natural;
 
 end Basics;

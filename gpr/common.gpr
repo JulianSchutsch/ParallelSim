@@ -20,7 +20,8 @@ abstract project Common is
       Dir & "../src/protocols",
       Dir & "../src/simclient",
       Dir & "../src/gui",
-      Dir & "../src/opengl");
+      Dir & "../src/opengl",
+      Dir & "../src/gui/themes/yellowblue");
 
    Object_Directory:=Dir & "../build";
 

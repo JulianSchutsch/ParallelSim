@@ -165,4 +165,10 @@ package BoundsCalc is
       ClientBounds : in out Bounds_Type;
       ParentBounds : Bounds_Type);
 
+   procedure Put
+     (Item : Bounds_Type);
+
+   procedure Put
+     (Item : AbsBounds_Type);
+
 end BoundsCalc;

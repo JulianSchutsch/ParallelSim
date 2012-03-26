@@ -20,6 +20,7 @@
 pragma Ada_2005;
 
 package body OpenGL is
+
    procedure AssertError is
       Error : GLenum_Type;
    begin

@@ -18,33 +18,9 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   18.Mar 2012 Julian Schutsch
+--   26.Mar 2012 Julian Schutsch
 --     - Original version
 
-pragma Ada_2005;
-
-package GUI.OpenGL is
+package GUI.Themes.YellowBlue is
    procedure Register;
-private
-   type Context_Type is new GUI.Context_Type with
-      record
-         null;
-      end record;
-
-   overriding
-   procedure NewCanvas
-     (Context : in out Context_Type;
-      Object  : Object_ClassAccess;
-      Height  : Natural;
-      Width   : Natural;
-      Canvas  : out Canvas_ClassAccess);
-
-   overriding
-   procedure FreeCanvas
-     (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess);
-
-   procedure Paint
-     (Context : in out Context_Type);
-
-end GUI.OpenGL;
+end GUI.Themes.YellowBlue;

@@ -75,4 +75,27 @@ package body Basics is
    end ConcatElements;
    ---------------------------------------------------------------------------
 
+   function RoundUpPowerOf2
+     (Value : Natural)
+      return Natural is
+
+      Result : Natural;
+
+   begin
+
+      if Value=0 then
+         return 0;
+      end if;
+
+      Result:=1;
+
+      while Result<Value loop
+         Result:=Result*2;
+      end loop;
+
+      return Result;
+
+   end RoundUpPowerOf2;
+   ---------------------------------------------------------------------------
+
 end Basics;

@@ -39,13 +39,14 @@ package body GUI.OpenGL.Native is
    type Context_Access is access all Context_Type;
    type Context_Type is new GUI.OpenGL.Context_Type with
       record
-         WindowHandle      : Win32.HWND_Type  := 0;
-         DeviceContext     : Win32.HDC_Type   := 0;
-         RenderContext     : Win32.HGLRC_Type := 0;
-         NextContext       : Context_Access   := null;
-         LastContext       : Context_Access   := null;
-         DestroySignalSend : Boolean          := False;
-         DoubleBuffered    : Boolean;
+         WindowHandle       : Win32.HWND_Type  := 0;
+         DeviceContext      : Win32.HDC_Type   := 0;
+         RenderContext      : Win32.HGLRC_Type := 0;
+         NextContext        : Context_Access   := null;
+         LastContext        : Context_Access   := null;
+         DestroySignalSend  : Boolean          := False;
+         DoubleBuffered     : Boolean;
+         ContextInitialized : Boolean         :=False;
 
          CSTR_ClassName : Interfaces.C.Strings.chars_ptr
            := Interfaces.C.Strings.Null_Ptr;
@@ -163,8 +164,8 @@ package body GUI.OpenGL.Native is
             -- TODO : Extract Resize
             Put("WM_SIZE");
             New_Line;
-            Resize
-              (Context => Context.all,
+            GUI.Resize
+              (Context => Context_ClassAccess(Context),
                Width   => Integer(Win32.LOWORD(lParam)),
                Height  => Integer(Win32.HIWORD(lParam)));
             return 0;
@@ -326,6 +327,13 @@ package body GUI.OpenGL.Native is
 
    begin
       Cont := Context_Access(Context);
+
+      -- Deinitialize basic window environment
+      if Cont.ContextInitialized then
+         GUI.Finalize
+           (Context => GUI.Context_Type(Cont.all));
+      end if;
+
       -- Remove Context from the contexts list
       if Cont.LastContext/=null then
          Cont.LastContext.NextContext:=Cont.NextContext;
@@ -545,6 +553,12 @@ package body GUI.OpenGL.Native is
            with "Failed call to wglMakeCurrent with "
              &Win32.DWORD_Type'Image(Win32.GetLastError);
       end if;
+
+      -- Initialize basic window environment
+      GUI.Initialize
+        (Context => Context_ClassAccess(Context));
+
+      Context.ContextInitialized:=True;
 
       return Context_ClassAccess(Context);
    end NewContext;

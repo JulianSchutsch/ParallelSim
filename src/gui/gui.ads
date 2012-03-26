@@ -27,6 +27,7 @@ with BoundsCalc; use BoundsCalc;
 with Config.Implementations;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Basics; use Basics;
+with Canvas;
 
 package GUI is
 
@@ -34,7 +35,12 @@ package GUI is
    InvalidContext : Exception;
    FailedToDestroyContext : Exception;
 
+   type Render_Enum is
+     (RenderCanvasse,
+      RenderCustom);
+
    type Object_Type;
+   type Object_Access is access all Object_Type;
    type Object_ClassAccess is access all Object_Type'Class;
 
    type Context_Type;
@@ -44,18 +50,28 @@ package GUI is
    type Object_Private is private;
    type Object_Type is tagged
       record
+         Render         : Render_Enum:=RenderCanvasse;
          CallBackObject : AnyObject_ClassAccess;
          Context        : Context_ClassAccess;
+         Client         : Object_ClassAccess;
          Priv           : Object_Private;
       end record;
 
+   procedure Initialize
+     (Item   : Object_Access;
+      Parent : Object_ClassAccess);
+
+   procedure Finalize
+     (Item   : access Object_Type);
+
    procedure SetBounds
-     (Object : in out Object_Type'Class;
+     (Object : Object_ClassAccess;
       Bounds : Bounds_Type);
 
    function GetBounds
      (Object : Object_Type'Class)
       return Bounds_Type;
+
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is
@@ -63,14 +79,16 @@ package GUI is
 
    type Context_Type is tagged
       record
-         CallBackObject : AnyObject_ClassAccess := null;
-         OnClose        : OnCloseContext_Access := null;
-         RootObject     : Object_ClassAccess    := null;
+         CallBackObject  : AnyObject_ClassAccess := null;
+         OnClose         : OnCloseContext_Access := null;
+         WindowArea      : Object_ClassAccess    := null;
+         ModalArea       : Object_ClassAccess    := null;
+         ContextMenuArea : Object_ClassAccess    := null;
          -- Read only
          Bounds         : Bounds_Type;
       end record;
 
-   type Canvas_Type is tagged private;
+   type Canvas_Type is new Canvas.BasicCanvas_Type with private;
    type Canvas_ClassAccess is access all Canvas_Type'Class;
 
    procedure NewCanvas
@@ -81,7 +99,8 @@ package GUI is
       Canvas  : out Canvas_ClassAccess) is null;
 
    procedure FreeCanvas
-     (Canvas : in out Canvas_ClassAccess) is null;
+     (Context : in out Context_Type;
+      Canvas  : in out Canvas_ClassAccess) is null;
    ---------------------------------------------------------------------------
    type Context_Constructor is
      access function
@@ -107,20 +126,45 @@ package GUI is
 private
 
    procedure Resize
-     (Context : in out Context_Type;
+     (Context : Context_ClassAccess;
       Height  : Integer;
       Width   : Integer);
 
+   procedure Initialize
+     (Context : Context_ClassAccess);
+
+   procedure Finalize
+     (Context : in out Context_Type);
+   ---------------------------------------------------------------------------
+
    type Object_Private is
       record
-         Canvasse  : Canvas_ClassAccess;
-         Bounds    : Bounds_Type;
-         AbsBounds : AbsBounds_Type;
+         Canvasse   : Canvas_ClassAccess;
+         Bounds     : Bounds_Type;
+         AbsBounds  : AbsBounds_Type;
+         Next       : Object_ClassAccess:=null;
+         Last       : Object_ClassAccess:=null;
+         Parent     : Object_ClassAccess:=null;
+         FirstChild : Object_ClassAccess:=null;
+         LastChild  : Object_ClassAccess:=null;
       end record;
 
-   type Canvas_Type is tagged
+   procedure Resize
+     (Object : Object_ClassAccess);
+   ---------------------------------------------------------------------------
+
+   type Canvas_Type is new Canvas.BasicCanvas_Type with
       record
-         null;
+         Next   : Canvas_ClassAccess;
+         Last   : Canvas_ClassAccess;
+         Object : Object_ClassAccess;
       end record;
+
+   procedure AddCanvas
+     (Object : Object_ClassAccess;
+      Canvas : Canvas_ClassAccess);
+
+   procedure RemoveCanvas
+     (Canvas : Canvas_ClassAccess);
 
 end GUI;

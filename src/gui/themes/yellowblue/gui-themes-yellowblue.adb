@@ -17,34 +17,18 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
--- Revision History
---   18.Mar 2012 Julian Schutsch
---     - Original version
+with GUI.Themes.YellowBlue.Window; use GUI.Themes.YellowBlue.Window;
 
-pragma Ada_2005;
+package body GUI.Themes.YellowBlue is
 
-package GUI.OpenGL is
-   procedure Register;
-private
-   type Context_Type is new GUI.Context_Type with
-      record
-         null;
-      end record;
+   Implementation : constant GUI.Themes.Implementation_Type:=
+     (NewWindow => NewWindow'Access);
 
-   overriding
-   procedure NewCanvas
-     (Context : in out Context_Type;
-      Object  : Object_ClassAccess;
-      Height  : Natural;
-      Width   : Natural;
-      Canvas  : out Canvas_ClassAccess);
+   procedure Register is
+   begin
+      GUI.Themes.Implementations.Register
+        (Identifier     => To_Unbounded_String("YellowBlue"),
+         Implementation => Implementation);
+   end Register;
 
-   overriding
-   procedure FreeCanvas
-     (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess);
-
-   procedure Paint
-     (Context : in out Context_Type);
-
-end GUI.OpenGL;
+end GUI.Themes.YellowBlue;

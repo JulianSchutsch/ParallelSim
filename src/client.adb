@@ -5,6 +5,7 @@ with GUI;
 with GUI.OpenGL;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with SimClientGUI;
+with GUI.Themes.YellowBlue;
 
 procedure Client is
 
@@ -12,11 +13,17 @@ procedure Client is
 
 begin
    GUI.OpenGL.Register;
+   GUI.Themes.YellowBlue.Register;
 
    Config.Insert
      (Container => Configuration,
       Key       => To_Unbounded_String("GUI.GUIImplementation"),
       New_Item  => To_Unbounded_String("OpenGL"));
+
+   Config.Insert
+     (Container => Configuration,
+      Key       => To_Unbounded_String("GUI.Theme"),
+      New_Item  => To_Unbounded_String("YellowBlue"));
 
    SimClientGUI.Initialize
      (Configuration => Configuration);
