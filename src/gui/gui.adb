@@ -31,33 +31,73 @@ package body GUI is
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Canvas_Type'Class,
       Name   => Canvas_ClassAccess);
+   ---------------------------------------------------------------------------
 
    procedure Resize
      (Object : Object_ClassAccess) is
-      p      : Object_ClassAccess;
+
+      ObjectCursor : Object_ClassAccess;
+      CanvasCursor : Canvas_ClassAccess;
+
    begin
-      if Object.Priv.Parent/=null then
+
+      if Object.Parent/=null then
+
+         RestoreAnchors
+           (Anchors      => Object.Anchors,
+            ClientBounds => Object.Bounds,
+            ParentBounds => Object.Parent.Bounds);
+
+         ApplyConstraint
+           (Constraint => Object.TopHeightConstraint,
+            Value      => Object.Bounds.Top,
+            Size       => Object.Bounds.Height,
+            OldValue   => Object.PrevBounds.Top,
+            OldSize    => Object.PrevBounds.Height,
+            ParentSize => Object.Parent.Bounds.Height);
+         ApplyConstraint
+           (Constraint => Object.LeftWidthConstraint,
+            Value      => Object.Bounds.Left,
+            Size       => Object.Bounds.Width,
+            OldValue   => Object.PrevBounds.Left,
+            OldSize    => Object.PrevBounds.Width,
+            ParentSize => Object.Parent.Bounds.Width);
+
          NestBounds
-           (ParentAbsBounds => Object.Priv.Parent.Priv.AbsBounds,
-            RectBounds      => Object.Priv.Bounds,
-            ResultBounds    => Object.Priv.AbsBounds);
+           (ParentAbsBounds => Object.Parent.AbsBounds,
+            RectBounds      => Object.Bounds,
+            ResultBounds    => Object.AbsBounds);
       else
-         Object.Priv.AbsBounds:=
-           (AbsTop     => Object.Priv.Bounds.Top,
-            AbsLeft    => Object.Priv.Bounds.Left,
-            AbsHeight  => Object.Priv.Bounds.Height,
-            AbsWidth   => Object.Priv.Bounds.Width,
+         Object.AbsBounds:=
+           (AbsTop     => Object.Bounds.Top,
+            AbsLeft    => Object.Bounds.Left,
+            AbsHeight  => Object.Bounds.Height,
+            AbsWidth   => Object.Bounds.Width,
             AbsSubTop  => 0,
             AbsSubLeft => 0,
-            AbsVisible => Object.Priv.Bounds.Visible);
+            AbsVisible => Object.Bounds.Visible);
       end if;
+      ------------------------------------------------------------------------
 
-      p:=Object.Priv.FirstChild;
+      CanvasCursor:=Object.Canvasse;
 
-      while p/=null loop
-         Resize(p);
-         p:=p.Priv.Next;
+      while CanvasCursor/=null loop
+         RestoreAnchors
+           (Anchors => CanvasCursor.Anchors,
+            ClientBounds => CanvasCursor.Bounds,
+            ParentBounds => Object.Bounds);
       end loop;
+      ------------------------------------------------------------------------
+
+      ObjectCursor:=Object.FirstChild;
+
+      while ObjectCursor/=null loop
+         Resize(ObjectCursor);
+         ObjectCursor:=ObjectCursor.Next;
+      end loop;
+      ------------------------------------------------------------------------
+
+      Object.PrevBounds := Object.Bounds;
 
    end Resize;
    ---------------------------------------------------------------------------
@@ -95,6 +135,33 @@ package body GUI is
       end if;
    end Resize;
    ---------------------------------------------------------------------------
+   procedure SetBounds
+     (Canvas : Canvas_ClassAccess;
+      Bounds : Bounds_Type) is
+   begin
+
+      Canvas.Bounds:=Bounds;
+      StoreAnchors
+        (Anchors => Canvas.Anchors,
+         ClientBounds => Canvas.Bounds,
+         ParentBounds => Canvas.Object.Bounds);
+
+   end SetBounds;
+   ---------------------------------------------------------------------------
+
+   procedure SetAnchors
+     (Canvas  : Canvas_ClassAccess;
+      Anchors : Anchors_Type) is
+   begin
+
+      Canvas.Anchors:=Anchors;
+      StoreAnchors
+        (Anchors      => Canvas.Anchors,
+         ClientBounds => Canvas.Bounds,
+         ParentBounds => Canvas.Object.Bounds);
+
+   end SetAnchors;
+   ---------------------------------------------------------------------------
 
    procedure SetBounds
      (Object : Object_ClassAccess;
@@ -102,7 +169,7 @@ package body GUI is
    begin
       Put("SetBounds");
       New_Line;
-      Object.Priv.Bounds:=Bounds;
+      Object.Bounds:=Bounds;
       Resize(Object);
    end SetBounds;
    ---------------------------------------------------------------------------
@@ -111,7 +178,7 @@ package body GUI is
      (Object : Object_Type'Class)
       return Bounds_Type is
    begin
-      return Object.Priv.Bounds;
+      return Object.Bounds;
    end GetBounds;
    ---------------------------------------------------------------------------
 
@@ -120,11 +187,11 @@ package body GUI is
       Canvas : Canvas_ClassAccess) is
    begin
 
-      Canvas.Next:=Object.Priv.Canvasse;
+      Canvas.Next:=Object.Canvasse;
       if Canvas.Next/=null then
          Canvas.Next.Last:=Canvas;
       end if;
-      Object.Priv.Canvasse:=Canvas;
+      Object.Canvasse:=Canvas;
 
       Canvas.Object:=Object;
 
@@ -143,7 +210,7 @@ package body GUI is
       if Canvas.Last/=null then
          Canvas.Last.Next:=Canvas.Next;
       else
-         Canvas.Object.Priv.Canvasse:=Canvas.Next;
+         Canvas.Object.Canvasse:=Canvas.Next;
       end if;
 
       Free(CanvasVal);
@@ -163,21 +230,21 @@ package body GUI is
          Par:=Par.Client;
       end loop;
 
-      Item.Priv.Parent:=Par;
+      Item.Parent:=Par;
 
       if Par/=null then
 
          Item.Context := Par.Context;
 
-         Item.Priv.Next:=Par.Priv.FirstChild;
+         Item.Next:=Par.FirstChild;
 
-         if Item.Priv.Next/=null then
-            Item.Priv.Next.Priv.Last:=Object_ClassAccess(Item);
+         if Item.Next/=null then
+            Item.Next.Last:=Object_ClassAccess(Item);
          else
-            Par.Priv.LastChild:=Object_ClassAccess(Item);
+            Par.LastChild:=Object_ClassAccess(Item);
          end if;
 
-         Par.Priv.FirstChild:=Object_ClassAccess(Item);
+         Par.FirstChild:=Object_ClassAccess(Item);
 
       end if;
 
@@ -192,17 +259,17 @@ package body GUI is
    begin
       ItemVal:=Object_Access(Item);
 
-      if Item.Priv.Parent/=null then
-         if Item.Priv.Next/=null then
-            Item.Priv.Next.Priv.Last:=Item.Priv.Last;
+      if Item.Parent/=null then
+         if Item.Next/=null then
+            Item.Next.Last:=Item.Last;
          else
-            Item.Priv.Parent.Priv.LastChild:=Item.Priv.Last;
+            Item.Parent.LastChild:=Item.Last;
          end if;
 
-         if Item.Priv.Last/=null then
-            Item.Priv.Last.Priv.Next:=Item.Priv.Next;
+         if Item.Last/=null then
+            Item.Last.Next:=Item.Next;
          else
-            Item.Priv.Parent.Priv.FirstChild:=Item.Priv.Next;
+            Item.Parent.FirstChild:=Item.Next;
          end if;
       end if;
 

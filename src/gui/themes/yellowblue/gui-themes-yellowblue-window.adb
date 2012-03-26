@@ -21,6 +21,13 @@ pragma Ada_2005;
 
 package body GUI.Themes.YellowBlue.Window is
 
+   TitleBarHeight   : constant Integer := 24;
+   LineWidth        : constant Integer := 1;
+   BorderSpaceWidth : constant Integer := 4;
+   BorderWidth      : constant Integer := LineWidth*2+BorderSpaceWidth;
+   CornerSize       : constant Integer := 2*BorderWidth;
+   TopBarHeight     : constant Integer := TitleBarHeight*2*BorderWidth;
+
    type Window_Type is new GUI.Window.Window_Type with
       record
          TopLeftCorner : GUI.Canvas_ClassAccess;
@@ -40,14 +47,14 @@ package body GUI.Themes.YellowBlue.Window is
         (Item   => GUI.Window.Window_Access(NewWindow),
          Parent => Parent);
 
-      SetBounds
-        (Object => Object_ClassAccess(NewWindow),
-         Bounds =>
-           (Top     => 0,
-            Left    => 0,
-            Height  => 100,
-            Width   => 100,
-            Visible => True));
+--      SetBounds
+--        (Object => Object_ClassAccess(NewWindow),
+--         Bounds =>
+--           (Top     => 0,
+--            Left    => 0,
+--            Height  => 100,
+--            Width   => 100,
+--            Visible => True));
 
       NewWindow.Context.NewCanvas
         (Object => Object_ClassAccess(NewWindow),
@@ -55,7 +62,7 @@ package body GUI.Themes.YellowBlue.Window is
          Width  => 10,
          Canvas => NewWindow.TopLeftCorner);
       NewWindow.TopLeftCorner.Clear
-        (Color => 16#FFFFFFFF#);
+        (Color => 16#FFFF00FF#);
 
       return GUI.Window.Window_ClassAccess(NewWindow);
 

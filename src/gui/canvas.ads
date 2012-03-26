@@ -28,7 +28,10 @@ with Interfaces;
 package Canvas is
 
    type Color_Type is new Interfaces.Unsigned_32;
+
    type Image_Type is array(Natural range <>,Natural range <>) of Color_Type;
+   pragma Convention(C,Image_Type);
+
    type Image_Access is access all Image_Type;
 
    type BasicCanvas_Type is tagged

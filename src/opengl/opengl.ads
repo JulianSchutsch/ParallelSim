@@ -67,6 +67,14 @@ package OpenGL is
 
    GL_QUADS : constant GLenum_Type:=7;
 
+   GL_TEXTURE_MIN_FILTER : constant GLenum_Type:=16#2801#;
+   GL_TEXTURE_MAG_FILTER : constant GLenum_Type:=16#2800#;
+   GL_TEXTURE_WRAP_S     : constant GLenum_Type:=16#2802#;
+   GL_TEXTURE_WRAP_T     : constant GLenum_Type:=16#2803#;
+
+   GL_NEAREST : constant GLint_Type:=16#2600#;
+   GL_CLAMP   : constant GLint_Type:=16#2900#;
+
    procedure glFinish;
    pragma Import(StdCall,glFinish,"glFinish");
 
@@ -169,6 +177,12 @@ package OpenGL is
      (n        : GLsizei_Type;
       textures : access GLuint_Type);
    pragma Import(StdCall,glDeleteTextures,"glDeleteTextures");
+
+   procedure glTexParameteri
+     (target : GLenum_Type;
+      pname  : GLenum_Type;
+      param  : GLint_Type);
+   pragma Import(StdCall,glTexParameteri,"glTexParameteri");
 
    procedure AssertError;
 

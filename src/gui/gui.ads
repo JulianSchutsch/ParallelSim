@@ -39,7 +39,7 @@ package GUI is
      (RenderCanvasse,
       RenderCustom);
 
-   type Object_Type;
+   type Object_Type is tagged private;
    type Object_Access is access all Object_Type;
    type Object_ClassAccess is access all Object_Type'Class;
 
@@ -47,14 +47,12 @@ package GUI is
    type Context_ClassAccess is access all Context_Type'Class;
    ---------------------------------------------------------------------------
 
-   type Object_Private is private;
-   type Object_Type is tagged
+   type Object_Public is tagged
       record
          Render         : Render_Enum:=RenderCanvasse;
          CallBackObject : AnyObject_ClassAccess;
          Context        : Context_ClassAccess;
          Client         : Object_ClassAccess;
-         Priv           : Object_Private;
       end record;
 
    procedure Initialize
@@ -90,6 +88,14 @@ package GUI is
 
    type Canvas_Type is new Canvas.BasicCanvas_Type with private;
    type Canvas_ClassAccess is access all Canvas_Type'Class;
+
+   procedure SetBounds
+     (Canvas : Canvas_ClassAccess;
+      Bounds : Bounds_Type);
+
+   procedure SetAnchors
+     (Canvas  : Canvas_ClassAccess;
+      Anchors : Anchors_Type);
 
    procedure NewCanvas
      (Context : in out Context_Type;
@@ -137,16 +143,20 @@ private
      (Context : in out Context_Type);
    ---------------------------------------------------------------------------
 
-   type Object_Private is
+   type Object_Type is new Object_Public with
       record
-         Canvasse   : Canvas_ClassAccess;
-         Bounds     : Bounds_Type;
-         AbsBounds  : AbsBounds_Type;
-         Next       : Object_ClassAccess:=null;
-         Last       : Object_ClassAccess:=null;
-         Parent     : Object_ClassAccess:=null;
-         FirstChild : Object_ClassAccess:=null;
-         LastChild  : Object_ClassAccess:=null;
+         Canvasse            : Canvas_ClassAccess;
+         Bounds              : Bounds_Type;
+         PrevBounds          : Bounds_Type;
+         AbsBounds           : AbsBounds_Type;
+         Anchors             : Anchors_Type;
+         TopHeightConstraint : Constraint_Type;
+         LeftWidthConstraint : Constraint_Type;
+         Next                : Object_ClassAccess:=null;
+         Last                : Object_ClassAccess:=null;
+         Parent              : Object_ClassAccess:=null;
+         FirstChild          : Object_ClassAccess:=null;
+         LastChild           : Object_ClassAccess:=null;
       end record;
 
    procedure Resize
@@ -155,9 +165,11 @@ private
 
    type Canvas_Type is new Canvas.BasicCanvas_Type with
       record
-         Next   : Canvas_ClassAccess;
-         Last   : Canvas_ClassAccess;
-         Object : Object_ClassAccess;
+         Next    : Canvas_ClassAccess;
+         Last    : Canvas_ClassAccess;
+         Bounds  : Bounds_Type;
+         Anchors : Anchors_Type;
+         Object  : Object_ClassAccess;
       end record;
 
    procedure AddCanvas

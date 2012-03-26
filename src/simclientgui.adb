@@ -53,6 +53,14 @@ package body SimClientGUI is
       New_Line;
       Window:=ThemeImplementation.NewWindow
         (Parent => GUIContext.WindowArea);
+      GUI.SetBounds
+        (Object => GUI.Object_ClassAccess(Window),
+         Bounds =>
+           (Top     => 10,
+            Left    => 10,
+            Height  => 100,
+            Width   => 200,
+            Visible => True));
       Put("End of Simclientgui init");
       New_Line;
 

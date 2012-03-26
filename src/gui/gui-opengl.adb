@@ -23,6 +23,7 @@ with GUI.OpenGL.Native;
 with OpenGL; use OpenGL;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with System;
 
 package body GUI.OpenGL is
 
@@ -62,6 +63,38 @@ package body GUI.OpenGL is
       Put("Texture :");
       Put(Integer(NewCanv.TextureID));
       New_Line;
+      glBindTexture
+        (target  => GL_TEXTURE_2D,
+         texture => NewCanv.TextureID);
+      glTexParameteri
+        (target => GL_TEXTURE_2D,
+         pname  => GL_TEXTURE_MIN_FILTER,
+         param  => GL_NEAREST);
+      glTexParameteri
+        (target => GL_TEXTURE_2D,
+         pname  => GL_TEXTURE_MAG_FILTER,
+         param  => GL_NEAREST);
+      glTexParameteri
+        (target => GL_TEXTURE_2D,
+         pname  => GL_TEXTURE_WRAP_S,
+         param  => GL_CLAMP);
+      glTexParameteri
+        (target => GL_TEXTURE_2D,
+         pname  => GL_TEXTURE_WRAP_T,
+         param  => GL_CLAMP);
+
+      glTexImage2D
+        (target => GL_TEXTURE_2D,
+         level  => 0,
+         internalFormat => GL_RGBA,
+         width  => GLsizei_Type(NewCanv.TextureWidth),
+         height => GLsizei_Type(NewCanv.TextureHeight),
+         border => 0,
+         format => GL_BGRA,
+         ttype  => GL_UNSIGNED_BYTE,
+         data   => System.Null_Address);
+
+      Standard.OpenGL.AssertError;
 
       GUI.AddCanvas
         (Object => Object,
@@ -105,9 +138,9 @@ package body GUI.OpenGL is
 
                when RenderCanvasse =>
 
-                  ObjectAbsBounds:=p.Priv.AbsBounds;
+                  ObjectAbsBounds:=p.AbsBounds;
 
-                  CanvasCursor:=Canvas_Access(p.Priv.Canvasse);
+                  CanvasCursor:=Canvas_Access(p.Canvasse);
 
                   while CanvasCursor/=null loop
 
@@ -121,6 +154,9 @@ package body GUI.OpenGL is
                      if CanvasCursor.Modified then
 
                         CanvasCursor.Modified:=False;
+--                        Put("Upload");
+--                        New_Line;
+--                        Put(Integer(CanvasCursor.Image(0,0)));
 
                         glTexImage2D
                           (target => GL_TEXTURE_2D,
@@ -131,18 +167,14 @@ package body GUI.OpenGL is
                            border => 0,
                            format => GL_BGRA,
                            ttype  => GL_UNSIGNED_BYTE,
-                           data   => CanvasCursor.Image'Address);
+                           data   => CanvasCursor.Image(0,0)'Address);
+                           Standard.OpenGL.AssertError;
 
                      end if;
 
                      NestBounds
                        (ParentAbsBounds => ObjectAbsBounds,
-                        RectBounds      =>
-                          (Top     => 0,
-                           Left    => 0,
-                           Height  => CanvasCursor.Height,
-                           Width   => CanvasCursor.Width,
-                           Visible => True),
+                        RectBounds      => CanvasCursor.Bounds,
                         ResultBounds => CanvasAbsBounds);
 
                      declare
@@ -194,18 +226,18 @@ package body GUI.OpenGL is
 
             end case;
 
-            if p.Priv.LastChild/=null then
+            if p.LastChild/=null then
 
-               p:=p.Priv.LastChild;
+               p:=p.LastChild;
 
             else
 
-               while (p/=null) and then (p.Priv.Next/=null) loop
-                  p:=p.Priv.Parent;
+               while (p/=null) and then (p.Next/=null) loop
+                  p:=p.Parent;
                end loop;
 
                if p/=null then
-                  p:=p.Priv.Next;
+                  p:=p.Next;
                end if;
 
             end if;
