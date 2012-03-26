@@ -61,6 +61,12 @@ package body SimClientGUI is
             Height  => 100,
             Width   => 200,
             Visible => True));
+      GUI.SetAnchors
+        (Object => GUI.Object_ClassAccess(Window),
+         Top    => True,
+         Left   => True,
+         Right  => True,
+         Bottom => True);
       Put("End of Simclientgui init");
       New_Line;
 

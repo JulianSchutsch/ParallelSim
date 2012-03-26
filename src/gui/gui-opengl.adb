@@ -170,50 +170,57 @@ package body GUI.OpenGL is
 
                      end if;
 
+                     Put("Canvas");
+                     BoundsCalc.Put
+                       (Item => CanvasCursor.Bounds);
+
                      NestBounds
                        (ParentAbsBounds => ObjectAbsBounds,
                         RectBounds      => CanvasCursor.Bounds,
                         ResultBounds    => CanvasAbsBounds);
+                     if CanvasAbsBounds.AbsVisible then
 
-                     declare
-                        Texx1 : constant GLfloat_Type
-                          :=GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
-                          /GLfloat_Type(CanvasCursor.ContentWidth);
+                        declare
+                           Texx1 : constant GLfloat_Type
+                             :=GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
+                             /GLfloat_Type(CanvasCursor.ContentWidth);
 
-                        Texx2 : constant GLfloat_Type
-                          :=(GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
-                            +GLfloat_Type(CanvasAbsBounds.AbsWidth))
-                            /GLfloat_Type(CanvasCursor.ContentWidth);
+                           Texx2 : constant GLfloat_Type
+                             :=(GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
+                                +GLfloat_Type(CanvasAbsBounds.AbsWidth))
+                             /GLfloat_Type(CanvasCursor.ContentWidth);
 
-                        Texy1 : constant GLfloat_Type
-                            :=GLfloat_Type(CanvasAbsBounds.AbsSubTop)
-                            /GLfloat_Type(CanvasCursor.ContentHeight);
+                           Texy1 : constant GLfloat_Type
+                             :=GLfloat_Type(CanvasAbsBounds.AbsSubTop)
+                             /GLfloat_Type(CanvasCursor.ContentHeight);
 
-                        Texy2 : constant GLfloat_Type
-                            :=(GLfloat_Type(CanvasAbsBounds.AbsSubTop)
-                              +GLfloat_Type(CanvasAbsBounds.AbsHeight))
-                            /GLfloat_Type(CanvasCursor.ContentHeight);
+                           Texy2 : constant GLfloat_Type
+                             :=(GLfloat_Type(CanvasAbsBounds.AbsSubTop)
+                                +GLfloat_Type(CanvasAbsBounds.AbsHeight))
+                             /GLfloat_Type(CanvasCursor.ContentHeight);
 
-                     begin
-                        glBegin(GL_QUADS);
-                        glTexCoord2f(Texx1,Texy1);
-                        glVertex2f
-                          (GLfloat_Type(CanvasAbsBounds.AbsLeft),
-                           GLfloat_Type(CanvasAbsBounds.AbsTop));
-                        glTexCoord2f(Texx1,Texy2);
-                        glVertex2f
-                          (GLfloat_Type(CanvasAbsBounds.AbsLeft),
-                           GLfloat_Type(CanvasAbsBounds.AbsTop+CanvasAbsBounds.AbsHeight));
-                        glTexCoord2f(Texx2,Texy2);
-                        glVertex2f
-                          (GLfloat_Type(CanvasAbsBounds.AbsLeft+CanvasAbsBounds.AbsWidth),
-                           GLfloat_Type(CanvasAbsBounds.AbsTop+CanvasAbsBounds.AbsHeight));
-                        glTexCoord2f(Texx2,Texy1);
-                        glVertex2f
-                          (GLfloat_Type(CanvasAbsBounds.AbsLeft+CanvasAbsBounds.AbsWidth),
-                           GLfloat_Type(canvasAbsBounds.AbsTop));
-                        glEnd;
-                     end;
+                        begin
+                           glBegin(GL_QUADS);
+                           glTexCoord2f(Texx1,Texy1);
+                           glVertex2f
+                             (GLfloat_Type(CanvasAbsBounds.AbsLeft),
+                              GLfloat_Type(CanvasAbsBounds.AbsTop));
+                           glTexCoord2f(Texx1,Texy2);
+                           glVertex2f
+                             (GLfloat_Type(CanvasAbsBounds.AbsLeft),
+                              GLfloat_Type(CanvasAbsBounds.AbsTop+CanvasAbsBounds.AbsHeight));
+                           glTexCoord2f(Texx2,Texy2);
+                           glVertex2f
+                             (GLfloat_Type(CanvasAbsBounds.AbsLeft+CanvasAbsBounds.AbsWidth),
+                              GLfloat_Type(CanvasAbsBounds.AbsTop+CanvasAbsBounds.AbsHeight));
+                           glTexCoord2f(Texx2,Texy1);
+                           glVertex2f
+                             (GLfloat_Type(CanvasAbsBounds.AbsLeft+CanvasAbsBounds.AbsWidth),
+                              GLfloat_Type(canvasAbsBounds.AbsTop));
+                           glEnd;
+                        end;
+
+                     end if;
 
                      CanvasCursor:=Canvas_Access(CanvasCursor.Next);
 

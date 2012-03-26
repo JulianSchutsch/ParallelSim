@@ -25,6 +25,26 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 package body BoundsCalc is
 
    procedure Put
+     (Item : Anchors_Type) is
+   begin
+      Put("Anchors:");
+      New_Line;
+      Put(" TopBorder    :");
+      Put(Item.TopBorder);
+      New_Line;
+      Put(" LeftBorder   :");
+      Put(Item.LeftBorder);
+      New_Line;
+      Put(" RightBorder  :");
+      Put(Item.RightBorder);
+      New_Line;
+      Put(" BottomBorder :");
+      Put(Item.BottomBorder);
+      New_Line;
+   end Put;
+   ---------------------------------------------------------------------------
+
+   procedure Put
      (Item : Bounds_Type) is
    begin
       Put("Bounds:");
@@ -256,8 +276,8 @@ package body BoundsCalc is
          end if;
       else
          if Anchors.Bottom then
-            ClientBounds.Height := ParentBounds.Height
-              - ClientBounds.Top - Anchors.BottomBorder;
+            ClientBounds.Top := ParentBounds.Height
+              - ClientBounds.Height - Anchors.BottomBorder;
          end if;
       end if;
    end RestoreAnchors;

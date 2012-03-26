@@ -28,13 +28,22 @@ package body GUI.Themes.YellowBlue.Window is
    CornerSize       : constant Integer := 2*BorderWidth;
    TopBarHeight     : constant Integer := TitleBarHeight+2*BorderWidth;
 
-   BackgroundColor : constant Canvas.Color_Type := 16#FF000000#;
-   BorderLineColor : constant Canvas.Color_Type := 16#FFFFFF00#;
-   BorderEdgeLineColor : constant Canvas.Color_Type:= 16#FFFFFFFF#;
+   BackgroundColor     : constant Canvas.Color_Type := 16#FF000000#;
+   BorderLineColor     : constant Canvas.Color_Type := 16#FFFFFF00#;
+   BorderEdgeLineColor : constant Canvas.Color_Type := 16#FFFFFFFF#;
+   ClientColor         : constant Canvas.Color_Type := 16#7F00007F#;
 
    type Window_Type is new GUI.Window.Window_Type with
       record
-         TopLeftCorner : GUI.Canvas_ClassAccess;
+         TopLeftCorner     : GUI.Canvas_ClassAccess;
+         TopBar            : GUI.Canvas_ClassAccess;
+         TopRightCorner    : GUI.Canvas_ClassAccess;
+         LeftBar           : GUI.Canvas_ClassAccess;
+         RightBar          : GUI.Canvas_ClassAccess;
+         BottomLeftCorner  : GUI.Canvas_ClassAccess;
+         BottomRightCorner : GUI.Canvas_ClassAccess;
+         BottomBar         : GUI.Canvas_ClassAccess;
+         ClientArea        : GUI.Canvas_ClassAccess;
       end record;
    type Window_Access is access all Window_Type;
 
@@ -108,16 +117,327 @@ package body GUI.Themes.YellowBlue.Window is
             Width   => CornerSize,
             Visible => True));
       Gui.SetAnchors
-        (Canvas  => NewWindow.TopLeftCorner,
-         Top => True,
-         Left => True,
-         Right => False,
+        (Canvas => NewWindow.TopLeftCorner,
+         Top    => True,
+         Left   => True,
+         Right  => False,
          Bottom => False);
       ------------------------------------------------------------------------
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => TopBarHeight,
+         Width  => 1,
+         Canvas => NewWindow.TopBar);
+
+      NewWindow.TopBar.Clear
+        (Color => BackgroundColor);
+      NewWindow.TopBar.Image(0,0)
+        :=BorderLineColor;
+      NewWindow.TopBar.Image(LineWidth+BorderSpaceWidth,0)
+        :=BorderLineColor;
+      NewWindow.TopBar.Image(TOpBarHeight-BorderSpaceWidth-LineWidth-1,0)
+        :=BorderLineColor;
+      NewWindow.TopBar.Image(TopBarHeight-1,0)
+        :=BorderLineColor;
+      GUI.SetBounds
+        (Canvas => NewWindow.TopBar,
+         Bounds =>
+           (Top     => 0,
+            Left    => CornerSize,
+            Height  => TopBarHeight,
+            Width   => -2*CornerSize,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWindow.TopBar,
+         Top    => True,
+         Left   => True,
+         Right  => True,
+         Bottom => False);
+      ------------------------------------------------------------------------
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => TopBarHeight,
+         Width  => CornerSize,
+         Canvas => NewWindow.TopRightCorner);
+
+      NewWindow.TopRightCorner.Clear
+        (Color => BackgroundColor);
+      NewWindow.TopRightCorner.HorzLine
+        (X      => 0,
+         Y      => 0,
+         Width  => CornerSize,
+         Color  => BorderLineColor);
+      NewWindow.TopRightCorner.VertLine
+        (X      => CornerSize-1,
+         Y      => 1,
+         Height => TopbarHeight-1,
+         Color  => BorderLineColor);
+      NewWindow.TopRightCorner.HorzLine
+        (X      => 0,
+         Y      => LineWidth+BorderSpaceWidth,
+         Width  => CornerSize-BorderWidth,
+         Color  => BorderLineColor);
+      NewWindow.TopRightCorner.VertLine
+        (X      => CornerSize-BorderWidth,
+         Y      => LineWidth+BorderSpaceWidth,
+         Height => TopbarHeight-2*BorderWidth+1,
+         Color  => BorderLineColor);
+      NewWindow.TopRightCorner.HorzLine
+        (X      => 0,
+         Y      => TopBarHeight-1,
+         Width  => CornerSize-BorderWidth+1,
+         Color  => BorderLineColor);
+      NewWindow.TopRightCorner.HorzLine
+        (X      => 0,
+         Y      => TopBarHeight-BorderWidth,
+         Width  => CornerSize-BorderWidth+1,
+         Color  => BorderLineColor);
+      NewWindow.TopRightCorner.VertLine
+        (X      => 0,
+         Y      => LineWidth,
+         Height => BorderSpaceWidth,
+         Color  => BorderLineColor);
+      NewWindow.TopRightCorner.HorzLine
+        (X      => CornerSize-LineWidth-BorderSpaceWidth,
+         Y      => CornerSize-1,
+         Width  => BorderSpaceWidth,
+         Color  => BorderEdgeLineColor);
+      GUI.SetBounds
+        (Canvas => NewWindow.TopRightCorner,
+         Bounds =>
+           (Top     => 0,
+            Left    => -CornerSize,
+            Height  => TopBarHeight,
+            Width   => CornerSize,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWindow.TopRightCorner,
+         Top    => True,
+         Left   => False,
+         Right  => True,
+         Bottom => False);
+      ------------------------------------------------------------------------
+
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => 1,
+         Width  => BorderWidth,
+         Canvas => NewWindow.LeftBar);
+      NewWindow.LeftBar.Clear
+        (Color => BackgroundColor);
+      NewWindow.LeftBar.Image(0,0):=BorderLineColor;
+      NewWindow.LeftBar.Image(0,BorderWidth-1):=BorderLineColor;
+      GUI.SetBounds
+        (Canvas => NewWindow.LeftBar,
+         Bounds =>
+           (Top     => TopBarHeight,
+            Left    => 0,
+            Height  => -TopBarHeight-CornerSize,
+            Width   => BorderWidth,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWindow.LeftBar,
+         Top    => True,
+         Left   => True,
+         Right  => False,
+         Bottom => True);
+      ------------------------------------------------------------------------
+
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => 1,
+         Width  => BorderWidth,
+         Canvas => NewWindow.RightBar);
+      NewWindow.RightBar.Clear
+        (Color => BackgroundColor);
+      NewWindow.RightBar.Image(0,0):=BorderLineColor;
+      NewWindow.RightBar.Image(0,BorderWidth-1):=BorderLineColor;
+      GUI.SetBounds
+        (Canvas => NewWindow.RightBar,
+         Bounds =>
+           (Top     => TopBarHeight,
+            Left    => -BorderWidth,
+            Height  => -TopBarHeight-CornerSize,
+            Width   => BorderWidth,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWindow.RightBar,
+         Top    => True,
+         Left   => False,
+         Right  => True,
+         Bottom => True);
+      ------------------------------------------------------------------------
+
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => CornerSize,
+         Width  => CornerSize,
+         Canvas => NewWindow.BottomLeftCorner);
+      NewWindow.BottomLeftCorner.Clear
+        (Color => BackgroundColor);
+      NewWindow.BottomLeftCorner.VertLine
+        (X      => 0,
+         Y      => 0,
+         Height => CornerSize,
+         Color  => BorderLineColor);
+      NewWindow.BottomLeftCorner.HorzLine
+        (X      => 1,
+         Y      => CornerSize-1,
+         Width  => CornerSize-1,
+         Color  => BorderLineColor);
+      NewWindow.BottomLeftCorner.VertLine
+        (X      => BorderWidth-1,
+         Y      => 0,
+         Height => CornerSize-BorderWidth+1,
+         Color  => BorderLineColor);
+      NewWindow.BottomLeftCorner.HorzLine
+        (X      => BorderWidth,
+         Y      => CornerSize-BorderWidth,
+         Width  => CornerSize-BorderWidth,
+         Color  => BorderLineColor);
+      NewWindow.BottomLeftCorner.HorzLine
+        (X      => LineWidth,
+         Y      => 1,
+         Width  => BorderSpaceWidth,
+         Color  => BorderEdgeLineColor);
+      NewWindow.BottomLeftCorner.VertLine
+        (X      => CornerSize-1,
+         Y      => CornerSize-LineWidth-BorderSpaceWidth,
+         Height => BorderSpaceWidth,
+         Color  => BorderEdgeLineColor);
+      NewWindow.BottomLeftCorner.Bar
+        (X      => BorderWidth,
+         Y      => 0,
+         Height => CornerSize-BorderWidth,
+         Width  => CornerSize-BorderWidth,
+         Color  => 0);
+      GUI.SetBounds
+        (Canvas => NewWindow.BottomLeftCorner,
+         Bounds =>
+           (Top     => -CornerSize,
+            Left    => 0,
+            Height  => CornerSize,
+            Width   => CornerSize,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWindow.BottomLeftCorner,
+         Top    => False,
+         Left   => True,
+         Right  => False,
+         Bottom => True);
+      ------------------------------------------------------------------------
+
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => BorderWidth,
+         Width  => 1,
+         Canvas => NewWindow.BottomBar);
+      NewWindow.BottomBar.Clear
+        (Color => BackgroundColor);
+
+      NewWindow.BottomBar.Image(0,0)             := BorderLineColor;
+      NewWindow.BottomBar.Image(BorderWidth-1,0) := BorderLineColor;
+
+      GUI.SetBounds
+        (Canvas => NewWindow.BottomBar,
+         Bounds =>
+           (Top     => -BorderWidth,
+            Left    => CornerSize,
+            Height  => BorderWidth,
+            Width   => -2*CornerSize,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWindow.BottomBar,
+         Top    => False,
+         Left   => True,
+         Right  => True,
+         Bottom => True);
+      ------------------------------------------------------------------------
+
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => CornerSize,
+         Width  => CornerSize,
+         Canvas => NewWindow.BottomRightCorner);
+      NewWindow.BottomRightCorner.Clear
+        (Color => BackgroundColor);
+      NewWindow.BottomRightCorner.VertLine
+        (X      => CornerSize-1,
+         Y      => 0,
+         Height => CornerSize,
+         Color  => BorderLineColor);
+      NewWindow.BottomRightCorner.HorzLine
+        (X      => 0,
+         Y      => CornerSize-1,
+         Width  => CornerSize-1,
+         Color  => BorderLineColor);
+      NewWindow.BottomRightCorner.VertLine
+        (X      => CornerSize-BorderWidth,
+         Y      => 0,
+         Height => CornerSize-BorderWidth+1,
+         Color  => BorderLineColor);
+      NewWindow.BottomRightCorner.HorzLine
+        (X      => 0,
+         Y      => CornerSize-BorderWidth,
+         Width  => CornerSize-BorderWidth,
+         Color  => BorderLineColor);
+      NewWindow.BottomRightCorner.HorzLine
+        (X      => CornerSize-LineWidth-BorderSpaceWidth,
+         Y      => 0,
+         Width  => BorderSpaceWidth,
+         Color  => BorderEdgeLineColor);
+      NewWindow.BottomRightCorner.VertLine
+        (X      => 0,
+         Y      => CornerSize-LineWidth-BorderSpaceWidth,
+         Height => BorderSpaceWidth,
+         Color  => BorderEdgeLineColor);
+      NewWindow.BottomRightCorner.Bar
+        (X      => 0,
+         Y      => 0,
+         Height => CornerSize-BorderWidth,
+         Width  => CornerSize-BorderWidth,
+         Color  => 0);
+      GUI.SetBounds
+        (Canvas => NewWindow.BottomRightCorner,
+         Bounds =>
+           (Top     => -CornerSize,
+            Left    => -CornerSize,
+            Height  => CornerSize,
+            Width   => CornerSize,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWindow.BottomRightCorner,
+         Top    => False,
+         Left   => False,
+         Right  => True,
+         Bottom => True);
+      ------------------------------------------------------------------------
+
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => 1,
+         Width  => 1,
+         Canvas => NewWindow.ClientArea);
+      NewWindow.ClientArea.Clear
+        (Color => ClientColor);
+      GUI.SetBounds
+        (Canvas => NewWindow.ClientArea,
+         Bounds =>
+           (Top     => TopBarHeight,
+            Left    => BorderWidth,
+            Height  => -TopBarHeight-BorderWidth,
+            Width   => -2*BorderWidth,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWindow.ClientArea,
+         Top    => True,
+         Left   => True,
+         Right  => True,
+         Bottom => True);
 
       return GUI.Window.Window_ClassAccess(NewWindow);
 
    end NewWindow;
-   --------------------------------------------------------------------------
+   ---------------------------------------------------------------------------
 
 end GUI.Themes.YellowBlue.Window;

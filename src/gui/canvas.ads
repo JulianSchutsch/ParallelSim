@@ -60,4 +60,12 @@ package Canvas is
       Width  : Integer;
       Color  : Color_Type);
 
+   procedure Bar
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Height : Integer;
+      Width  : Integer;
+      Color  : Color_Type);
+
 end Canvas;

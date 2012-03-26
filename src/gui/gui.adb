@@ -136,6 +136,29 @@ package body GUI is
       end if;
    end Resize;
    ---------------------------------------------------------------------------
+
+   procedure SetAnchors
+     (Object : Object_ClassAccess;
+      Top    : Boolean;
+      Left   : Boolean;
+      Right  : Boolean;
+      Bottom : Boolean) is
+   begin
+      Object.Anchors.Top    := Top;
+      Object.Anchors.Left   := Left;
+      Object.Anchors.Right  := Right;
+      Object.Anchors.Bottom := Bottom;
+
+      if Object.Parent/=null then
+         StoreAnchors
+           (Anchors => Object.Anchors,
+            ClientBounds => Object.Bounds,
+            ParentBounds => Object.Parent.Bounds);
+      end if;
+
+   end SetAnchors;
+   ---------------------------------------------------------------------------
+
    procedure SetBounds
      (Canvas : Canvas_ClassAccess;
       Bounds : Bounds_Type) is
@@ -176,8 +199,6 @@ package body GUI is
      (Object : Object_ClassAccess;
       Bounds : Bounds_Type) is
    begin
-      Put("SetBounds");
-      New_Line;
       Object.Bounds:=Bounds;
       Resize(Object);
    end SetBounds;

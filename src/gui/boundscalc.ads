@@ -100,11 +100,11 @@ package BoundsCalc is
 
    type Bounds_Type is
       record
-         Top     : Integer;
-         Left    : Integer;
-         Height  : Integer;
-         Width   : Integer;
-         Visible : Boolean;
+         Top     : Integer:=0;
+         Left    : Integer:=0;
+         Height  : Integer:=0;
+         Width   : Integer:=0;
+         Visible : Boolean:=False;
       end record;
 
    type AbsBounds_Type is
@@ -132,13 +132,13 @@ package BoundsCalc is
 
    type Constraint_Type is
       record
-         MinValueConstraint : Constraint_Enum;
+         MinValueConstraint : Constraint_Enum:=ConstraintNone;
          MinValueConstant   : Integer;
-         MaxValueConstraint : Constraint_Enum;
+         MaxValueConstraint : Constraint_Enum:=ConstraintNone;
          MaxValueConstant   : Integer;
-         MinSizeConstraint  : Constraint_Enum;
+         MinSizeConstraint  : Constraint_Enum:=ConstraintNone;
          MinSizeConstant    : Integer;
-         MaxSizeConstraint  : Constraint_Enum;
+         MaxSizeConstraint  : Constraint_Enum:=ConstraintNone;
          MaxSizeConstant    : Integer;
       end record;
 
@@ -170,5 +170,8 @@ package BoundsCalc is
 
    procedure Put
      (Item : AbsBounds_Type);
+
+   procedure Put
+     (Item : Anchors_Type);
 
 end BoundsCalc;

@@ -70,6 +70,13 @@ package GUI is
      (Object : Object_Type'Class)
       return Bounds_Type;
 
+   procedure SetAnchors
+     (Object : Object_ClassAccess;
+      Top    : Boolean;
+      Left   : Boolean;
+      Right  : Boolean;
+      Bottom : Boolean);
+
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is

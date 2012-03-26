@@ -21,6 +21,62 @@ pragma Ada_2005;
 
 package body Canvas is
 
+   procedure Bar
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Height : Integer;
+      Width  : Integer;
+      Color  : Color_Type) is
+
+      DrawHeight : Integer;
+      DrawWidth  : Integer;
+      DrawX      : Integer;
+      DrawY       : Integer;
+
+   begin
+      DrawHeight := Height;
+      DrawY      := Y;
+
+      if DrawY<0 then
+         DrawHeight:=DrawHeight+DrawY;
+         DrawY:=0;
+      end if;
+
+      if DrawY+DrawHeight>Canvas.ContentHeight then
+         DrawHeight:=Canvas.ContentHeight-DrawY;
+      end if;
+
+      if DrawHeight<=0 then
+         return;
+      end if;
+      ------------------------------------------------------------------------
+
+      DrawWidth := Width;
+      DrawX     := X;
+
+      if DrawX<0 then
+         DrawWidth:=DrawWidth+DrawX;
+         DrawX:=0;
+      end if;
+
+      if DrawX+DrawWidth>Canvas.ContentWidth then
+         DrawWidth:=Canvas.ContentWidth-DrawX;
+      end if;
+
+      if DrawWidth<=0 then
+         return;
+      end if;
+      ------------------------------------------------------------------------
+
+      for i in DrawY..DrawY+DrawHeight-1 loop
+         for n in DrawX..DrawX+DrawWidth-1 loop
+            Canvas.Image(i,n):=Color;
+         end loop;
+      end loop;
+   end Bar;
+   ---------------------------------------------------------------------------
+
    procedure HorzLine
      (Canvas : in out BasicCanvas_Type;
       X      : Integer;
