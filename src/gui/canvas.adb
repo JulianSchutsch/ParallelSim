@@ -21,6 +21,83 @@ pragma Ada_2005;
 
 package body Canvas is
 
+   procedure HorzLine
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Width  : Integer;
+      Color  : Color_Type) is
+
+      DrawWidth : Integer;
+      DrawX     : Integer;
+
+   begin
+      if (Y<0)
+        or (Y>=Canvas.ContentHeight) then
+         return;
+      end if;
+
+      DrawWidth := Width;
+      DrawX     := X;
+
+      if DrawX<0 then
+         DrawWidth:=DrawWidth+DrawX;
+         DrawX:=0;
+      end if;
+
+      if DrawX+DrawWidth>Canvas.ContentWidth then
+         DrawWidth:=Canvas.ContentWidth-DrawX;
+      end if;
+
+      if DrawWidth<=0 then
+         return;
+      end if;
+
+      for i in DrawX..DrawX+DrawWidth-1 loop
+         Canvas.Image(Y,i):=Color;
+      end loop;
+
+   end HorzLine;
+   ---------------------------------------------------------------------------
+
+   procedure VertLine
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Height : Integer;
+      Color  : Color_Type) is
+
+      DrawHeight : Integer;
+      DrawY      : Integer;
+
+   begin
+      if (X<0)
+        or (X>=Canvas.ContentWidth) then
+         return;
+      end if;
+
+      DrawHeight := Height;
+      DrawY      := Y;
+
+      if DrawY<0 then
+         DrawHeight:=DrawHeight+DrawY;
+         DrawY:=0;
+      end if;
+
+      if DrawY+DrawHeight>Canvas.ContentHeight then
+         DrawHeight:=Canvas.ContentHeight-DrawY;
+      end if;
+
+      if DrawHeight<=0 then
+         return;
+      end if;
+
+      for i in DrawY..DrawY+DrawHeight-1 loop
+         Canvas.Image(i,X):=Color;
+      end loop;
+
+   end VertLine;
+
    procedure Clear
      (Canvas : in out BasicCanvas_Type;
       Color  : Color_Type) is

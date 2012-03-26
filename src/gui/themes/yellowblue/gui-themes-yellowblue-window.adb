@@ -26,7 +26,11 @@ package body GUI.Themes.YellowBlue.Window is
    BorderSpaceWidth : constant Integer := 4;
    BorderWidth      : constant Integer := LineWidth*2+BorderSpaceWidth;
    CornerSize       : constant Integer := 2*BorderWidth;
-   TopBarHeight     : constant Integer := TitleBarHeight*2*BorderWidth;
+   TopBarHeight     : constant Integer := TitleBarHeight+2*BorderWidth;
+
+   BackgroundColor : constant Canvas.Color_Type := 16#FF000000#;
+   BorderLineColor : constant Canvas.Color_Type := 16#FFFFFF00#;
+   BorderEdgeLineColor : constant Canvas.Color_Type:= 16#FFFFFFFF#;
 
    type Window_Type is new GUI.Window.Window_Type with
       record
@@ -49,11 +53,67 @@ package body GUI.Themes.YellowBlue.Window is
 
       NewWindow.Context.NewCanvas
         (Object => Object_ClassAccess(NewWindow),
-         Height => 10,
-         Width  => 10,
+         Height => TopBarHeight,
+         Width  => CornerSize,
          Canvas => NewWindow.TopLeftCorner);
+
       NewWindow.TopLeftCorner.Clear
-        (Color => 16#FFFF00FF#);
+        (Color => BackgroundColor);
+      NewWindow.TopLeftCorner.HorzLine
+        (X     => 0,
+         Y     => 0,
+         Width => CornerSize,
+         Color => BorderLineColor);
+      NewWindow.TopLeftCorner.VertLine
+        (X      => 0,
+         Y      => 1,
+         Height => TopBarHeight-1,
+         Color  => BorderLineColor);
+      NewWindow.TopLeftCorner.HorzLine
+        (X      => LineWidth+BorderSpaceWidth,
+         Y      => LineWidth+BorderSpaceWidth,
+         Width  => CornerSize-LineWidth-BorderSpaceWidth,
+         Color  => BorderLineColor);
+      NewWindow.TopLeftCorner.VertLine
+        (X      => LineWidth+BorderSpaceWidth,
+         Y      => LineWidth+BorderSpaceWidth+1,
+         Height => TopbarHeight-LineWidth-BorderSpaceWidth-BorderWidth,
+         Color  => BorderLineColor);
+      NewWindow.TopLeftCorner.HorzLine
+        (X      => LineWidth+BorderSpaceWidth+1,
+         Y      => TopBarHeight-BorderWidth,
+         Width  => CornerSize-LineWidth-BorderSpaceWidth-1,
+         Color  => BorderLineColor);
+      NewWindow.TopLeftCorner.HorzLine
+        (X      => LineWidth+BorderSpaceWidth,
+         Y      => TopBarHeight-1,
+         Width  => CornerSize-LineWidth-BorderSpaceWidth,
+         Color  => BorderLineColor);
+      NewWindow.TopLeftCorner.HorzLine
+        (X     => 1,
+         Y     => CornerSize-1,
+         Width => BorderSpaceWidth,
+         Color => BorderEdgeLineColor);
+      NewWindow.TopLeftCorner.VertLine
+        (X      => CornerSize-1,
+         Y      => 1,
+         Height => BorderSpaceWidth,
+         Color  => BorderEdgeLineColor);
+      GUI.SetBounds
+        (Canvas => NewWindow.TopLeftCorner,
+         Bounds =>
+           (Top     => 0,
+            Left    => 0,
+            Height  => TopBarHeight,
+            Width   => CornerSize,
+            Visible => True));
+      Gui.SetAnchors
+        (Canvas  => NewWindow.TopLeftCorner,
+         Top => True,
+         Left => True,
+         Right => False,
+         Bottom => False);
+      ------------------------------------------------------------------------
 
       return GUI.Window.Window_ClassAccess(NewWindow);
 

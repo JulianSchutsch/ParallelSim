@@ -29,11 +29,9 @@ package body GUI.OpenGL is
 
    type Canvas_Type is new GUI.Canvas_Type with
       record
-         TextureID : aliased GLuint_Type;
-         Height    : Natural;
-         Width     : Natural;
-         TextureHeight : Natural;
-         TextureWidth  : Natural;
+         TextureID     : aliased GLuint_Type;
+         Height        : Natural;
+         Width         : Natural;
       end record;
    type Canvas_Access is access all Canvas_Type;
 
@@ -51,11 +49,11 @@ package body GUI.OpenGL is
       NewCanv        := new Canvas_Type;
       NewCanv.Height := Height;
       NewCanv.Width  := Width;
-      NewCanv.TextureHeight:=RoundUpPowerOf2(Height);
-      NewCanv.TextureWidth:=RoundUpPowerOf2(Width);
+      NewCanv.ContentHeight := RoundUpPowerOf2(Height);
+      NewCanv.ContentWidth  := RoundUpPowerOf2(Width);
       NewCanv.Image  := new Standard.Canvas.Image_Type
-        (0..NewCanv.TextureHeight-1,
-         0..NewCanv.TextureWidth-1);
+        (0..NewCanv.ContentHeight-1,
+         0..NewCanv.ContentWidth-1);
 
       glGentextures
         (n => 1,
@@ -87,8 +85,8 @@ package body GUI.OpenGL is
         (target => GL_TEXTURE_2D,
          level  => 0,
          internalFormat => GL_RGBA,
-         width  => GLsizei_Type(NewCanv.TextureWidth),
-         height => GLsizei_Type(NewCanv.TextureHeight),
+         width  => GLsizei_Type(NewCanv.ContentWidth),
+         height => GLsizei_Type(NewCanv.ContentHeight),
          border => 0,
          format => GL_BGRA,
          ttype  => GL_UNSIGNED_BYTE,
@@ -162,8 +160,8 @@ package body GUI.OpenGL is
                           (target => GL_TEXTURE_2D,
                            level  => 0,
                            internalFormat => GL_RGBA,
-                           width  => GLsizei_Type(CanvasCursor.TextureWidth),
-                           height => GLsizei_Type(CanvasCursor.TextureHeight),
+                           width  => GLsizei_Type(CanvasCursor.ContentWidth),
+                           height => GLsizei_Type(CanvasCursor.ContentHeight),
                            border => 0,
                            format => GL_BGRA,
                            ttype  => GL_UNSIGNED_BYTE,
@@ -175,26 +173,26 @@ package body GUI.OpenGL is
                      NestBounds
                        (ParentAbsBounds => ObjectAbsBounds,
                         RectBounds      => CanvasCursor.Bounds,
-                        ResultBounds => CanvasAbsBounds);
+                        ResultBounds    => CanvasAbsBounds);
 
                      declare
                         Texx1 : constant GLfloat_Type
                           :=GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
-                          /GLfloat_Type(CanvasCursor.Width);
+                          /GLfloat_Type(CanvasCursor.ContentWidth);
 
                         Texx2 : constant GLfloat_Type
                           :=(GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
                             +GLfloat_Type(CanvasAbsBounds.AbsWidth))
-                            /GLfloat_Type(CanvasCursor.Width);
+                            /GLfloat_Type(CanvasCursor.ContentWidth);
 
                         Texy1 : constant GLfloat_Type
                             :=GLfloat_Type(CanvasAbsBounds.AbsSubTop)
-                            /GLfloat_Type(CanvasCursor.Height);
+                            /GLfloat_Type(CanvasCursor.ContentHeight);
 
                         Texy2 : constant GLfloat_Type
                             :=(GLfloat_Type(CanvasAbsBounds.AbsSubTop)
                               +GLfloat_Type(CanvasAbsBounds.AbsHeight))
-                            /GLfloat_Type(CanvasCursor.Height);
+                            /GLfloat_Type(CanvasCursor.ContentHeight);
 
                      begin
                         glBegin(GL_QUADS);

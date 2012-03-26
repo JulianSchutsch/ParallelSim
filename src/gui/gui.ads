@@ -94,8 +94,11 @@ package GUI is
       Bounds : Bounds_Type);
 
    procedure SetAnchors
-     (Canvas  : Canvas_ClassAccess;
-      Anchors : Anchors_Type);
+     (Canvas : Canvas_ClassAccess;
+      Top    : Boolean;
+      Left   : Boolean;
+      Right  : Boolean;
+      Bottom : Boolean);
 
    procedure NewCanvas
      (Context : in out Context_Type;

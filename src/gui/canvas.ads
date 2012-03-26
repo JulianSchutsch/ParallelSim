@@ -36,12 +36,28 @@ package Canvas is
 
    type BasicCanvas_Type is tagged
       record
-         Image    : Image_Access := null;
-         Modified : Boolean      := True;
+         Image         : Image_Access := null;
+         Modified      : Boolean      := True;
+         ContentHeight : Natural;
+         ContentWidth  : Natural;
       end record;
 
    procedure Clear
      (Canvas : in out BasicCanvas_Type;
+      Color  : Color_Type);
+
+   procedure VertLine
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Height : Integer;
+      Color  : Color_Type);
+
+   procedure HorzLine
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Width  : Integer;
       Color  : Color_Type);
 
 end Canvas;

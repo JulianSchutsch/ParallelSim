@@ -83,7 +83,7 @@ package body GUI is
 
       while CanvasCursor/=null loop
          RestoreAnchors
-           (Anchors => CanvasCursor.Anchors,
+           (Anchors      => CanvasCursor.Anchors,
             ClientBounds => CanvasCursor.Bounds,
             ParentBounds => Object.Bounds);
          CanvasCursor:=CanvasCursor.Next;
@@ -151,11 +151,19 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    procedure SetAnchors
-     (Canvas  : Canvas_ClassAccess;
-      Anchors : Anchors_Type) is
+     (Canvas : Canvas_ClassAccess;
+      Top    : Boolean;
+      Left   : Boolean;
+      Right  : Boolean;
+      Bottom : Boolean) is
+
    begin
 
-      Canvas.Anchors:=Anchors;
+      Canvas.Anchors.Top    := Top;
+      Canvas.Anchors.Left   := Left;
+      Canvas.Anchors.Right  := Right;
+      Canvas.Anchors.Bottom := Bottom;
+
       StoreAnchors
         (Anchors      => Canvas.Anchors,
          ClientBounds => Canvas.Bounds,
