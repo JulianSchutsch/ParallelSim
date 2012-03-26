@@ -47,15 +47,6 @@ package body GUI.Themes.YellowBlue.Window is
         (Item   => GUI.Window.Window_Access(NewWindow),
          Parent => Parent);
 
---      SetBounds
---        (Object => Object_ClassAccess(NewWindow),
---         Bounds =>
---           (Top     => 0,
---            Left    => 0,
---            Height  => 100,
---            Width   => 100,
---            Visible => True));
-
       NewWindow.Context.NewCanvas
         (Object => Object_ClassAccess(NewWindow),
          Height => 10,

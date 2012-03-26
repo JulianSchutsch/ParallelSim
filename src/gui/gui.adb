@@ -86,6 +86,7 @@ package body GUI is
            (Anchors => CanvasCursor.Anchors,
             ClientBounds => CanvasCursor.Bounds,
             ParentBounds => Object.Bounds);
+         CanvasCursor:=CanvasCursor.Next;
       end loop;
       ------------------------------------------------------------------------
 
