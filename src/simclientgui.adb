@@ -65,8 +65,8 @@ package body SimClientGUI is
         (Object => GUI.Object_ClassAccess(Window),
          Top    => True,
          Left   => True,
-         Right  => True,
-         Bottom => True);
+         Right  => False,
+         Bottom => False);
       Put("End of Simclientgui init");
       New_Line;
 

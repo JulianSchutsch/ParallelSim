@@ -39,20 +39,28 @@ package body GUI.OpenGL.Native is
    type Context_Access is access all Context_Type;
    type Context_Type is new GUI.OpenGL.Context_Type with
       record
-         WindowHandle       : Win32.HWND_Type  := 0;
-         DeviceContext      : Win32.HDC_Type   := 0;
-         RenderContext      : Win32.HGLRC_Type := 0;
-         NextContext        : Context_Access   := null;
-         LastContext        : Context_Access   := null;
-         DestroySignalSend  : Boolean          := False;
-         DoubleBuffered     : Boolean;
-         ContextInitialized : Boolean         :=False;
+         WindowHandle        : Win32.HWND_Type   := 0;
+         DeviceContext       : Win32.HDC_Type    := 0;
+         RenderContext       : Win32.HGLRC_Type  := 0;
+         NextContext         : Context_Access    := null;
+         LastContext         : Context_Access    := null;
+         DestroySignalSend   : Boolean           := False;
+         DoubleBuffered      : Boolean;
+         ContextInitialized  : Boolean           := False;
+         MouseButtonsPressed : MouseButton_Array := NoMouseButtons;
+         HasCapture          : Boolean           := False;
 
          CSTR_ClassName : Interfaces.C.Strings.chars_ptr
            := Interfaces.C.Strings.Null_Ptr;
          CSTR_Title     : Interfaces.C.Strings.chars_ptr
            := Interfaces.C.Strings.Null_Ptr;
       end record;
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => Context_Type,
+      Name   => Context_Access);
+
+   Contexts : Context_Access:=null;
 
    procedure Paint
      (Context : in out Context_Type) is
@@ -81,13 +89,57 @@ package body GUI.OpenGL.Native is
       end if;
 
    end Paint;
-
-   Contexts : Context_Access:=null;
    ---------------------------------------------------------------------------
 
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Context_Type,
-      Name   => Context_Access);
+   procedure MouseDown
+     (Context     : Context_Access;
+      MouseButton : MouseButton_Enum;
+      AbsX        : Integer;
+      AbsY        : Integer) is
+
+      Result : Win32.HWND_Type;
+      pragma Unreferenced(Result);
+
+   begin
+      if Context.MouseButtonsPressed=NoMouseButtons then
+         Put("Capture");
+         New_Line;
+         Context.HasCapture:=True;
+         Result:=Win32.User32.SetCapture(Context.WindowHandle);
+      end if;
+      Context.MouseButtonsPressed(MouseButton):=True;
+      GUI.MouseDown
+        (Context     => Context_ClassAccess(Context),
+         MouseButton => MouseButton,
+         AbsX        => AbsX,
+         AbsY        => AbsY);
+   end MouseDown;
+   ---------------------------------------------------------------------------
+
+   procedure MouseUp
+     (Context     : Context_Access;
+      MouseButton : MouseButton_Enum;
+      AbsX        : Integer;
+      AbsY        : Integer) is
+
+      Result : Win32.BOOL_Type;
+      pragma Unreferenced(Result);
+
+   begin
+      Context.MouseButtonsPressed(MouseButton):=False;
+      if Context.MouseButtonsPressed=NoMouseButtons then
+         Put("RELEASE Capture");
+         New_Line;
+         Result:=Win32.User32.ReleaseCapture;
+         Context.HasCapture:=False;
+      end if;
+      GUI.MouseUp
+        (Context     => Context_ClassAccess(Context),
+         MouseButton => MouseButton,
+         AbsX        => AbsX,
+         AbsY        => AbsY);
+   end MouseUp;
+   ---------------------------------------------------------------------------
 
    function WndProc
      (hWnd   : Win32.HWND_Type;
@@ -186,12 +238,22 @@ package body GUI.OpenGL.Native is
                wParam => wParam,
                lParam => lParam);
          when Win32.WM_LBUTTONDOWN =>
+            MouseDown
+              (Context     => Context,
+               MouseButton => LeftButton,
+               AbsX        => Win32.GET_X_LPARAM(lParam),
+               AbsY        => Win32.GET_Y_LPARAM(lParam));
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,
                uMsg => uMsg,
                wParam => wParam,
                lParam => lParam);
          when Win32.WM_LBUTTONUP =>
+            MouseUp
+              (Context     => Context,
+               MouseButton => LeftButton,
+               AbsX        => Win32.GET_X_LPARAM(lParam),
+               AbsY        => Win32.GET_Y_LPARAM(lParam));
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,
                uMsg => uMsg,

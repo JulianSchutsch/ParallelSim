@@ -130,16 +130,18 @@ package body GUI.OpenGL is
 
          p := Object;
 
+         ObjectLoop:
          while p/=null loop
 
             case p.Render is
 
                when RenderCanvasse =>
 
-                  ObjectAbsBounds:=p.AbsBounds;
+                  ObjectAbsBounds:=p.Priv.AbsBounds;
 
-                  CanvasCursor:=Canvas_Access(p.Canvasse);
+                  CanvasCursor:=Canvas_Access(p.Priv.Canvasse);
 
+                  CanvasLoop:
                   while CanvasCursor/=null loop
 
                      glBindTexture
@@ -149,10 +151,8 @@ package body GUI.OpenGL is
                      if CanvasCursor.Modified then
 
                         CanvasCursor.Modified:=False;
---                        Put("Upload");
---                        New_Line;
---                        Put(Integer(CanvasCursor.Image(0,0)));
 
+                        -- TODO: Replace by SubTexImage
                         glTexImage2D
                           (target => GL_TEXTURE_2D,
                            level  => 0,
@@ -217,31 +217,35 @@ package body GUI.OpenGL is
 
                      CanvasCursor:=Canvas_Access(CanvasCursor.Next);
 
-                  end loop;
+                  end loop CanvasLoop;
+                  ------------------------------------------------------------
 
                when RenderCustom =>
                   null;
+                  ------------------------------------------------------------
 
             end case;
 
-            if p.LastChild/=null then
+            if p.Priv.LastChild/=null then
 
-               p:=p.LastChild;
+               p:=p.Priv.LastChild;
 
             else
 
-               while (p/=null) and then (p.Next/=null) loop
-                  p:=p.Parent;
+               while (p/=null) and then (p.Priv.Next/=null) loop
+                  p:=p.Priv.Parent;
                end loop;
 
                if p/=null then
-                  p:=p.Next;
+                  p:=p.Priv.Next;
                end if;
 
             end if;
-         end loop;
+
+         end loop ObjectLoop;
 
       end ProcessTree;
+      ------------------------------------------------------------------------
 
    begin
       if (Context.Bounds.Width<=0)

@@ -154,4 +154,13 @@ package Win32.User32 is
       return LRESULT_Type;
    pragma Import(StdCall,DispatchMessage,"DispatchMessageA");
 
+   function SetCapture
+     (hWnd : HWND_Type)
+      return HWND_Type;
+   pragma Import(StdCall,SetCapture,"SetCapture");
+
+   function ReleaseCapture
+     return BOOL_Type;
+   pragma Import(StdCall,ReleaseCapture,"ReleaseCapture");
+
 end Win32.User32;
