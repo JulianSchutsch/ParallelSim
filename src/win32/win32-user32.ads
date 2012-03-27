@@ -163,4 +163,12 @@ package Win32.User32 is
      return BOOL_Type;
    pragma Import(StdCall,ReleaseCapture,"ReleaseCapture");
 
+   function SetTimer
+     (hwnd        : HWND_Type;
+      nIDEvent    : UINT_PTR_Type;
+      uElapse     : UINT_Type;
+      lpTimerFunc : System.Address)
+     return UINT_PTR_Type;
+   pragma Import(StdCall,SetTimer,"SetTimer");
+
 end Win32.User32;

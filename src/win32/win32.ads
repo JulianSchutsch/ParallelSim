@@ -95,8 +95,8 @@ package Win32 is
    WM_RBUTTONDBLCLK : constant:=518;
    WM_LBUTTONDOWN   : constant:=513;
    WM_LBUTTONUP     : constant:=514;
-   WM_RBUTTONDOWN   : constant:=517;
-   WM_RBUTTONUP     : constant:=516;
+   WM_RBUTTONDOWN   : constant:=516;
+   WM_RBUTTONUP     : constant:=517;
    WM_MOUSEMOVE     : constant:=512;
    WM_DESTROY       : constant:=2;
    WM_ERASEBKGND    : constant:=20;
@@ -174,43 +174,43 @@ package Win32 is
 
    type MSG_Type is
       record
-         hwnd : HWND_Type;
+         hwnd    : HWND_Type;
          message : UINT_Type;
-         wParam : UINT_Type;
-         lParam : UINT_Type;
-         time : DWORD_Type;
-         pt : POINT_Type;
+         wParam  : UINT_Type;
+         lParam  : UINT_Type;
+         time    : DWORD_Type;
+         pt      : POINT_Type;
       end record;
    pragma Convention(C,MSG_Type);
 
    type PIXELFORMATDESCRIPTOR_Type is
       record
-         nSize           : WORD_Type:=0;
-         nVersion        : WORD_Type:=0;
-         dwFlags         : DWORD_Type:=0;
-         iPixelType      : BYTE_Type:=0;
-         cColorBits      : BYTE_Type:=0;
-         cRedBits        : BYTE_Type:=0;
-         cRedShift       : BYTE_Type:=0;
-         cGreenBits      : BYTE_Type:=0;
-         cGreenShift     : BYTE_Type:=0;
-         cBlueBits       : BYTE_Type:=0;
-         cBlueShift      : BYTE_Type:=0;
-         cAlphaBits      : BYTE_Type:=0;
-         cAlphaShift     : BYTE_Type:=0;
-         cAccumBits      : BYTE_Type:=0;
-         cAccumRedBits   : BYTE_Type:=0;
-         cAccumGreenBits : BYTE_Type:=0;
-         cAccumBlueBits  : BYTE_Type:=0;
-         cAccumAlphaBits : BYTE_Type:=0;
-         cDepthBits      : BYTE_Type:=0;
-         cStencilBits    : BYTE_Type:=0;
-         cAuxBuffers     : BYTE_Type:=0;
-         iLayerType      : BYTE_Type:=0;
-         bReserved       : BYTE_Type:=0;
-         dwLayerMask     : DWORD_Type:=0;
-         dwVisibleMask   : DWORD_Type:=0;
-         dwDamageMask    : DWORD_Type:=0;
+         nSize           : WORD_Type  := 0;
+         nVersion        : WORD_Type  := 0;
+         dwFlags         : DWORD_Type := 0;
+         iPixelType      : BYTE_Type  := 0;
+         cColorBits      : BYTE_Type  := 0;
+         cRedBits        : BYTE_Type  := 0;
+         cRedShift       : BYTE_Type  := 0;
+         cGreenBits      : BYTE_Type  := 0;
+         cGreenShift     : BYTE_Type  := 0;
+         cBlueBits       : BYTE_Type  := 0;
+         cBlueShift      : BYTE_Type  := 0;
+         cAlphaBits      : BYTE_Type  := 0;
+         cAlphaShift     : BYTE_Type  := 0;
+         cAccumBits      : BYTE_Type  := 0;
+         cAccumRedBits   : BYTE_Type  := 0;
+         cAccumGreenBits : BYTE_Type  := 0;
+         cAccumBlueBits  : BYTE_Type  := 0;
+         cAccumAlphaBits : BYTE_Type  := 0;
+         cDepthBits      : BYTE_Type  := 0;
+         cStencilBits    : BYTE_Type  := 0;
+         cAuxBuffers     : BYTE_Type  := 0;
+         iLayerType      : BYTE_Type  := 0;
+         bReserved       : BYTE_Type  := 0;
+         dwLayerMask     : DWORD_Type := 0;
+         dwVisibleMask   : DWORD_Type := 0;
+         dwDamageMask    : DWORD_Type := 0;
       end record;
    pragma Convention(C,PIXELFORMATDESCRIPTOR_Type);
 

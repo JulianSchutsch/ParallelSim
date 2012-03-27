@@ -21,6 +21,30 @@
 --   11.Mar 2012 Julian Schutsch
 --     - Original version
 
+-- Reason for implementation
+--   Provide a basis for a simple GUI framework solving essential tasks as
+--   nested rectangle(object) management, mouse and keyboard signal delievery
+--   and canvasse.
+--   Actual implementation is part of child packages.
+
+-- Usage
+--   Objects in this package should be treated as abstract.
+--   Before usage, a context implementation must be selected using the
+--   Implementations sub-package.
+--   With the implementation a new (render) context can be created.
+--
+--   Each context has three root objects:
+--     * WindowArea   : For ordinary objects, lowest layer
+--     * ModalArea    : Similar to WindowArea, but blocks all signals if
+--                      activated
+--     * ContextArea  : Highest layer for special context specific tasks
+--                      like for example context menus or combo box
+--                      lists.
+--   Objects are a combination of a basic functionality and a theme.
+--   To actually create an object a theme has to be selected in GUI.Themes.
+--   As a parent any of the three root objects or any other object can be
+--   chosen.
+
 pragma Ada_2005;
 
 with BoundsCalc; use BoundsCalc;
@@ -65,12 +89,26 @@ package GUI is
          Priv           : Object_Private;
       end record;
 
-   procedure Initialize
-     (Item   : Object_Access;
-      Parent : Object_ClassAccess);
-
    procedure Finalize
      (Item   : access Object_Type);
+
+   procedure MouseDown
+     (Item   : access Object_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer;
+      Taken  : out Boolean);
+
+   procedure MouseUp
+     (Item   : access Object_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer) is null;
+
+   procedure MouseMove
+     (Item   : access Object_Type;
+      X      : Integer;
+      Y      : Integer) is null;
 
    procedure SetBounds
      (Object : Object_ClassAccess;
@@ -86,7 +124,6 @@ package GUI is
       Left   : Boolean;
       Right  : Boolean;
       Bottom : Boolean);
-
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is
@@ -96,13 +133,14 @@ package GUI is
 
    type Context_Type is tagged
       record
-         CallBackObject  : AnyObject_ClassAccess := null;
-         OnClose         : OnCloseContext_Access := null;
-         WindowArea      : Object_ClassAccess    := null;
-         ModalArea       : Object_ClassAccess    := null;
-         ContextMenuArea : Object_ClassAccess    := null;
+         CallBackObject : AnyObject_ClassAccess := null;
+         OnClose        : OnCloseContext_Access := null;
+         WindowArea     : Object_ClassAccess    := null;
+         ModalArea      : Object_ClassAccess    := null;
+         ContextArea    : Object_ClassAccess    := null;
          -- Read only
          Bounds         : Bounds_Type;
+         Priv           : Context_Private;
       end record;
 
    type Canvas_Type is new Canvas.BasicCanvas_Type with private;
@@ -155,8 +193,13 @@ private
 
    type Context_Private is
       record
-         MouseButtonsPressed : MouseButton_Array:=NoMouseButtons;
+         MouseButtonsPressed : MouseButton_Array  := NoMouseButtons;
+         MouseSelection      : Object_ClassAccess := null;
       end record;
+
+   procedure Initialize
+     (Item   : Object_Access;
+      Parent : Object_ClassAccess);
 
    procedure Resize
      (Context : Context_ClassAccess;

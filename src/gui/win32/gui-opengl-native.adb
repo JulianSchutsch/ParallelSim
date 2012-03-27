@@ -194,7 +194,19 @@ package body GUI.OpenGL.Native is
          when Win32.WM_CREATE =>
             Put("WM_CREATE");
             New_Line;
-            -- TODO: Initialize Timer
+            declare
+               Result : Win32.UINT_PTR_Type;
+               pragma Unreferenced(Result);
+               -- TODO: Maybe you should check this result, but a way
+               --       to propagate the error to NewContext is required first.
+            begin
+               Result:=Win32.User32.SetTimer
+                 (hwnd        => hwnd,
+                  nIDEvent    => 1,
+                  uElapse     => 10,
+                  lpTimerFunc => System.Null_Address);
+            end;
+
             declare
                function ConvertLParamToCREATESTRUCTPtr is
                  new Ada.Unchecked_Conversion
@@ -237,6 +249,7 @@ package body GUI.OpenGL.Native is
                uMsg => uMsg,
                wParam => wParam,
                lParam => lParam);
+
          when Win32.WM_LBUTTONDOWN =>
             MouseDown
               (Context     => Context,
@@ -248,6 +261,7 @@ package body GUI.OpenGL.Native is
                uMsg => uMsg,
                wParam => wParam,
                lParam => lParam);
+
          when Win32.WM_LBUTTONUP =>
             MouseUp
               (Context     => Context,
@@ -259,24 +273,42 @@ package body GUI.OpenGL.Native is
                uMsg => uMsg,
                wParam => wParam,
                lParam => lParam);
+
          when Win32.WM_RBUTTONDOWN =>
+            MouseDown
+              (Context     => Context,
+               MouseButton => RightButton,
+               AbsX        => Win32.GET_X_LPARAM(lParam),
+               AbsY        => Win32.GET_Y_LPARAM(lParam));
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,
                uMsg => uMsg,
                wParam => wParam,
                lParam => lParam);
+
          when Win32.WM_RBUTTONUP =>
+            Put("RUP");
+            MouseUp
+              (Context     => Context,
+               MouseButton => RightButton,
+               AbsX        => Win32.GET_X_LPARAM(lParam),
+               AbsY        => Win32.GET_Y_LPARAM(lParam));
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,
                uMsg => uMsg,
                wParam => wParam,
                lParam => lParam);
---         when Win32.WM_MOUSEMOVE =>
---            return Win32.User32.DefWindowProc
---              (hWnd => hWnd,
---               uMsg => uMsg,
---               wParam => wParam,
---               lParam => lParam);
+
+         when Win32.WM_MOUSEMOVE =>
+            MouseMove
+              (Context     => Context_ClassAccess(Context),
+               AbsX        => Win32.GET_X_LPARAM(lParam),
+               AbsY        => Win32.GET_Y_LPARAM(lParam));
+            return Win32.User32.DefWindowProc
+              (hWnd => hWnd,
+               uMsg => uMsg,
+               wParam => wParam,
+               lParam => lParam);
          when Win32.WM_DESTROY =>
             Put("WM_DESTROY");
             New_Line;
@@ -292,10 +324,11 @@ package body GUI.OpenGL.Native is
             end;
             Context.DestroySignalSend:=True;
             return 0;
---         when Win32.WM_TIMER =>
---            return 0;
---         when Win32.WM_ERASEBKGND =>
---            return 1;
+         when Win32.WM_TIMER =>
+            Paint(Context.all);
+            return 0;
+         when Win32.WM_ERASEBKGND =>
+            return 1;
          when Win32.WM_KEYDOWN =>
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,

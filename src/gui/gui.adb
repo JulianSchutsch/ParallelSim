@@ -21,7 +21,6 @@ pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body GUI is
 
@@ -35,21 +34,135 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    procedure MouseDown
+     (Item   : access Object_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer;
+      Taken  : out Boolean) is
+
+      pragma Unreferenced(Item);
+      pragma Unreferenced(Button);
+      pragma Unreferenced(X);
+      pragma Unreferenced(Y);
+
+   begin
+      Put("Standard Mouse Down");
+      New_Line;
+      Taken:=False;
+   end MouseDown;
+   ---------------------------------------------------------------------------
+
+   -- Global Mousedown procedure which either delivers the mouse signal to a
+   -- previously selected object (mouse select) or finds a candidate to be
+   -- selected.
+   procedure MouseDown
      (Context     : Context_ClassAccess;
       MouseButton : MouseButton_Enum;
       AbsX        : Integer;
       AbsY        : Integer) is
-      pragma Unreferenced(Context);
+
+      function SubMouseDown
+        (Object : Object_ClassAccess)
+         return Boolean is
+
+         ObjectCursor    : Object_ClassAccess;
+         MouseEventTaken : Boolean;
+
+      begin
+
+         if TestInsideAbsBounds
+           (AbsBounds => Object.Priv.AbsBounds,
+            AbsX      => AbsX,
+            AbsY      => AbsY) then
+
+            -- Test if any nested object wants the mouse signal
+            ObjectCursor:=Object.Priv.FirstChild;
+
+            while ObjectCursor/=null loop
+               if SubMouseDown(ObjectCursor) then
+                  return True;
+               end if;
+               ObjectCursor:=ObjectCursor.Priv.Next;
+            end loop;
+
+            -- Test if this object wants the mouse signal
+            declare
+               Bounds : AbsBounds_Type renames
+                 Object.Priv.AbsBounds;
+            begin
+               Object.MouseDown
+                 (Button => MouseButton,
+                  X      => AbsX-Bounds.AbsLeft+Bounds.AbsSubLeft,
+                  Y      => AbsY-Bounds.AbsTop+Bounds.AbsSubTop,
+                  Taken  => MouseEventTaken);
+            end;
+
+            if MouseEventTaken then
+
+               Context.Priv.MouseSelection := Object;
+               return True;
+
+            end if;
+
+         end if;
+
+         return False;
+
+      end SubMouseDown;
+      ------------------------------------------------------------------------
+
    begin
+
       case MouseButton is
          when LeftButton =>
             Put("Left");
          when RightButton =>
             Put("Right");
       end case;
-      Put(AbsX);
-      Put(AbsY);
-      New_Line;
+
+      if Context.Priv.MouseButtonsPressed=NoMouseButtons then
+
+         Context.Priv.MouseSelection:=null;
+
+         declare
+            Result : Boolean;
+            pragma Unreferenced(Result);
+         begin
+            if not SubMouseDown(Context.ContextArea) then
+               if not SubMouseDown(Context.ModalArea) then
+                  Result:=SubMouseDown(Context.WindowArea);
+               end if;
+            end if;
+         end;
+
+      else
+
+         if Context.Priv.MouseSelection/=null then
+
+            declare
+               MouseEventTaken : Boolean;
+               pragma Unreferenced(MouseEventTaken);
+            begin
+
+               declare
+                  Bounds : AbsBounds_Type renames
+                    Context.Priv.MouseSelection.Priv.AbsBounds;
+               begin
+                  Context.Priv.MouseSelection.MouseDown
+                    (Button => MouseButton,
+                     X      => AbsX-Bounds.AbsLeft+Bounds.AbsSubLeft,
+                     Y      => AbsY-Bounds.AbsTop+Bounds.AbsSubTop,
+                     Taken  => MouseEventTaken);
+               end;
+
+            end;
+
+         end if;
+
+      end if;
+
+      Context.Priv.MouseButtonsPressed(MouseButton):=True;
+
    end MouseDown;
    ---------------------------------------------------------------------------
 
@@ -58,8 +171,27 @@ package body GUI is
       MouseButton : MouseButton_Enum;
       AbsX        : Integer;
       AbsY        : Integer) is
+
    begin
-      null;
+
+      if Context.Priv.MouseSelection/=null then
+
+         declare
+            Bounds : AbsBounds_Type renames
+              Context.Priv.MouseSelection.Priv.AbsBounds;
+         begin
+            Context.Priv.MouseSelection.MouseUp
+              (Button => MouseButton,
+               X      => AbsX-Bounds.AbsLeft+Bounds.AbsSubLeft,
+               Y      => AbsY-Bounds.AbsTop+Bounds.AbsSubTop);
+         end;
+      end if;
+
+      Context.Priv.MouseButtonsPressed(MouseButton):=False;
+      if Context.Priv.MouseButtonsPressed=NoMouseButtons then
+         Context.Priv.MouseSelection:=null;
+      end if;
+
    end MouseUp;
    ---------------------------------------------------------------------------
 
@@ -68,7 +200,20 @@ package body GUI is
       AbsX    : Integer;
       AbsY    : Integer) is
    begin
-      null;
+
+      if Context.Priv.MouseSelection/=null then
+
+         declare
+            Bounds : AbsBounds_Type renames
+              Context.Priv.MouseSelection.Priv.AbsBounds;
+         begin
+            Context.Priv.MouseSelection.MouseMove
+              (X => AbsX-Bounds.AbsLeft+Bounds.AbsSubLeft,
+               Y => AbsY-Bounds.AbsTop+Bounds.AbsSubTop);
+         end;
+
+      end if;
+
    end MouseMove;
    ---------------------------------------------------------------------------
 
@@ -168,9 +313,9 @@ package body GUI is
            (Object => Context.ModalArea,
             Bounds => Context.Bounds);
       end if;
-      if Context.ContextMenuArea/=null then
+      if Context.ContextArea/=null then
          SetBounds
-           (Object => Context.ContextMenuArea,
+           (Object => Context.ContextArea,
             Bounds => Context.Bounds);
       end if;
    end Resize;
@@ -352,12 +497,12 @@ package body GUI is
       Put("Init Context Basics");
       New_Line;
       -- TODO: Use specialized objects
-      Context.WindowArea      := new Object_Type;
-      Context.ModalArea       := new Object_Type;
-      Context.ContextMenuArea := new Object_Type;
-      Context.WindowArea.Context      := Context;
-      Context.ModalArea.Context       := Context;
-      Context.ContextMenuArea.Context := Context;
+      Context.WindowArea          := new Object_Type;
+      Context.ModalArea           := new Object_Type;
+      Context.ContextArea         := new Object_Type;
+      Context.WindowArea.Context  := Context;
+      Context.ModalArea.Context   := Context;
+      Context.ContextArea.Context := Context;
       Resize
         (Context => Context,
          Height  => Context.Bounds.Height,
@@ -372,7 +517,7 @@ package body GUI is
       New_Line;
       Context.WindowArea.Finalize;
       Context.ModalArea.Finalize;
-      Context.ContextMenuArea.Finalize;
+      Context.ContextArea.Finalize;
    end;
    ---------------------------------------------------------------------------
 

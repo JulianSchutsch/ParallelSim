@@ -25,11 +25,19 @@ pragma Ada_2005;
 
 package GUI.Window is
 
-   type Window_Type is new Object_Type with
-      record
-         null;
-      end record;
+   type WindowChangeMode_Enum is
+     (WindowChangeModeNothing,
+      WindowChangeModeMove,
+      WindowChangeModeSizeTopLeft,
+      WindowChangeModeSizeTop,
+      WindowChangeModeSizeTopRight,
+      WindowChangeModeSizeLeft,
+      WindowChangeModeSizeRight,
+      WindowChangeModeSizeBottomLeft,
+      WindowChangeModeSizeBottom,
+      WindowChangeModeSizeBottomRight);
 
+   type Window_Type is new Object_Type with private;
    type Window_Access is access all Window_Type;
    type Window_ClassAccess is access all Window_Type'Class;
 
@@ -45,5 +53,30 @@ package GUI.Window is
    overriding
    procedure Finalize
      (Item : access Window_Type);
+
+   procedure StartChange
+     (Window : access Window_Type;
+      Refx   : Integer;
+      Refy   : Integer;
+      Mode   : WindowChangeMode_Enum);
+
+   procedure ApplyChange
+     (Window : access Window_Type;
+      RefX   : Integer;
+      RefY   : Integer);
+
+   procedure StopChange
+     (Window : access Window_Type);
+
+private
+
+   type Window_Type is new Object_Type with
+      record
+         RefX      : Integer;
+         RefY      : Integer;
+         RefHeight : Integer;
+         RefWidth  : Integer;
+         Mode      : WindowChangeMode_Enum:=WindowChangeModeNothing;
+      end record;
 
 end GUI.Window;

@@ -24,6 +24,23 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body BoundsCalc is
 
+   function TestInsideAbsBounds
+     (AbsBounds : AbsBounds_Type;
+      AbsX      : Integer;
+      AbsY      : Integer)
+      return Boolean is
+   begin
+
+      return
+        AbsBounds.AbsVisible
+        and (AbsY>=AbsBounds.AbsTop)
+        and (AbsY<AbsBounds.AbsTop+AbsBounds.AbsHeight)
+        and (AbsX>=AbsBounds.AbsLeft)
+        and (AbsX<AbsBounds.AbsLeft+AbsBounds.AbsWidth);
+
+   end TestInsideAbsBounds;
+   ---------------------------------------------------------------------------
+
    procedure Put
      (Item : Anchors_Type) is
    begin

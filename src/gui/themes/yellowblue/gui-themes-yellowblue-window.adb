@@ -19,6 +19,8 @@
 
 pragma Ada_2005;
 
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body GUI.Themes.YellowBlue.Window is
 
    TitleBarHeight   : constant Integer := 24;
@@ -46,6 +48,181 @@ package body GUI.Themes.YellowBlue.Window is
          ClientArea        : GUI.Canvas_ClassAccess;
       end record;
    type Window_Access is access all Window_Type;
+
+   overriding
+   procedure MouseDown
+     (Item   : access Window_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer;
+      Taken  : out Boolean);
+
+   overriding
+   procedure MouseUp
+     (Item   : access Window_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer);
+
+   overriding
+   procedure MouseMove
+     (Item : access Window_Type;
+      X    : Integer;
+      Y    : Integer);
+
+   procedure MouseDown
+     (Item   : access Window_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer;
+      Taken  : out Boolean) is
+
+   begin
+      Put("MouseDown:WINDOW**************");
+      New_Line;
+      Taken:=True;
+
+      If Button=LeftButton then
+
+         if Y<BorderWidth then
+
+            if X<CornerSize then
+               Item.StartChange
+                 (RefX => X,
+                  RefY => Y,
+                  Mode => GUI.Window.WindowChangeModeSizeTopLeft);
+               return;
+            end if;
+
+            if X>=Item.Priv.Bounds.Width-CornerSize then
+               Item.StartChange
+                 (RefX => X,
+                  RefY => Y,
+                  Mode => GUI.Window.WindowChangeModeSizeTopRight);
+               return;
+            end if;
+
+            Item.StartChange
+              (RefX => X,
+               RefY => Y,
+               Mode => GUI.Window.WindowChangeModeSizeTop);
+            return;
+
+         end if;
+
+         if Y>=Item.Priv.Bounds.Height-BorderWidth then
+
+            if X<CornerSize then
+               Item.StartChange
+                 (Refx => X,
+                  Refy => Y,
+                  Mode => GUI.Window.WindowChangeModeSizeBottomLeft);
+               return;
+            end if;
+
+            if X>=Item.Priv.Bounds.Width-CornerSize then
+               Item.StartChange
+                 (Refx => X,
+                  Refy => Y,
+                  Mode => GUI.Window.WindowChangeModeSizeBottomRight);
+               return;
+            end if;
+
+            Item.StartChange
+              (RefX => X,
+               RefY => Y,
+               Mode => GUI.Window.WindowChangeModeSizeBottom);
+            return;
+
+         end if;
+
+         if X<BorderWidth then
+
+            if Y<CornerSize then
+               Item.StartChange
+                 (Refx => X,
+                  Refy => Y,
+                  Mode => GUI.Window.WindowChangeModeSizeTopLeft);
+               return;
+            end if;
+
+            if Y>=Item.Priv.Bounds.Height-CornerSize then
+               Item.StartChange
+                 (Refx => X,
+                  Refy => Y,
+                  Mode => GUI.Window.WindowChangeModeSizeBottomLeft);
+               return;
+            end if;
+
+            Item.StartChange
+              (RefX => X,
+               RefY => Y,
+               Mode => GUI.Window.WindowChangeModeSizeLeft);
+            return;
+
+         end if;
+
+         if X>=Item.Priv.Bounds.Width-BorderWidth then
+
+            if Y<CornerSize then
+               Item.StartChange
+                 (Refx => X,
+                  Refy => Y,
+                  Mode => GUI.Window.WindowChangeModeSizeTopRight);
+               return;
+            end if;
+
+            if Y>=Item.Priv.Bounds.Height-CornerSize then
+               Item.StartChange
+                 (Refx => X,
+                  Refy => Y,
+                  Mode => GUI.Window.WindowChangeModeSizeBottomRight);
+            end if;
+
+            Item.StartChange
+              (RefX => X,
+               RefY => Y,
+               Mode => GUI.Window.WindowChangeModeSizeRight);
+            return;
+
+         end if;
+
+         if Y<BorderWidth+TitleBarHeight then
+            Item.StartChange
+              (Refx => X,
+               Refy => Y,
+               Mode => GUI.Window.WindowChangeModeMove);
+         end if;
+
+      end if;
+
+   end MouseDown;
+   ---------------------------------------------------------------------------
+
+   procedure MouseUp
+     (Item   : access Window_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer) is
+      pragma Unreferenced(Button);
+   begin
+      Item.ApplyChange
+        (Refx => X,
+         Refy => Y);
+      Item.StopChange;
+   end MouseUp;
+   ---------------------------------------------------------------------------
+
+   procedure MouseMove
+     (Item : access Window_Type;
+      X    : Integer;
+      Y    : Integer) is
+   begin
+      Item.ApplyChange
+        (Refx => X,
+         Refy => Y);
+   end MouseMove;
+   ---------------------------------------------------------------------------
 
    function NewWindow
      (Parent : Object_ClassAccess)

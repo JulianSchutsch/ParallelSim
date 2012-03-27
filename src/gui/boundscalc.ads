@@ -165,6 +165,12 @@ package BoundsCalc is
       ClientBounds : in out Bounds_Type;
       ParentBounds : Bounds_Type);
 
+   function TestInsideAbsBounds
+     (AbsBounds : AbsBounds_Type;
+      AbsX      : Integer;
+      AbsY      : Integer)
+      return Boolean;
+
    procedure Put
      (Item : Bounds_Type);
 

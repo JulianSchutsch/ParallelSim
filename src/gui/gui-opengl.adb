@@ -291,7 +291,7 @@ package body GUI.OpenGL is
 
       ProcessTree(Context.WindowArea);
       ProcessTree(Context.ModalArea);
-      ProcessTree(Context.ContextMenuArea);
+      ProcessTree(Context.ContextArea);
       Standard.OpenGL.AssertError;
    end Paint;
    ---------------------------------------------------------------------------
