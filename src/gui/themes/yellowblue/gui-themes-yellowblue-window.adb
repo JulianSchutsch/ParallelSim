@@ -611,6 +611,26 @@ package body GUI.Themes.YellowBlue.Window is
          Left   => True,
          Right  => True,
          Bottom => True);
+      ------------------------------------------------------------------------
+
+      NewWindow.Priv.TopHeightConstraint:=
+        (MinValueConstraint => ConstraintConstant,
+         MinValueConstant   => 0,
+         MaxValueConstraint => ConstraintUsingParentSize,
+         MaxValueConstant   => 10,
+         MinSizeConstraint  => ConstraintConstant,
+         MinSizeConstant    => 100,
+         MaxSizeConstraint  => ConstraintUsingParentSize,
+         MaxSizeConstant    => 0);
+      NewWindow.Priv.LeftWidthConstraint:=
+        (MinValueConstraint => ConstraintUsingSize,
+         MinValueConstant   => 10,
+         MaxValueConstraint => ConstraintUsingParentSize,
+         MaxValueConstant   => 10,
+         MinSizeConstraint  => ConstraintConstant,
+         MinSizeConstant    => 100,
+         MaxSizeConstraint  => ConstraintUsingParentSize,
+         MaxSizeConstant    => 0);
 
       return GUI.Window.Window_ClassAccess(NewWindow);
 
