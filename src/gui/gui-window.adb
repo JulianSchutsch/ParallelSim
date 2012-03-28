@@ -87,7 +87,7 @@ package body GUI.Window is
                  (Top     => Bounds.Top+RefY-Window.RefY,
                   Left    => Bounds.Left,
                   Height  => Bounds.Height-RefY+Window.RefY,
-                  Width   => Bounds.Width,
+                  Width   => Window.RefWidth+RefX-Window.RefX,
                   Visible => Bounds.Visible));
          when WindowChangeModeSizeLeft =>
             GUI.SetBounds
@@ -112,7 +112,7 @@ package body GUI.Window is
               (Object => Object_ClassAccess(Window),
                Bounds =>
                  (Top     => Bounds.Top,
-                  Left    => Bounds.Left+RefX+Window.RefX,
+                  Left    => Bounds.Left+RefX-Window.RefX,
                   Height  => Window.RefHeight+RefY-Window.RefY,
                   Width   => Bounds.Width-RefX+Window.RefX,
                   Visible => Bounds.Visible));
