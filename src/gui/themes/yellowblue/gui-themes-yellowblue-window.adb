@@ -177,6 +177,7 @@ package body GUI.Themes.YellowBlue.Window is
                  (Refx => X,
                   Refy => Y,
                   Mode => GUI.Window.WindowChangeModeSizeBottomRight);
+               return;
             end if;
 
             Item.StartChange
