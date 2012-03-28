@@ -63,6 +63,18 @@ package body GUI.OpenGL.Native is
 
       Event : aliased Xlib.XEvent_Type;
 
+      procedure Paint is
+      begin
+               GUI.OpenGL.Paint(GUI.OpenGL.Context_Type(Context.all));
+               if Context.DoubleBuffered then
+                  glX.glXSwapBuffers
+                    (dpy => Context.Display,
+                     drawable => glX.GLXDrawable_Type(Context.Window));
+               else
+                  glFinish;
+               end if;
+      end Paint;
+
    begin
       if glX.glxMakeCurrent
         (dpy      => Context.Display,
@@ -101,24 +113,45 @@ package body GUI.OpenGL.Native is
                end if;
 
             when Xlib.Expose =>
-
-               GUI.OpenGL.Paint(GUI.OpenGL.Context_Type(Context.all));
-               if Context.DoubleBuffered then
-                  glX.glXSwapBuffers
-                    (dpy => Context.Display,
-                     drawable => glX.GLXDrawable_Type(Context.Window));
-               else
-                  glFinish;
-               end if;
+               Paint;
 
             when Xlib.ButtonPress =>
-               null;
+               -- FAULT : Please may some guru explain to me why i have an
+               -- offset of two pixels in every window i create using xlib?
+               case Event.ButtonPress.button is
+                  when Xlib.Button1 =>
+                     MouseDown
+                       (Context     => Context_ClassAccess(Context),
+                        MouseButton => LeftButton,
+                        AbsX        => Integer(Event.ButtonPress.x),
+                        AbsY        => Integer(Event.ButtonPress.y-2));
+                  when Xlib.Button2 =>
+                     null;
+                  when others =>
+                     Put("Unknown Button pressed");
+                     Put(Integer(Event.ButtonPress.button));
+                     New_Line;
+               end case;
 
             when Xlib.ButtonRelease =>
-               null;
+               case Event.ButtonRelease.button is
+                  when Xlib.Button1 =>
+                     MouseUp
+                       (Context     => Context_ClassAccess(Context),
+                        MouseButton => LeftButton,
+                        AbsX        => Integer(Event.ButtonPress.x),
+                        AbsY        => Integer(Event.ButtonPress.y-2));
+                  when Xlib.Button2 =>
+                     null;
+                  when others =>
+                     null;
+               end case;
 
             when Xlib.MotionNotify =>
-               null;
+               MouseMove
+                 (Context => Context_ClassAccess(Context),
+                  AbsX    => Integer(Event.ButtonMotion.x),
+                  AbsY    => Integer(Event.ButtonMotion.y-2));
 
             when Xlib.KeyPress =>
                null;
@@ -155,6 +188,10 @@ package body GUI.OpenGL.Native is
          end case;
 
       end loop;
+
+      Put("Paint");
+      Paint;
+
    end Process;
    ---------------------------------------------------------------------------
 

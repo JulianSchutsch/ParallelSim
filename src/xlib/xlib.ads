@@ -65,6 +65,8 @@ package Xlib is
    type XrmDatabase_Type is null record;
    type XrmDatabase_Access is access all XrmDatabase_Type;
 
+   type Time_Type is new Interfaces.C.long;
+
    type XVisualInfo_Type is
       record
          visual        : Visual_Access;
@@ -167,7 +169,7 @@ package Xlib is
       record
          root        : Window_Type;
          subwindow   : Window_Type;
-         time        : Interfaces.Unsigned_32;
+         time        : Time_Type;
          x           : Interfaces.C.int;
          y           : Interfaces.C.int;
          x_root      : Interfaces.C.int;
@@ -182,7 +184,7 @@ package Xlib is
       record
          root        : Window_Type;
          subwindow   : Window_Type;
-         time        : Interfaces.Unsigned_32;
+         time        : Time_Type;
          x           : Interfaces.C.int;
          y           : Interfaces.C.int;
          x_root      : Interfaces.C.int;
@@ -197,7 +199,7 @@ package Xlib is
       record
          root        : Window_Type;
          subwindow   : Window_Type;
-         time        : Interfaces.Unsigned_32;
+         time        : Time_Type;
          x           : Interfaces.C.int;
          y           : Interfaces.C.int;
          x_root      : Interfaces.C.int;
@@ -232,7 +234,7 @@ package Xlib is
 
    type XResizeRequestEvent_Type is
       record
-         width : Interfaces.C.int;
+         width  : Interfaces.C.int;
          height : Interfaces.C.int;
       end record;
    pragma Convention(C,XResizeRequestEvent_Type);
@@ -252,7 +254,7 @@ package Xlib is
 
    ClientMessage   : constant:=33;
    Expose          : constant:=12;
-   ButtonPress     : constant:=14;
+   ButtonPress     : constant:=4;
    ButtonRelease   : constant:=5;
    MotionNotify    : constant:=6;
    KeyPress        : constant:=2;
@@ -260,6 +262,9 @@ package Xlib is
    ConfigureNotify : constant:=22;
    ResizeRequest   : constant:=25;
    ReparentNotify  : constant:=21;
+
+   Button1 : constant:=1;
+   Button2 : constant:=2;
 
    type XEvent_Type(EventType : EventType_Enum:=EventTypeUnknown) is
       record
