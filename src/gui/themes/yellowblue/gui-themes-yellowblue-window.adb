@@ -632,6 +632,32 @@ package body GUI.Themes.YellowBlue.Window is
          MinSizeConstant    => 100,
          MaxSizeConstraint  => ConstraintUsingParentSize,
          MaxSizeConstant    => 0);
+      ------------------------------------------------------------------------
+      declare
+         Client : GUI.Object_Access;
+      begin
+         Client:=new GUI.Object_Type;
+         GUI.Initialize
+           (Item   => Client,
+            Parent => Object_ClassAccess(NewWindow));
+         NewWindow.Client:=Object_ClassAccess(Client);
+      end;
+
+      GUI.SetBounds
+        (Object => NewWindow.Client,
+         Bounds =>
+           (Top     => TopBarHeight,
+            Left    => BorderWidth,
+            Height  => -TopBarHeight-BorderWidth,
+            Width   => -2*BorderWidth,
+            Visible => True));
+
+      GUI.SetAnchors
+        (Object => NewWindow.Client,
+         Top    => True,
+         Left   => True,
+         Right  => True,
+         Bottom => True);
 
       return GUI.Window.Window_ClassAccess(NewWindow);
 

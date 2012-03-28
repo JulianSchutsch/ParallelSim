@@ -120,6 +120,7 @@ package body GUI.OpenGL is
 
       procedure ProcessTree
         (Object : Object_ClassAccess) is
+
          p : Object_ClassAccess;
 
          ObjectAbsBounds : AbsBounds_Type;
@@ -232,12 +233,12 @@ package body GUI.OpenGL is
 
             else
 
-               while (p/=null) and then (p.Priv.Next/=null) loop
-                  p:=p.Priv.Parent;
+               while (p/=null) and then (p.Priv.Last=null) loop
+                  p := p.Priv.Parent;
                end loop;
 
                if p/=null then
-                  p:=p.Priv.Next;
+                  p:=p.Priv.Last;
                end if;
 
             end if;
@@ -288,6 +289,7 @@ package body GUI.OpenGL is
       glAlphaFunc
         (func => GL_GREATER,
          ref  => 0.1);
+      glEnable(GL_BLEND);
 
       ProcessTree(Context.WindowArea);
       ProcessTree(Context.ModalArea);

@@ -67,6 +67,26 @@ package body SimClientGUI is
          Left   => True,
          Right  => False,
          Bottom => False);
+
+      Put("Second Window");
+      New_Line;
+      Window:=ThemeImplementation.NewWindow
+        (Parent => GUI.Object_ClassAccess(Window));
+      GUI.SetBounds
+        (Object => GUI.Object_ClassAccess(Window),
+         Bounds =>
+           (Top     => 40,
+            Left    => 40,
+            Height  => 100,
+            Width   => 200,
+            Visible => True));
+      GUI.SetAnchors
+        (Object => GUI.Object_ClassAccess(Window),
+         Top    => True,
+         Left   => True,
+         Right  => False,
+         Bottom => False);
+
       Put("End of Simclientgui init");
       New_Line;
 

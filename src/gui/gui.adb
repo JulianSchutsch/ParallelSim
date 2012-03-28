@@ -440,27 +440,27 @@ package body GUI is
 
    begin
       Par := Parent;
+      if Par=null then
+         return;
+      end if;
+
       while Par.Client/=null loop
          Par:=Par.Client;
       end loop;
 
       Item.Priv.Parent:=Par;
 
-      if Par/=null then
+      Item.Context := Par.Context;
 
-         Item.Context := Par.Context;
+      Item.Priv.Next:=Par.Priv.FirstChild;
 
-         Item.Priv.Next:=Par.Priv.FirstChild;
-
-         if Item.Priv.Next/=null then
-            Item.Priv.Next.Priv.Last:=Object_ClassAccess(Item);
-         else
-            Par.Priv.LastChild:=Object_ClassAccess(Item);
-         end if;
-
-         Par.Priv.FirstChild:=Object_ClassAccess(Item);
-
+      if Item.Priv.Next/=null then
+         Item.Priv.Next.Priv.Last:=Object_ClassAccess(Item);
+      else
+         Par.Priv.LastChild:=Object_ClassAccess(Item);
       end if;
+
+      Par.Priv.FirstChild:=Object_ClassAccess(Item);
 
    end Initialize;
    ---------------------------------------------------------------------------
