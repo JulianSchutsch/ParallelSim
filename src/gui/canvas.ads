@@ -41,6 +41,19 @@ package Canvas is
          ContentHeight : Natural;
          ContentWidth  : Natural;
       end record;
+   type BasicCanvas_ClassAccess is access all BasicCanvas_Type'Class;
+
+   procedure GetPixel
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Color  : out Color_Type);
+
+   procedure SetPixel
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Color  : Color_Type);
 
    procedure Clear
      (Canvas : in out BasicCanvas_Type;

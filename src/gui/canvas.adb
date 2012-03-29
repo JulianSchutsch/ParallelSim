@@ -21,6 +21,36 @@ pragma Ada_2005;
 
 package body Canvas is
 
+   procedure GetPixel
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Color  : out Color_Type) is
+   begin
+      if (X in Canvas.Image'Range(1))
+        and (Y in Canvas.Image'Range(2)) then
+         Color:=Canvas.Image(X,Y);
+      else
+         Color:=0;
+      end if;
+   end;
+   ---------------------------------------------------------------------------
+
+   procedure SetPixel
+     (Canvas : in out BasicCanvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Color  : Color_Type) is
+   begin
+
+      if (X in Canvas.Image'Range(1))
+        and (Y in Canvas.Image'Range(2)) then
+         Canvas.Image(X,Y):=Color;
+      end if;
+
+   end SetPixel;
+   ---------------------------------------------------------------------------
+
    procedure Bar
      (Canvas : in out BasicCanvas_Type;
       X      : Integer;

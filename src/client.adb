@@ -6,14 +6,25 @@ with GUI.OpenGL;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with SimClientGUI;
 with GUI.Themes.YellowBlue;
+with Fonts;
+with Fonts.Freetype;
+with ExceptionOutput;
 
 procedure Client is
 
    Configuration  : Config.Config_Type;
+   MyFont : Fonts.Font_ClassAccess;
+   pragma Unreferenced(MyFont);
 
 begin
    GUI.OpenGL.Register;
    GUI.Themes.YellowBlue.Register;
+   Fonts.Freetype.Initialize;
+
+   MyFont:=Fonts.Lookup
+     (Name       => To_Unbounded_String("Vera"),
+      Size       => 16,
+      Attributes => Fonts.NoAttributes);
 
    Config.Insert
      (Container => Configuration,
@@ -33,5 +44,10 @@ begin
    end loop;
 
    SimClientGUI.Finalize;
+
+   Fonts.Freetype.Finalize;
+exception
+   when E:others =>
+      ExceptionOutput.Put(E);
 
 end Client;
