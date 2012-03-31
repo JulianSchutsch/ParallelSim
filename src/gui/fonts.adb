@@ -36,23 +36,23 @@ package body Fonts is
 
    type FontImplementation_Type is
       record
-         LookupFunction : LookupFunction_Access;
-         Next           : FontImplementation_Access;
-         Last           : FontImplementation_Access;
+         Load : Load_Access;
+         Next : FontImplementation_Access;
+         Last : FontImplementation_Access;
       end record;
 
    FontImplementations : FontImplementation_Access:=null;
    Fonts               : Font_ClassAccess:=null;
 
    procedure Register
-     (LookupFunction : LookupFunction_Access) is
+     (Load : Load_Access) is
 
       FontImplementation : FontImplementation_Access;
 
    begin
 
       FontImplementation:=new FontImplementation_Type;
-      FontImplementation.LookupFunction:=LookupFunction;
+      FontImplementation.Load:=Load;
       FontImplementation.Next:=FontImplementations;
       if FontImplementations/=null then
          FontImplementations.Last:=FontImplementation;
@@ -93,7 +93,7 @@ package body Fonts is
       Implementation:=FontImplementations;
       while Implementation/=null loop
 
-         Font:=Implementation.LookupFunction
+         Font:=Implementation.Load
            (Name       => Name,
             Size       => Size,
             Attributes => Attributes);

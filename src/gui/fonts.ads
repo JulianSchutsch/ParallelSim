@@ -61,7 +61,7 @@ package Fonts is
       Attributes : Attributes_Type)
       return Font_ClassAccess;
 
-   type LookupFunction_Access is
+   type Load_Access is
      access function
        (Name       : Unbounded_String;
         Size       : Natural;
@@ -69,7 +69,7 @@ package Fonts is
         return Font_ClassAccess;
 
    procedure Register
-     (LookupFunction : LookupFunction_Access);
+     (Load : Load_Access);
 
 private
 

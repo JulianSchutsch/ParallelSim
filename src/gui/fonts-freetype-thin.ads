@@ -127,4 +127,11 @@ package Fonts.Freetype.Thin is
       return FT_Error_Type;
    pragma Import(C,FT_New_Face,"FT_New_Face");
 
+   function FTC_Manager_LookupFace
+     (manager : FTC_Manager_Access;
+      face_id : FTC_FaceID_Type;
+      aface   : access FT_Face_Access)
+      return FT_Error_Type;
+   pragma Import(C,FTC_Manager_LookupFace,"FTC_Manager_LookupFace");
+
 end Fonts.Freetype.Thin;
