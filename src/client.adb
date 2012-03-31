@@ -22,7 +22,7 @@ begin
    Fonts.Freetype.Initialize;
 
    MyFont:=Fonts.Lookup
-     (Name       => To_Unbounded_String("Vera.ttf"),
+     (Name       => To_Unbounded_String("./Vera.ttf"),
       Size       => 16,
       Attributes => Fonts.NoAttributes);
 
