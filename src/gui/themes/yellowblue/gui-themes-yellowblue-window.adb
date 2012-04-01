@@ -20,6 +20,7 @@
 pragma Ada_2005;
 
 with Ada.Text_IO; use Ada.Text_IO;
+with Fonts;
 
 package body GUI.Themes.YellowBlue.Window is
 
@@ -46,6 +47,8 @@ package body GUI.Themes.YellowBlue.Window is
          BottomRightCorner : GUI.Canvas_ClassAccess;
          BottomBar         : GUI.Canvas_ClassAccess;
          ClientArea        : GUI.Canvas_ClassAccess;
+         TitleCanvas       : GUI.Canvas_ClassAccess;
+         Font              : Fonts.Font_ClassAccess;
       end record;
    type Window_Access is access all Window_Type;
 
@@ -237,6 +240,43 @@ package body GUI.Themes.YellowBlue.Window is
       GUI.Window.Initialize
         (Item   => GUI.Window.Window_Access(NewWindow),
          Parent => Parent);
+
+      NewWindow.Font:=Fonts.Lookup
+        (Name       => To_Unbounded_String("./Vera.ttf"),
+         Size       => 18,
+         Attributes => Fonts.NoAttributes);
+      ------------------------------------------------------------------------
+
+      NewWindow.Context.NewCanvas
+        (Object => Object_ClassAccess(NewWindow),
+         Height => 19,
+         Width  => 100,
+         Canvas => NewWindow.TitleCanvas);
+      NewWindow.TitleCanvas.Clear
+        (Color => 16#00000000#);
+
+      NewWindow.Font.TextOut
+        (Canvas => Canvas.BasicCanvas_ClassAccess(NewWindow.TitleCanvas),
+         X => 0,
+         Y => 0,
+         Text => To_Unbounded_String("Hallo"),
+         Color => 16#FFFFFFFF#);
+
+      GUI.SetBounds
+        (Canvas => NewWindow.TitleCanvas,
+         Bounds =>
+           (Top => 7,
+            Left => 7,
+            Height => 19,
+            Width => 100,
+            Visible => True));
+      GUI.SetAnchors
+        (Canvas => NewWIndow.TitleCanvas,
+         Top => False,
+         Left => False,
+         Right => False,
+         Bottom => False);
+      ------------------------------------------------------------------------
 
       NewWindow.Context.NewCanvas
         (Object => Object_ClassAccess(NewWindow),

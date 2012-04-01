@@ -81,4 +81,14 @@ package Canvas is
       Width  : Integer;
       Color  : Color_Type);
 
+   function MultiplyAlpha
+     (Color : Color_Type;
+      Alpha : Integer)
+      return Color_Type;
+
+   function PreBlendMix
+     (BackgroundColor : Color_Type;
+      ForegroundColor : Color_Type)
+      return Color_Type;
+
 end Canvas;

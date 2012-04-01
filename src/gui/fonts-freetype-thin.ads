@@ -26,6 +26,7 @@ pragma Ada_2005;
 with Interfaces.C;
 with Interfaces.C.Strings;
 with System;
+with Ada.Unchecked_Conversion;
 
 package Fonts.Freetype.Thin is
 
@@ -36,19 +37,86 @@ package Fonts.Freetype.Thin is
    type FT_ULong_Type is new Interfaces.C.unsigned_long;
    type FT_Long_Type is new Interfaces.C.long;
    type FT_Error_Type is new Interfaces.C.int;
+   type FT_UShort_Type is new Interfaces.C.unsigned_short;
+   type FT_Fixed_Type is new Interfaces.C.long;
+   type FT_Pos_Type is new Interfaces.C.long;
+   type FT_UInt32_Type is new Interfaces.Unsigned_32;
 
+   type FTC_Node_Opaque is null record;
+   type FTC_Node_Access is access FTC_Node_Opaque;
    type FTC_Manager_Opaque is null record;
-   type FTC_Manager_Access is access FTC_Manager_Opaque;
+   type FTC_Manager_Access is access all FTC_Manager_Opaque;
    type FTC_SBitCache_Opaque is null record;
-   type FTC_SBitCache_Access is access FTC_SBitCache_Opaque;
+   type FTC_SBitCache_Access is access all FTC_SBitCache_Opaque;
    type FTC_ImageCache_Opaque is null record;
-   type FTC_ImageCache_Access is access FTC_ImageCache_Opaque;
+   type FTC_ImageCache_Access is access all FTC_ImageCache_Opaque;
    type FTC_CMapCache_Opaque is null record;
-   type FTC_CMapCache_Access is access FTC_CMapCache_Opaque;
+   type FTC_CMapCache_Access is access all FTC_CMapCache_Opaque;
    subtype FT_Pointer_Type is System.Address;
    type FTC_FaceID_Type is new FT_Pointer_Type;
    type FT_Face_Opaque is null record;
-   type FT_Face_Access is access FT_Face_Opaque;
+   type FT_Face_Access is access all FT_Face_Opaque;
+   type FT_Generic_Finalizer_Access is
+     access procedure
+       (object : System.Address);
+   pragma Convention(C,FT_Generic_Finalizer_Access);
+   type FT_Glyph_Format_Type is new Interfaces.C.long;
+
+   type FT_Render_Mode_Enum is
+     (FT_RENDER_MODE_NORMAL,
+      FT_RENDER_MODE_LIGHT,
+      FT_RENDER_MODE_MONO,
+      FT_RENDER_MODE_LCD,
+      FT_RENDER_MODE_LCD_V,
+      FT_RENDER_MODE_MAX);
+   pragma Convention(C,FT_Render_Mode_Enum);
+
+   type FT_Vector_Type is
+      record
+         x : FT_Pos_Type;
+         y : FT_Pos_Type;
+      end record;
+   pragma Convention(C,FT_Vector_Type);
+
+   type FT_Glyph_Type is
+      record
+         library : FT_Library_Access;
+         clazz   : System.Address; -- FT_Glyph_Class not documented.
+         format  : FT_Glyph_Format_Type;
+         advance : FT_Vector_Type;
+      end record;
+   pragma Convention(C,FT_Glyph_Type);
+   type FT_Glyph_Access is access FT_Glyph_Type;
+
+   type FT_Generic_Type is
+      record
+         data      : System.Address;
+         finalizer : FT_Generic_Finalizer_Access;
+      end record;
+   pragma Convention(C,FT_Generic_Type);
+
+   type FT_Size_Metrics_Type is
+      record
+         x_ppem      : FT_UShort_Type;
+         y_ppem      : FT_UShort_Type;
+         x_scale     : FT_Fixed_Type;
+         y_scale     : FT_Fixed_Type;
+         ascender    : FT_Pos_Type;
+         descender   : FT_Pos_Type;
+         height      : FT_Pos_Type;
+         max_advance : FT_Pos_Type;
+      end record;
+   pragma Convention(C,FT_Size_Metrics_Type);
+
+   -- This type is incomplete on purpose. Internal stuff has been left out!
+   type FT_Size_Type is
+      record
+         face     : FT_Face_Access;
+         ggeneric : FT_Generic_Type;
+         metrics  : FT_Size_Metrics_Type;
+      end record;
+   pragma Convention(C,FT_Size_Type);
+   type FT_Size_Access is access all FT_Size_Type;
 
    type FTC_Face_Requester_Access is
      access function
@@ -59,7 +127,7 @@ package Fonts.Freetype.Thin is
         return FT_Error_Type;
    pragma Convention(C,FTC_Face_Requester_Access);
 
-   type FTC_ScalerRec is
+   type FTC_Scaler_Type is
       record
          face_id : FTC_FaceID_Type;
          width   : FT_UInt_Type;
@@ -68,7 +136,41 @@ package Fonts.Freetype.Thin is
          x_res   : FT_UInt_Type;
          y_res   : FT_UInt_Type;
       end record;
-   pragma Convention(C,FTC_ScalerRec);
+   pragma Convention(C,FTC_Scaler_Type);
+
+   type GrayValue_Type is new Interfaces.Unsigned_8;
+   type GrayValue_Access is access all GrayValue_Type;
+
+   function "+" (Left : GrayValue_Access; Right : Interfaces.C.size_t)
+                 return GrayValue_Access;
+   pragma Inline("+");
+
+   type FT_Bitmap_Type is
+      record
+         rows         : Interfaces.C.int;
+         width        : Interfaces.C.int;
+         pitch        : Interfaces.C.int;
+         buffer       : GrayValue_Access;
+         num_grays    : Interfaces.C.short;
+         pixel_mode   : Interfaces.C.char;
+         palette_mode : Interfaces.C.char;
+         palette      : System.Address;
+      end record;
+   pragma Convention(C,FT_Bitmap_Type);
+
+   type FT_BitmapGlyph_Type is
+      record
+         root   : FT_Glyph_Type;
+         left   : FT_Int_Type;
+         top    : FT_Int_Type;
+         bitmap : FT_Bitmap_Type;
+      end record;
+   pragma Convention(C,FT_BitmapGlyph_Type);
+   type FT_BitmapGlyph_Access is access FT_BitmapGlyph_Type;
+   ---------------------------------------------------------------------------
+   FT_LOAD_DEFAULT : constant FT_ULong_Type:=0;
+
+   ---------------------------------------------------------------------------
 
    function FT_Init_FreeType
      (Library : access FT_Library_Access)
@@ -133,5 +235,47 @@ package Fonts.Freetype.Thin is
       aface   : access FT_Face_Access)
       return FT_Error_Type;
    pragma Import(C,FTC_Manager_LookupFace,"FTC_Manager_LookupFace");
+
+   function FTC_Manager_LookupSize
+     (manager : FTC_Manager_Access;
+      scaler  : access FTC_Scaler_Type;
+      asize   : access FT_Size_Access)
+      return FT_Error_Type;
+   pragma Import(C,FTC_Manager_LookupSize,"FTC_Manager_LookupSize");
+
+   function FTC_CMapCache_Lookup
+     (cache      : FTC_CMapCache_Access;
+      face_id    : FTC_FaceID_Type;
+      cmap_index : FT_Int_Type;
+      char_code  : FT_UInt32_Type)
+      return FT_UInt_Type;
+   pragma Import(C,FTC_CMapCache_Lookup,"FTC_CMapCache_Lookup");
+
+   function FTC_ImageCache_LookupScaler
+     (cache      : FTC_ImageCache_Access;
+      scaler     : access FTC_Scaler_Type;
+      load_Flags : FT_ULong_Type;
+      gindex     : FT_UInt_Type;
+      aglyph     : access FT_Glyph_Access;
+      anode      : access FTC_Node_Access)
+      return FT_Error_Type;
+   pragma Import(C,FTC_ImageCache_LookupScaler,"FTC_ImageCache_LookupScaler");
+
+   procedure FTC_Node_Unref
+     (node    : FTC_Node_Access;
+      manager : FTC_Manager_Access);
+   pragma Import(C,FTC_Node_Unref,"FTC_Node_Unref");
+
+   function FT_Glyph_To_Bitmap
+     (the_glyph   : access FT_Glyph_Access;
+      render_mode : FT_Render_Mode_Enum;
+      origin      : access FT_Vector_Type;
+      destroy     : Interfaces.C.unsigned_char)
+      return FT_Error_Type;
+   pragma Import(C,FT_Glyph_To_Bitmap,"FT_Glyph_To_Bitmap");
+
+   function Convert is new Ada.Unchecked_Conversion
+     (Source => FT_Glyph_Access,
+      Target => FT_BitmapGlyph_Access);
 
 end Fonts.Freetype.Thin;

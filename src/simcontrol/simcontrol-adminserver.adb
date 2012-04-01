@@ -78,12 +78,12 @@ package body SimControl.AdminServer is
    ---------------------------------------------------------------------------
 
    StreamImplementation : Network.Streams.Implementation_Type;
-   Server               : Network.Streams.Server_ClassAccess;
+   Server               : Network.Streams.Server_ClassAccess:=null;
    ServerCallBack       : aliased ServercallBack_Type;
    CurrentCommand       : Types.Integer32;
    LogImplementation    : Logging.Implementation_Type;
-   LogContext           : Logging.Context_ClassAccess;
-   LogMainChannel       : Logging.Channel_ClassAccess;
+   LogContext           : Logging.Context_ClassAccess:=null;
+   LogMainChannel       : Logging.Channel_ClassAccess:=null;
    ---------------------------------------------------------------------------
 
    function Cmd_AdminServerMessage

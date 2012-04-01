@@ -26,6 +26,9 @@ with Ada.Unchecked_Deallocation;
 with Fonts.Freetype.Thin; use Fonts.Freetype.Thin;
 with System;
 with Interfaces.C.Strings;
+with Ada.Strings.UTF_Encoding.Wide_Wide_string_Encoding;
+with Ada.Strings.UTF_Encoding; use Ada.Strings.UTF_Encoding;
+with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 
 package body Fonts.Freetype is
 
@@ -48,6 +51,13 @@ package body Fonts.Freetype is
    pragma Convention(C,Requester);
    ---------------------------------------------------------------------------
 
+   type GlyphArray_Type is array(Natural range <>) of FT_UInt_Type;
+   type GlyphArray_Access is access GlyphArray_Type;
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => GlyphArray_Type,
+      Name   => GlyphArray_Access);
+
    type FreeTypeFont_Type;
    type FreeTypeFont_ClassAccess is access all FreeTypeFont_Type'Class;
    type FreeTypeFont_Type is abstract new Fonts.Font_Type with
@@ -55,10 +65,19 @@ package body Fonts.Freetype is
          Filename   : Unbounded_String;
          Index      : FT_Long_Type;
          FaceHandle : aliased FT_Face_Access;
+         Scaler     : aliased FTC_Scaler_Type;
+         BaseLine   : Integer;
       end record;
+   ---------------------------------------------------------------------------
+
+   Glyphs     : GlyphArray_Access:=null;
+   Node       : aliased FTC_Node_Access;
+   Glyph      : aliased FT_Glyph_Access;
+
 
    type LargeFont_Type;
    type LargeFont_Access is access all LargeFont_Type;
+
    type LargeFont_Type is new FreeTypeFont_Type with
       record
          null;
@@ -82,27 +101,211 @@ package body Fonts.Freetype is
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => FreeTypeFont_Type'Class,
       Name   => FreeTypeFont_ClassAccess);
+   ---------------------------------------------------------------------------
+
+   procedure DecodeString
+     (Font : access LargeFont_Type;
+      Text : Unbounded_String) is
+
+      UC4Text    : Unbounded_Wide_Wide_String;
+
+   begin
+
+      UC4Text:=To_Unbounded_Wide_Wide_String
+        (Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding.Decode
+           (UTF_8_String
+              (To_String(Text))));
+
+      if Glyphs/=null then
+         Free(Glyphs);
+      end if;
+
+      Glyphs:=new GlyphArray_Type(1..Length(UC4Text));
+
+      for i in 1..Length(UC4Text) loop
+
+         Glyphs(i):=FTC_CMapCache_Lookup
+           (cache      => CMapCache,
+            face_id    => FTC_FaceID_Type(Font.all'Address),
+            cmap_index => -1,
+            char_code  => Wide_Wide_Character'Pos(Element(UC4Text,i)));
+
+      end loop;
+
+   end DecodeString;
+   ---------------------------------------------------------------------------
+
+   procedure SelectGlyph
+     (Font      : access LargeFont_Type;
+      Character : FT_UInt_Type) is
+
+      Error : FT_Error_Type;
+
+   begin
+      if Node/=null then
+         FTC_Node_Unref(Node,Manager);
+      end if;
+      Error:=FTC_ImageCache_LookupScaler
+        (cache      => ImageCache,
+         scaler     => Font.Scaler'Access,
+         load_flags => FT_LOAD_DEFAULT,
+         gindex     => Character,
+         aglyph     => Glyph'Access,
+         anode      => Node'Access);
+      if Error/=0 then
+         raise FailedRendering
+           with "Failed call to FTC_ImageCache_LookupScaler, exit code:"
+             &FT_Error_Type'Image(Error);
+      end if;
+   end SelectGlyph;
 
    function TextWidth
      (Font : access LargeFont_Type;
       Text : Unbounded_String)
       return Integer is
-      pragma Unreferenced(Font);
-      pragma Unreferenced(Text);
    begin
+      DecodeString(Font,Text);
       return 0;
    end TextWidth;
    ---------------------------------------------------------------------------
 
-   procedure TextOut
+   procedure GlyphOut
      (Font : access LargeFont_Type;
-      Canvas : Standard.Canvas.BasicCanvas_ClassAccess;
-      X : Integer;
-      Y : Integer;
-      Text : Unbounded_String;
-      Color : Standard.Canvas.Color_Type) is
+      Canvas     : Standard.Canvas.BasicCanvas_ClassAccess;
+      X          : in out Integer;
+      Y          : in out Integer;
+      GlyphIndex : FT_UInt_Type;
+      Color      : Standard.Canvas.Color_Type) is
+
+      X1 : Integer;
+      Y1 : Integer;
+      X2 : Integer;
+      Y2 : Integer;
+
+      Error : FT_Error_Type;
+      Bitmap : FT_BitmapGlyph_Access;
+      Width : Integer;
+      Height : Integer;
+      SourceOrigin : Integer:=0;
+      SourceAdd    : Integer:=0;
+      Gray : Integer;
+      SourcePointer : GrayValue_Access;
+
    begin
-      null;
+      SelectGlyph(Font,GlyphIndex);
+
+      Error:=FT_Glyph_To_Bitmap
+        (the_glyph   => Glyph'Access,
+         render_mode => FT_RENDER_MODE_NORMAL,
+         origin      => null,
+         destroy     => 0);
+      if Error/=0 then
+         raise FailedRendering
+           with "Failed call to FT_Glyph_To_Bitmap, Exit code:"
+             &FT_Error_Type'Image(Error);
+      end if;
+      Bitmap:=Convert(Glyph);
+      Height := Integer(Bitmap.bitmap.rows);
+      Width  := Integer(Bitmap.bitmap.width);
+      if (Height<0) or (Width<0) then
+         raise FailedRendering
+           with "Encountered Bitmap with negative Height or Width";
+      end if;
+      -- Data in Bitmap.Bitmap.buffer
+      -- Advance = Glyph.advance.x div 1024 div 64
+      -- Top = lbaseline-Bitmap.Top
+      -- Left = Bitmap.Left
+      X1 := X+Integer(Bitmap.left);
+      Y1 := Y+Font.BaseLine-Integer(Bitmap.top);
+      X2 := X1+Width-1;
+      Y2 := Y1+Height-1;
+      Put("COND");
+      Put(X1);
+      Put(Canvas.ContentWidth);
+      New_Line;
+      if (X2>=0)
+        and (X1<Canvas.ContentWidth)
+        and (Y2>=0)
+        and (Y1<Canvas.ContentHeight) then
+         Put("DRAW");
+         New_Line;
+
+         if X1<0 then
+            SourceOrigin := -X1;
+            SourceAdd    := -X1;
+            X1:=0;
+         end if;
+         if Y1<0 then
+            SourceOrigin := SourceOrigin-Y1*Width;
+            Y1:=0;
+         end if;
+
+         if X2>Canvas.ContentWidth then
+            SourceAdd:=SourceAdd+X2-Canvas.ContentWidth+1;
+            X2:=Canvas.ContentWidth-1;
+         end if;
+
+         if Y2>=Canvas.ContentHeight then
+            Y2:=Canvas.ContentHeight-1;
+         end if;
+         Put("MaxY");
+         Put(Y2);
+         New_Line;
+
+         SourcePointer:=Bitmap.bitmap.buffer+Interfaces.C.size_t(SourceOrigin);
+         for n in Y1..Y2 loop
+            for i in X1..X2 loop
+               Gray:=Integer(SourcePointer.all);
+               if Gray/=0 then
+                  Canvas.Image(n,i):=Standard.Canvas.PreBlendMix
+                    (BackgroundColor => Canvas.Image(n,i),
+                     ForegroundColor => Standard.Canvas.MultiplyAlpha(Color,Gray));
+               end if;
+               SourcePointer:=SourcePointer+1;
+
+            end loop;
+            SourcePointer:=SourcePointer+Interfaces.C.size_t(SourceAdd);
+         end loop;
+
+      end if;
+
+      X:=X+Integer(Glyph.advance.x/(64*1024));
+      Y:=Y+Integer(Glyph.advance.y/(64*1024));
+   end GlyphOut;
+   ---------------------------------------------------------------------------
+
+   procedure TextOut
+     (Font   : access LargeFont_Type;
+      Canvas : Standard.Canvas.BasicCanvas_ClassAccess;
+      X      : Integer;
+      Y      : Integer;
+      Text   : Unbounded_String;
+      Color  : Standard.Canvas.Color_Type) is
+
+      XPosition : Integer;
+      YPosition : Integer;
+
+   begin
+      DecodeString(Font,Text);
+
+      XPosition := X;
+      YPosition := Y;
+
+      for i in Glyphs'Range loop
+
+         Put("Index : ");
+         Put(Integer(Glyphs(i)));
+         New_Line;
+         GlyphOut
+           (Font        => Font,
+            Canvas      => Canvas,
+            X           => XPosition,
+            Y           => YPosition,
+            GlyphIndex  => Glyphs(i),
+            Color       => Color);
+
+      end loop;
+
    end TextOut;
    ---------------------------------------------------------------------------
 
@@ -114,8 +317,8 @@ package body Fonts.Freetype is
 
       pragma Unreferenced(Attributes);
 
-      Font : FreeTypeFont_ClassAccess;
-      Error : FT_Error_Type;
+      Font   : FreeTypeFont_ClassAccess;
+      Error  : FT_Error_Type;
 
    begin
       -- Being here means we need to create a new font with specific size
@@ -151,6 +354,38 @@ package body Fonts.Freetype is
          Free(Font);
          return null;
       end if;
+
+      Font.Scaler.face_id := FTC_FaceID_Type(Font.all'Address);
+      Font.Scaler.width   := FT_UInt_Type(Size);
+      Font.Scaler.height  := FT_UInt_Type(Size);
+      Font.Scaler.pixel   := 1;
+      Font.Scaler.x_res   := 0;
+      Font.Scaler.y_res   := 0;
+
+      declare
+         FaceSize : aliased FT_Size_Access;
+      begin
+
+         Error:=FTC_Manager_LookupSize
+           (manager => Manager,
+            -- Local variable used as buffer for c function.
+            -- Won't be used after return from this function.
+            scaler  => Font.Scaler'Access,
+            asize   => FaceSize'Access);
+         if Error/=0 then
+            Put("Failed LookupSize");
+            New_Line;
+            Free(Font);
+            return null;
+         end if;
+
+         Font.BaseLine:=Integer(FaceSize.metrics.ascender/64);
+
+         Put("Baseline:");
+         Put(Font.BaseLine);
+         New_Line;
+
+      end;
 
       return Font_ClassAccess(Font);
    end Load;
@@ -275,6 +510,9 @@ package body Fonts.Freetype is
 
    procedure Finalize is
    begin
+      if Node/=null then
+         FTC_Node_Unref(Node,Manager);
+      end if;
       if Manager/=null then
          FTC_Manager_Done(Manager);
          Manager:=null;

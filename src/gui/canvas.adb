@@ -196,5 +196,57 @@ package body Canvas is
       Canvas.Modified := True;
    end;
    ---------------------------------------------------------------------------
+   function MultiplyAlpha
+     (Color : Color_Type;
+      Alpha : Integer)
+      return Color_Type is
+
+   begin
+      return Color and 16#FFFFFF#+
+        Shift_Left(Shift_Right(Color,24)*Color_Type(Alpha)/255,24);
+
+   end MultiplyAlpha;
+   ---------------------------------------------------------------------------
+
+   function PreBlendMix
+     (BackgroundColor : Color_Type;
+      ForegroundColor      : Color_Type)
+      return Color_Type is
+
+      use Interfaces;
+
+      Alpha1    : constant Color_Type:=Shift_Right(BackgroundColor,24);
+      Alpha2    : constant Color_Type:=Shift_Right(ForegroundColor,24);
+      Red1      : constant Color_Type:=Shift_Right(BackgroundColor,16) and 16#FF#;
+      Red2      : constant Color_Type:=Shift_Right(ForegroundColor,16) and 16#FF#;
+      Green1    : constant Color_Type:=Shift_Right(BackgroundColor,8) and 16#FF#;
+      Green2    : constant Color_Type:=Shift_Right(ForegroundColor,8) and 16#FF#;
+      Blue1     : constant Color_Type:=BackgroundColor and 16#FF#;
+      Blue2     : constant Color_Type:=ForegroundColor and 16#FF#;
+
+      NormAlpha : Color_Type;
+      NewRed    : Color_Type;
+      NewGreen  : Color_Type;
+      NewBlue   : Color_Type;
+      NewAlpha  : Color_Type;
+
+   begin
+
+      NormAlpha := (255*255-(255-Alpha1)*(255-Alpha2));
+
+      if NormAlpha/=0 then
+         NewRed   := (255*Alpha2*Red2+(255-Alpha2)*Alpha1*Red1)/NormAlpha;
+         NewGreen := (255*Alpha2*Green2+(255-Alpha2)*Alpha1*Green1)/NormAlpha;
+         NewBlue  := (255*Alpha2*Blue2+(255-Alpha2)*Alpha1*Blue1)/NormAlpha;
+         NewAlpha := NormAlpha/255;
+         return NewRed
+           +Shift_Left(NewGreen,8)
+           +Shift_Left(NewBlue,16)
+           +Shift_Left(NewAlpha,24);
+      else
+         return 0;
+      end if;
+
+   end;
 
 end Canvas;

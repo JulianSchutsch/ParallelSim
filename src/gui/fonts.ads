@@ -29,6 +29,7 @@ with Canvas;
 package Fonts is
 
    FailedFontImplementationInitialization : Exception;
+   FailedRendering                        : Exception;
 
    type Font_Type is abstract tagged private;
 
