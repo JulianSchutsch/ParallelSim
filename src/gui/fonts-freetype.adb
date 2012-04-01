@@ -26,9 +26,8 @@ with Ada.Unchecked_Deallocation;
 with Fonts.Freetype.Thin; use Fonts.Freetype.Thin;
 with System;
 with Interfaces.C.Strings;
-with Ada.Strings.UTF_Encoding.Wide_Wide_string_Encoding;
-with Ada.Strings.UTF_Encoding; use Ada.Strings.UTF_Encoding;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
+with Basics; use Basics;
 
 package body Fonts.Freetype is
 
@@ -111,10 +110,7 @@ package body Fonts.Freetype is
 
    begin
 
-      UC4Text:=To_Unbounded_Wide_Wide_String
-        (Ada.Strings.UTF_Encoding.Wide_Wide_String_Encoding.Decode
-           (UTF_8_String
-              (To_String(Text))));
+      UC4Text:=UTF8ToUC4(Text);
 
       if Glyphs/=null then
          Free(Glyphs);

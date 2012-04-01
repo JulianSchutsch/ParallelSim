@@ -7,10 +7,13 @@ with SimClientGUI;
 with GUI.Themes.YellowBlue;
 with Fonts.Freetype;
 with ExceptionOutput;
+with ColorString;
 
 procedure Client is
 
    Configuration  : Config.Config_Type;
+   Str : ColorString.ColorString_Type;
+   pragma Unreferenced(Str);
 
 begin
    GUI.OpenGL.Register;

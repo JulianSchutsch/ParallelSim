@@ -28,8 +28,11 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Vectors;
+with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 
 package Basics is
+
+   UTF8Exception : Exception;
 
    type AnyObject_Type is tagged null record;
    type AnyObject_ClassAccess is access all AnyObject_Type'Class;
@@ -60,5 +63,9 @@ package Basics is
    function RoundUpPowerOf2
      (Value : Natural)
       return Natural;
+
+   function UTF8ToUC4
+     (String : Unbounded_String)
+      return Unbounded_Wide_Wide_String;
 
 end Basics;

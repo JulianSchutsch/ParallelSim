@@ -31,10 +31,11 @@ package body GUI.Themes.YellowBlue.Window is
    CornerSize       : constant Integer := 2*BorderWidth;
    TopBarHeight     : constant Integer := TitleBarHeight+2*BorderWidth;
 
-   BackgroundColor     : constant Canvas.Color_Type := 16#FF000000#;
-   BorderLineColor     : constant Canvas.Color_Type := 16#FFFFFF00#;
+   BackgroundColor     : constant Canvas.Color_Type := 16#7F7F7F7F#;
+   BorderLineColor     : constant Canvas.Color_Type := 16#FF000000#;
    BorderEdgeLineColor : constant Canvas.Color_Type := 16#FFFFFFFF#;
    ClientColor         : constant Canvas.Color_Type := 16#7F00007F#;
+   TitleBarColor       : constant Canvas.Color_Type := 16#7F00007F#;
 
    type Window_Type is new GUI.Window.Window_Type with
       record
@@ -349,11 +350,16 @@ package body GUI.Themes.YellowBlue.Window is
 
       NewWindow.TopBar.Clear
         (Color => BackgroundColor);
+      NewWindow.TopBar.VertLine
+        (Y      => 0,
+         X      => BorderWidth,
+         Height => TitleBarHeight,
+         Color  => TitleBarColor);
       NewWindow.TopBar.Image(0,0)
         :=BorderLineColor;
       NewWindow.TopBar.Image(LineWidth+BorderSpaceWidth,0)
         :=BorderLineColor;
-      NewWindow.TopBar.Image(TOpBarHeight-BorderSpaceWidth-LineWidth-1,0)
+      NewWindow.TopBar.Image(TopBarHeight-BorderSpaceWidth-LineWidth-1,0)
         :=BorderLineColor;
       NewWindow.TopBar.Image(TopBarHeight-1,0)
         :=BorderLineColor;
@@ -414,7 +420,7 @@ package body GUI.Themes.YellowBlue.Window is
         (X      => 0,
          Y      => LineWidth,
          Height => BorderSpaceWidth,
-         Color  => BorderLineColor);
+         Color  => BorderEdgeLineColor);
       NewWindow.TopRightCorner.HorzLine
         (X      => CornerSize-LineWidth-BorderSpaceWidth,
          Y      => CornerSize-1,
@@ -515,7 +521,7 @@ package body GUI.Themes.YellowBlue.Window is
          Color  => BorderLineColor);
       NewWindow.BottomLeftCorner.HorzLine
         (X      => LineWidth,
-         Y      => 1,
+         Y      => 0,
          Width  => BorderSpaceWidth,
          Color  => BorderEdgeLineColor);
       NewWindow.BottomLeftCorner.VertLine

@@ -19,12 +19,82 @@ pragma Ada_2005;
 
 with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Unchecked_Conversion;
+with Interfaces;
 
 package body Basics is
    use type Ada.Containers.Hash_Type;
 
-   function StringSumHash(id: Unbounded_String) return Ada.Containers.Hash_Type is
+   function ToUnsigned8 is new Ada.Unchecked_Conversion
+     (Source => Character,
+      Target => Interfaces.Unsigned_8);
+
+   function ToWideWideChar is new Ada.Unchecked_Conversion
+     (Source => Interfaces.Unsigned_32,
+      Target => Wide_Wide_Character);
+
+   function UTF8ToUC4
+     (String : Unbounded_String)
+      return Unbounded_Wide_Wide_String is
+
+      use type Interfaces.Unsigned_8;
+      use type Interfaces.Unsigned_32;
+
+      Buffer      : Wide_Wide_String(1..Length(String));
+      BufferUsed  : Natural:=0;
+      CurrentChar : Interfaces.Unsigned_8;
+      Code        : Interfaces.Unsigned_32;
+      StringPos   : Integer;
+      ByteCount   : Integer;
+
+   begin
+
+      StringPos:=1;
+      while StringPos<Length(String) loop
+         CurrentChar:=ToUnsigned8(Element(String,StringPos));
+         case CurrentChar is
+            when 0..16#80#-1 =>
+               ByteCount := 0;
+               Code      := Interfaces.Unsigned_32(CurrentChar);
+            when 16#80#..16#E0#-1 =>
+               ByteCount := 1;
+               Code      := Interfaces.Unsigned_32(CurrentChar and 16#1F#);
+            when 16#E0#..16#F0#-1 =>
+               ByteCount := 2;
+               Code      := Interfaces.Unsigned_32(CurrentChar and 16#0F#);
+            when 16#F0#..16#F8#-1 =>
+               ByteCount := 3;
+               Code      := Interfaces.Unsigned_32(CurrentChar and 16#07#);
+            when others =>
+               raise UTF8Exception
+                 with "UTF8 invalid first byte:"
+                   &Interfaces.Unsigned_8'Image(CurrentChar);
+         end case;
+         StringPos:=StringPos+1;
+         for b in 1..ByteCount loop
+            if StringPos=Length(String) then
+               raise UTF8Exception
+                 with "UTF8 incomplete code";
+            end if;
+            Code := Interfaces.Shift_Left(Code,8)
+              +Interfaces.Unsigned_32(ToUnsigned8(Element(String,StringPos)));
+         end loop;
+
+         BufferUsed         := BufferUsed+1;
+         Buffer(BufferUsed) := ToWideWideChar(Code);
+
+      end loop;
+      return To_Unbounded_Wide_Wide_String(Buffer(1..BufferUsed));
+
+   end UTF8ToUC4;
+   ---------------------------------------------------------------------------
+
+   function StringSumHash
+     (id: Unbounded_String)
+      return Ada.Containers.Hash_Type is
+
       Sum : Ada.Containers.Hash_Type:=0;
+
    begin
       for i in 1..Length(id) loop
          Sum := Sum+Character'Pos(Element(id,i));
