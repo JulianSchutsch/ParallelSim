@@ -25,20 +25,20 @@ with Interfaces;
 package body Basics is
    use type Ada.Containers.Hash_Type;
 
-   function ToUnsigned8 is new Ada.Unchecked_Conversion
-     (Source => Character,
-      Target => Interfaces.Unsigned_8);
-
-   function ToWideWideChar is new Ada.Unchecked_Conversion
-     (Source => Interfaces.Unsigned_32,
-      Target => Wide_Wide_Character);
-
    function UTF8ToUC4
      (String : Unbounded_String)
       return Unbounded_Wide_Wide_String is
 
       use type Interfaces.Unsigned_8;
       use type Interfaces.Unsigned_32;
+
+      function ToUnsigned8 is new Ada.Unchecked_Conversion
+        (Source => Character,
+         Target => Interfaces.Unsigned_8);
+
+      function ToWideWideChar is new Ada.Unchecked_Conversion
+        (Source => Interfaces.Unsigned_32,
+         Target => Wide_Wide_Character);
 
       Buffer      : Wide_Wide_String(1..Length(String));
       BufferUsed  : Natural:=0;

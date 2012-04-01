@@ -77,7 +77,8 @@ abstract project Common is
 
          Linker_Switches:=Linker_Switches &
            ("-lX11",
-            "-lGL");
+            "-lGL",
+            "-lfreetype");
 
          LanguagesUsed:=LanguagesUsed &
            ("C");
