@@ -50,7 +50,7 @@ package body Basics is
    begin
 
       StringPos:=1;
-      while StringPos<Length(String) loop
+      while StringPos<=Length(String) loop
          CurrentChar:=ToUnsigned8(Element(String,StringPos));
          case CurrentChar is
             when 0..16#80#-1 =>
@@ -72,7 +72,7 @@ package body Basics is
          end case;
          StringPos:=StringPos+1;
          for b in 1..ByteCount loop
-            if StringPos=Length(String) then
+            if StringPos>Length(String) then
                raise UTF8Exception
                  with "UTF8 incomplete code";
             end if;
