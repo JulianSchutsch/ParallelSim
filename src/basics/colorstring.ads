@@ -26,32 +26,28 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package ColorString is
 
-   type ColorString_Type is private;
+   type ColorStringElement_Type is
+      record
+         Char       : Character;
+         Color      : Color_Type;
+         NextLine   : Integer;
+      end record;
+
+   type ColorString_Type is array (Natural range <>) of ColorStringElement_Type;
+   type ColorString_Access is access ColorString_Type;
 
    procedure Clear
-     (ColorString : in out ColorString_Type);
+     (ColorString : in out ColorString_Access);
 
    procedure Append
-     (ColorString : in out ColorString_Type;
+     (ColorString : in out ColorString_Access;
       String      : Unbounded_String;
       Color       : Color_Type);
 
+   function ToUnboundedString
+     (ColorString : in ColorString_Access)
+      return Unbounded_String;
+
 private
-
-   type ColorStringElement_Type is
-      record
-         Char  : Character;
-         Color : Color_Type;
-      end record;
-
-   type ColorStringArray_Type is array(Natural range <>) of
-     ColorStringElement_Type;
-
-   type ColorStringArray_Access is access ColorStringArray_Type;
-
-   type ColorString_Type is
-      record
-         Content : ColorStringArray_Access:=null;
-      end record;
 
 end ColorString;

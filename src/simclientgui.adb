@@ -4,8 +4,10 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Basics; use Basics;
 with ProcessLoop;
 with GUI.Window;
+with GUI.TextView;
 with GUI.Themes;
 with Ada.Text_IO; use Ada.Text_IO;
+with BoundsCalc;
 
 package body SimClientGUI is
 
@@ -14,6 +16,7 @@ package body SimClientGUI is
    GUIContext          : GUI.Context_ClassAccess:=null;
    Terminated          : Boolean;
    Window              : GUI.Window.Window_ClassAccess:=null;
+   Console             : GUI.TextView.TextView_ClassAccess:=null;
 
    procedure OnCloseContext
      (CallBackObject : AnyObject_ClassAccess) is
@@ -67,6 +70,29 @@ package body SimClientGUI is
          Left   => True,
          Right  => False,
          Bottom => False);
+
+      Console:=new GUI.TextView.TextView_Type;
+      GUI.TextView.Initialize
+        (Item   => GUI.TextView.TextView_Access(Console),
+         Parent => GUI.Object_ClassAccess(Window));
+      declare
+         Bounds : constant BoundsCalc.Bounds_Type:=GUI.GetBounds(Window.Client.all);
+      begin
+         GUI.SetBounds
+           (Object => GUI.Object_ClassAccess(Console),
+            Bounds =>
+              (Top     => 0,
+               Left    => 0,
+               Height  => Bounds.Height,
+               Width   => Bounds.Width,
+               Visible => True));
+      end;
+      GUI.SetAnchors
+        (Object => GUI.Object_ClassAccess(Console),
+         Top    => True,
+         Left   => True,
+         Right  => True,
+         Bottom => True);
 
       Put("End of Simclientgui init");
       New_Line;

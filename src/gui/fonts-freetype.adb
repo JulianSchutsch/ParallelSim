@@ -159,9 +159,26 @@ package body Fonts.Freetype is
      (Font : access LargeFont_Type;
       Text : Unbounded_String)
       return Integer is
+
+      XPosition : Integer:=0;
+
    begin
       DecodeString(Font,Text);
-      return 0;
+
+      for i in Glyphs'Range loop
+
+         SelectGlyph(Font,Glyphs(i));
+         Put("Add:");
+         Put(XPosition);
+         New_Line;
+         XPosition:=XPosition+Integer(Glyph.advance.x/(64*1024));
+
+      end loop;
+      Put("Width");
+      Put(XPosition);
+      New_Line;
+      return XPosition;
+
    end TextWidth;
    ---------------------------------------------------------------------------
 

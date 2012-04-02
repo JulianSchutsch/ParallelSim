@@ -47,9 +47,6 @@ package body GUI.Window is
       Bounds : Bounds_Type renames Window.Priv.Bounds;
 
    begin
-      Put("ApplyChange");
-      New_Line;
-
       case Window.Mode is
          when WindowChangeModeNothing =>
             null;

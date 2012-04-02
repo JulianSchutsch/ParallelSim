@@ -248,35 +248,41 @@ package body GUI.Themes.YellowBlue.Window is
          Attributes => Fonts.NoAttributes);
       ------------------------------------------------------------------------
 
-      NewWindow.Context.NewCanvas
-        (Object => Object_ClassAccess(NewWindow),
-         Height => 19,
-         Width  => 100,
-         Canvas => NewWindow.TitleCanvas);
-      NewWindow.TitleCanvas.Clear
-        (Color => 16#00000000#);
+      declare
+         TextWidth : constant Integer
+           :=NewWindow.Font.TextWidth(To_Unbounded_String("Hallo"));
+      begin
+         NewWindow.Context.NewCanvas
+           (Object => Object_ClassAccess(NewWindow),
+            Height => TitleBarHeight,
+            Width  => TextWidth,
+            Canvas => NewWindow.TitleCanvas);
+         NewWindow.TitleCanvas.Clear
+           (Color => 16#00000000#);
 
-      NewWindow.Font.TextOut
-        (Canvas => Canvas.BasicCanvas_ClassAccess(NewWindow.TitleCanvas),
-         X => 0,
-         Y => 0,
-         Text => To_Unbounded_String("Hallo"),
-         Color => 16#FFFFFFFF#);
+         NewWindow.Font.TextOut
+           (Canvas => Canvas.BasicCanvas_ClassAccess(NewWindow.TitleCanvas),
+            X => 0,
+            Y => 0,
+            Text => To_Unbounded_String("Hallo"),
+            Color => 16#FFFFFFFF#);
 
-      GUI.SetBounds
-        (Canvas => NewWindow.TitleCanvas,
-         Bounds =>
-           (Top => 7,
-            Left => 7,
-            Height => 19,
-            Width => 100,
-            Visible => True));
-      GUI.SetAnchors
-        (Canvas => NewWIndow.TitleCanvas,
-         Top => False,
-         Left => False,
-         Right => False,
-         Bottom => False);
+         GUI.SetBounds
+           (Canvas => NewWindow.TitleCanvas,
+            Bounds =>
+              (Top => BorderWidth+1,
+               Left => BorderWidth+2,
+               Height => TitleBarHeight,
+               Width => TextWidth,
+               Visible => True));
+
+         GUI.SetAnchors
+           (Canvas => NewWIndow.TitleCanvas,
+            Top => False,
+            Left => False,
+            Right => False,
+            Bottom => False);
+      end;
       ------------------------------------------------------------------------
 
       NewWindow.Context.NewCanvas

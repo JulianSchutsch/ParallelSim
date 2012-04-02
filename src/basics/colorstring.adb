@@ -21,38 +21,67 @@ with Ada.Unchecked_Deallocation;
 package body ColorString is
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => ColorStringArray_Type,
-      Name   => ColorStringArray_Access);
+     (Object => ColorString_Type,
+      Name   => ColorString_Access);
+   ---------------------------------------------------------------------------
+
+   function ToUnboundedString
+     (ColorString : in ColorString_Access)
+      return Unbounded_String is
+
+      Result : Unbounded_String;
+
+   begin
+
+      Result:=To_Unbounded_String(" ");
+
+      for i in ColorString'Range loop
+         null;
+      end loop;
+
+      return Result;
+   end ToUnboundedString;
    ---------------------------------------------------------------------------
 
    procedure Clear
-     (ColorString : in out ColorString_Type) is
+     (ColorString : in out ColorString_Access) is
    begin
-      Free(ColorString.Content);
+      Free(ColorString);
    end Clear;
    ---------------------------------------------------------------------------
 
    procedure Append
-     (ColorString : in out ColorString_Type;
+     (ColorString : in out ColorString_Access;
       String      : Unbounded_String;
       Color       : Color_Type) is
 
-      NewColorString : ColorStringArray_Access;
+      NewColorString : ColorString_Access;
+      OldLength      : Natural;
 
    begin
 
-      NewColorString:=new ColorStringArray_Type
-        (1..ColorString.Content'Last+Length(String));
-      NewColorString(1..ColorString.Content'Last):=ColorString.Content.all;
+      if ColorString/=null then
+         OldLength:=ColorString'Last;
+         NewColorString:=new ColorString_Type
+           (1..ColorString'Last+Length(String));
+         NewColorString(1..ColorString'Last):=ColorString.all;
+         Free(ColorString);
+      else
+         OldLength      := 0;
+         NewColorString := new ColorString_Type
+           (1..Length(String));
+      end if;
 
       for i in 1..Length(String) loop
          declare
-            Elem : ColorStringElement_Type renames NewColorString(ColorString.Content'Last+i);
+            Elem : ColorStringElement_Type renames NewColorString(OldLength+i);
          begin
             Elem.Color := Color;
             Elem.Char  := Element(String,i);
          end;
       end loop;
+
+      ColorString:=NewColorString;
 
    end Append;
    ---------------------------------------------------------------------------
