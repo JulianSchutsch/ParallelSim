@@ -18,6 +18,8 @@
 pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
+with Ada.Text_IO; use Ada.Text_IO;
+with Canvas;
 
 package body GUI.TextView is
 
@@ -25,19 +27,252 @@ package body GUI.TextView is
      (Object => Line_Type,
       Name   => Line_Access);
 
-   procedure ClearLineBreaks
-     (Item : access TextView_Type) is
-      Line     : Line_Access;
-      NextLine : Line_Access;
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => CanvasLine_Type,
+      Name   => CanvasLine_Access);
+
+   procedure FreeCanvasLine
+     (Item       : access TextView_Type;
+      CanvasLine : in out CanvasLine_Access) is
    begin
 
-      Line:=Item.FirstLine;
+      if CanvasLine.Canvas/=null then
+         Item.Context.FreeCanvas(CanvasLine.Canvas);
+      end if;
+
+      Free(CanvasLine);
+
+   end FreeCanvasLine;
+   ---------------------------------------------------------------------------
+
+   procedure ClearCanvasLines
+     (Item     : access TextView_Type) is
+
+      Line     : CanvasLine_Access;
+      NextLine : CanvasLine_Access;
+
+   begin
+      Put("ClearCanvasLines");
+
+      Line:=Item.CanvasLines;
       while Line/=null loop
-         NextLine := Line.Next;
-         Free(Line);
-         Line     := NextLine;
+
+         NextLine:=Line.Next;
+
+         FreeCanvasLine
+           (Item       => Item,
+            CanvasLine => Line);
+
+         Line:=NextLine;
+
       end loop;
 
+      Item.CanvasLines:=null;
+
+   end ClearCanvasLines;
+   ---------------------------------------------------------------------------
+
+   function SelectSubLine
+     (Line    : Line_Access;
+      SubLine : Natural)
+      return Natural is
+
+      CurrentPosition : Integer:=1;
+
+   begin
+      -- There is no check here wether or not the current position is
+      -- valid or not. It should not be necessary since Ada throws an
+      -- exception for invalid access to Line.Content here.
+      for i in 1..SubLine loop
+         CurrentPosition:=Line.Content(CurrentPosition).NextLine;
+      end loop;
+      return CurrentPosition;
+   end SelectSubLine;
+   ---------------------------------------------------------------------------
+
+   procedure SelectLine
+     (Item            : access TextView_Type;
+      VisibleLine     : Natural;
+      Line            : out Line_Access;
+      SubLinePosition : out Natural) is
+
+      CurrentLine        : Line_Access;
+      CurrentVisibleLine : Integer:=0;
+
+   begin
+
+      CurrentLine:=Item.FirstLine;
+
+      while CurrentLine/=null loop
+
+         if VisibleLine in
+
+           CurrentVisibleLine..CurrentVisibleLine+CurrentLine.SubLines-1 then
+
+            SubLinePosition:=SelectSubLine
+              (Line    => CurrentLine,
+               SubLine => VisibleLine-CurrentVisibleLine);
+            Line:=CurrentLine;
+            return;
+
+         end if;
+
+         CurrentVisibleLine := CurrentVisibleLine+CurrentLine.SubLines;
+         CurrentLine        := CurrentLine.Next;
+
+      end loop;
+
+      Line := null;
+
+   end SelectLine;
+   ---------------------------------------------------------------------------
+
+   procedure RemoveInvisibleCanvasLines
+     (Item : access TextView_Type) is
+   begin
+      null;
+   end;
+   pragma Unreferenced(RemoveInvisibleCanvasLines);
+   ---------------------------------------------------------------------------
+
+   procedure RenderAndInsertCanvasLine
+     (Item               : access TextView_Type;
+      PreviousCanvasLine : in out CanvasLine_Access;
+      WrappedLine        : Natural;
+      Line               : Line_Access;
+      SubLinePosition    : Natural) is
+
+      use type Fonts.Font_ClassAccess;
+
+      NewCanvasLine : CanvasLine_Access;
+
+   begin
+
+      if Line.Content(SubLinePosition).LineWidth=0 then
+         return;
+      end if;
+
+      NewCanvasLine:=new CanvasLine_Type;
+
+      --DEBUG
+      if Item.Font=null then
+         Put("???????????");
+         New_Line;
+      end if;
+
+      Item.Context.NewCanvas
+        (Object => Object_ClassAccess(Item),
+         Height => Item.LineHeight,
+         Width  => Line.Content(SubLinePosition).LineWidth,
+         Canvas => NewCanvasLine.Canvas);
+      NewCanvasLine.Canvas.Clear
+        (Color => 16#FFFFFFFF#);
+      Item.Font.TextOut
+        (Canvas => Canvas.BasicCanvas_ClassAccess(NewCanvasLine.Canvas),
+         X      => 0,
+         Y      => 0,
+         Text   =>
+           ToUnboundedString
+           (Line.Content
+              (SubLinePosition..Line.Content(SubLinePosition).NextLine-1)),
+         Color  => 16#FF000000#);
+
+      NewCanvasLine.WrappedLine:=WrappedLine;
+      NewCanvasLine.Last:=PreviousCanvasLine;
+
+      GUI.SetBounds
+        (Canvas => NewCanvasLine.Canvas,
+         Bounds =>
+           (Top     => (WrappedLine-Item.FirstWrappedLine)*Item.LineHeight,
+            Left    => 0,
+            Height  => Item.LineHeight,
+            Width   => Line.Content(SubLinePosition).LineWidth,
+            Visible => True));
+
+      if PreviousCanvasLine/=null then
+
+         NewCanvasLine.Next      := PreviousCanvasLine.Next;
+         if NewCanvasLine.Next/=null then
+            NewCanvasLine.Next.Last:=NewCanvasLine;
+         end if;
+
+         PreviousCanvasLine.Next := NewCanvasLine;
+
+      else
+
+         Item.CanvasLines := NewCanvasLine;
+
+      end if;
+
+      PreviousCanvasLine:=NewCanvasLine;
+
+   end RenderAndInsertCanvasLine;
+   ---------------------------------------------------------------------------
+
+   procedure CompleteCanvasLines
+     (Item : access TextView_Type) is
+
+      CurrentWrappedLine       : Natural;
+      CurrentSubLinePosition   : Natural;
+      LineCursor               : Line_Access;
+      CanvasLineCursor         : CanvasLine_Access;
+      PreviousCanvasLineCursor : CanvasLine_Access;
+
+   begin
+
+      CurrentWrappedLine:=Item.FirstWrappedLine;
+
+      SelectLine
+        (Item            => Item,
+         VisibleLine     => CurrentWrappedLine,
+         Line            => LineCursor,
+         SubLinePosition => CurrentSubLinePosition);
+
+      if LineCursor=null then
+         return;
+      end if;
+
+      CanvasLineCursor         := Item.CanvasLines;
+      PreviousCanvasLineCursor := null;
+
+      -- With this range it may happen one line too much is shown (rare)
+      for y in 0..Item.Priv.Bounds.Height/Item.LineHeight loop
+
+         while (CanvasLineCursor/=null)
+           and then (CanvasLineCursor.WrappedLine<=CurrentWrappedLine) loop
+            PreviousCanvasLineCursor := CanvasLineCursor;
+            CanvasLineCursor         := CanvasLineCursor.Next;
+         end loop;
+
+         if not
+           ((PreviousCanvasLineCursor/=null)
+            and then (PreviousCanvasLineCursor.WrappedLine=CurrentWrappedLine)) then
+
+            RenderAndInsertCanvasLine
+              (Item               => Item,
+               PreviousCanvasLine => PreviousCanvasLineCursor,
+               WrappedLine        => CurrentWrappedLine,
+               Line               => LineCursor,
+               SubLinePosition    => CurrentSubLinePosition);
+
+            CanvasLineCursor:=PreviousCanvasLineCursor.Next;
+
+         end if;
+
+         CurrentSubLinePosition
+           :=LineCursor.Content(CurrentSubLinePosition).NextLine;
+
+         if CurrentSubLinePosition>=LineCursor.Content'Last then
+            LineCursor:=LineCursor.Next;
+            if LineCursor=null then
+               return;
+            end if;
+            CurrentSubLinePosition:=1;
+         end if;
+
+         CurrentWrappedLine:=CurrentWrappedLine+1;
+
+      end loop;
    end;
    ---------------------------------------------------------------------------
 
@@ -113,21 +348,30 @@ package body GUI.TextView is
          Width     : Integer;
 
       begin
-         if LinePosition<Length(Str) then
+
+         Put("Consume Part Word");
+         New_Line;
+         if LinePosition<=Length(Str) then
             LinePosition:=LinePosition+1;
          end if;
 
-         while (LinePosition<Length(Str))
+         while (LinePosition<=Length(Str))
            and then (Line.Content(LinePosition).Char/=' ') loop
 
             Width:=Item.Font.TextWidth
               (Unbounded_Slice(Str,WordStart,LinePosition));
             if LineWidth+Width>Item.Priv.Bounds.Width then
+               LineWidth:=LineWidth+Width;
                return;
             end if;
+            Put("+");
 
-           LinePosition:=LinePosition+1;
+            LinePosition:=LinePosition+1;
+
          end loop;
+
+         LineWidth:=LineWidth+Item.Font.TextWidth
+              (Unbounded_Slice(Str,WordStart,LinePosition));
 
       end ConsumePartWord;
       ------------------------------------------------------------------------
@@ -146,9 +390,13 @@ package body GUI.TextView is
       if Line=null then
          return;
       end if;
-      Str:=ToUnboundedString(Line.Content);
+
+      Line.SubLines := 0;
+      Str           := ToUnboundedString(Line.Content.all);
 
       while LinePosition<Line.Content'Last loop
+
+         Line.SubLines:=Line.SubLines+1;
 
          if ConsumeSpace then
             ConsumeWords;
@@ -162,11 +410,17 @@ package body GUI.TextView is
             end if;
          end if;
 
-         Line.Content(LineStart).NextLine:=LinePosition;
+         Line.Content(LineStart).NextLine  := LinePosition;
+         Line.Content(LineStart).LineWidth := LineWidth;
 
-         LineStart:=LinePosition;
+         LineStart := LinePosition;
+         LineWidth := 0;
 
       end loop;
+
+      if Line.SubLines=0 then
+         Line.SubLines:=1;
+      end if;
 
    end AddLineBreaks;
    ---------------------------------------------------------------------------
@@ -177,7 +431,6 @@ package body GUI.TextView is
       Line : Line_Access;
 
    begin
-      ClearLineBreaks(Item);
       Line:=Item.FirstLine;
       while Line/=null loop
          AddLineBreaks
@@ -200,11 +453,14 @@ package body GUI.TextView is
       Line:=Item.FirstLine;
       while Line/=null loop
          NextLine := Line.Next;
+         ColorString.Clear(Line.Content);
          Free(Line);
          Line     := NextLine;
       end loop;
 
-      CalculateLineBreaks(Item);
+      Item.FirstLine:=null;
+
+      ClearCanvasLines(Item);
 
    end Clear;
    ---------------------------------------------------------------------------
@@ -231,7 +487,34 @@ package body GUI.TextView is
       end if;
       Item.LastLine:=NewLine;
 
+      -- TODO : Replace this by a faster call later!
+      CalculateLineBreaks(Item);
+      CompleteCanvasLines(Item);
+      Put("WriteLine Done");
+      New_Line;
+
    end WriteLine;
+   ---------------------------------------------------------------------------
+
+   procedure Resize
+     (Item : access TextView_Type) is
+   begin
+
+      if Item.Priv.Bounds.Width/=Item.Priv.PrevBounds.Width then
+         CalculateLineBreaks(Item);
+         ClearCanvasLines(Item);
+         CompleteCanvasLines(item);
+      end if;
+
+   end Resize;
+
+   procedure SetFont
+     (Item : TextView_Access;
+      Font : Fonts.Font_ClassAccess) is
+   begin
+      -- TODO: Calculate Font Specific things.
+      Item.Font:=Font;
+   end SetFont;
    ---------------------------------------------------------------------------
 
    procedure Initialize
@@ -248,7 +531,16 @@ package body GUI.TextView is
 
    procedure Finalize
      (Item : access TextView_Type) is
+
+      use type Fonts.Font_ClassAccess;
+
    begin
+
+      Clear(Item);
+
+      if Item.Font/=null then
+         Fonts.Release(Item.Font);
+      end if;
 
       GUI.Finalize
         (Item => Object_Access(Item));

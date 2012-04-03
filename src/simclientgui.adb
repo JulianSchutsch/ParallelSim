@@ -7,6 +7,7 @@ with GUI.Window;
 with GUI.TextView;
 with GUI.Themes;
 with Ada.Text_IO; use Ada.Text_IO;
+with Fonts;
 with BoundsCalc;
 
 package body SimClientGUI is
@@ -75,6 +76,9 @@ package body SimClientGUI is
       GUI.TextView.Initialize
         (Item   => GUI.TextView.TextView_Access(Console),
          Parent => GUI.Object_ClassAccess(Window));
+      GUI.TextView.SetFont
+        (Item => GUI.TextView.TextView_Access(Console),
+         Font => Fonts.Lookup(To_Unbounded_String("./Vera.ttf"),19,Fonts.NoAttributes));
       declare
          Bounds : constant BoundsCalc.Bounds_Type:=GUI.GetBounds(Window.Client.all);
       begin
@@ -93,6 +97,12 @@ package body SimClientGUI is
          Left   => True,
          Right  => True,
          Bottom => True);
+
+      for i in 1..99 loop
+         Console.WriteLine
+           (String => To_Unbounded_String("A long test string to demonstrate wrapping, line "&Integer'Image(i)),
+            Color  => 16#FF00FF00#);
+      end loop;
 
       Put("End of Simclientgui init");
       New_Line;

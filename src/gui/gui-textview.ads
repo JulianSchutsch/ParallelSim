@@ -34,8 +34,16 @@ package GUI.TextView is
      (Item   : TextView_Access;
       Parent : Object_ClassAccess);
 
+   procedure SetFont
+     (Item : TextView_Access;
+      Font : Fonts.Font_ClassAccess);
+
    overriding
    procedure Finalize
+     (Item : access TextView_Type);
+
+   overriding
+   procedure Resize
      (Item : access TextView_Type);
 
    procedure WriteLine
@@ -55,27 +63,32 @@ private
 
    type Line_Type is
       record
-         Content : ColorString_Access;
-         Next    : Line_Access:=null;
-         Last    : Line_Access:=null;
+         SubLines : Natural:=0;
+         Content  : ColorString_Access;
+         Next     : Line_Access:=null;
+         Last     : Line_Access:=null;
       end record;
 
    type CanvasLine_Type;
    type CanvasLine_Access is access CanvasLine_Type;
    type CanvasLine_Type is
       record
-         Canvas : Canvas_ClassAccess:=null;
-         Next   : CanvasLine_Access:=null;
-         Last   : CanvasLine_Access:=null;
+         WrappedLine : Natural;
+         Canvas      : Canvas_ClassAccess := null;
+         Next        : CanvasLine_Access  := null;
+         Last        : CanvasLine_Access  := null;
       end record;
 
    type TextView_Type is new Object_Type with
       record
-         FirstLine      : Line_Access:=null;
-         LastLine       : Line_Access:=null;
-         VisibleLines   : CanvasLine_Access:=null;
-         Font           : Fonts.Font_ClassAccess:=null;
-         SpaceCharWidth : Integer:=10; -- TODO: Obtain it properly
+         FirstLine              : Line_Access:=null;
+         LastLine               : Line_Access:=null;
+         CanvasLines            : CanvasLine_Access:=null;
+         Font                   : Fonts.Font_ClassAccess:=null;
+         SpaceCharWidth         : Integer := 10; -- TODO: Obtain it properly
+         LineHeight             : Integer := 19; -- TODO: Obtain it properly
+         FirstWrappedLine       : Natural := 0;
+         InWrappedLinePosition  : Natural := 0;
       end record;
 
 end GUI.TextView;

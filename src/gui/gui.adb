@@ -46,8 +46,6 @@ package body GUI is
       pragma Unreferenced(Y);
 
    begin
-      Put("Standard Mouse Down");
-      New_Line;
       Taken:=False;
    end MouseDown;
    ---------------------------------------------------------------------------
@@ -112,13 +110,6 @@ package body GUI is
       ------------------------------------------------------------------------
 
    begin
-
-      case MouseButton is
-         when LeftButton =>
-            Put("Left");
-         when RightButton =>
-            Put("Right");
-      end case;
 
       if Context.Priv.MouseButtonsPressed=NoMouseButtons then
 
@@ -217,7 +208,7 @@ package body GUI is
    end MouseMove;
    ---------------------------------------------------------------------------
 
-   procedure Resize
+   procedure ResizeTree
      (Object : Object_ClassAccess) is
 
       ObjectCursor : Object_ClassAccess;
@@ -277,14 +268,16 @@ package body GUI is
       ObjectCursor:=Object.Priv.FirstChild;
 
       while ObjectCursor/=null loop
-         Resize(ObjectCursor);
+         ResizeTree(ObjectCursor);
          ObjectCursor:=ObjectCursor.Priv.Next;
       end loop;
       ------------------------------------------------------------------------
 
+      Object.Resize;
+
       Object.Priv.PrevBounds := Object.Priv.Bounds;
 
-   end Resize;
+   end ResizeTree;
    ---------------------------------------------------------------------------
 
    procedure Resize
@@ -292,18 +285,15 @@ package body GUI is
       Height  : Integer;
       Width   : Integer) is
    begin
+
       Context.Bounds:=
         (Top     => 0,
          Left    => 0,
          Height  => Height,
          Width   => Width,
          Visible => True);
-      Put("Resize Processing");
-      New_Line;
-      Put(Context.Bounds);
+
       if Context.WindowArea/=null then
-         Put("WindowArea");
-         New_Line;
          SetBounds
            (Object => Context.WindowArea,
             Bounds => Context.Bounds);
@@ -384,7 +374,7 @@ package body GUI is
       Bounds : Bounds_Type) is
    begin
       Object.Priv.Bounds:=Bounds;
-      Resize(Object);
+      ResizeTree(Object);
    end SetBounds;
    ---------------------------------------------------------------------------
 
@@ -471,6 +461,20 @@ package body GUI is
       ItemVal : Object_Access;
 
    begin
+
+      -- TODO: Replaces dangerous loops by less dangerous ones
+      -- Finalize all Childs
+
+      while Item.Priv.FirstChild/=null loop
+         Item.Priv.FirstChild.Finalize;
+      end loop;
+
+      -- Free all Canvasse
+      while Item.Priv.Canvasse/=null loop
+         Item.Context.FreeCanvas(Item.Priv.Canvasse);
+      end loop;
+
+      -- Remove Object from the tree
       ItemVal:=Object_Access(Item);
 
       if Item.Priv.Parent/=null then
@@ -488,14 +492,13 @@ package body GUI is
       end if;
 
       Free(ItemVal);
+
    end Finalize;
    ---------------------------------------------------------------------------
 
    procedure Initialize
      (Context : Context_ClassAccess) is
    begin
-      Put("Init Context Basics");
-      New_Line;
       -- TODO: Use specialized objects
       Context.WindowArea          := new Object_Type;
       Context.ModalArea           := new Object_Type;

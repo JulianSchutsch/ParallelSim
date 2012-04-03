@@ -19,7 +19,6 @@
 
 pragma Ada_2005;
 
-with Ada.Text_IO; use Ada.Text_IO;
 with Fonts;
 
 package body GUI.Themes.YellowBlue.Window is
@@ -74,6 +73,21 @@ package body GUI.Themes.YellowBlue.Window is
       X    : Integer;
       Y    : Integer);
 
+   overriding
+   procedure Finalize
+     (Item : access Window_Type);
+
+   procedure Finalize
+     (Item : access Window_Type) is
+   begin
+
+      Fonts.Release(Item.Font);
+      GUI.Window.Finalize
+        (Item => GUI.Window.Window_Access(Item));
+
+   end Finalize;
+   ---------------------------------------------------------------------------
+
    procedure MouseDown
      (Item   : access Window_Type;
       Button : MouseButton_Enum;
@@ -82,8 +96,6 @@ package body GUI.Themes.YellowBlue.Window is
       Taken  : out Boolean) is
 
    begin
-      Put("MouseDown:WINDOW**************");
-      New_Line;
       Taken:=True;
 
       If Button=LeftButton then

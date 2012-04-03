@@ -24,11 +24,25 @@ package body GUI.Themes.YellowBlue is
    Implementation : constant GUI.Themes.Implementation_Type:=
      (NewWindow => NewWindow'Access);
 
+   Identifier : constant Unbounded_String:=To_Unbounded_String("YellowBlue");
+
    procedure Register is
    begin
+
       GUI.Themes.Implementations.Register
-        (Identifier     => To_Unbounded_String("YellowBlue"),
+        (Identifier     => Identifier,
          Implementation => Implementation);
+
    end Register;
+   ---------------------------------------------------------------------------
+
+   procedure UnRegister is
+   begin
+
+      GUI.Themes.Implementations.UnRegister
+        (Identifier => Identifier);
+
+   end UnRegister;
+   ---------------------------------------------------------------------------
 
 end GUI.Themes.YellowBlue;

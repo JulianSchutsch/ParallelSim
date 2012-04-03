@@ -24,7 +24,11 @@
 pragma Ada_2005;
 
 package GUI.OpenGL is
+
    procedure Register;
+
+   procedure UnRegister;
+
 private
    type Context_Type is new GUI.Context_Type with
       record
@@ -35,14 +39,14 @@ private
    procedure NewCanvas
      (Context : in out Context_Type;
       Object  : Object_ClassAccess;
-      Height  : Natural;
-      Width   : Natural;
+      Height  : Positive;
+      Width   : Positive;
       Canvas  : out Canvas_ClassAccess);
 
    overriding
    procedure FreeCanvas
      (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess);
+      Canvas  : Canvas_ClassAccess);
 
    procedure Paint
      (Context : in out Context_Type);

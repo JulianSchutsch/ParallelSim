@@ -40,6 +40,9 @@ begin
    SimClientGUI.Finalize;
 
    Fonts.Freetype.Finalize;
+   GUI.Themes.YellowBlue.UnRegister;
+   GUI.OpenGL.UnRegister;
+
 exception
    when E:others =>
       ExceptionOutput.Put(E);

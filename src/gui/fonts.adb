@@ -41,6 +41,10 @@ package body Fonts is
          Last : FontImplementation_Access;
       end record;
 
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => FontImplementation_Type,
+      Name   => FontImplementation_Access);
+
    FontImplementations : FontImplementation_Access:=null;
    Fonts               : Font_ClassAccess:=null;
 
@@ -61,6 +65,39 @@ package body Fonts is
 
    end Register;
    ---------------------------------------------------------------------------
+
+   procedure UnRegister
+     (Load : Load_Access) is
+
+      Cursor : FontImplementation_Access;
+
+   begin
+
+      Cursor:=FontImplementations;
+      while Cursor/=null loop
+
+         if Cursor.Load=Load then
+
+            if Cursor.Last/=null then
+               Cursor.Last.Next:=Cursor.Next;
+            else
+               FontImplementations:=Cursor.Next;
+            end if;
+
+            if Cursor.Next/=null then
+               Cursor.Next.Last:=Cursor.Last;
+            end if;
+
+            Free(Cursor);
+            return;
+
+         end if;
+
+         Cursor:=Cursor.Next;
+
+      end loop;
+
+   end UnRegister;
 
    function Lookup
      (Name       : Unbounded_String;

@@ -124,6 +124,9 @@ package GUI is
       Left   : Boolean;
       Right  : Boolean;
       Bottom : Boolean);
+
+   procedure Resize
+     (Item : access Object_Type) is null;
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is
@@ -160,13 +163,13 @@ package GUI is
    procedure NewCanvas
      (Context : in out Context_Type;
       Object  : Object_ClassAccess;
-      Height  : Natural;
-      Width   : Natural;
+      Height  : Positive;
+      Width   : Positive;
       Canvas  : out Canvas_ClassAccess) is null;
 
    procedure FreeCanvas
      (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess) is null;
+      Canvas  : Canvas_ClassAccess) is null;
    ---------------------------------------------------------------------------
    type Context_Constructor is
      access function
@@ -215,7 +218,7 @@ private
 
    type Object_Private is
       record
-         Canvasse            : Canvas_ClassAccess;
+         Canvasse            : Canvas_ClassAccess:=null;
          Bounds              : Bounds_Type;
          PrevBounds          : Bounds_Type;
          AbsBounds           : AbsBounds_Type;
@@ -229,8 +232,6 @@ private
          LastChild           : Object_ClassAccess:=null;
       end record;
 
-   procedure Resize
-     (Object : Object_ClassAccess);
    ---------------------------------------------------------------------------
 
    type Canvas_Type is new Canvas.BasicCanvas_Type with

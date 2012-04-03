@@ -38,8 +38,8 @@ package Canvas is
       record
          Image         : Image_Access := null;
          Modified      : Boolean      := True;
-         ContentHeight : Natural;
-         ContentWidth  : Natural;
+         ContentHeight : Positive;
+         ContentWidth  : Positive;
       end record;
    type BasicCanvas_ClassAccess is access all BasicCanvas_Type'Class;
 

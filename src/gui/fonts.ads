@@ -72,6 +72,9 @@ package Fonts is
    procedure Register
      (Load : Load_Access);
 
+   procedure UnRegister
+     (Load : Load_Access);
+
 private
 
    FontNotFound : Exception;

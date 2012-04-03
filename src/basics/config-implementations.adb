@@ -36,6 +36,32 @@ package body Config.Implementations is
 
    List : List_Pack.List;
 
+   procedure UnRegister
+     (Identifier : Unbounded_String) is
+
+      use type List_Pack.Cursor;
+
+      Cursor             : List_Pack.Cursor;
+      ImplementationDesc : ImplementationDesc_Type;
+
+   begin
+
+      Cursor:=List.First;
+      while Cursor/=List_Pack.No_Element loop
+         ImplementationDesc:=List_Pack.Element(Cursor);
+         if ImplementationDesc.Identifier=Identifier then
+            List.Delete(Cursor);
+            return;
+         end if;
+         Cursor:=List_Pack.Next(Cursor);
+      end loop;
+
+      raise ImplementationNotFound
+        with "UnRegister failed";
+
+   end;
+   ---------------------------------------------------------------------------
+
    procedure Register
      (Identifier     : Unbounded_String;
       Implementation : Implementation_Type) is

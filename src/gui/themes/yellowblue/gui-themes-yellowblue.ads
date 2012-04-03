@@ -22,5 +22,9 @@
 --     - Original version
 
 package GUI.Themes.YellowBlue is
+
    procedure Register;
+
+   procedure UnRegister;
+
 end GUI.Themes.YellowBlue;

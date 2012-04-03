@@ -20,7 +20,6 @@
 pragma Ada_2005;
 
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with Fonts.Freetype.Thin; use Fonts.Freetype.Thin;
@@ -40,6 +39,8 @@ package body Fonts.Freetype is
    VersionMajor : aliased FT_Int_Type;
    VersionMinor : aliased FT_Int_Type;
    VersionPatch : aliased FT_Int_Type;
+
+   Initialized : Boolean:=False;
 
    function Requester
      (face_id      : FTC_FaceID_Type;
@@ -138,9 +139,12 @@ package body Fonts.Freetype is
       Error : FT_Error_Type;
 
    begin
+
       if Node/=null then
          FTC_Node_Unref(Node,Manager);
+         Node:=null;
       end if;
+
       Error:=FTC_ImageCache_LookupScaler
         (cache      => ImageCache,
          scaler     => Font.Scaler'Access,
@@ -153,6 +157,7 @@ package body Fonts.Freetype is
            with "Failed call to FTC_ImageCache_LookupScaler, exit code:"
              &FT_Error_Type'Image(Error);
       end if;
+
    end SelectGlyph;
 
    function TextWidth
@@ -168,15 +173,9 @@ package body Fonts.Freetype is
       for i in Glyphs'Range loop
 
          SelectGlyph(Font,Glyphs(i));
-         Put("Add:");
-         Put(XPosition);
-         New_Line;
          XPosition:=XPosition+Integer(Glyph.advance.x/(64*1024));
 
       end loop;
-      Put("Width");
-      Put(XPosition);
-      New_Line;
       return XPosition;
 
    end TextWidth;
@@ -195,32 +194,34 @@ package body Fonts.Freetype is
       X2 : Integer;
       Y2 : Integer;
 
-      Error : FT_Error_Type;
-      Bitmap : FT_BitmapGlyph_Access;
-      Width : Integer;
-      Height : Integer;
-      SourceOrigin : Integer:=0;
-      SourceAdd    : Integer:=0;
-      Gray : Integer;
+--      Error         : FT_Error_Type;
+      Bitmap        : FT_BitmapGlyph_Access;
+      Width         : Integer;
+      Height        : Integer;
+      SourceOrigin  : Integer:=0;
+      SourceAdd     : Integer:=0;
+      Gray          : Integer;
       SourcePointer : GrayValue_Access;
 
    begin
       SelectGlyph(Font,GlyphIndex);
 
-      Error:=FT_Glyph_To_Bitmap
-        (the_glyph   => Glyph'Access,
-         render_mode => FT_RENDER_MODE_NORMAL,
-         origin      => null,
-         destroy     => 0);
-      if Error/=0 then
-         raise FailedRendering
-           with "Failed call to FT_Glyph_To_Bitmap, Exit code:"
-             &FT_Error_Type'Image(Error);
-      end if;
+--      Error:=FT_Glyph_To_Bitmap
+--        (the_glyph   => Glyph'Access,
+--         render_mode => FT_RENDER_MODE_NORMAL,
+--         origin      => null,
+--         destroy     => 0);
+--      if Error/=0 then
+--         raise FailedRendering
+--           with "Failed call to FT_Glyph_To_Bitmap, Exit code:"
+--             &FT_Error_Type'Image(Error);
+--      end if;
       Bitmap:=Convert(Glyph);
       Height := Integer(Bitmap.bitmap.rows);
       Width  := Integer(Bitmap.bitmap.width);
       if (Height<0) or (Width<0) then
+--         FT_Done_Glyph(Glyph);
+
          raise FailedRendering
            with "Encountered Bitmap with negative Height or Width";
       end if;
@@ -232,16 +233,10 @@ package body Fonts.Freetype is
       Y1 := Y+Font.BaseLine-Integer(Bitmap.top);
       X2 := X1+Width-1;
       Y2 := Y1+Height-1;
-      Put("COND");
-      Put(X1);
-      Put(Canvas.ContentWidth);
-      New_Line;
       if (X2>=0)
         and (X1<Canvas.ContentWidth)
         and (Y2>=0)
         and (Y1<Canvas.ContentHeight) then
-         Put("DRAW");
-         New_Line;
 
          if X1<0 then
             SourceOrigin := -X1;
@@ -261,9 +256,6 @@ package body Fonts.Freetype is
          if Y2>=Canvas.ContentHeight then
             Y2:=Canvas.ContentHeight-1;
          end if;
-         Put("MaxY");
-         Put(Y2);
-         New_Line;
 
          SourcePointer:=Bitmap.bitmap.buffer+Interfaces.C.size_t(SourceOrigin);
          for n in Y1..Y2 loop
@@ -281,6 +273,8 @@ package body Fonts.Freetype is
          end loop;
 
       end if;
+
+--      FT_Done_Glyph(Glyph);
 
       X:=X+Integer(Glyph.advance.x/(64*1024));
       Y:=Y+Integer(Glyph.advance.y/(64*1024));
@@ -306,9 +300,6 @@ package body Fonts.Freetype is
 
       for i in Glyphs'Range loop
 
-         Put("Index : ");
-         Put(Integer(Glyphs(i)));
-         New_Line;
          GlyphOut
            (Font        => Font,
             Canvas      => Canvas,
@@ -336,9 +327,6 @@ package body Fonts.Freetype is
    begin
       -- Being here means we need to create a new font with specific size
       -- we do not need to do any lookups
-      Put("Load:");
-      Put(To_String(Name));
-      New_Line;
       if Size>0 then
          declare
             LargeFont : LargeFont_Access;
@@ -361,6 +349,8 @@ package body Fonts.Freetype is
          face_id => FTC_FaceID_Type(Font.all'Address),
          aface   => Font.FaceHandle'Access);
       if Error/=0 then
+         -- TODO : This should be replaced by an Exception, but take care of the calling
+         -- function first
          Put("Failed LookupFace");
          Put(FT_Error_Type'Image(Error));
          New_Line;
@@ -394,10 +384,6 @@ package body Fonts.Freetype is
 
          Font.BaseLine:=Integer(FaceSize.metrics.ascender/64);
 
-         Put("Baseline:");
-         Put(Font.BaseLine);
-         New_Line;
-
       end;
 
       return Font_ClassAccess(Font);
@@ -421,9 +407,6 @@ package body Fonts.Freetype is
       Result    : FT_Error_Type;
 
    begin
-      Put("Requester:");
-      Put(To_String(Font.Name));
-      New_Line;
 
       CFileName := Interfaces.C.Strings.New_String(To_String(Font.Filename));
       Result:=FT_New_Face
@@ -439,11 +422,10 @@ package body Fonts.Freetype is
    ---------------------------------------------------------------------------
 
    procedure Initialize is
+
       Error : FT_Error_Type;
 
    begin
-      Put("Initialize FreeType");
-      New_Line;
 
       Error:=FT_Init_FreeType
         (Library => Library'Access);
@@ -456,11 +438,6 @@ package body Fonts.Freetype is
          Major   => VersionMajor'Access,
          Minor   => VersionMinor'Access,
          Patch   => VersionPatch'Access);
-      Put("FreeType ");
-      Put(Integer(VersionMajor));
-      Put(Integer(VersionMinor));
-      Put(Integer(VersionPatch));
-      New_Line;
       if not
         ((VersionMajor>2)
          or ((VersionMajor=2) and (VersionMinor>2))) then
@@ -514,26 +491,38 @@ package body Fonts.Freetype is
            with "Failed call to FTC_CMapCache_New";
       end if;
 
-      Put("Register FreeType");
-      New_Line;
       Fonts.Register
         (Load => Load'Access);
+
+      Initialized:=True;
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
+
+      if Initialized then
+         Fonts.UnRegister(Load => Load'Access);
+      end if;
+
+      if Glyphs/=null then
+         Free(Glyphs);
+      end if;
+
       if Node/=null then
          FTC_Node_Unref(Node,Manager);
       end if;
+
       if Manager/=null then
          FTC_Manager_Done(Manager);
          Manager:=null;
       end if;
+
       if Library/=null then
          FT_Done_FreeType(Library);
          Library:=null;
       end if;
+
    end Finalize;
    ---------------------------------------------------------------------------
 

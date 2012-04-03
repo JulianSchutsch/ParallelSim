@@ -50,6 +50,9 @@ package Config.Implementations is
      (Identifier     : Unbounded_String;
       Implementation : Implementation_Type);
 
+   procedure UnRegister
+     (Identifier : Unbounded_String);
+
    -- Find selects an identifier from the Configuration using ModuleName and
    -- IdentifierKey and returns an implementation with that identifier.
    function Find

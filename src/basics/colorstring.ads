@@ -30,7 +30,8 @@ package ColorString is
       record
          Char       : Character;
          Color      : Color_Type;
-         NextLine   : Integer;
+         NextLine   : Natural;
+         LineWidth  : Integer;
       end record;
 
    type ColorString_Type is array (Natural range <>) of ColorStringElement_Type;
@@ -45,7 +46,7 @@ package ColorString is
       Color       : Color_Type);
 
    function ToUnboundedString
-     (ColorString : in ColorString_Access)
+     (ColorString : in ColorString_Type)
       return Unbounded_String;
 
 private

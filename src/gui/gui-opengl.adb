@@ -21,11 +21,14 @@ pragma Ada_2005;
 
 with GUI.OpenGL.Native;
 with OpenGL; use OpenGL;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with System;
+with Ada.Unchecked_Deallocation;
 
 package body GUI.OpenGL is
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => Canvas.Image_Type,
+      Name   => Canvas.Image_Access);
 
    type Canvas_Type is new GUI.Canvas_Type with
       record
@@ -38,8 +41,8 @@ package body GUI.OpenGL is
    procedure NewCanvas
      (Context : in out Context_Type;
       Object  : Object_ClassAccess;
-      Height  : Natural;
-      Width   : Natural;
+      Height  : Positive;
+      Width   : Positive;
       Canvas  : out Canvas_ClassAccess) is
       pragma Unreferenced(Context);
 
@@ -58,9 +61,6 @@ package body GUI.OpenGL is
       glGentextures
         (n => 1,
          textures => NewCanv.TextureID'Access);
-      Put("Texture :");
-      Put(Integer(NewCanv.TextureID));
-      New_Line;
       glBindTexture
         (target  => GL_TEXTURE_2D,
          texture => NewCanv.TextureID);
@@ -105,13 +105,21 @@ package body GUI.OpenGL is
 
    procedure FreeCanvas
      (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess) is
+      Canvas  : Canvas_ClassAccess) is
 
       pragma Unreferenced(Context);
 
    begin
+
+      glDeleteTextures
+        (n        => 1,
+         textures => Canvas_Access(Canvas).TextureID'Access);
+
+      Free(Canvas_Access(Canvas).Image);
+
       GUI.RemoveCanvas
         (Canvas => Canvas);
+
    end FreeCanvas;
    ---------------------------------------------------------------------------
 
@@ -302,6 +310,12 @@ package body GUI.OpenGL is
    begin
       GUI.OpenGL.Native.Register;
    end Register;
+   ---------------------------------------------------------------------------
+
+   procedure UnRegister is
+   begin
+      GUI.OpenGL.Native.UnRegister;
+   end UnRegister;
    ---------------------------------------------------------------------------
 
 end GUI.OpenGL;

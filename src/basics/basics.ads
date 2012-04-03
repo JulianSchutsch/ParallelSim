@@ -29,6 +29,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Vectors;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
+with System;
 
 package Basics is
 
@@ -54,6 +55,9 @@ package Basics is
 
    procedure Put
      (Item : StringStringMap.Map);
+
+   procedure Put
+     (Address : System.Address);
 
    function ConcatElements
      (Item      : StringStringMap.Map;

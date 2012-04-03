@@ -251,6 +251,15 @@ package Fonts.Freetype.Thin is
       return FT_UInt_Type;
    pragma Import(C,FTC_CMapCache_Lookup,"FTC_CMapCache_Lookup");
 
+--   function FTC_ImageCache_Lookup
+--     (cache      : FTC_ImageCache_Access;
+--      ttype      : FTC_ImageType;
+--      gindex     : FT_UInt_Type;
+--      aglyph     : access FT_Glyph_Access;
+--      anode      : access FTC_Node_Access)
+--      return FT_Error_Type;
+--   pragma Import(C,FTC_ImageCache_Lookup,"FTC_ImageCache_Lookup");
+
    function FTC_ImageCache_LookupScaler
      (cache      : FTC_ImageCache_Access;
       scaler     : access FTC_Scaler_Type;
@@ -273,6 +282,10 @@ package Fonts.Freetype.Thin is
       destroy     : Interfaces.C.unsigned_char)
       return FT_Error_Type;
    pragma Import(C,FT_Glyph_To_Bitmap,"FT_Glyph_To_Bitmap");
+
+   procedure FT_Done_Glyph
+     (glyph : FT_Glyph_Access);
+   pragma Import(C,FT_Done_Glyph,"FT_Done_Glyph");
 
    function Convert is new Ada.Unchecked_Conversion
      (Source => FT_Glyph_Access,

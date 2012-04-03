@@ -19,8 +19,6 @@
 
 pragma Ada_2005;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body GUI.Window is
 
    procedure StartChange
@@ -29,8 +27,6 @@ package body GUI.Window is
       RefY   : Integer;
       Mode   : WindowChangeMode_Enum) is
    begin
-      Put("StartChange");
-      New_Line;
       Window.RefX      := RefX;
       Window.RefY      := RefY;
       Window.RefHeight := Window.Priv.Bounds.Height;

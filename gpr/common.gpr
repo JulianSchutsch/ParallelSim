@@ -2,9 +2,11 @@ abstract project Common is
 
    type Backtrace_Type is ("On","Off");
    type OS_Type is ("Windows_NT","Linux");
+   type Profiling_Type is ("On","Off");
 
-   OS : OS_Type := external("OS","Linux");
+   OS        : OS_Type        := external("OS","Linux");
    Backtrace : Backtrace_Type := external("Backtrace","Off");
+   Profiling : Profiling_Type := external("Profiling","Off");
 
 --   Dir := Common'Project_Dir & "/";
    Dir := "";
@@ -35,11 +37,23 @@ abstract project Common is
       "-gnata",
       "-gnatf",
       "-gnatVn",
-      "-gnatE",
       "-Wall",
       "-fno-inline",
       "-O0"
      );
+
+   case Profiling is
+
+      when "On" =>
+
+         Compiler_Switches:=Compiler_Switches &
+          ("-pg");
+
+      when "Off" =>
+
+         null;
+
+   end case;
 
    LanguagesUsed:=("Ada");
 

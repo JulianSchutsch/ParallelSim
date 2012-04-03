@@ -26,27 +26,33 @@ package body ColorString is
    ---------------------------------------------------------------------------
 
    function ToUnboundedString
-     (ColorString : in ColorString_Access)
+     (ColorString : in ColorString_Type)
       return Unbounded_String is
 
       Result : Unbounded_String;
 
    begin
 
-      Result:=To_Unbounded_String(" ");
+      Result:=To_Unbounded_String(Length => ColorString'Last-ColorString'First+1);
 
       for i in ColorString'Range loop
-         null;
+         Replace_Element
+           (Source => Result,
+            Index  => i-ColorString'First+1,
+            By     => ColorString(i).Char);
       end loop;
 
       return Result;
+
    end ToUnboundedString;
    ---------------------------------------------------------------------------
 
    procedure Clear
      (ColorString : in out ColorString_Access) is
    begin
+
       Free(ColorString);
+
    end Clear;
    ---------------------------------------------------------------------------
 

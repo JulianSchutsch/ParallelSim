@@ -21,6 +21,7 @@ with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Unchecked_Conversion;
 with Interfaces;
+with System.Address_Image;
 
 package body Basics is
    use type Ada.Containers.Hash_Type;
@@ -167,5 +168,11 @@ package body Basics is
 
    end RoundUpPowerOf2;
    ---------------------------------------------------------------------------
+
+   procedure Put
+     (Address : System.Address) is
+   begin
+      Put(System.Address_Image(Address));
+   end Put;
 
 end Basics;

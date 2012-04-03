@@ -29,8 +29,6 @@ with Win32.GDI32;
 with Win32.OpenGL32;
 with Interfaces.C.Strings;
 with System;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with ProcessLoop;
 
 package body GUI.OpenGL.Native is
@@ -102,8 +100,6 @@ package body GUI.OpenGL.Native is
 
    begin
       if Context.MouseButtonsPressed=NoMouseButtons then
-         Put("Capture");
-         New_Line;
          Context.HasCapture:=True;
          Result:=Win32.User32.SetCapture(Context.WindowHandle);
       end if;
@@ -128,8 +124,6 @@ package body GUI.OpenGL.Native is
    begin
       Context.MouseButtonsPressed(MouseButton):=False;
       if Context.MouseButtonsPressed=NoMouseButtons then
-         Put("RELEASE Capture");
-         New_Line;
          Result:=Win32.User32.ReleaseCapture;
          Context.HasCapture:=False;
       end if;
@@ -192,8 +186,6 @@ package body GUI.OpenGL.Native is
                wParam => wParam,
                lParam => lParam);
          when Win32.WM_CREATE =>
-            Put("WM_CREATE");
-            New_Line;
             declare
                Result : Win32.UINT_PTR_Type;
                pragma Unreferenced(Result);
@@ -226,16 +218,12 @@ package body GUI.OpenGL.Native is
             return 0;
          when Win32.WM_SIZE =>
             -- TODO : Extract Resize
-            Put("WM_SIZE");
-            New_Line;
             GUI.Resize
               (Context => Context_ClassAccess(Context),
                Width   => Integer(Win32.LOWORD(lParam)),
                Height  => Integer(Win32.HIWORD(lParam)));
             return 0;
          when Win32.WM_SIZING =>
-            Put("WM_SIZING");
-            New_Line;
             return 0;
          when Win32.WM_LBUTTONDBLCLK =>
             return Win32.User32.DefWindowProc
@@ -287,7 +275,6 @@ package body GUI.OpenGL.Native is
                lParam => lParam);
 
          when Win32.WM_RBUTTONUP =>
-            Put("RUP");
             MouseUp
               (Context     => Context,
                MouseButton => RightButton,
@@ -310,8 +297,6 @@ package body GUI.OpenGL.Native is
                wParam => wParam,
                lParam => lParam);
          when Win32.WM_DESTROY =>
-            Put("WM_DESTROY");
-            New_Line;
             declare
                BoolResult : Win32.BOOL_Type;
                pragma Unreferenced(BoolResult);
@@ -538,11 +523,6 @@ package body GUI.OpenGL.Native is
       WndClass.hCursor       := Win32.User32.LoadCursor
         (hInstance    => 0,
          lpCursorName => Win32.MAKEINTRESOURCE(Win32.IDC_ARROW));
-      Put("HCURSOR");
-      Put(Integer(WndClass.hCursor));
-      Put("HICON");
-      Put(Integer(WndClass.hIcon));
-      NEW_LINE;
 
       if Win32.User32.RegisterClass
         (lpWndClass => WndClass'Access)=0 then
@@ -663,12 +643,25 @@ package body GUI.OpenGL.Native is
      (NewContext  => NewContext'Access,
       FreeContext => FreeContext'Access);
 
+   Identifier : constant Unbounded_String:=To_Unbounded_String("OpenGL");
+
    procedure Register is
    begin
+
       Implementations.Register
-        (Identifier     => To_Unbounded_String("OpenGL"),
+        (Identifier     => Identifier,
          Implementation => Implementation);
+
    end Register;
+   ---------------------------------------------------------------------------
+
+   procedure UnRegister is
+   begin
+
+      Implementations.UnRegister
+        (Identifier => Identifier);
+
+   end;
    ---------------------------------------------------------------------------
 
 end GUI.OpenGL.Native;
