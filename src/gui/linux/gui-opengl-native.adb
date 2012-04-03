@@ -9,6 +9,7 @@ with Interfaces.C.Strings;
 with glX;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Unchecked_Conversion;
 
 package body GUI.OpenGL.Native is
 
@@ -17,12 +18,16 @@ package body GUI.OpenGL.Native is
 
    function ErrorCodeString
      return String is
+
+      function Convert is new Ada.Unchecked_Conversion
+        (Source => Interfaces.C.char,
+         Target => Interfaces.Unsigned_8);
    begin
       if ErrorStorageSet then
          return " Serial:"&Interfaces.C.long'Image(ErrorStorage.serial)
-           &" Error Code:"&Interfaces.C.char'Image(ErrorStorage.error_code)
-           &" Request Code:"&Interfaces.C.char'Image(ErrorStorage.request_code)
-           &" Minor Code:"&Interfaces.C.char'Image(ErrorStorage.minor_code);
+           &" Error Code:"&Interfaces.Unsigned_8'Image(Convert(ErrorStorage.error_code))
+           &" Request Code:"&Interfaces.Unsigned_8'Image(Convert(ErrorStorage.request_code))
+           &" Minor Code:"&Interfaces.Unsigned_8'Image(Convert(ErrorStorage.minor_code));
       else
          return " No further information since the error handler was not called!";
       end if;
@@ -43,10 +48,11 @@ package body GUI.OpenGL.Native is
       pragma Unreferenced(display);
 
    begin
-      Put("**********************ErrorHandler Called*********************");
-      New_Line;
       ErrorStorage    := error.all;
       ErrorStorageSet := True;
+      Put("**********************ErrorHandler Called*********************");
+      Put(ErrorCodeString);
+      New_Line;
       return 0;
    end ErrorHandler;
 
@@ -549,11 +555,57 @@ package body GUI.OpenGL.Native is
              &ErrorCodeString;
       end if;
 
+      Put("*****************************************");
+      New_Line;
+      Put("Find out allowed IM Values:");
+      New_Line;
+      declare
+
+         use type Interfaces.C.Strings.chars_ptr;
+         use type XLib.XIMStyle_Access;
+
+         ReturnString : Interfaces.C.Strings.chars_ptr;
+         styles       : aliased Xlib.XIMStyles_Access;
+         cursor       : Xlib.XIMStyle_Access;
+
+      begin
+         ReturnString:=XLib.XGetIMValues_1
+           (xim                 => Context.InputIM,
+            im_supported_styles => styles'Unchecked_Access);
+         if Interfaces.C.Strings.Null_Ptr=ReturnString then
+            Put("Null Return String");
+            New_Line;
+         else
+            Put("Return String:");
+            Put(Interfaces.C.Strings.Value(ReturnString));
+            New_Line;
+         end if;
+         Put("Number of supported styles:");
+         Put(Interfaces.C.short'Image(styles.count_styles));
+         New_Line;
+         cursor:=styles.supported_styles;
+         for i in 1..styles.count_styles loop
+            Put("Style ");
+            Put(Integer(i));
+            Put(":");
+            Put(cursor.all'Address);
+            Put(":");
+            Put(XLib.XIMStyle_Type'Image(cursor.all));
+            New_Line;
+            cursor:=cursor+Interfaces.C.size_t(Interfaces.C.long'Size/8);
+         end loop;
+
+      end;
+      Put("*****************************************");
+      New_Line;
+
       Context.InputContext:=Xlib.XCreateIC_1
-        (im => Context.InputIM,
-         window => Context.Window,
+        (im         => Context.InputIM,
+         window     => Context.Window,
          inputstyle => Xlib.XIMPreeditNothing+Xlib.XIMStatusNothing);
 
+      Put("Try to create Input Context");
+      New_Line;
       if Context.InputContext=null then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext

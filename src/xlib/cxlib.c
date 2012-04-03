@@ -35,14 +35,19 @@ Window _RootWindow(Display * display, int screen)
   return RootWindow(display,screen);
 }
 
+typedef XIMStyles* XIMStyles_Pnt;
+char * XGetIMValues_1(XIM xim,XIMStyles_Pnt * im_supported_styles)
+{
+  return XGetIMValues(xim,XNQueryInputStyle,im_supported_styles,NULL);
+}
 // This is a varargs wrapper which tries to cover the most common use case
 // for XCreateIC
 XIC _XCreateIC_1(XIM xim,Window window,int inputstyle)
 {
   return XCreateIC
     (xim,
+    XNInputStyle,inputstyle,
     XNClientWindow,window,
     XNFocusWindow,window,
-    XNInputStyle,inputstyle,
     NULL);
 }

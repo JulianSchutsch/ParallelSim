@@ -315,6 +315,19 @@ package Xlib is
 
    type XEvent_Access is access all XEvent_Type;
 
+   type XIMStyle_Type is new Interfaces.C.long;
+   pragma Convention(C,XIMStyle_Type);
+   type XIMStyle_Access is access XIMStyle_Type;
+
+   type XIMStyles_Type is
+      record
+         count_styles     : Interfaces.C.short;
+         supported_styles : XIMStyle_Access;
+      end record;
+   pragma Convention(C,XIMStyles_Type);
+
+   type XIMStyles_Access is access all XIMStyles_Type;
+
    type ErrorFunction_Access is
      access function
        (display : Display_Access;
@@ -452,5 +465,14 @@ package Xlib is
    procedure XFree
      (data : System.Address);
    pragma Import(C,XFree,"XFree");
+
+   function XGetIMValues_1
+     (xim                 : XIM_Access;
+      im_supported_styles : access XIMStyles_Access)
+      return Interfaces.C.Strings.chars_ptr;
+   pragma Import(C,XGetIMValues_1,"XGetIMValues_1");
+
+   function "+" (Left : XIMStyle_Access; Right : Interfaces.C.size_t)
+                 return XIMStyle_Access;
 
 end XLib;

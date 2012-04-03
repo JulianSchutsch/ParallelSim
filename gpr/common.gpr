@@ -36,6 +36,7 @@ abstract project Common is
       "-g",     -- Generate Debugging information
       "-gnatf", -- Full error messages
       "-gnatVn",
+      "-gnatp",
       "-Wall",
       "-fno-strict-aliasing",
       "-O3"
