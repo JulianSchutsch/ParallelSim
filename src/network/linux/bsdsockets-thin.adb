@@ -22,6 +22,7 @@
 --     - Original version
 
 pragma Ada_2005;
+
 with System.OS_Lib;
 
 package body BSDSockets.Thin is

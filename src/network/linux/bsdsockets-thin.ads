@@ -21,6 +21,8 @@
 --   27.Jan 2012 Julian Schutsch
 --     - Original version
 
+pragma Ada_2005;
+
 with Interfaces;
 with Interfaces.C;
 with Interfaces.C.Strings;
