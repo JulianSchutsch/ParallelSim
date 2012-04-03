@@ -57,14 +57,12 @@ package body SimClientGUI is
       New_Line;
       Window:=ThemeImplementation.NewWindow
         (Parent => GUIContext.WindowArea);
-      GUI.SetBounds
-        (Object => GUI.Object_ClassAccess(Window),
-         Bounds =>
-           (Top     => 10,
-            Left    => 10,
-            Height  => 100,
-            Width   => 200,
-            Visible => True));
+      Window.SetBounds
+        (Top     => 10,
+         Left    => 10,
+         Height  => 100,
+         Width   => 200,
+         Visible => True);
       GUI.SetAnchors
         (Object => GUI.Object_ClassAccess(Window),
          Top    => True,
@@ -82,14 +80,12 @@ package body SimClientGUI is
       declare
          Bounds : constant BoundsCalc.Bounds_Type:=GUI.GetBounds(Window.Client.all);
       begin
-         GUI.SetBounds
-           (Object => GUI.Object_ClassAccess(Console),
-            Bounds =>
-              (Top     => 0,
-               Left    => 0,
-               Height  => Bounds.Height,
-               Width   => Bounds.Width,
-               Visible => True));
+         Console.SetBounds
+           (Top     => 0,
+            Left    => 0,
+            Height  => Bounds.Height,
+            Width   => Bounds.Width,
+            Visible => True);
       end;
       GUI.SetAnchors
         (Object => GUI.Object_ClassAccess(Console),

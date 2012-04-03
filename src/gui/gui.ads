@@ -111,15 +111,19 @@ package GUI is
       Y      : Integer) is null;
 
    procedure SetBounds
-     (Object : Object_ClassAccess;
-      Bounds : Bounds_Type);
+     (Object  : access Object_Type;
+      Top     : Integer;
+      Left    : Integer;
+      Height  : Integer;
+      Width   : Integer;
+      Visible : Boolean);
 
    function GetBounds
      (Object : Object_Type'Class)
       return Bounds_Type;
 
    procedure SetAnchors
-     (Object : Object_ClassAccess;
+     (Object : access Object_Type;
       Top    : Boolean;
       Left   : Boolean;
       Right  : Boolean;
@@ -146,15 +150,19 @@ package GUI is
          Priv           : Context_Private;
       end record;
 
-   type Canvas_Type is new Canvas.BasicCanvas_Type with private;
+   type Canvas_Type is new Canvas.Canvas_Type with private;
    type Canvas_ClassAccess is access all Canvas_Type'Class;
 
    procedure SetBounds
-     (Canvas : Canvas_ClassAccess;
-      Bounds : Bounds_Type);
+     (Canvas  : access Canvas_Type;
+      Top     : Integer;
+      Left    : Integer;
+      Height  : Integer;
+      Width   : Integer;
+      Visible : Boolean);
 
    procedure SetAnchors
-     (Canvas : Canvas_ClassAccess;
+     (Canvas : access Canvas_Type;
       Top    : Boolean;
       Left   : Boolean;
       Right  : Boolean;
@@ -234,7 +242,7 @@ private
 
    ---------------------------------------------------------------------------
 
-   type Canvas_Type is new Canvas.BasicCanvas_Type with
+   type Canvas_Type is new Canvas.Canvas_Type with
       record
          Next    : Canvas_ClassAccess;
          Last    : Canvas_ClassAccess;

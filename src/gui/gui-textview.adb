@@ -148,16 +148,14 @@ package body GUI.TextView is
 
    begin
 
-      if Line.Content(SubLinePosition).LineWidth=0 then
+      if Line.Content(SubLinePosition).LineWidth<=0 then
          return;
       end if;
 
       NewCanvasLine:=new CanvasLine_Type;
 
-      --DEBUG
       if Item.Font=null then
-         Put("???????????");
-         New_Line;
+         raise NoFontSelected;
       end if;
 
       Item.Context.NewCanvas
@@ -165,26 +163,32 @@ package body GUI.TextView is
          Height => Item.LineHeight,
          Width  => Line.Content(SubLinePosition).LineWidth,
          Canvas => NewCanvasLine.Canvas);
+
       NewCanvasLine.Canvas.Clear
         (Color => 16#FFFFFFFF#);
-      Item.Font.TextOut
-        (Canvas => Canvas.BasicCanvas_ClassAccess(NewCanvasLine.Canvas),
-         X      => 0,
-         Y      => 0,
-         Text   => Line.Content
-           (SubLinePosition..Line.Content(SubLinePosition).NextLine-1));
+      declare
+         X : Integer:=0;
+         Y : Integer:=0;
+      begin
+         for i in SubLinePosition..Line.Content(SubLinePosition).NextLine-1 loop
+            Item.Font.CharacterOut
+              (Canvas => Canvas.Canvas_ClassAccess(NewCanvasLine.Canvas),
+               X      => X,
+               Y      => Y,
+               Char   => Line.Content(i).Char,
+               Color  => Line.Content(i).Color);
+         end loop;
+      end;
 
       NewCanvasLine.WrappedLine:=WrappedLine;
       NewCanvasLine.Last:=PreviousCanvasLine;
 
-      GUI.SetBounds
-        (Canvas => NewCanvasLine.Canvas,
-         Bounds =>
-           (Top     => (WrappedLine-Item.FirstWrappedLine)*Item.LineHeight,
-            Left    => 0,
-            Height  => Item.LineHeight,
-            Width   => Line.Content(SubLinePosition).LineWidth,
-            Visible => True));
+      NewCanvasLine.Canvas.SetBounds
+        (Top     => (WrappedLine-Item.FirstWrappedLine)*Item.LineHeight,
+         Left    => 0,
+         Height  => Item.LineHeight,
+         Width   => Line.Content(SubLinePosition).LineWidth,
+         Visible => True);
 
       if PreviousCanvasLine/=null then
 
@@ -242,8 +246,10 @@ package body GUI.TextView is
          end loop;
 
          if not
-           ((PreviousCanvasLineCursor/=null)
-            and then (PreviousCanvasLineCursor.WrappedLine=CurrentWrappedLine)) then
+             ((PreviousCanvasLineCursor/=null)
+              and then
+                (PreviousCanvasLineCursor.WrappedLine=CurrentWrappedLine)
+              )then
 
             RenderAndInsertCanvasLine
               (Item               => Item,
@@ -255,6 +261,7 @@ package body GUI.TextView is
             CanvasLineCursor:=PreviousCanvasLineCursor.Next;
 
          end if;
+
 
          CurrentSubLinePosition
            :=LineCursor.Content(CurrentSubLinePosition).NextLine;
@@ -277,148 +284,125 @@ package body GUI.TextView is
      (Item : access TextView_Type;
       Line : Line_Access) is
 
-      LinePosition : Natural:=Line.Content'First;
-      LineStart    : Natural:=Line.Content'First;
-      LineWidth    : Integer:=0;
+      InWord              : Boolean:=False;
+      WordStart           : Integer:=0;
+      LineAccumWidth      : Integer:=0;
+      LineStart           : Natural:=Line.Content'First;
+      LineNext            : Natural;
+      LineWordCount       : Integer:=0;
+      Position            : Natural:=Line.Content'First;
+      Overflow            : Boolean;
 
-      -- This function tries to add as much space as possible to the
-      -- current line if any space chars exists at the current LinePosition
-      -- It returns true if there are space chars
-      function ConsumeSpace
-        return Boolean is
-
+      procedure StopLine is
       begin
 
-         if (LinePosition>Line.Content'Last) then
-            return false;
-         end if;
-
-         if (LinePosition<=Line.Content'Last)
-           and then (Line.Content(LinePosition).Char/=' ') then
-            return false;
-         end if;
-         -- Consume at least the first character
-         LineWidth    := LineWidth+Item.SpaceCharWidth;
-         LinePosition := LinePosition+1;
-
-         -- Consume more space characters
-         while ((LinePosition<=Line.Content'Last)
-           and (LineWidth+Item.SpaceCharWidth<Item.Priv.Bounds.Width))
-           and then (Line.Content(LinePosition).Char=' ') loop
-            LinePosition:=LinePosition+1;
-         end loop;
-
-         return true;
-
-      end ConsumeSpace;
-      ------------------------------------------------------------------------
-
-      function ConsumeWord
-        return Boolean is
-         Pos       : Natural:=LinePosition;
-         WordStart : constant Natural:=LinePosition;
-         Width     : Integer;
-      begin
-
-         while (Pos<=Line.Content'Last)
-           and then (Line.Content(Pos).Char/=' ') loop
-            Pos:=Pos+1;
-         end loop;
-
-         if Pos=LinePosition then
-            return False;
-         else
-            Width:=Item.Font.TextWidth
-              (Line.Content(WordStart..Pos-1));
-
-            if LineWidth+Width>Item.Priv.Bounds.Width then
-               return False;
-            else
-               LineWidth    := LineWidth+Width;
-               LinePosition := Pos;
-               return True;
+         if LineStart in Line.Content'Range then
+            if Line.Content(LineStart).NextLine/=Position then
+               Line.Content(LineStart).Modified  := True;
+               Line.Content(LineStart).NextLine  := Position;
             end if;
+            Line.Content(LineStart).LineWidth := Line.Content(Position-1).AccumWidth-LineAccumWidth;
          end if;
 
-      end ConsumeWord;
-      ------------------------------------------------------------------------
-
-      procedure ConsumePartWord is
-
-         WordStart : constant Natural:=LinePosition;
-         Width     : Integer;
-
-      begin
-
-         if LinePosition<=Line.Content'Last then
-            LinePosition:=LinePosition+1;
+         if Line.SubLines=0 then
+            Line.SubLines:=1;
          end if;
 
-         while (LinePosition<=Line.Content'Last)
-           and then (Line.Content(LinePosition).Char/=' ') loop
-
-            Width:=Item.Font.TextWidth(Line.Content(WordStart..LinePosition));
-            if LineWidth+Width>Item.Priv.Bounds.Width then
-               LineWidth:=LineWidth+Width;
-               return;
-            end if;
-
-            LinePosition:=LinePosition+1;
-
-         end loop;
-
-         LineWidth:=LineWidth+Item.Font.TextWidth
-           (Line.Content(WordStart..LinePosition));
-
-      end ConsumePartWord;
+      end StopLine;
       ------------------------------------------------------------------------
 
-      procedure ConsumeWords is
+      procedure NewLine is
       begin
-         loop
-            exit when not ConsumeWord;
-            exit when not ConsumeSpace;
-         end loop;
-      end ConsumeWords;
+
+         Line.SubLines:=Line.SubLines+1;
+         if Line.Content(LineStart).NextLine/=Position then
+            Line.Content(LineStart).Modified  := True;
+            Line.Content(LineStart).NextLine  := Position;
+         end if;
+         Line.Content(LineStart).LineWidth := Line.Content(Position).AccumWidth-LineAccumWidth;
+         LineStart      := Position;
+         LineAccumWidth := Line.Content(Position).AccumWidth;
+         LineWordCount  := 0;
+         InWord:=False;
+
+      end NewLine;
       ------------------------------------------------------------------------
 
    begin
 
-      Line.SubLines := 0;
+      Line.SubLines:=0;
 
-      while LinePosition<Line.Content'Last loop
+      while Position<=Line.Content'Last loop
 
-         Line.SubLines:=Line.SubLines+1;
+         Overflow:=(Line.Content(Position).AccumWidth-LineAccumWidth>Item.Priv.Bounds.Width);
 
-         if ConsumeSpace then
-            ConsumeWords;
-         else
-            if ConsumeWord then
-               if ConsumeSpace then
-                  ConsumeWords;
+         if not InWord then
+
+            if Line.Content(Position).Char=' ' then
+
+               if (Position/=LineStart)
+                 and Overflow then
+                  NewLine;
                end if;
+
             else
-               ConsumePartWord;
+
+               if (Position/=LineStart)
+                 and Overflow then
+                  Position:=Position-1;
+                  NewLine;
+               end if;
+
+               InWord        := True;
+               LineWordCount := LineWordCount+1;
+               WordStart     := Position;
+
             end if;
+
+         else
+
+            if Line.Content(Position).Char=' ' then
+
+               InWord := False;
+
+               if Overflow then
+                  NewLine;
+               end if;
+
+            else
+
+               if Overflow then
+
+                  if LineWordCount>1 then
+                     Position:=WordStart;
+                     InWord := True;
+                  end if;
+
+                  NewLine;
+
+               end if;
+            end if;
+
          end if;
 
-         if LinePosition>Line.Content'Last+1 then
-            Put("ERROR");
-            Put(LinePosition);
-            Put(Line.Content'Last);
-            New_Line;
-         end if;
-         Line.Content(LineStart).NextLine  := LinePosition;
-         Line.Content(LineStart).LineWidth := LineWidth;
-
-         LineStart := LinePosition;
-         LineWidth := 0;
+         Position:=Position+1;
 
       end loop;
 
-      if Line.SubLines=0 then
-         Line.SubLines:=1;
-      end if;
+      StopLine;
+
+      -- TODO: Check if this is even possible (Range /=0)
+      Position:=Line.Content'First+1;
+      LineNext:=Line.Content(Line.Content'First).NextLine;
+
+      while Position<=Line.Content'Last loop
+         if Position/=LineNext then
+            Line.Content(Position).NextLine:=0;
+         else
+            LineNext:=Line.Content(Position).NextLine;
+         end if;
+         Position:=Position+1;
+      end loop;
 
    end AddLineBreaks;
    ---------------------------------------------------------------------------
@@ -451,7 +435,7 @@ package body GUI.TextView is
       Line:=Item.FirstLine;
       while Line/=null loop
          NextLine := Line.Next;
-         ColorString.Clear(Line.Content);
+         Fonts.ColorStrings.Clear(Line.Content);
          Free(Line);
          Line     := NextLine;
       end loop;
@@ -461,6 +445,31 @@ package body GUI.TextView is
       ClearCanvasLines(Item);
 
    end Clear;
+   ---------------------------------------------------------------------------
+
+   procedure CalculateColorStringDimensions
+     (Item   : access TextView_Type;
+      String : Fonts.ColorStrings.ColorString_Access) is
+
+      AccumWidth   : Integer:=0;
+      PreviousChar : Wide_Wide_Character:=Wide_Wide_Character'Val(0);
+      ThisChar     : Wide_Wide_Character;
+
+   begin
+
+      for i in String'Range loop
+
+         ThisChar := String(i).Char;
+         AccumWidth           := AccumWidth+Item.Font.CharacterWidth(ThisChar);
+         String(i).AccumWidth := AccumWidth;
+
+         AccumWidth := AccumWidth+Item.Font.Kerning(PreviousChar,ThisChar);
+
+         PreviousChar:=ThisChar;
+
+      end loop;
+
+   end CalculateColorStringDimensions;
    ---------------------------------------------------------------------------
 
    WriteLineCount : Integer:=0;
@@ -474,10 +483,13 @@ package body GUI.TextView is
    begin
 
       NewLine:=new Line_Type;
-      ColorString.Append
+      Fonts.ColorStrings.Append
         (ColorString => NewLine.Content,
          String      => String,
          Color       => Color);
+      CalculateColorStringDimensions
+        (Item   => Item,
+         String => NewLine.Content);
 
       NewLine.Last:=Item.LastLine;
       if Item.LastLine/=null then
@@ -488,7 +500,7 @@ package body GUI.TextView is
       Item.LastLine:=NewLine;
 
       -- TODO : Replace this by a faster call later!
-      CalculateLineBreaks(Item);
+      AddLineBreaks(Item,NewLine);
       CompleteCanvasLines(Item);
       Put("WriteLine Done");
       Put(WriteLineCount);
@@ -502,14 +514,13 @@ package body GUI.TextView is
      (Item : access TextView_Type) is
    begin
 
+      ClearCanvasLines(Item);
       if Item.Priv.Bounds.Width/=Item.Priv.PrevBounds.Width then
          CalculateLineBreaks(Item);
-         ClearCanvasLines(Item);
-         CompleteCanvasLines(Item);
-      else
-         RemoveInvisibleCanvasLines(Item);
-         CompleteCanvasLines(Item);
       end if;
+
+      RemoveInvisibleCanvasLines(Item);
+      CompleteCanvasLines(Item);
 
    end Resize;
 
@@ -519,6 +530,7 @@ package body GUI.TextView is
    begin
       -- TODO: Calculate Font Specific things.
       Item.Font:=Font;
+      Item.SpaceCharWidth:=Font.TextWidth(To_Unbounded_String(" "));
    end SetFont;
    ---------------------------------------------------------------------------
 

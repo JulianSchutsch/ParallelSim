@@ -21,10 +21,12 @@
 
 pragma Ada_2005;
 
-private with ColorString;
+private with Fonts.ColorStrings;
 with Fonts;
 
 package GUI.TextView is
+
+   NoFontSelected : Exception;
 
    type TextView_Type is new Object_Type with private;
    type TextView_Access is access all TextView_Type;
@@ -56,7 +58,7 @@ package GUI.TextView is
 
 private
 
-   use ColorString;
+   use Fonts.ColorStrings;
 
    type Line_Type;
    type Line_Access is access Line_Type;
@@ -85,7 +87,7 @@ private
          LastLine               : Line_Access:=null;
          CanvasLines            : CanvasLine_Access:=null;
          Font                   : Fonts.Font_ClassAccess:=null;
-         SpaceCharWidth         : Integer := 10; -- TODO: Obtain it properly
+         SpaceCharWidth         : Integer;
          LineHeight             : Integer := 19; -- TODO: Obtain it properly
          FirstWrappedLine       : Natural := 0;
          InWrappedLinePosition  : Natural := 0;

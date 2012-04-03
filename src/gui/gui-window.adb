@@ -47,86 +47,68 @@ package body GUI.Window is
          when WindowChangeModeNothing =>
             null;
          when WindowChangeModeMove =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top+RefY-Window.RefY,
-                  Left    => Bounds.Left+RefX-Window.RefX,
-                  Height  => Bounds.Height,
-                  Width   => Bounds.Width,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top+RefY-Window.RefY,
+               Left    => Bounds.Left+RefX-Window.RefX,
+               Height  => Bounds.Height,
+               Width   => Bounds.Width,
+               Visible => Bounds.Visible);
          when WindowChangeModeSizeTopLeft =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top+RefY-Window.RefY,
-                  Left    => Bounds.Left+RefX-Window.RefX,
-                  Height  => Bounds.Height-RefY+Window.RefY,
-                  Width   => Bounds.Width-RefX+Window.RefX,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top+RefY-Window.RefY,
+               Left    => Bounds.Left+RefX-Window.RefX,
+               Height  => Bounds.Height-RefY+Window.RefY,
+               Width   => Bounds.Width-RefX+Window.RefX,
+               Visible => Bounds.Visible);
          when WindowChangeModeSizeTop =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top+RefY-Window.RefY,
-                  Left    => Bounds.Left,
-                  Height  => Bounds.Height-RefY+Window.RefY,
-                  Width   => Bounds.Width,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top+RefY-Window.RefY,
+               Left    => Bounds.Left,
+               Height  => Bounds.Height-RefY+Window.RefY,
+               Width   => Bounds.Width,
+               Visible => Bounds.Visible);
          when WindowChangeModeSizeTopRight =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top+RefY-Window.RefY,
-                  Left    => Bounds.Left,
-                  Height  => Bounds.Height-RefY+Window.RefY,
-                  Width   => Window.RefWidth+RefX-Window.RefX,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top+RefY-Window.RefY,
+               Left    => Bounds.Left,
+               Height  => Bounds.Height-RefY+Window.RefY,
+               Width   => Window.RefWidth+RefX-Window.RefX,
+               Visible => Bounds.Visible);
          when WindowChangeModeSizeLeft =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top,
-                  Left    => Bounds.Left+RefX-Window.RefX,
-                  Height  => Bounds.Height,
-                  Width   => Bounds.Width-RefX+Window.RefX,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top,
+               Left    => Bounds.Left+RefX-Window.RefX,
+               Height  => Bounds.Height,
+               Width   => Bounds.Width-RefX+Window.RefX,
+               Visible => Bounds.Visible);
          when WindowChangeModeSizeRight =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top,
-                  Left    => Bounds.Left,
-                  Height  => Bounds.Height,
-                  Width   => Window.RefWidth+RefX-Window.RefX,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top,
+               Left    => Bounds.Left,
+               Height  => Bounds.Height,
+               Width   => Window.RefWidth+RefX-Window.RefX,
+                Visible => Bounds.Visible);
          when WindowChangeModeSizeBottomLeft =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top,
-                  Left    => Bounds.Left+RefX-Window.RefX,
-                  Height  => Window.RefHeight+RefY-Window.RefY,
-                  Width   => Bounds.Width-RefX+Window.RefX,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top,
+               Left    => Bounds.Left+RefX-Window.RefX,
+               Height  => Window.RefHeight+RefY-Window.RefY,
+               Width   => Bounds.Width-RefX+Window.RefX,
+               Visible => Bounds.Visible);
          when WindowChangeModeSizeBottom =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top,
-                  Left    => Bounds.Left,
-                  Height  => Window.RefHeight+RefY-Window.RefY,
-                  Width   => Bounds.Width,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top,
+               Left    => Bounds.Left,
+               Height  => Window.RefHeight+RefY-Window.RefY,
+               Width   => Bounds.Width,
+               Visible => Bounds.Visible);
          when WindowChangeModeSizeBottomRight =>
-            GUI.SetBounds
-              (Object => Object_ClassAccess(Window),
-               Bounds =>
-                 (Top     => Bounds.Top,
-                  Left    => Bounds.Left,
-                  Height  => Window.RefHeight+RefY-Window.RefY,
-                  Width   => Window.RefWidth+RefX-Window.RefX,
-                  Visible => Bounds.Visible));
+            Window.SetBounds
+              (Top     => Bounds.Top,
+               Left    => Bounds.Left,
+               Height  => Window.RefHeight+RefY-Window.RefY,
+               Width   => Window.RefWidth+RefX-Window.RefX,
+               Visible => Bounds.Visible);
       end case;
 
    end ApplyChange;

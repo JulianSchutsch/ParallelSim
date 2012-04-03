@@ -273,26 +273,23 @@ package body GUI.Themes.YellowBlue.Window is
            (Color => 16#00000000#);
 
          NewWindow.Font.TextOut
-           (Canvas => Canvas.BasicCanvas_ClassAccess(NewWindow.TitleCanvas),
+           (Canvas => Canvas.Canvas_ClassAccess(NewWindow.TitleCanvas),
             X => 0,
             Y => 0,
             Text => To_Unbounded_String("Hallo"),
             Color => 16#FFFFFFFF#);
 
-         GUI.SetBounds
-           (Canvas => NewWindow.TitleCanvas,
-            Bounds =>
-              (Top => BorderWidth+1,
-               Left => BorderWidth+2,
-               Height => TitleBarHeight,
-               Width => TextWidth,
-               Visible => True));
+         NewWindow.TitleCanvas.SetBounds
+           (Top     => BorderWidth+1,
+            Left    => BorderWidth+2,
+            Height  => TitleBarHeight,
+            Width   => TextWidth,
+            Visible => True);
 
-         GUI.SetAnchors
-           (Canvas => NewWIndow.TitleCanvas,
-            Top => False,
-            Left => False,
-            Right => False,
+         NewWindow.TitleCanvas.SetAnchors
+           (Top    => False,
+            Left   => False,
+            Right  => False,
             Bottom => False);
       end;
       ------------------------------------------------------------------------
@@ -345,17 +342,14 @@ package body GUI.Themes.YellowBlue.Window is
          Y      => 1,
          Height => BorderSpaceWidth,
          Color  => BorderEdgeLineColor);
-      GUI.SetBounds
-        (Canvas => NewWindow.TopLeftCorner,
-         Bounds =>
-           (Top     => 0,
-            Left    => 0,
-            Height  => TopBarHeight,
-            Width   => CornerSize,
-            Visible => True));
-      Gui.SetAnchors
-        (Canvas => NewWindow.TopLeftCorner,
-         Top    => True,
+      NewWindow.TopLeftCorner.SetBounds
+        (Top     => 0,
+         Left    => 0,
+         Height  => TopBarHeight,
+         Width   => CornerSize,
+         Visible => True);
+      NewWindow.TopLeftCorner.SetAnchors
+        (Top    => True,
          Left   => True,
          Right  => False,
          Bottom => False);
@@ -381,17 +375,14 @@ package body GUI.Themes.YellowBlue.Window is
         :=BorderLineColor;
       NewWindow.TopBar.Image(TopBarHeight-1,0)
         :=BorderLineColor;
-      GUI.SetBounds
-        (Canvas => NewWindow.TopBar,
-         Bounds =>
-           (Top     => 0,
-            Left    => CornerSize,
-            Height  => TopBarHeight,
-            Width   => -2*CornerSize,
-            Visible => True));
-      GUI.SetAnchors
-        (Canvas => NewWindow.TopBar,
-         Top    => True,
+      NewWindow.TopBar.SetBounds
+        (Top     => 0,
+         Left    => CornerSize,
+         Height  => TopBarHeight,
+         Width   => -2*CornerSize,
+         Visible => True);
+      NewWindow.Topbar.SetAnchors
+        (Top    => True,
          Left   => True,
          Right  => True,
          Bottom => False);
@@ -444,17 +435,14 @@ package body GUI.Themes.YellowBlue.Window is
          Y      => CornerSize-1,
          Width  => BorderSpaceWidth,
          Color  => BorderEdgeLineColor);
-      GUI.SetBounds
-        (Canvas => NewWindow.TopRightCorner,
-         Bounds =>
-           (Top     => 0,
-            Left    => -CornerSize,
-            Height  => TopBarHeight,
-            Width   => CornerSize,
-            Visible => True));
-      GUI.SetAnchors
-        (Canvas => NewWindow.TopRightCorner,
-         Top    => True,
+      NewWindow.TopRightCorner.SetBounds
+        (Top     => 0,
+         Left    => -CornerSize,
+         Height  => TopBarHeight,
+         Width   => CornerSize,
+         Visible => True);
+      NewWindow.TopRightCorner.SetAnchors
+        (Top    => True,
          Left   => False,
          Right  => True,
          Bottom => False);
@@ -469,17 +457,14 @@ package body GUI.Themes.YellowBlue.Window is
         (Color => BackgroundColor);
       NewWindow.LeftBar.Image(0,0):=BorderLineColor;
       NewWindow.LeftBar.Image(0,BorderWidth-1):=BorderLineColor;
-      GUI.SetBounds
-        (Canvas => NewWindow.LeftBar,
-         Bounds =>
-           (Top     => TopBarHeight,
-            Left    => 0,
-            Height  => -TopBarHeight-CornerSize,
-            Width   => BorderWidth,
-            Visible => True));
-      GUI.SetAnchors
-        (Canvas => NewWindow.LeftBar,
-         Top    => True,
+      NewWindow.LeftBar.SetBounds
+        (Top     => TopBarHeight,
+         Left    => 0,
+         Height  => -TopBarHeight-CornerSize,
+         Width   => BorderWidth,
+         Visible => True);
+      NewWindow.LeftBar.SetAnchors
+        (Top    => True,
          Left   => True,
          Right  => False,
          Bottom => True);
@@ -494,14 +479,12 @@ package body GUI.Themes.YellowBlue.Window is
         (Color => BackgroundColor);
       NewWindow.RightBar.Image(0,0):=BorderLineColor;
       NewWindow.RightBar.Image(0,BorderWidth-1):=BorderLineColor;
-      GUI.SetBounds
-        (Canvas => NewWindow.RightBar,
-         Bounds =>
-           (Top     => TopBarHeight,
-            Left    => -BorderWidth,
-            Height  => -TopBarHeight-CornerSize,
-            Width   => BorderWidth,
-            Visible => True));
+      NewWindow.RightBar.SetBounds
+        (Top     => TopBarHeight,
+         Left    => -BorderWidth,
+         Height  => -TopBarHeight-CornerSize,
+         Width   => BorderWidth,
+         Visible => True);
       GUI.SetAnchors
         (Canvas => NewWindow.RightBar,
          Top    => True,
@@ -553,17 +536,14 @@ package body GUI.Themes.YellowBlue.Window is
          Height => CornerSize-BorderWidth,
          Width  => CornerSize-BorderWidth,
          Color  => 0);
-      GUI.SetBounds
-        (Canvas => NewWindow.BottomLeftCorner,
-         Bounds =>
-           (Top     => -CornerSize,
-            Left    => 0,
-            Height  => CornerSize,
-            Width   => CornerSize,
-            Visible => True));
-      GUI.SetAnchors
-        (Canvas => NewWindow.BottomLeftCorner,
-         Top    => False,
+      NewWindow.BottomLeftCorner.SetBounds
+        (Top     => -CornerSize,
+         Left    => 0,
+         Height  => CornerSize,
+         Width   => CornerSize,
+         Visible => True);
+      NewWindow.BottomLeftCorner.SetAnchors
+        (Top    => False,
          Left   => True,
          Right  => False,
          Bottom => True);
@@ -580,14 +560,12 @@ package body GUI.Themes.YellowBlue.Window is
       NewWindow.BottomBar.Image(0,0)             := BorderLineColor;
       NewWindow.BottomBar.Image(BorderWidth-1,0) := BorderLineColor;
 
-      GUI.SetBounds
-        (Canvas => NewWindow.BottomBar,
-         Bounds =>
-           (Top     => -BorderWidth,
-            Left    => CornerSize,
-            Height  => BorderWidth,
-            Width   => -2*CornerSize,
-            Visible => True));
+      NewWindow.BottomBar.SetBounds
+        (Top     => -BorderWidth,
+         Left    => CornerSize,
+         Height  => BorderWidth,
+         Width   => -2*CornerSize,
+         Visible => True);
       GUI.SetAnchors
         (Canvas => NewWindow.BottomBar,
          Top    => False,
@@ -639,17 +617,14 @@ package body GUI.Themes.YellowBlue.Window is
          Height => CornerSize-BorderWidth,
          Width  => CornerSize-BorderWidth,
          Color  => 0);
-      GUI.SetBounds
-        (Canvas => NewWindow.BottomRightCorner,
-         Bounds =>
-           (Top     => -CornerSize,
-            Left    => -CornerSize,
-            Height  => CornerSize,
-            Width   => CornerSize,
-            Visible => True));
-      GUI.SetAnchors
-        (Canvas => NewWindow.BottomRightCorner,
-         Top    => False,
+      NewWindow.BottomRightCorner.SetBounds
+        (Top     => -CornerSize,
+         Left    => -CornerSize,
+         Height  => CornerSize,
+         Width   => CornerSize,
+         Visible => True);
+      NewWindow.BottomRightCorner.SetAnchors
+        (Top    => False,
          Left   => False,
          Right  => True,
          Bottom => True);
@@ -662,17 +637,14 @@ package body GUI.Themes.YellowBlue.Window is
          Canvas => NewWindow.ClientArea);
       NewWindow.ClientArea.Clear
         (Color => ClientColor);
-      GUI.SetBounds
-        (Canvas => NewWindow.ClientArea,
-         Bounds =>
-           (Top     => TopBarHeight,
-            Left    => BorderWidth,
-            Height  => -TopBarHeight-BorderWidth,
-            Width   => -2*BorderWidth,
-            Visible => True));
-      GUI.SetAnchors
-        (Canvas => NewWindow.ClientArea,
-         Top    => True,
+      NewWindow.ClientArea.SetBounds
+        (Top     => TopBarHeight,
+         Left    => BorderWidth,
+         Height  => -TopBarHeight-BorderWidth,
+         Width   => -2*BorderWidth,
+         Visible => True);
+      NewWindow.ClientArea.SetAnchors
+        (Top    => True,
          Left   => True,
          Right  => True,
          Bottom => True);
@@ -707,18 +679,15 @@ package body GUI.Themes.YellowBlue.Window is
          NewWindow.Client:=Object_ClassAccess(Client);
       end;
 
-      GUI.SetBounds
-        (Object => NewWindow.Client,
-         Bounds =>
-           (Top     => TopBarHeight,
-            Left    => BorderWidth,
-            Height  => -TopBarHeight-BorderWidth,
-            Width   => -2*BorderWidth,
-            Visible => True));
+      NewWindow.Client.SetBounds
+        (Top     => TopBarHeight,
+         Left    => BorderWidth,
+         Height  => -TopBarHeight-BorderWidth,
+         Width   => -2*BorderWidth,
+         Visible => True);
 
-      GUI.SetAnchors
-        (Object => NewWindow.Client,
-         Top    => True,
+      NewWindow.Client.SetAnchors
+        (Top    => True,
          Left   => True,
          Right  => True,
          Bottom => True);

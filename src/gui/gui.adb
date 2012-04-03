@@ -294,25 +294,34 @@ package body GUI is
          Visible => True);
 
       if Context.WindowArea/=null then
-         SetBounds
-           (Object => Context.WindowArea,
-            Bounds => Context.Bounds);
+         Context.WindowArea.SetBounds
+           (Top     => Context.Bounds.Top,
+            Left    => Context.Bounds.Left,
+            Height  => Context.Bounds.Height,
+            Width   => Context.Bounds.Width,
+            Visible => Context.Bounds.Visible);
       end if;
       if Context.ModalArea/=null then
-         SetBounds
-           (Object => Context.ModalArea,
-            Bounds => Context.Bounds);
+         Context.ModalArea.SetBounds
+           (Top     => Context.Bounds.Top,
+            Left    => Context.Bounds.Left,
+            Height  => Context.Bounds.Height,
+            Width   => Context.Bounds.Width,
+            Visible => Context.Bounds.Visible);
       end if;
       if Context.ContextArea/=null then
-         SetBounds
-           (Object => Context.ContextArea,
-            Bounds => Context.Bounds);
+         Context.ContextArea.SetBounds
+           (Top     => Context.Bounds.Top,
+            Left    => Context.Bounds.Left,
+            Height  => Context.Bounds.Height,
+            Width   => Context.Bounds.Width,
+            Visible => Context.Bounds.Visible);
       end if;
    end Resize;
    ---------------------------------------------------------------------------
 
    procedure SetAnchors
-     (Object : Object_ClassAccess;
+     (Object : access Object_Type;
       Top    : Boolean;
       Left   : Boolean;
       Right  : Boolean;
@@ -334,11 +343,22 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    procedure SetBounds
-     (Canvas : Canvas_ClassAccess;
-      Bounds : Bounds_Type) is
+     (Canvas  : access Canvas_Type;
+      Top     : Integer;
+      Left    : Integer;
+      Height  : Integer;
+      Width   : Integer;
+      Visible : Boolean) is
+
    begin
 
-      Canvas.Bounds:=Bounds;
+      Canvas.Bounds:=
+        (Top     => Top,
+         Left    => Left,
+         Height  => Height,
+         Width   => Width,
+         Visible => Visible);
+
       StoreAnchors
         (Anchors => Canvas.Anchors,
          ClientBounds => Canvas.Bounds,
@@ -348,7 +368,7 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    procedure SetAnchors
-     (Canvas : Canvas_ClassAccess;
+     (Canvas : access Canvas_Type;
       Top    : Boolean;
       Left   : Boolean;
       Right  : Boolean;
@@ -370,11 +390,23 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    procedure SetBounds
-     (Object : Object_ClassAccess;
-      Bounds : Bounds_Type) is
+     (Object  : access Object_Type;
+      Top     : Integer;
+      Left    : Integer;
+      Height  : Integer;
+      Width   : Integer;
+      Visible : Boolean) is
    begin
-      Object.Priv.Bounds:=Bounds;
-      ResizeTree(Object);
+
+      Object.Priv.Bounds:=
+        (Top     => Top,
+         Left    => Left,
+         Height  => Height,
+         Width   => Width,
+         Visible => Visible);
+
+      ResizeTree(Object_ClassAccess(Object));
+
    end SetBounds;
    ---------------------------------------------------------------------------
 
