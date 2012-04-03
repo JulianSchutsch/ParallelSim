@@ -98,7 +98,7 @@ package body SimClientGUI is
          Right  => True,
          Bottom => True);
 
-      for i in 1..99 loop
+      for i in 1..999 loop
          Console.WriteLine
            (String => To_Unbounded_String("A long test string to demonstrate wrapping, line "&Integer'Image(i)),
             Color  => 16#FF00FF00#);

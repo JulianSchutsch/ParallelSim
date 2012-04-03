@@ -26,7 +26,7 @@ with System.Address_Image;
 package body Basics is
    use type Ada.Containers.Hash_Type;
 
-   function UTF8ToUC4
+   function UTF8ToUCS4
      (String : Unbounded_String)
       return Unbounded_Wide_Wide_String is
 
@@ -87,7 +87,7 @@ package body Basics is
       end loop;
       return To_Unbounded_Wide_Wide_String(Buffer(1..BufferUsed));
 
-   end UTF8ToUC4;
+   end UTF8ToUCS4;
    ---------------------------------------------------------------------------
 
    function StringSumHash

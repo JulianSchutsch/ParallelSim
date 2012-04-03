@@ -68,7 +68,7 @@ package Basics is
      (Value : Natural)
       return Natural;
 
-   function UTF8ToUC4
+   function UTF8ToUCS4
      (String : Unbounded_String)
       return Unbounded_Wide_Wide_String;
 

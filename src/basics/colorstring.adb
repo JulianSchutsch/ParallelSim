@@ -17,34 +17,14 @@
 
 pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
+with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
+with Basics; use Basics;
 
 package body ColorString is
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => ColorString_Type,
       Name   => ColorString_Access);
-   ---------------------------------------------------------------------------
-
-   function ToUnboundedString
-     (ColorString : in ColorString_Type)
-      return Unbounded_String is
-
-      Result : Unbounded_String;
-
-   begin
-
-      Result:=To_Unbounded_String(Length => ColorString'Last-ColorString'First+1);
-
-      for i in ColorString'Range loop
-         Replace_Element
-           (Source => Result,
-            Index  => i-ColorString'First+1,
-            By     => ColorString(i).Char);
-      end loop;
-
-      return Result;
-
-   end ToUnboundedString;
    ---------------------------------------------------------------------------
 
    procedure Clear
@@ -64,18 +44,21 @@ package body ColorString is
       NewColorString : ColorString_Access;
       OldLength      : Natural;
 
+      UCS4 : Unbounded_Wide_Wide_String;
+
    begin
+      UCS4 := UTF8ToUCS4(String);
 
       if ColorString/=null then
          OldLength:=ColorString'Last;
          NewColorString:=new ColorString_Type
-           (1..ColorString'Last+Length(String));
+           (1..ColorString'Last+Length(UCS4));
          NewColorString(1..ColorString'Last):=ColorString.all;
          Free(ColorString);
       else
          OldLength      := 0;
          NewColorString := new ColorString_Type
-           (1..Length(String));
+           (1..Length(UCS4));
       end if;
 
       for i in 1..Length(String) loop
@@ -83,7 +66,7 @@ package body ColorString is
             Elem : ColorStringElement_Type renames NewColorString(OldLength+i);
          begin
             Elem.Color := Color;
-            Elem.Char  := Element(String,i);
+            Elem.Char  := Element(UCS4,i);
          end;
       end loop;
 

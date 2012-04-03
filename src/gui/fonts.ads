@@ -25,6 +25,7 @@ pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Canvas;
+with ColorString;
 
 package Fonts is
 
@@ -38,6 +39,11 @@ package Fonts is
       Text : Unbounded_String)
       return Integer is abstract;
 
+   function TextWidth
+     (Font : access Font_Type;
+      Text : ColorString.ColorString_Type)
+      return Integer is abstract;
+
    procedure TextOut
      (Font   : access Font_Type;
       Canvas : Standard.Canvas.BasicCanvas_ClassAccess;
@@ -45,6 +51,13 @@ package Fonts is
       Y      : Integer;
       Text   : Unbounded_String;
       Color  : Standard.Canvas.Color_Type) is abstract;
+
+   procedure TextOut
+     (Font   : access Font_Type;
+      Canvas : Standard.Canvas.BasicCanvas_ClassAccess;
+      X      : Integer;
+      Y      : Integer;
+      Text   : ColorString.ColorString_Type) is abstract;
 
    type Font_ClassAccess is access all Font_Type'Class;
 

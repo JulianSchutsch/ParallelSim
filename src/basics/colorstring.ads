@@ -28,7 +28,7 @@ package ColorString is
 
    type ColorStringElement_Type is
       record
-         Char       : Character;
+         Char       : Wide_Wide_Character;
          Color      : Color_Type;
          NextLine   : Natural;
          LineWidth  : Integer;
@@ -44,10 +44,6 @@ package ColorString is
      (ColorString : in out ColorString_Access;
       String      : Unbounded_String;
       Color       : Color_Type);
-
-   function ToUnboundedString
-     (ColorString : in ColorString_Type)
-      return Unbounded_String;
 
 private
 

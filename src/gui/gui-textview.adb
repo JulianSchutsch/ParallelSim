@@ -19,6 +19,7 @@ pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Canvas;
 
 package body GUI.TextView is
@@ -132,7 +133,6 @@ package body GUI.TextView is
    begin
       null;
    end;
-   pragma Unreferenced(RemoveInvisibleCanvasLines);
    ---------------------------------------------------------------------------
 
    procedure RenderAndInsertCanvasLine
@@ -171,11 +171,8 @@ package body GUI.TextView is
         (Canvas => Canvas.BasicCanvas_ClassAccess(NewCanvasLine.Canvas),
          X      => 0,
          Y      => 0,
-         Text   =>
-           ToUnboundedString
-           (Line.Content
-              (SubLinePosition..Line.Content(SubLinePosition).NextLine-1)),
-         Color  => 16#FF000000#);
+         Text   => Line.Content
+           (SubLinePosition..Line.Content(SubLinePosition).NextLine-1));
 
       NewCanvasLine.WrappedLine:=WrappedLine;
       NewCanvasLine.Last:=PreviousCanvasLine;
@@ -273,17 +270,16 @@ package body GUI.TextView is
          CurrentWrappedLine:=CurrentWrappedLine+1;
 
       end loop;
-   end;
+   end CompleteCanvasLines;
    ---------------------------------------------------------------------------
 
    procedure AddLineBreaks
      (Item : access TextView_Type;
       Line : Line_Access) is
 
-      LinePosition : Natural:=1;
-      LineStart    : Natural:=1;
+      LinePosition : Natural:=Line.Content'First;
+      LineStart    : Natural:=Line.Content'First;
       LineWidth    : Integer:=0;
-      Str          : Unbounded_String;
 
       -- This function tries to add as much space as possible to the
       -- current line if any space chars exists at the current LinePosition
@@ -292,18 +288,23 @@ package body GUI.TextView is
         return Boolean is
 
       begin
-         if (LinePosition<Length(Str))
+
+         if (LinePosition>Line.Content'Last) then
+            return false;
+         end if;
+
+         if (LinePosition<=Line.Content'Last)
            and then (Line.Content(LinePosition).Char/=' ') then
             return false;
          end if;
          -- Consume at least the first character
-         LineWidth:=LineWidth+Item.SpaceCharWidth;
-         LinePosition:=LinePosition+1;
+         LineWidth    := LineWidth+Item.SpaceCharWidth;
+         LinePosition := LinePosition+1;
 
          -- Consume more space characters
-         while ((LinePosition<Length(Str)
+         while ((LinePosition<=Line.Content'Last)
            and (LineWidth+Item.SpaceCharWidth<Item.Priv.Bounds.Width))
-           and then (Line.Content(LinePosition).Char=' ')) loop
+           and then (Line.Content(LinePosition).Char=' ') loop
             LinePosition:=LinePosition+1;
          end loop;
 
@@ -319,7 +320,7 @@ package body GUI.TextView is
          Width     : Integer;
       begin
 
-         while (Pos<Length(Str))
+         while (Pos<=Line.Content'Last)
            and then (Line.Content(Pos).Char/=' ') loop
             Pos:=Pos+1;
          end loop;
@@ -328,7 +329,7 @@ package body GUI.TextView is
             return False;
          else
             Width:=Item.Font.TextWidth
-              (Unbounded_Slice(Str,WordStart,Pos-1));
+              (Line.Content(WordStart..Pos-1));
 
             if LineWidth+Width>Item.Priv.Bounds.Width then
                return False;
@@ -349,15 +350,14 @@ package body GUI.TextView is
 
       begin
 
-         if LinePosition<=Length(Str) then
+         if LinePosition<=Line.Content'Last then
             LinePosition:=LinePosition+1;
          end if;
 
-         while (LinePosition<=Length(Str))
+         while (LinePosition<=Line.Content'Last)
            and then (Line.Content(LinePosition).Char/=' ') loop
 
-            Width:=Item.Font.TextWidth
-              (Unbounded_Slice(Str,WordStart,LinePosition));
+            Width:=Item.Font.TextWidth(Line.Content(WordStart..LinePosition));
             if LineWidth+Width>Item.Priv.Bounds.Width then
                LineWidth:=LineWidth+Width;
                return;
@@ -368,7 +368,7 @@ package body GUI.TextView is
          end loop;
 
          LineWidth:=LineWidth+Item.Font.TextWidth
-              (Unbounded_Slice(Str,WordStart,LinePosition));
+           (Line.Content(WordStart..LinePosition));
 
       end ConsumePartWord;
       ------------------------------------------------------------------------
@@ -384,12 +384,7 @@ package body GUI.TextView is
 
    begin
 
-      if Line=null then
-         return;
-      end if;
-
       Line.SubLines := 0;
-      Str           := ToUnboundedString(Line.Content.all);
 
       while LinePosition<Line.Content'Last loop
 
@@ -407,6 +402,12 @@ package body GUI.TextView is
             end if;
          end if;
 
+         if LinePosition>Line.Content'Last+1 then
+            Put("ERROR");
+            Put(LinePosition);
+            Put(Line.Content'Last);
+            New_Line;
+         end if;
          Line.Content(LineStart).NextLine  := LinePosition;
          Line.Content(LineStart).LineWidth := LineWidth;
 
@@ -462,6 +463,8 @@ package body GUI.TextView is
    end Clear;
    ---------------------------------------------------------------------------
 
+   WriteLineCount : Integer:=0;
+
    procedure WriteLine
      (Item   : access TextView_Type;
       String : Unbounded_String;
@@ -488,6 +491,8 @@ package body GUI.TextView is
       CalculateLineBreaks(Item);
       CompleteCanvasLines(Item);
       Put("WriteLine Done");
+      Put(WriteLineCount);
+      WriteLineCount:=WriteLineCount+1;
       New_Line;
 
    end WriteLine;
@@ -500,7 +505,10 @@ package body GUI.TextView is
       if Item.Priv.Bounds.Width/=Item.Priv.PrevBounds.Width then
          CalculateLineBreaks(Item);
          ClearCanvasLines(Item);
-         CompleteCanvasLines(item);
+         CompleteCanvasLines(Item);
+      else
+         RemoveInvisibleCanvasLines(Item);
+         CompleteCanvasLines(Item);
       end if;
 
    end Resize;
