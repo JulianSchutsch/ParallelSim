@@ -42,11 +42,15 @@ abstract project Common is
       "-O0"
      );
 
+   Linker_Switches:=("-lgmem");
+
    case Profiling is
 
       when "On" =>
 
          Compiler_Switches:=Compiler_Switches &
+          ("-pg");
+         Linker_Switches:=Linker_Switches &
           ("-pg");
 
       when "Off" =>
@@ -56,8 +60,6 @@ abstract project Common is
    end case;
 
    LanguagesUsed:=("Ada");
-
-   Linker_Switches:=("-lgmem");
 
    Binder_Switches:=
      ("-E");

@@ -349,8 +349,6 @@ package body GUI.TextView is
 
       begin
 
-         Put("Consume Part Word");
-         New_Line;
          if LinePosition<=Length(Str) then
             LinePosition:=LinePosition+1;
          end if;
@@ -364,7 +362,6 @@ package body GUI.TextView is
                LineWidth:=LineWidth+Width;
                return;
             end if;
-            Put("+");
 
             LinePosition:=LinePosition+1;
 

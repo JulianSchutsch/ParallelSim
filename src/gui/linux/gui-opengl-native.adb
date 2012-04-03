@@ -521,13 +521,24 @@ package body GUI.OpenGL.Native is
    Implementation : constant Implementation_Type:=
      (NewContext  => NewContext'Access,
       FreeContext => FreeContext'Access);
+   Identifier     : constant Unbounded_String:=To_Unbounded_String("OpenGL");
 
    procedure Register is
    begin
+
       Implementations.Register
-        (Identifier     => To_Unbounded_String("OpenGL"),
+        (Identifier     => Identifier,
          Implementation => Implementation);
+
    end Register;
    ---------------------------------------------------------------------------
+
+   procedure UnRegister is
+   begin
+
+      Implementations.UnRegister
+        (Identifier => Identifier);
+
+   end UnRegister;
 
 end GUI.OpenGL.Native;

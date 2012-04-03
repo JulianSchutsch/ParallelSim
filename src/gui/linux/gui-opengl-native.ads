@@ -22,5 +22,9 @@
 --     - Original version
 
 package GUI.OpenGL.Native is
+
    procedure Register;
+
+   procedure UnRegister;
+
 end GUI.OpenGL.Native;
