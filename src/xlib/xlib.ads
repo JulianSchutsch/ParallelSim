@@ -301,7 +301,31 @@ package Xlib is
    pragma Unchecked_Union(XEvent_Type);
    pragma Convention(C,XEvent_Type);
 
+   type XErrorEvent_Type is
+      record
+         ttype        : Interfaces.C.int;
+         display      : Display_Access;
+         serial       : Interfaces.C.long;
+         error_code   : Interfaces.C.char;
+         request_code : Interfaces.C.char;
+         minor_code   : Interfaces.C.char;
+      end record;
+   pragma Convention(C,XErrorEvent_Type);
+   type XErrorEvent_Access is access XErrorevent_Type;
+
    type XEvent_Access is access all XEvent_Type;
+
+   type ErrorFunction_Access is
+     access function
+       (display : Display_Access;
+        ErrorEvent : XErrorEvent_Access)
+        return Interfaces.C.int;
+   pragma Convention(C,ErrorFunction_Access);
+
+   function XSetErrorHandler
+     (func : ErrorFunction_Access)
+      return Interfaces.C.int;
+   pragma Import(C,XSetErrorHandler,"XSetErrorHandler");
 
    function XOpenDisplay
      (display_name : Interfaces.C.Strings.chars_ptr)

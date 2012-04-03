@@ -12,6 +12,44 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body GUI.OpenGL.Native is
 
+   ErrorStorage : Xlib.XErrorEvent_Type;
+   ErrorStorageSet : Boolean;
+
+   function ErrorCodeString
+     return String is
+   begin
+      if ErrorStorageSet then
+         return " Serial:"&Interfaces.C.long'Image(ErrorStorage.serial)
+           &" Error Code:"&Interfaces.C.char'Image(ErrorStorage.error_code)
+           &" Request Code:"&Interfaces.C.char'Image(ErrorStorage.request_code)
+           &" Minor Code:"&Interfaces.C.char'Image(ErrorStorage.minor_code);
+      else
+         return " No further information since the error handler was not called!";
+      end if;
+   end;
+   ---------------------------------------------------------------------------
+
+   function ErrorHandler
+     (display : Xlib.Display_Access;
+      error   : XLib.XErrorEvent_Access)
+      return Interfaces.C.int;
+   pragma Convention(C,ErrorHandler);
+
+   function ErrorHandler
+     (display : Xlib.Display_Access;
+      error   : XLib.XErrorEvent_Access)
+      return Interfaces.C.int is
+
+      pragma Unreferenced(display);
+
+   begin
+      Put("**********************ErrorHandler Called*********************");
+      New_Line;
+      ErrorStorage    := error.all;
+      ErrorStorageSet := True;
+      return 0;
+   end ErrorHandler;
+
    type CIntArray is array(Natural range <>) of aliased Interfaces.C.int;
    pragma Convention(C,CIntArray);
 
@@ -189,7 +227,6 @@ package body GUI.OpenGL.Native is
 
       end loop;
 
-      Put("Paint");
       Paint;
 
    end Process;
@@ -327,6 +364,12 @@ package body GUI.OpenGL.Native is
            with "Failed call to XOpenDisplay";
       end if;
 
+      if XLib.XSetErrorHandler
+        (func => ErrorHandler'Access)=0 then
+         raise FailedToCreateContext
+           with "Failed call to XSetErrorHandler";
+      end if;
+
       if glX.glXQueryVersion
         (dpy   => Context.Display,
          major => Context.GLXMajor'Access,
@@ -334,7 +377,8 @@ package body GUI.OpenGL.Native is
 
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Failed call to glXQueryVersion";
+           with "Failed call to glXQueryVersion"
+             &ErrorCodeString;
 
       end if;
       Put("GLX Version:");
@@ -365,7 +409,8 @@ package body GUI.OpenGL.Native is
       if Context.Visual=null then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Failed call to glXChooseVisual";
+           with "Failed call to glXChooseVisual"
+             &ErrorCodeString;
       end if;
 
       Context.ColorMap := Xlib.XCreateColormap
@@ -416,7 +461,8 @@ package body GUI.OpenGL.Native is
       if Context.Window=0 then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Call to XCreateWindow returned no window";
+           with "Call to XCreateWindow returned no window"
+             &ErrorCodeString;
       end if;
 
       declare
@@ -448,7 +494,8 @@ package body GUI.OpenGL.Native is
       if Context.DeleteWindowAtom=0 then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Call to XInternAtom with WM_DELETE_WINDOW failed";
+           with "Call to XInternAtom with WM_DELETE_WINDOW failed"
+             &ErrorCodeString;
       end if;
 
       if Xlib.XSetWMProtocols
@@ -458,7 +505,8 @@ package body GUI.OpenGL.Native is
          count     => 1)=0 then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Call to XSetWMProtocols failed";
+           with "Call to XSetWMProtocols failed"
+             &ErrorCodeString;
       end if;
 
       Context.GLXContext:=glX.glXCreateContext
@@ -470,7 +518,8 @@ package body GUI.OpenGL.Native is
       if Context=null then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Call to XCreateContext failed";
+           with "Call to XCreateContext failed"
+             &ErrorCodeString;
       end if;
 
       Xlib.XMapWindow
@@ -483,7 +532,8 @@ package body GUI.OpenGL.Native is
          context  => Context.GLXContext)=0 then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Call to glxMakeCurrent failed";
+           with "Call to glxMakeCurrent failed"
+             &ErrorCodeString;
       end if;
 
       Context.InputIM:=Xlib.XOpenIM
@@ -495,17 +545,20 @@ package body GUI.OpenGL.Native is
       if Context.InputIM=null then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Failed to create input IM with XOpenIM";
+           with "Failed to create input IM with XOpenIM"
+             &ErrorCodeString;
       end if;
 
       Context.InputContext:=Xlib.XCreateIC_1
         (im => Context.InputIM,
          window => Context.Window,
          inputstyle => Xlib.XIMPreeditNothing+Xlib.XIMStatusNothing);
+
       if Context.InputContext=null then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
-           with "Failed to create Input Context with XCreateIC";
+           with "Failed to create Input Context with XCreateIC"
+             &ErrorCodeString;
       end if;
 
       -- Initialize basic window environment
