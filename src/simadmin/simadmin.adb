@@ -130,7 +130,7 @@ package body SimAdmin is
    function Execute
      (Item : access MsgShutdown_Type)
       return Boolean is
-      pragma Warnings(Off,Item);
+      pragma Unreferenced(Item);
    begin
       LogChannel.Write
         (Level => Logging.LevelEvent,
@@ -149,6 +149,7 @@ package body SimAdmin is
       use type TaskQueue.Task_ClassAccess;
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
+      pragma Warnings(Off,PrevPosition);
 
    begin
       loop
@@ -199,6 +200,7 @@ package body SimAdmin is
       use type SimCommon.NetworkIDString;
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
+      pragma Warnings(Off,PrevPosition);
 
    begin
       loop

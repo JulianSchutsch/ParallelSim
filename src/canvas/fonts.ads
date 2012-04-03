@@ -53,17 +53,17 @@ package Fonts is
       return Integer is abstract;
 
    function TextWidth
-     (Font : access Font_Type;
+     (Font : access Font_Type'Class;
       Text : Unbounded_String)
-      return Integer is abstract;
+      return Integer;
 
    procedure TextOut
-     (Font   : access Font_Type;
+     (Font   : access Font_Type'Class;
       Canvas : Standard.Canvas.Canvas_ClassAccess;
       X      : Integer;
       Y      : Integer;
       Text   : Unbounded_String;
-      Color  : Standard.Canvas.Color_Type) is abstract;
+      Color  : Standard.Canvas.Color_Type);
 
    type Font_ClassAccess is access all Font_Type'Class;
 

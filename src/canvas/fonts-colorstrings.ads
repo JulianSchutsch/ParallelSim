@@ -21,29 +21,68 @@
 
 pragma Ada_2005;
 
-with Canvas; use Canvas;
+with Canvas;
 
 package Fonts.ColorStrings is
 
+   FontNotAssigned    : Exception;
+   InvalidWrappedLine : Exception;
+
+   type ColorStringElement_Type is private;
+
+   type ColorStringArray_Type is array (Natural range <>) of ColorStringElement_Type;
+   type ColorStringArray_Access is access ColorStringArray_Type;
+
+   type ColorString_Type is tagged
+      record
+         WrappedLineCount   : Natural:=0;
+         CurrentWidth       : Integer:=0;
+         CurrentWrappedLine : Natural:=0;
+         CurrentPosition    : Natural:=0;
+         Font               : Font_ClassAccess:=null;
+         Content            : ColorstringArray_Access:=null;
+      end record;
+
+   procedure Render
+     (ColorString     : in out Colorstring_Type;
+      Canvas          : Standard.Canvas.Canvas_ClassAccess;
+      X               : Integer;
+      Y               : Integer);
+
+   procedure GreedyWrapping
+     (ColorString : in out ColorString_Type;
+      Width       : Integer);
+
+   procedure SelectWrappedLine
+     (ColorString : in out ColorString_Type;
+      WrappedLine : Natural);
+
+   function FirstWrappedLine
+     (ColorString : access ColorString_Type)
+      return Boolean;
+
+   function NextWrappedLine
+     (ColorString : access ColorString_Type)
+      return Boolean;
+
+   procedure Clear
+     (ColorString : in out ColorString_Type);
+
+   procedure Initialize
+     (ColorString : in out ColorString_Type;
+      String      : Unbounded_String;
+      Color       : Canvas.Color_Type;
+      Font        : Font_ClassAccess);
+
+private
    type ColorStringElement_Type is
       record
          Char       : Wide_Wide_Character;
-         Color      : Color_Type;
+         Color      : Canvas.Color_Type;
          NextLine   : Natural;
          Modified   : Boolean;
          LineWidth  : Integer;
          AccumWidth : Integer;
       end record;
-
-   type ColorString_Type is array (Natural range <>) of ColorStringElement_Type;
-   type ColorString_Access is access ColorString_Type;
-
-   procedure Clear
-     (ColorString : in out ColorString_Access);
-
-   procedure Append
-     (ColorString : in out ColorString_Access;
-      String      : Unbounded_String;
-      Color       : Color_Type);
 
 end Fonts.ColorStrings;

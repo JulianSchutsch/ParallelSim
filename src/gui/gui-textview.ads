@@ -63,10 +63,8 @@ private
    type Line_Type;
    type Line_Access is access Line_Type;
 
-   type Line_Type is
+   type Line_Type is new Fonts.ColorStrings.ColorString_Type with
       record
-         SubLines : Natural:=0;
-         Content  : ColorString_Access;
          Next     : Line_Access:=null;
          Last     : Line_Access:=null;
       end record;
@@ -76,6 +74,7 @@ private
    type CanvasLine_Type is
       record
          WrappedLine : Natural;
+         Line        : Line_Access;
          Canvas      : Canvas_ClassAccess := null;
          Next        : CanvasLine_Access  := null;
          Last        : CanvasLine_Access  := null;

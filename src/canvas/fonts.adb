@@ -20,6 +20,8 @@
 pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
+with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
+with Basics; use Basics;
 
 package body Fonts is
 
@@ -47,6 +49,60 @@ package body Fonts is
 
    FontImplementations : FontImplementation_Access:=null;
    Fonts               : Font_ClassAccess:=null;
+   ---------------------------------------------------------------------------
+
+   function TextWidth
+     (Font : access Font_Type'Class;
+      Text : Unbounded_String)
+      return Integer is
+
+      UCS4  : constant Unbounded_Wide_Wide_String:=UTF8ToUCS4(Text);
+      Width : Integer:=0;
+
+   begin
+
+      for i in 1..Length(UCS4) loop
+
+         Width:=Width+Font.CharacterWidth(Element(UCS4,i));
+
+      end loop;
+
+      return Width;
+
+   end;
+   ---------------------------------------------------------------------------
+
+   procedure TextOut
+     (Font   : access Font_Type'Class;
+      Canvas : Standard.Canvas.Canvas_ClassAccess;
+      X      : Integer;
+      Y      : Integer;
+      Text   : Unbounded_String;
+      Color  : Standard.Canvas.Color_Type) is
+
+      XPosition : Integer;
+      YPosition : Integer;
+
+      UCS4 : constant Unbounded_Wide_Wide_String:=UTF8ToUCS4(Text);
+
+   begin
+
+      XPosition := X;
+      YPosition := Y;
+
+      for i in 1..Length(UCS4) loop
+
+         Font.CharacterOut
+           (Canvas      => Canvas,
+            X           => XPosition,
+            Y           => YPosition,
+            Char        => Element(UCS4,i),
+            Color       => Color);
+
+      end loop;
+
+   end TextOut;
+   ---------------------------------------------------------------------------
 
    procedure Register
      (Load : Load_Access) is

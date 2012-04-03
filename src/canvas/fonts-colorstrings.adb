@@ -19,60 +19,313 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Fonts.ColorStrings is
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => ColorString_Type,
-      Name   => ColorString_Access);
+     (Object => ColorStringArray_Type,
+      Name   => ColorStringArray_Access);
+   ---------------------------------------------------------------------------
+
+   procedure Render
+     (ColorString     : in out Colorstring_Type;
+      Canvas          : Standard.Canvas.Canvas_ClassAccess;
+      X               : Integer;
+      Y               : Integer) is
+
+      XPosition : Integer:=X;
+      YPosition : Integer:=Y;
+
+   begin
+
+      for i in ColorString.CurrentPosition
+        ..ColorString.Content(ColorString.CurrentPosition).NextLine-1 loop
+
+         ColorString.Font.CharacterOut
+           (Canvas => Canvas,
+            X      => XPosition,
+            Y      => YPosition,
+            Char   => ColorString.Content(i).Char,
+            Color  => ColorString.Content(i).Color);
+
+      end loop;
+
+   end Render;
+   ---------------------------------------------------------------------------
+
+   procedure GreedyWrapping
+     (ColorString : in out ColorString_Type;
+      Width       : Integer) is
+
+      InWord              : Boolean:=False;
+      WordStart           : Integer:=0;
+      LineAccumWidth      : Integer:=0;
+      LineStart           : Natural:=ColorString.Content'First;
+      LineNext            : Natural;
+      LineWordCount       : Integer:=0;
+      Position            : Natural:=ColorString.Content'First;
+      Overflow            : Boolean;
+
+      procedure NewLine is
+      begin
+
+         ColorString.WrappedLineCount:=ColorString.WrappedLineCount+1;
+
+         if ColorString.Content(LineStart).NextLine/=Position then
+
+            ColorString.Content(LineStart).Modified  := True;
+            ColorString.Content(LineStart).NextLine  := Position;
+            ColorString.Content(LineStart).LineWidth
+              := ColorString.Content(Position-1).AccumWidth-LineAccumWidth;
+
+         end if;
+
+
+         LineStart      := Position;
+         LineAccumWidth := ColorString.Content(Position-1).AccumWidth;
+         LineWordCount  := 0;
+         InWord         := False;
+
+      end NewLine;
+      ------------------------------------------------------------------------
+
+      procedure StopLine is
+      begin
+
+         if Position/=LineStart then
+            NewLine;
+         end if;
+
+         if ColorString.WrappedLineCount=0 then
+            ColorString.WrappedLineCount:=1;
+         end if;
+
+      end StopLine;
+      ------------------------------------------------------------------------
+
+   begin
+
+      ColorString.WrappedLineCount:=0;
+
+      while Position<=ColorString.Content'Last loop
+
+         Overflow
+           :=(ColorString.Content(Position).AccumWidth
+              -LineAccumWidth>Width);
+
+         if not InWord then
+
+            if ColorString.Content(Position).Char=' ' then
+
+               if (Position/=LineStart)
+                 and Overflow then
+                  NewLine;
+               end if;
+
+            else
+
+               if (Position/=LineStart)
+                 and Overflow then
+                  Position:=Position-1;
+                  NewLine;
+               end if;
+
+               InWord        := True;
+               LineWordCount := LineWordCount+1;
+               WordStart     := Position;
+
+            end if;
+
+         else
+
+            if ColorString.Content(Position).Char=' ' then
+
+               InWord := False;
+
+               if Overflow then
+                  NewLine;
+               end if;
+
+            else
+
+               if Overflow then
+
+                  if LineWordCount>1 then
+                     Position:=WordStart;
+                     InWord := True;
+                  end if;
+
+                  NewLine;
+
+               end if;
+            end if;
+
+         end if;
+
+         Position:=Position+1;
+
+      end loop;
+
+      StopLine;
+
+      -- TODO: Check if this is even possible (Range /=0)
+      Position:=ColorString.Content'First+1;
+      LineNext:=ColorString.Content(ColorString.Content'First).NextLine;
+
+      while Position<=ColorString.Content'Last loop
+         if Position/=LineNext then
+            ColorString.Content(Position).NextLine:=0;
+         else
+            LineNext:=ColorString.Content(Position).NextLine;
+         end if;
+         Position:=Position+1;
+      end loop;
+
+   end GreedyWrapping;
+   ---------------------------------------------------------------------------
+
+   function FirstWrappedLine
+     (ColorString : access ColorString_Type)
+      return Boolean is
+   begin
+
+      if (ColorString.Content/=null) then
+
+         ColorString.CurrentPosition    := ColorString.Content'First;
+         ColorString.CurrentWrappedLine := 0;
+         ColorString.CurrentWidth
+           := ColorString.Content(ColorString.CurrentPosition).LineWidth;
+         return True;
+
+      end if;
+
+      return False;
+
+   end;
+   ---------------------------------------------------------------------------
+
+   function NextWrappedLine
+     (ColorString : access ColorString_Type)
+      return Boolean is
+   begin
+
+      ColorString.CurrentWrappedLine:=ColorString.CurrentWrappedLine+1;
+
+      if ColorString.CurrentWrappedLine=ColorString.WrappedLineCount then
+         ColorString.CurrentWrappedLine := Integer'Last;
+         ColorString.CurrentPosition    := Integer'Last;
+         return False;
+      end if;
+
+      ColorString.CurrentPosition
+        :=ColorString.Content(ColorString.CurrentPosition).NextLine;
+      ColorString.CurrentWidth
+        := ColorString.Content(ColorString.CurrentPosition).LineWidth;
+
+      return True;
+
+   end NextWrappedLine;
+   ---------------------------------------------------------------------------
+
+   procedure SelectWrappedLine
+     (ColorString : in out ColorString_Type;
+      WrappedLine : Natural) is
+
+   begin
+
+      if WrappedLine>=ColorString.WrappedLineCount then
+         raise InvalidWrappedLine;
+      end if;
+
+      ColorString.CurrentPosition:=ColorString.Content'First;
+
+      for i in 1..WrappedLine loop
+         ColorString.CurrentPosition
+           :=ColorString.Content(ColorString.CurrentPosition).NextLine;
+      end loop;
+
+      ColorString.CurrentWrappedLine:=WrappedLine;
+      ColorString.CurrentWidth
+        := ColorString.Content(ColorString.CurrentPosition).LineWidth;
+
+   end SelectWrappedLine;
+   ---------------------------------------------------------------------------
+
+
+   procedure CalculateDimensions
+     (ColorString : in out ColorString_Type) is
+
+      AccumWidth   : Integer:=0;
+      PreviousChar : Wide_Wide_Character:=Wide_Wide_Character'Val(0);
+      ThisChar     : Wide_Wide_Character;
+
+   begin
+
+      if ColorString.Font=null then
+         raise FontNotAssigned;
+      end if;
+
+      for i in ColorString.Content'Range loop
+
+         ThisChar             := ColorString.Content(i).Char;
+
+         AccumWidth
+           := AccumWidth+ColorString.Font.CharacterWidth(ThisChar);
+
+         ColorString.Content(i).AccumWidth := AccumWidth;
+
+         AccumWidth
+           := AccumWidth+ColorString.Font.Kerning(PreviousChar,ThisChar);
+
+         PreviousChar:=ThisChar;
+
+      end loop;
+
+   end CalculateDimensions;
    ---------------------------------------------------------------------------
 
    procedure Clear
-     (ColorString : in out ColorString_Access) is
+     (ColorString : in out ColorString_Type) is
    begin
 
-      Free(ColorString);
+      if ColorString.Content/=null then
+         Free(ColorString.Content);
+      end if;
 
    end Clear;
    ---------------------------------------------------------------------------
 
-   procedure Append
-     (ColorString : in out ColorString_Access;
+   procedure Initialize
+     (ColorString : in out ColorString_Type;
       String      : Unbounded_String;
-      Color       : Color_Type) is
-
-      NewColorString : ColorString_Access;
-      OldLength      : Natural;
+      Color       : Canvas.Color_Type;
+      Font        : Font_ClassAccess) is
 
       UCS4 : Unbounded_Wide_Wide_String;
 
    begin
+
+      ColorString.Font:=Font;
+
       UCS4 := UTF8ToUCS4(String);
 
-      if ColorString/=null then
-         OldLength:=ColorString'Last;
-         NewColorString:=new ColorString_Type
-           (1..ColorString'Last+Length(UCS4));
-         NewColorString(1..ColorString'Last):=ColorString.all;
-         Free(ColorString);
-      else
-         OldLength      := 0;
-         NewColorString := new ColorString_Type
-           (1..Length(UCS4));
+      if ColorString.Content/=null then
+         Free(Colorstring.Content);
       end if;
 
+      ColorString.Content := new ColorStringArray_Type
+         (1..Length(UCS4));
+
       for i in 1..Length(String) loop
-         declare
-            Elem : ColorStringElement_Type renames NewColorString(OldLength+i);
-         begin
-            Elem.Color := Color;
-            Elem.Char  := Element(UCS4,i);
-         end;
+         ColorString.Content(i).Color := Color;
+         Colorstring.Content(i).Char  := Element(UCS4,i);
       end loop;
 
-      ColorString:=NewColorString;
+      CalculateDimensions(ColorString);
 
-   end Append;
+   end Initialize;
    ---------------------------------------------------------------------------
 
 end Fonts.Colorstrings;

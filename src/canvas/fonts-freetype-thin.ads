@@ -169,6 +169,7 @@ package Fonts.Freetype.Thin is
    type FT_BitmapGlyph_Access is access FT_BitmapGlyph_Type;
    ---------------------------------------------------------------------------
    FT_LOAD_DEFAULT : constant FT_ULong_Type:=0;
+   FT_LOAD_RENDER  : constant FT_ULong_Type:=4;
 
    ---------------------------------------------------------------------------
 

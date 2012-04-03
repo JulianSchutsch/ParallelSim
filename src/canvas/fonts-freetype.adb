@@ -25,8 +25,6 @@ with Ada.Unchecked_Deallocation;
 with Fonts.Freetype.Thin; use Fonts.Freetype.Thin;
 with System;
 with Interfaces.C.Strings;
-with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
-with Basics; use Basics;
 
 package body Fonts.Freetype is
 
@@ -51,9 +49,6 @@ package body Fonts.Freetype is
    pragma Convention(C,Requester);
    ---------------------------------------------------------------------------
 
-   type GlyphArray_Type is array(Natural range <>) of aliased FT_UInt_Type;
---   type GlyphArray_Access is access all GlyphArray_Type;
-
    type FreeTypeFont_Type;
    type FreeTypeFont_ClassAccess is access all FreeTypeFont_Type'Class;
    type FreeTypeFont_Type is abstract new Fonts.Font_Type with
@@ -66,9 +61,6 @@ package body Fonts.Freetype is
       end record;
    ---------------------------------------------------------------------------
 
-   Glyphs       : GlyphArray_Type(1..1024);
-   GlyphsStart  : Natural;
-   GlyphsEnd    : Natural;
    Node         : aliased FTC_Node_Access;
    Glyph        : aliased FT_Glyph_Access;
 
@@ -103,56 +95,15 @@ package body Fonts.Freetype is
       SecondChar : Wide_Wide_Character)
       return Integer;
 
-   overriding
-   function TextWidth
-     (Font : access LargeFont_Type;
-      Text : Unbounded_String)
-      return Integer;
-
-   overriding
-   procedure TextOut
-     (Font   : access LargeFont_Type;
-      Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : Integer;
-      Y      : Integer;
-      Text   : Unbounded_String;
-      Color  : Standard.Canvas.Color_Type);
-
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => FreeTypeFont_Type'Class,
       Name   => FreeTypeFont_ClassAccess);
    ---------------------------------------------------------------------------
 
-   -- TODO: Support cases with strings larger than 1024 characters
-   procedure DecodeString
-     (Font : access LargeFont_Type;
-      Text : Unbounded_String) is
-
-      UC4Text : Unbounded_Wide_Wide_String;
-
-   begin
-
-      UC4Text:=UTF8ToUCS4(Text);
-
-      GlyphsStart := 1;
-      GlyphsEnd   := Length(UC4Text);
-
-      for i in 1..Length(UC4Text) loop
-
-         Glyphs(i):=FTC_CMapCache_Lookup
-           (cache      => CMapCache,
-            face_id    => FTC_FaceID_Type(Font.all'Address),
-            cmap_index => -1,
-            char_code  => Wide_Wide_Character'Pos(Element(UC4Text,i)));
-
-      end loop;
-
-   end DecodeString;
-   ---------------------------------------------------------------------------
-
    procedure SelectGlyph
      (Font      : access LargeFont_Type;
-      Character : FT_UInt_Type) is
+      Character : FT_UInt_Type;
+      Mode      : FT_ULong_Type) is
 
       Error : FT_Error_Type;
 
@@ -166,7 +117,7 @@ package body Fonts.Freetype is
       Error:=FTC_ImageCache_LookupScaler
         (cache      => ImageCache,
          scaler     => Font.Scaler'Access,
-         load_flags => FT_LOAD_DEFAULT,
+         load_flags => Mode,
          gindex     => Character,
          aglyph     => Glyph'Access,
          anode      => Node'Access);
@@ -190,7 +141,7 @@ package body Fonts.Freetype is
          face_id => FTC_FaceID_Type(Font.all'Address),
          cmap_index => -1,
          char_code => Wide_Wide_Character'Pos(Char));
-      SelectGlyph(Font,CharGlyph);
+      SelectGlyph(Font,CharGlyph,FT_LOAD_DEFAULT);
       return Integer(Glyph.advance.x/(64*1024));
    end CharacterWidth;
    ---------------------------------------------------------------------------
@@ -211,28 +162,6 @@ package body Fonts.Freetype is
    end Kerning;
    ---------------------------------------------------------------------------
 
-   function TextWidth
-     (Font : access LargeFont_Type;
-      Text : Unbounded_String)
-      return Integer is
-
-      XPosition : Integer:=0;
-
-   begin
-
-      DecodeString(Font,Text);
-
-      for i in GlyphsStart..GlyphsEnd loop
-
-         SelectGlyph(Font,Glyphs(i));
-         XPosition:=XPosition+Integer(Glyph.advance.x/(64*1024));
-
-      end loop;
-      return XPosition;
-
-   end TextWidth;
-   ---------------------------------------------------------------------------
-
    procedure GlyphOut
      (Font : access LargeFont_Type;
       Canvas     : Standard.Canvas.Canvas_ClassAccess;
@@ -246,7 +175,7 @@ package body Fonts.Freetype is
       X2 : Integer;
       Y2 : Integer;
 
-      Error         : FT_Error_Type;
+--      Error         : FT_Error_Type;
       Bitmap        : FT_BitmapGlyph_Access;
       Width         : Integer;
       Height        : Integer;
@@ -256,23 +185,23 @@ package body Fonts.Freetype is
       SourcePointer : GrayValue_Access;
 
    begin
-      SelectGlyph(Font,GlyphIndex);
+      SelectGlyph(Font,GlyphIndex,FT_LOAD_RENDER);
 
-      Error:=FT_Glyph_To_Bitmap
-        (the_glyph   => Glyph'Access,
-         render_mode => FT_RENDER_MODE_NORMAL,
-         origin      => null,
-         destroy     => 0);
-      if Error/=0 then
-         raise FailedRendering
-           with "Failed call to FT_Glyph_To_Bitmap, Exit code:"
-             &FT_Error_Type'Image(Error);
-      end if;
+--      Error:=FT_Glyph_To_Bitmap
+--        (the_glyph   => Glyph'Access,
+--         render_mode => FT_RENDER_MODE_NORMAL,
+--         origin      => null,
+--         destroy     => 0);
+--      if Error/=0 then
+--         raise FailedRendering
+--           with "Failed call to FT_Glyph_To_Bitmap, Exit code:"
+--             &FT_Error_Type'Image(Error);
+--      end if;
       Bitmap:=Convert(Glyph);
       Height := Integer(Bitmap.bitmap.rows);
       Width  := Integer(Bitmap.bitmap.width);
       if (Height<0) or (Width<0) then
-         FT_Done_Glyph(Glyph);
+--         FT_Done_Glyph(Glyph);
 
          raise FailedRendering
            with "Encountered Bitmap with negative Height or Width";
@@ -326,7 +255,7 @@ package body Fonts.Freetype is
 
       end if;
 
-      FT_Done_Glyph(Glyph);
+--      FT_Done_Glyph(Glyph);
 
       X:=X+Integer(Glyph.advance.x/(64*1024));
       Y:=Y+Integer(Glyph.advance.y/(64*1024));
@@ -358,38 +287,6 @@ package body Fonts.Freetype is
          GlyphIndex => GlyphIndex,
          Color      => Color);
    end;
-   ---------------------------------------------------------------------------
-
-   procedure TextOut
-     (Font   : access LargeFont_Type;
-      Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : Integer;
-      Y      : Integer;
-      Text   : Unbounded_String;
-      Color  : Standard.Canvas.Color_Type) is
-
-      XPosition : Integer;
-      YPosition : Integer;
-
-   begin
-      DecodeString(Font,Text);
-
-      XPosition := X;
-      YPosition := Y;
-
-      for i in GlyphsStart..GlyphsEnd loop
-
-         GlyphOut
-           (Font        => Font,
-            Canvas      => Canvas,
-            X           => XPosition,
-            Y           => YPosition,
-            GlyphIndex  => Glyphs(i),
-            Color       => Color);
-
-      end loop;
-
-   end TextOut;
    ---------------------------------------------------------------------------
 
    function Load

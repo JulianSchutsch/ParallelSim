@@ -31,16 +31,14 @@ abstract project Common is
    Exec_Directory:=".";
 
    Compiler_Switches:=
-     ("-gnato",
-      "-fstack-check",
-      "-gnatn",
-      "-g",
-      "-gnata",
-      "-gnatf",
+     ("-gnato", -- Overflow checking
+      "-gnatn", -- Inlining
+      "-g",     -- Generate Debugging information
+      "-gnatf", -- Full error messages
       "-gnatVn",
       "-Wall",
-      "-fno-inline",
-      "-O0"
+      "-fno-strict-aliasing",
+      "-O3"
      );
 
    Linker_Switches:=("-lgmem");
