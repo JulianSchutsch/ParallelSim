@@ -121,7 +121,7 @@ package body GUI.TextView is
          Canvas => CanvasLine.Canvas);
 
       CanvasLine.Canvas.Clear
-        (Color => 16#FFFFFFFF#);
+        (Color => 0);-- 16#FFFFFFFF#);
 
       CanvasLine.Line.Render
         (Canvas => Canvas.Canvas_ClassAccess(CanvasLine.Canvas),
