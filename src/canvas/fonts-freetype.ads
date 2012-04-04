@@ -23,7 +23,42 @@
 
 pragma Ada_2005;
 
+with Freetype; use Freetype;
+
 package Fonts.Freetype is
+
+   type FreeTypeFont_Type is abstract new Fonts.Font_Type with private;
+   type FreeTypeFont_Access is access all FreeTypeFont_Type;
+
    procedure Initialize;
+
    procedure Finalize;
+
+private
+
+   Library    : aliased FT_Library_Access     := null;
+   Manager    : aliased FTC_Manager_Access    := null;
+   SBitCache  : aliased FTC_SBitCache_Access  := null;
+   ImageCache : aliased FTC_ImageCache_Access := null;
+   CMapCache  : aliased FTC_CMapCache_Access  := null;
+
+   VersionMajor : aliased FT_Int_Type;
+   VersionMinor : aliased FT_Int_Type;
+   VersionPatch : aliased FT_Int_Type;
+
+   Node         : aliased FTC_Node_Access;
+   Glyph        : aliased FT_Glyph_Access;
+   SBit         : aliased FTC_SBit_Access;
+
+   type FreeTypeFont_ClassAccess is access all FreeTypeFont_Type'Class;
+   type FreeTypeFont_Type is abstract new Fonts.Font_Type with
+      record
+         Filename   : Unbounded_String;
+         Index      : FT_Long_Type;
+         FaceHandle : aliased FT_Face_Access;
+         Scaler     : aliased FTC_Scaler_Type;
+         BaseLine   : Integer;
+      end record;
+   ---------------------------------------------------------------------------
+
 end Fonts.FreeType;

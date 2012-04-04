@@ -17,26 +17,44 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
+-- Revision History
+--   4.Apr 2012 Julian Schutsch
+--     - Original version
+
 pragma Ada_2005;
-with System.Storage_Elements; use System.Storage_Elements;
 
-package body Fonts.FreeType.Thin is
+package Fonts.FreeType.Small is
 
-   function "+" (Left : GrayValue_Access; Right : Interfaces.C.size_t)
-                 return GrayValue_Access is
+   type SmallFont_Type is new FreeTypeFont_Type with private;
+   type SmallFont_Access is access all SmallFont_Type;
 
-      function To_Address is new Ada.Unchecked_Conversion
-        (Source => GrayValue_Access,
-         Target => System.Address);
+   overriding
+   procedure CharacterOut
+     (Font   : access SmallFont_Type;
+      Canvas : Standard.Canvas.Canvas_ClassAccess;
+      X      : in out Integer;
+      Y      : in out Integer;
+      Char   : Wide_Wide_Character;
+      Color  : Standard.Canvas.Color_Type);
 
-      function To_GrayValue_Access is new Ada.Unchecked_Conversion
-        (Source => System.Address,
-         Target => GrayValue_Access);
+   overriding
+   function CharacterWidth
+     (Font : access SmallFont_Type;
+      Char : Wide_Wide_Character)
+      return Integer;
 
-   begin
-      return To_GrayValue_Access
-        (To_Address(Left)
-         +Storage_Offset(Right));
-   end "+";
+   overriding
+   function Kerning
+     (Font       : access SmallFont_Type;
+      FirstChar  : Wide_Wide_Character;
+      SecondChar : Wide_Wide_Character)
+      return Integer;
 
-end Fonts.FreeType.Thin;
+private
+
+   type SmallFont_Type is new FreeTypeFont_Type with
+      record
+         null;
+      end record;
+
+end Fonts.FreeType.Small;

@@ -23,12 +23,13 @@
 
 pragma Ada_2005;
 
+with Interfaces;
 with Interfaces.C;
 with Interfaces.C.Strings;
 with System;
 with Ada.Unchecked_Conversion;
 
-package Fonts.Freetype.Thin is
+package Freetype is
 
    type FT_Library_Opaque is null record;
    type FT_Library_Access is access FT_Library_Opaque;
@@ -41,6 +42,9 @@ package Fonts.Freetype.Thin is
    type FT_Fixed_Type is new Interfaces.C.long;
    type FT_Pos_Type is new Interfaces.C.long;
    type FT_UInt32_Type is new Interfaces.Unsigned_32;
+   type FT_Byte_Type is new Interfaces.C.unsigned_char;
+   type FT_Char_Type is new Interfaces.Unsigned_8;
+   type FT_Short_Type is new Interfaces.C.short;
 
    type FTC_Node_Opaque is null record;
    type FTC_Node_Access is access FTC_Node_Opaque;
@@ -167,6 +171,23 @@ package Fonts.Freetype.Thin is
       end record;
    pragma Convention(C,FT_BitmapGlyph_Type);
    type FT_BitmapGlyph_Access is access FT_BitmapGlyph_Type;
+
+   type FTC_SBit_Type is
+      record
+         width     : FT_Byte_Type;
+         height    : FT_Byte_Type;
+         left      : FT_Char_Type;
+         top       : FT_Char_Type;
+         format    : FT_Byte_Type;
+         max_grays : FT_Byte_Type;
+         pitch     : FT_Short_Type;
+         xadvance  : FT_Char_Type;
+         yadvance  : FT_Char_Type;
+         buffer    : GrayValue_Access;
+      end record;
+   pragma Convention(C,FTC_SBit_Type);
+   type FTC_SBit_Access is access FTC_SBit_Type;
+
    ---------------------------------------------------------------------------
    FT_LOAD_DEFAULT : constant FT_ULong_Type:=0;
    FT_LOAD_RENDER  : constant FT_ULong_Type:=4;
@@ -288,8 +309,18 @@ package Fonts.Freetype.Thin is
      (glyph : FT_Glyph_Access);
    pragma Import(C,FT_Done_Glyph,"FT_Done_Glyph");
 
+   function FTC_SBitCache_LookupScaler
+     (cache      : FTC_SBitCache_Access;
+      scaler     : access FTC_Scaler_Type;
+      load_flags : FT_ULong_Type;
+      gindex     : FT_UInt_Type;
+      sbit       : access FTC_SBit_Access;
+      anode      : access FTC_Node_Access)
+      return FT_Error_Type;
+   pragma Import(C,FTC_SBitCache_LookupScaler,"FTC_SBitCache_LookupScaler");
+
    function Convert is new Ada.Unchecked_Conversion
      (Source => FT_Glyph_Access,
       Target => FT_BitmapGlyph_Access);
 
-end Fonts.Freetype.Thin;
+end Freetype;

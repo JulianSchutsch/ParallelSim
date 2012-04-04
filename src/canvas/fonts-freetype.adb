@@ -22,21 +22,12 @@ pragma Ada_2005;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
-with Fonts.Freetype.Thin; use Fonts.Freetype.Thin;
 with System;
 with Interfaces.C.Strings;
+with Fonts.FreeType.Large; use Fonts.FreeType.Large;
+with Fonts.Freetype.Small; use Fonts.FreeType.Small;
 
 package body Fonts.Freetype is
-
-   Library    : aliased FT_Library_Access     := null;
-   Manager    : aliased FTC_Manager_Access    := null;
-   SBitCache  : aliased FTC_SBitCache_Access  := null;
-   ImageCache : aliased FTC_ImageCache_Access := null;
-   CMapCache  : aliased FTC_CMapCache_Access  := null;
-
-   VersionMajor : aliased FT_Int_Type;
-   VersionMinor : aliased FT_Int_Type;
-   VersionPatch : aliased FT_Int_Type;
 
    Initialized : Boolean:=False;
 
@@ -49,249 +40,15 @@ package body Fonts.Freetype is
    pragma Convention(C,Requester);
    ---------------------------------------------------------------------------
 
-   type FreeTypeFont_Type;
-   type FreeTypeFont_ClassAccess is access all FreeTypeFont_Type'Class;
-   type FreeTypeFont_Type is abstract new Fonts.Font_Type with
-      record
-         Filename   : Unbounded_String;
-         Index      : FT_Long_Type;
-         FaceHandle : aliased FT_Face_Access;
-         Scaler     : aliased FTC_Scaler_Type;
-         BaseLine   : Integer;
-      end record;
-   ---------------------------------------------------------------------------
-
-   Node         : aliased FTC_Node_Access;
-   Glyph        : aliased FT_Glyph_Access;
-
-
-   type LargeFont_Type;
-   type LargeFont_Access is access all LargeFont_Type;
-
-   type LargeFont_Type is new FreeTypeFont_Type with
-      record
-         null;
-      end record;
-
-   overriding
-   procedure CharacterOut
-     (Font   : access LargeFont_Type;
-      Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : in out Integer;
-      Y      : in out Integer;
-      Char   : Wide_Wide_Character;
-      Color  : Standard.Canvas.Color_Type);
-
-   overriding
-   function CharacterWidth
-     (Font : access LargeFont_Type;
-      Char : Wide_Wide_Character)
-      return Integer;
-
-   overriding
-   function Kerning
-     (Font       : access LargeFont_Type;
-      FirstChar  : Wide_Wide_Character;
-      SecondChar : Wide_Wide_Character)
-      return Integer;
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => FreeTypeFont_Type'Class,
       Name   => FreeTypeFont_ClassAccess);
-   ---------------------------------------------------------------------------
 
-   procedure SelectGlyph
-     (Font      : access LargeFont_Type;
-      Character : FT_UInt_Type;
-      Mode      : FT_ULong_Type) is
-
-      Error : FT_Error_Type;
-
-   begin
-
-      if Node/=null then
-         FTC_Node_Unref(Node,Manager);
-         Node:=null;
-      end if;
-
-      Error:=FTC_ImageCache_LookupScaler
-        (cache      => ImageCache,
-         scaler     => Font.Scaler'Access,
-         load_flags => Mode,
-         gindex     => Character,
-         aglyph     => Glyph'Access,
-         anode      => Node'Access);
-      if Error/=0 then
-         raise FailedRendering
-           with "Failed call to FTC_ImageCache_LookupScaler, exit code:"
-             &FT_Error_Type'Image(Error);
-      end if;
-
-   end SelectGlyph;
-   ---------------------------------------------------------------------------
-
-   function CharacterWidth
-     (Font : access LargeFont_Type;
-      Char : Wide_Wide_Character)
-      return Integer is
-      CharGlyph : FT_UInt_Type;
-   begin
-      CharGlyph:=FTC_CMapCache_Lookup
-        (cache => CMapCache,
-         face_id => FTC_FaceID_Type(Font.all'Address),
-         cmap_index => -1,
-         char_code => Wide_Wide_Character'Pos(Char));
-      SelectGlyph(Font,CharGlyph,FT_LOAD_DEFAULT);
-      return Integer(Glyph.advance.x/(64*1024));
-   end CharacterWidth;
-   ---------------------------------------------------------------------------
-
-   overriding
-   function Kerning
-     (Font       : access LargeFont_Type;
-      FirstChar  : Wide_Wide_Character;
-      SecondChar : Wide_Wide_Character)
-      return Integer is
-
-      pragma Unreferenced(Font);
-      pragma Unreferenced(FirstChar);
-      pragma Unreferenced(SecondChar);
-
-   begin
-      return 0;
-   end Kerning;
-   ---------------------------------------------------------------------------
-
-   procedure GlyphOut
-     (Font : access LargeFont_Type;
-      Canvas     : Standard.Canvas.Canvas_ClassAccess;
-      X          : in out Integer;
-      Y          : in out Integer;
-      GlyphIndex : FT_UInt_Type;
-      Color      : Standard.Canvas.Color_Type) is
-
-      X1 : Integer;
-      Y1 : Integer;
-      X2 : Integer;
-      Y2 : Integer;
-
---      Error         : FT_Error_Type;
-      Bitmap        : FT_BitmapGlyph_Access;
-      Width         : Integer;
-      Height        : Integer;
-      SourceOrigin  : Integer:=0;
-      SourceAdd     : Integer:=0;
-      Gray          : Integer;
-      SourcePointer : GrayValue_Access;
-
-   begin
-      SelectGlyph(Font,GlyphIndex,FT_LOAD_RENDER);
-
---      Error:=FT_Glyph_To_Bitmap
---        (the_glyph   => Glyph'Access,
---         render_mode => FT_RENDER_MODE_NORMAL,
---         origin      => null,
---         destroy     => 0);
---      if Error/=0 then
---         raise FailedRendering
---           with "Failed call to FT_Glyph_To_Bitmap, Exit code:"
---             &FT_Error_Type'Image(Error);
---      end if;
-      Bitmap:=Convert(Glyph);
-      Height := Integer(Bitmap.bitmap.rows);
-      Width  := Integer(Bitmap.bitmap.width);
-      if (Height<0) or (Width<0) then
---         FT_Done_Glyph(Glyph);
-
-         raise FailedRendering
-           with "Encountered Bitmap with negative Height or Width";
-      end if;
-      -- Data in Bitmap.Bitmap.buffer
-      -- Advance = Glyph.advance.x div 1024 div 64
-      -- Top = lbaseline-Bitmap.Top
-      -- Left = Bitmap.Left
-      X1 := X+Integer(Bitmap.left);
-      Y1 := Y+Font.BaseLine-Integer(Bitmap.top);
-      X2 := X1+Width-1;
-      Y2 := Y1+Height-1;
-      if (X2>=0)
-        and (X1<Canvas.ContentWidth)
-        and (Y2>=0)
-        and (Y1<Canvas.ContentHeight) then
-
-         if X1<0 then
-            SourceOrigin := -X1;
-            SourceAdd    := -X1;
-            X1:=0;
-         end if;
-         if Y1<0 then
-            SourceOrigin := SourceOrigin-Y1*Width;
-            Y1:=0;
-         end if;
-
-         if X2>=Canvas.ContentWidth then
-            SourceAdd:=SourceAdd+X2-Canvas.ContentWidth+1;
-            X2:=Canvas.ContentWidth-1;
-         end if;
-
-         if Y2>=Canvas.ContentHeight then
-            Y2:=Canvas.ContentHeight-1;
-         end if;
-
-         SourcePointer:=Bitmap.bitmap.buffer+Interfaces.C.size_t(SourceOrigin);
-         for n in Y1..Y2 loop
-            for i in X1..X2 loop
-               Gray:=Integer(SourcePointer.all);
-               if Gray/=0 then
-                  Canvas.Image(n,i):=Standard.Canvas.PreBlendMix
-                    (BackgroundColor => Canvas.Image(n,i),
-                     ForegroundColor => Standard.Canvas.MultiplyAlpha(Color,Gray));
-               end if;
-               SourcePointer:=SourcePointer+1;
-
-            end loop;
-            SourcePointer:=SourcePointer+Interfaces.C.size_t(SourceAdd);
-         end loop;
-
-      end if;
-
---      FT_Done_Glyph(Glyph);
-
-      X:=X+Integer(Glyph.advance.x/(64*1024));
-      Y:=Y+Integer(Glyph.advance.y/(64*1024));
-   end GlyphOut;
-   ---------------------------------------------------------------------------
-
-   procedure CharacterOut
-     (Font   : access LargeFont_Type;
-      Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : in out Integer;
-      Y      : in out Integer;
-      Char   : Wide_Wide_Character;
-      Color  : Standard.Canvas.Color_Type) is
-
-      GlyphIndex : FT_UInt_Type;
-
-   begin
-
-      GlyphIndex:=FTC_CMapCache_Lookup
-        (cache => CMapCache,
-         face_id => FTC_FaceID_Type(Font.all'Address),
-         cmap_index => -1,
-         char_code => Wide_Wide_Character'Pos(Char));
-      GlyphOut
-        (Font       => Font,
-         Canvas     => Canvas,
-         X          => X,
-         Y          => Y,
-         GlyphIndex => GlyphIndex,
-         Color      => Color);
-   end;
-   ---------------------------------------------------------------------------
 
    function Load
-     (Name : Unbounded_String;
-      Size : Natural;
+     (Name       : Unbounded_String;
+      Size       : Natural;
       Attributes : Attributes_Type)
       return Font_ClassAccess is
 
@@ -303,16 +60,20 @@ package body Fonts.Freetype is
    begin
       -- Being here means we need to create a new font with specific size
       -- we do not need to do any lookups
-      if Size>0 then
+      if Size>20 then
          declare
             LargeFont : LargeFont_Access;
          begin
             LargeFont := new LargeFont_Type;
-            Font:=FreeTypeFont_ClassAccess(LargeFont);
+            Font      := FreeTypeFont_ClassAccess(LargeFont);
          end;
       else
-         null; -- Load small fonts
-         return null;
+         declare
+            SmallFont : SmallFont_Access;
+         begin
+            SmallFont := new SmallFont_Type;
+            Font      := FreeTypeFont_ClassAccess(SmallFont);
+         end;
       end if;
 
       -- Don't setup any private parts of the Font, since this is handled

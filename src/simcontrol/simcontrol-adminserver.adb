@@ -155,6 +155,8 @@ package body SimControl.AdminServer is
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
 
+      pragma Warnings(Off,PrevPosition);
+
    begin
       loop
          PrevPosition:=Item.Channel.ReceivePosition;
@@ -224,6 +226,7 @@ package body SimControl.AdminServer is
      (Item : in out ServerChannelCallBack_Type) is
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
+      pragma Warnings(Off,PrevPosition);
 
    begin
       loop
