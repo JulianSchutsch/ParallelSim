@@ -70,7 +70,7 @@ package GUI is
      (RenderCanvasse,
       RenderCustom);
 
-   type Object_Type is tagged;
+   type Object_Type;
    type Object_Access is access all Object_Type;
    type Object_ClassAccess is access all Object_Type'Class;
 
@@ -80,7 +80,7 @@ package GUI is
 
    type Object_Private is private;
 
-   type Object_Type is tagged
+   type Object_Type is new AnyObject_Type with
       record
          Render         : Render_Enum:=RenderCanvasse;
          CallBackObject : AnyObject_ClassAccess;

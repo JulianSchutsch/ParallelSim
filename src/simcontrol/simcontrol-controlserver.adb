@@ -64,6 +64,7 @@ package body SimControl.ControlServer is
      (Item : in out ServerChannelCallBack_Type) is
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
+      pragma Warnings(Off,PrevPosition);
 
    begin
       loop
@@ -97,6 +98,7 @@ package body SimControl.ControlServer is
       use type SimCommon.NetworkIDString;
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
+      pragma Warnings(Off,PrevPosition);
 
    begin
       loop

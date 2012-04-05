@@ -73,6 +73,22 @@ package Canvas is
       Width  : Integer;
       Color  : Color_Type);
 
+   procedure WuLine
+     (Canvas : in out Canvas_Type;
+      X1     : Float;
+      Y1     : Float;
+      X2     : Float;
+      Y2     : Float;
+      Color  : Color_Type);
+
+   procedure Rectangle
+     (Canvas : in out Canvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Height : Integer;
+      Width  : Integer;
+      Color  : Color_Type);
+
    procedure Bar
      (Canvas : in out Canvas_Type;
       X      : Integer;
@@ -83,7 +99,12 @@ package Canvas is
 
    function MultiplyAlpha
      (Color : Color_Type;
-      Alpha : Integer)
+      Alpha : Float)      -- Value must be in 0..1
+      return Color_Type;
+
+   function MultiplyAlpha
+     (Color : Color_Type;
+      Alpha : Integer)    -- Value must be in 0..255
       return Color_Type;
 
    function PreBlendMix

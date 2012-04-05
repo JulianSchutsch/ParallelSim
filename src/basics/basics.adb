@@ -174,5 +174,19 @@ package body Basics is
    begin
       Put(System.Address_Image(Address));
    end Put;
+   ---------------------------------------------------------------------------
+
+   procedure Swap
+     (Value1 : in out Float;
+      Value2 : in out Float) is
+
+      Temp : Float;
+
+   begin
+      Temp:=Value1;
+      Value1:=Value2;
+      Value2:=Temp;
+   end Swap;
+   ---------------------------------------------------------------------------
 
 end Basics;

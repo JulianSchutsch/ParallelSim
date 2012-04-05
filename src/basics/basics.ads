@@ -72,4 +72,9 @@ package Basics is
      (String : Unbounded_String)
       return Unbounded_Wide_Wide_String;
 
+   procedure Swap
+     (Value1 : in out Float;
+      Value2 : in out Float);
+   pragma Inline(Swap);
+
 end Basics;

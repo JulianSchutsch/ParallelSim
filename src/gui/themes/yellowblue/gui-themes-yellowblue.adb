@@ -18,11 +18,15 @@
 -------------------------------------------------------------------------------
 
 with GUI.Themes.YellowBlue.Window; use GUI.Themes.YellowBlue.Window;
+with GUI.Themes.YellowBlue.VerticalScrollBar;
+use GUI.Themes.YellowBlue.VerticalScrollBar;
 
 package body GUI.Themes.YellowBlue is
 
    Implementation : constant GUI.Themes.Implementation_Type:=
-     (NewWindow => NewWindow'Access);
+     (NewWindow              => NewWindow'Access,
+      NewVerticalScrollBar   => NewVerticalScrollBar'Access,
+      VerticalScrollBarWidth => VerticalScrollBarWidth);
 
    Identifier : constant Unbounded_String:=To_Unbounded_String("YellowBlue");
 

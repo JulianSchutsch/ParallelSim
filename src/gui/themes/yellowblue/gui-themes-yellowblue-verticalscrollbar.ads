@@ -18,25 +18,17 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   25.Mar 2012 Julian Schutsch
+--   4.Apr 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with GUI.Window;
-with GUI.ScrollBar;
+package GUI.Themes.YellowBlue.VerticalScrollBar is
 
-package GUI.Themes is
+   VerticalScrollBarWidth  : constant Integer:=21;
 
-   type Implementation_Type is
-      record
-         NewWindow              : GUI.Window.Window_Constructor:=null;
-         NewVerticalScrollBar   : GUI.ScrollBar.ScrollBar_Constructor:=null;
-         VerticalScrollBarWidth : Integer;
-      end record;
+   function NewVerticalScrollBar
+     (Parent : Object_ClassAccess)
+      return GUI.ScrollBar.ScrollBar_ClassAccess;
 
-   package Implementations is new Config.Implementations
-     (Implementation_Type => Implementation_Type,
-      IdentifierKey       => To_Unbounded_String("Theme"));
-
-end GUI.Themes;
+end GUI.Themes.YellowBlue.VerticalScrollBar;

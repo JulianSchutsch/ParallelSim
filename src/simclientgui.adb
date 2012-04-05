@@ -4,10 +4,10 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Basics; use Basics;
 with ProcessLoop;
 with GUI.Window;
-with GUI.TextView;
 with GUI.Themes;
 with Ada.Text_IO; use Ada.Text_IO;
-with Fonts;
+With Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with GUI.ScrollBar;
 with BoundsCalc;
 
 package body SimClientGUI is
@@ -17,7 +17,7 @@ package body SimClientGUI is
    GUIContext          : GUI.Context_ClassAccess:=null;
    Terminated          : Boolean;
    Window              : GUI.Window.Window_ClassAccess:=null;
-   Console             : GUI.TextView.TextView_ClassAccess:=null;
+   ScrollBar           : GUI.ScrollBar.ScrollBar_ClassAccess:=null;
 
    procedure OnCloseContext
      (CallBackObject : AnyObject_ClassAccess) is
@@ -28,6 +28,15 @@ package body SimClientGUI is
       Terminated:=True;
    end OnCloseContext;
    ---------------------------------------------------------------------------
+
+   procedure OnPositionChange
+     (CallBackObject : AnyObject_ClassAccess) is
+      pragma Unreferenced(CallBackObject);
+   begin
+      Put("PositionChange called:");
+      Put(ScrollBar.GetPosition);
+      New_Line;
+   end OnPositionChange;
 
    procedure Initialize
      (Configuration : Config.Config_Type) is
@@ -63,42 +72,30 @@ package body SimClientGUI is
          Height  => 100,
          Width   => 200,
          Visible => True);
-      GUI.SetAnchors
-        (Object => GUI.Object_ClassAccess(Window),
-         Top    => True,
+      Window.SetAnchors
+        (Top    => True,
          Left   => True,
          Right  => False,
          Bottom => False);
 
-      Console:=new GUI.TextView.TextView_Type;
-      GUI.TextView.Initialize
-        (Item   => GUI.TextView.TextView_Access(Console),
-         Parent => GUI.Object_ClassAccess(Window));
-      GUI.TextView.SetFont
-        (Item => GUI.TextView.TextView_Access(Console),
-         Font => Fonts.Lookup(To_Unbounded_String("./Vera.ttf"),19,Fonts.NoAttributes));
       declare
-         Bounds : constant BoundsCalc.Bounds_Type:=GUI.GetBounds(Window.Client.all);
+         Bounds : constant BoundsCalc.Bounds_Type:=Window.Client.GetBounds;
       begin
-         Console.SetBounds
+         ScrollBar:=ThemeImplementation.NewVerticalScrollbar
+           (Parent => GUI.Object_ClassAccess(Window));
+         ScrollBar.OnPositionChange:=OnPositionChange'Access;
+         ScrollBar.SetBounds
            (Top     => 0,
-            Left    => 0,
+            Left    => Bounds.Width-ThemeImplementation.VerticalScrollbarWidth,
             Height  => Bounds.Height,
-            Width   => Bounds.Width,
+            Width   => ThemeImplementation.VerticalScrollBarWidth,
             Visible => True);
+         ScrollBar.SetAnchors
+           (Top    => True,
+            Left   => False,
+            Right  => True,
+            Bottom => True);
       end;
-      GUI.SetAnchors
-        (Object => GUI.Object_ClassAccess(Console),
-         Top    => True,
-         Left   => True,
-         Right  => True,
-         Bottom => True);
-
-      for i in 1..999 loop
-         Console.WriteLine
-           (String => To_Unbounded_String("A long test string to demonstrate wrapping, line "&Integer'Image(i)),
-            Color  => 16#FF00FF00#);
-      end loop;
 
       Put("End of Simclientgui init");
       New_Line;

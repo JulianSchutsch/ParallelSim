@@ -273,7 +273,12 @@ package body GUI is
       end loop;
       ------------------------------------------------------------------------
 
-      Object.Resize;
+      if (Object.Priv.Bounds.Height/=Object.Priv.PrevBounds.Height)
+        or (Object.Priv.Bounds.Width/=Object.Priv.PrevBounds.Width) then
+
+         Object.Resize;
+
+      end if;
 
       Object.Priv.PrevBounds := Object.Priv.Bounds;
 

@@ -19,7 +19,44 @@
 
 pragma Ada_2005;
 
+with Basics; use Basics;
+
 package body Canvas is
+
+   procedure Rectangle
+     (Canvas : in out Canvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Height : Integer;
+      Width  : Integer;
+      Color  : Color_Type) is
+   begin
+
+      Canvas.HorzLine
+        (X     => X,
+         Y     => Y,
+         Width => Width,
+         Color => Color);
+
+      Canvas.HorzLine
+        (X     => X,
+         Y     => Y+Height-1,
+         Width => Width,
+         Color => Color);
+
+      Canvas.VertLine
+        (X      => X,
+         Y      => Y+1,
+         Height => Height-2,
+         Color  => Color);
+
+      Canvas.VertLine
+        (X      => X+Width-1,
+         Y      => Y+1,
+         Height => Height-2,
+         Color  => Color);
+
+   end Rectangle;
 
    procedure GetPixel
      (Canvas : in out Canvas_Type;
@@ -33,7 +70,7 @@ package body Canvas is
       else
          Color:=0;
       end if;
-   end;
+   end GetPixel;
    ---------------------------------------------------------------------------
 
    procedure SetPixel
@@ -49,6 +86,147 @@ package body Canvas is
       end if;
 
    end SetPixel;
+   ---------------------------------------------------------------------------
+
+   -- Implementation of Xiaolin Wu's line algorithm
+   -- Source : http://en.wikipedia.org/wiki/Xiaolin_Wu%27s_line_algorithm
+   procedure WuLine
+     (Canvas : in out Canvas_Type;
+      X1     : Float;
+      Y1     : Float;
+      X2     : Float;
+      Y2     : Float;
+      Color  : Color_Type) is
+
+      XPos1    : Float:=X1;
+      XPos2    : Float:=X2;
+      YPos1    : Float:=Y1;
+      YPos2    : Float:=Y2;
+      DeltaX   : Float:=X2-X1;
+      DeltaY   : Float:=Y2-Y1;
+      Gradient : Float;
+      XEnd     : Float;
+      YEnd     : Float;
+      XGap     : Float;
+      XPXL1    : Integer;
+      YPXL1    : Integer;
+      Intery   : Float;
+      XPXL2    : Integer;
+      YPXL2    : Integer;
+      Order    : Boolean:=True;
+
+      procedure SPixel
+        (X     : Integer;
+         Y     : Integer;
+         Alpha : Float) is
+
+         BackgroundColor : Color_Type;
+
+         RX : Integer;
+         RY : Integer;
+
+      begin
+         if Order then
+            RX:=Y;
+            RY:=X;
+         else
+            RX:=X;
+            RY:=Y;
+         end if;
+
+         Canvas.GetPixel
+           (X     => RX,
+            Y     => RY,
+            Color => BackgroundColor);
+
+         Canvas.SetPixel
+           (X => RX,
+            Y => RY,
+            Color => PreBlendMix
+              (BackgroundColor => BackgroundColor,
+               ForegroundColor => MultiplyAlpha
+                 (Color => Color,
+                  Alpha => Alpha)));
+
+      end SPixel;
+
+      function frac
+        (x : Float)
+         return Float is
+      begin
+         return x-Float'Floor(x);
+      end frac;
+
+   begin
+
+      if abs(DeltaX)<abs(DeltaY) then
+         Swap(XPos1,YPos1);
+         Swap(XPos2,YPos2);
+         Swap(DeltaX,DeltaY);
+         Order:=False;
+      end if;
+      if XPos2<XPos1 then
+         Swap(XPos1,XPos2);
+         Swap(YPos1,YPos2);
+      end if;
+
+      Gradient:=DeltaY/DeltaX;
+
+      XEnd:=Float'Rounding(XPos1);
+      YEnd:=YPos1+Gradient*(XEnd-XPos1);
+
+      -- First Endpoint
+      XGap:=(1.0-frac(XPos1+0.5));
+
+      XPXL1:=Integer(XEnd);
+      YPXL1:=Integer(Float'Floor(YEnd));
+      SPixel
+        (X     => XPXL1,
+         Y     => YPXL1,
+         Alpha => (1.0-frac(YEnd))*XGap);
+
+      SPixel
+        (X     => XPXL1,
+         Y     => YPXL1+1,
+         Alpha => frac(YEnd)*XGap);
+      Intery:=YEnd+Gradient;
+
+      -- Second Endpoint
+      XEnd:=Float'Rounding(XPos2);
+      YEnd:=YPos2+Gradient*(XEnd-XPos2);
+
+      XGap:=frac(XPos2+0.5);
+
+      XPXL2 := Integer(XEnd);
+      YPXL2 := Integer(Float'Floor(YEnd));
+
+      SPixel
+        (X     => XPXL2,
+         Y     => YPXL2,
+         Alpha => (1.0-frac(YEnd))*XGap);
+      SPixel
+        (X     => XPXL2,
+         Y     => YPXL2+1,
+         Alpha => frac(YEnd)*XGap);
+
+      -- Main Loop
+      for i in XPXL1+1..XPXL2-1 loop
+
+         SPixel
+           (X     => i,
+            Y     => Integer(Intery),
+            Alpha => 1.0-frac(Intery));
+
+         SPixel
+           (X     => i,
+            Y     => Integer(Intery),
+            Alpha => frac(Intery));
+
+         intery:=intery+gradient;
+
+      end loop;
+
+   end WuLine;
    ---------------------------------------------------------------------------
 
    procedure Bar
@@ -196,6 +374,18 @@ package body Canvas is
       Canvas.Modified := True;
    end;
    ---------------------------------------------------------------------------
+
+   function MultiplyAlpha
+     (Color : Color_Type;
+      Alpha : Float)
+      return Color_Type is
+
+   begin
+      return Color and 16#FFFFFF#+
+        Shift_Left(Color_Type(Float(Shift_Right(Color,24))*Alpha),24);
+   end MultiplyAlpha;
+   ---------------------------------------------------------------------------
+
    function MultiplyAlpha
      (Color : Color_Type;
       Alpha : Integer)
@@ -210,7 +400,7 @@ package body Canvas is
 
    function PreBlendMix
      (BackgroundColor : Color_Type;
-      ForegroundColor      : Color_Type)
+      ForegroundColor : Color_Type)
       return Color_Type is
 
       use Interfaces;
@@ -239,9 +429,10 @@ package body Canvas is
          NewGreen := (255*Alpha2*Green2+(255-Alpha2)*Alpha1*Green1)/NormAlpha;
          NewBlue  := (255*Alpha2*Blue2+(255-Alpha2)*Alpha1*Blue1)/NormAlpha;
          NewAlpha := NormAlpha/255;
-         return NewRed
+
+         return NewBlue
            +Shift_Left(NewGreen,8)
-           +Shift_Left(NewBlue,16)
+           +Shift_Left(NewRed,16)
            +Shift_Left(NewAlpha,24);
       else
          return 0;

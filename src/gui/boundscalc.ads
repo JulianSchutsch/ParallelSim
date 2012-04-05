@@ -120,8 +120,8 @@ package BoundsCalc is
 
    type Anchors_Type is
       record
-         Top          : Boolean:=False;
-         Left         : Boolean:=False;
+         Top          : Boolean:=True;
+         Left         : Boolean:=True;
          Right        : Boolean:=False;
          Bottom       : Boolean:=False;
          TopBorder    : Integer:=0;
