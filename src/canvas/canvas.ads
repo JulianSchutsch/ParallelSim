@@ -101,11 +101,13 @@ package Canvas is
      (Color : Color_Type;
       Alpha : Float)      -- Value must be in 0..1
       return Color_Type;
+   pragma Inline(MultiplyAlpha);
 
    function MultiplyAlpha
      (Color : Color_Type;
       Alpha : Integer)    -- Value must be in 0..255
       return Color_Type;
+   pragma Inline(MultiplyAlpha);
 
    function PreBlendMix
      (BackgroundColor : Color_Type;

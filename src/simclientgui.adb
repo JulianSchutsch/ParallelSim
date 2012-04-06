@@ -77,7 +77,7 @@ package body SimClientGUI is
          Console.SetFont
            (Font => Fonts.Lookup
               (Name       => To_Unbounded_String("./Vera.ttf"),
-               Size       => 9,
+               Size       => 19,
                Attributes => Fonts.NoAttributes));
          Console.SetBounds
            (Top     => 0,

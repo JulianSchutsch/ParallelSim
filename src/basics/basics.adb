@@ -77,6 +77,9 @@ package body Basics is
       StringPos:=1;
       while StringPos<=Length(String) loop
          CurrentChar:=ToUnsigned8(Element(String,StringPos));
+         Put("First Char:");
+         Put(Interfaces.Unsigned_8'Image(CurrentChar));
+         New_Line;
          case CurrentChar is
             when 0..16#80#-1 =>
                ByteCount := 0;
@@ -95,17 +98,28 @@ package body Basics is
                  with "UTF8 invalid first byte:"
                    &Interfaces.Unsigned_8'Image(CurrentChar);
          end case;
+         Put("ByteCount");
+         Put(Integer'Image(ByteCount));
+         Put("/");
+         Put(Interfaces.Unsigned_32'Image(Code));
+         Put("::");
          StringPos:=StringPos+1;
          for b in 1..ByteCount loop
             if StringPos>Length(String) then
                raise UTF8Exception
                  with "UTF8 incomplete code";
             end if;
-            Code := Interfaces.Shift_Left(Code,8)
-              +Interfaces.Unsigned_32(ToUnsigned8(Element(String,StringPos)));
+            Code := Interfaces.Shift_Left(Code,6)
+              +Interfaces.Unsigned_32(ToUnsigned8(Element(String,StringPos)) and 16#3F#);
+            Put("Ext");
+            Put(Interfaces.Unsigned_8'Image(ToUnsigned8(Element(String,StringPos)) and 16#3F#));
+            New_LIne;
             StringPos:=StringPos+1;
          end loop;
 
+         Put("Code");
+         Put(Interfaces.Unsigned_32'Image(Code));
+         New_Line;
          BufferUsed         := BufferUsed+1;
          Buffer(BufferUsed) := ToWideWideChar(Code);
 
