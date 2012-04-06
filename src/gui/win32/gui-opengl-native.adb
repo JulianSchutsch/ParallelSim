@@ -327,6 +327,19 @@ package body GUI.OpenGL.Native is
                wParam => wParam,
                lParam => lParam);
          when Win32.WM_CHAR =>
+            declare
+               -- Warnings are unnecessary, this is a dirty 32 to 16 bit
+               -- convert.
+               pragma Warnings(Off);
+               function Convert is new Ada.Unchecked_Conversion
+                 (Source => Win32.WPARAM_Type,
+                  Target => Wide_Character);
+               pragma Warnings(On);
+            begin
+               GUI.CharacterInput
+                 (Context => Context_ClassAccess(Context),
+                  Chars   => UCS2ToUTF8(Convert(wParam)));
+            end;
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,
                uMsg => uMsg,

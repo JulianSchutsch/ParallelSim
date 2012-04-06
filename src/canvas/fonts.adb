@@ -38,9 +38,10 @@ package body Fonts is
 
    type FontImplementation_Type is
       record
-         Load : Load_Access;
-         Next : FontImplementation_Access;
-         Last : FontImplementation_Access;
+         Load   : Load_Access;
+         Unload : Unload_Access;
+         Next   : FontImplementation_Access;
+         Last   : FontImplementation_Access;
       end record;
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -105,15 +106,17 @@ package body Fonts is
    ---------------------------------------------------------------------------
 
    procedure Register
-     (Load : Load_Access) is
+     (Load   : Load_Access;
+      Unload : Unload_Access) is
 
       FontImplementation : FontImplementation_Access;
 
    begin
 
       FontImplementation:=new FontImplementation_Type;
-      FontImplementation.Load:=Load;
-      FontImplementation.Next:=FontImplementations;
+      FontImplementation.Load   := Load;
+      FontImplementation.Unload := Unload;
+      FontImplementation.Next   := FontImplementations;
       if FontImplementations/=null then
          FontImplementations.Last:=FontImplementation;
       end if;
@@ -192,6 +195,8 @@ package body Fonts is
             Attributes => Attributes);
 
          if Font/=null then
+
+            Font.Unload := Implementation.Unload;
 
             Font.Name := Name;
             Font.Size := Size;

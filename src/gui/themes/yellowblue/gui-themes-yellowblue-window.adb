@@ -53,12 +53,12 @@ package body GUI.Themes.YellowBlue.Window is
    type Window_Access is access all Window_Type;
 
    overriding
-   procedure MouseDown
+   function MouseDown
      (Item   : access Window_Type;
       Button : MouseButton_Enum;
       X      : Integer;
-      Y      : Integer;
-      Taken  : out Boolean);
+      Y      : Integer)
+      return Boolean;
 
    overriding
    procedure MouseUp
@@ -88,15 +88,14 @@ package body GUI.Themes.YellowBlue.Window is
    end Finalize;
    ---------------------------------------------------------------------------
 
-   procedure MouseDown
+   function MouseDown
      (Item   : access Window_Type;
       Button : MouseButton_Enum;
       X      : Integer;
-      Y      : Integer;
-      Taken  : out Boolean) is
+      Y      : Integer)
+      return Boolean is
 
    begin
-      Taken:=True;
 
       If Button=LeftButton then
 
@@ -107,7 +106,7 @@ package body GUI.Themes.YellowBlue.Window is
                  (RefX => X,
                   RefY => Y,
                   Mode => GUI.Window.WindowChangeModeSizeTopLeft);
-               return;
+               return True;
             end if;
 
             if X>=Item.Priv.Bounds.Width-CornerSize then
@@ -115,14 +114,14 @@ package body GUI.Themes.YellowBlue.Window is
                  (RefX => X,
                   RefY => Y,
                   Mode => GUI.Window.WindowChangeModeSizeTopRight);
-               return;
+               return True;
             end if;
 
             Item.StartChange
               (RefX => X,
                RefY => Y,
                Mode => GUI.Window.WindowChangeModeSizeTop);
-            return;
+            return True;
 
          end if;
 
@@ -133,7 +132,7 @@ package body GUI.Themes.YellowBlue.Window is
                  (Refx => X,
                   Refy => Y,
                   Mode => GUI.Window.WindowChangeModeSizeBottomLeft);
-               return;
+               return True;
             end if;
 
             if X>=Item.Priv.Bounds.Width-CornerSize then
@@ -141,14 +140,14 @@ package body GUI.Themes.YellowBlue.Window is
                  (Refx => X,
                   Refy => Y,
                   Mode => GUI.Window.WindowChangeModeSizeBottomRight);
-               return;
+               return True;
             end if;
 
             Item.StartChange
               (RefX => X,
                RefY => Y,
                Mode => GUI.Window.WindowChangeModeSizeBottom);
-            return;
+            return True;
 
          end if;
 
@@ -159,7 +158,7 @@ package body GUI.Themes.YellowBlue.Window is
                  (Refx => X,
                   Refy => Y,
                   Mode => GUI.Window.WindowChangeModeSizeTopLeft);
-               return;
+               return True;
             end if;
 
             if Y>=Item.Priv.Bounds.Height-CornerSize then
@@ -167,14 +166,14 @@ package body GUI.Themes.YellowBlue.Window is
                  (Refx => X,
                   Refy => Y,
                   Mode => GUI.Window.WindowChangeModeSizeBottomLeft);
-               return;
+               return True;
             end if;
 
             Item.StartChange
               (RefX => X,
                RefY => Y,
                Mode => GUI.Window.WindowChangeModeSizeLeft);
-            return;
+            return True;
 
          end if;
 
@@ -185,7 +184,7 @@ package body GUI.Themes.YellowBlue.Window is
                  (Refx => X,
                   Refy => Y,
                   Mode => GUI.Window.WindowChangeModeSizeTopRight);
-               return;
+               return True;
             end if;
 
             if Y>=Item.Priv.Bounds.Height-CornerSize then
@@ -193,14 +192,14 @@ package body GUI.Themes.YellowBlue.Window is
                  (Refx => X,
                   Refy => Y,
                   Mode => GUI.Window.WindowChangeModeSizeBottomRight);
-               return;
+               return True;
             end if;
 
             Item.StartChange
               (RefX => X,
                RefY => Y,
                Mode => GUI.Window.WindowChangeModeSizeRight);
-            return;
+            return True;
 
          end if;
 
@@ -209,9 +208,12 @@ package body GUI.Themes.YellowBlue.Window is
               (Refx => X,
                Refy => Y,
                Mode => GUI.Window.WindowChangeModeMove);
+            return True;
          end if;
 
       end if;
+
+      return True;
 
    end MouseDown;
    ---------------------------------------------------------------------------

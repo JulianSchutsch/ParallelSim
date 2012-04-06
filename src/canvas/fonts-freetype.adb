@@ -40,11 +40,26 @@ package body Fonts.Freetype is
    pragma Convention(C,Requester);
    ---------------------------------------------------------------------------
 
+   function Height
+     (Font : access FreeTypeFont_Type)
+      return Integer is
+   begin
+      return Font.LineHeight;
+   end Height;
+   ---------------------------------------------------------------------------
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => FreeTypeFont_Type'Class,
       Name   => FreeTypeFont_ClassAccess);
 
+   procedure Unload
+     (Font : Font_ClassAccess) is
+   begin
+      FTC_Manager_RemoveFaceID
+        (manager => Manager,
+         face_id => FTC_FaceID_Type(Font.all'Address));
+   end Unload;
+   ---------------------------------------------------------------------------
 
    function Load
      (Name       : Unbounded_String;
@@ -120,6 +135,8 @@ package body Fonts.Freetype is
          end if;
 
          Font.BaseLine:=Integer(FaceSize.metrics.ascender/64);
+         Font.LineHeight:=Integer((FaceSize.metrics.ascender
+           -FaceSize.metrics.descender)/64);
 
       end;
 
@@ -229,7 +246,8 @@ package body Fonts.Freetype is
       end if;
 
       Fonts.Register
-        (Load => Load'Access);
+        (Load   => Load'Access,
+         Unload => Unload'Access);
 
       Initialized:=True;
    end Initialize;

@@ -55,6 +55,21 @@ with Canvas;
 
 package GUI is
 
+   FocusRedirectionToNull : Exception;
+
+   type FocusStyle_Enum is
+     (FocusStyleNone,
+      FocusStyleAccept,
+      FocusStyleContainer,
+      FocusStyleRedirect);
+
+   type Key_Type is
+     (KeyUnknown,
+      KeyUp,
+      KeyLeft,
+      KeyRight,
+      KeyDown);
+
    type MouseButton_Enum is
      (LeftButton,
       RightButton);
@@ -87,17 +102,41 @@ package GUI is
          Context        : Context_ClassAccess;
          Client         : Object_ClassAccess;
          Priv           : Object_Private;
+         FocusStyle     : FocusStyle_Enum:=FocusStyleNone;
+         FocusObject    : Object_ClassAccess:=null;
+         Focussed       : Boolean:=False;
       end record;
 
-   procedure Finalize
-     (Item   : access Object_Type);
+   procedure Focus
+     (Item : access Object_Type) is null;
 
-   procedure MouseDown
+   procedure Defocus
+     (Item : access Object_Type) is null;
+
+   procedure Finalize
+     (Item : access Object_Type);
+
+   function CharacterInput
+     (Item  : access Object_Type;
+      Chars : Unbounded_String)
+      return Boolean;
+
+   function KeyDown
+     (Item : access Object_Type;
+      Key  : Key_Type)
+      return Boolean;
+
+   function KeyUp
+     (Item : access Object_Type;
+      Key  : Key_Type)
+      return Boolean;
+
+   function MouseDown
      (Item   : access Object_Type;
       Button : MouseButton_Enum;
       X      : Integer;
-      Y      : Integer;
-      Taken  : out Boolean);
+      Y      : Integer)
+      return Boolean;
 
    procedure MouseUp
      (Item   : access Object_Type;
@@ -131,6 +170,9 @@ package GUI is
 
    procedure Resize
      (Item : access Object_Type) is null;
+
+   procedure SetFocus
+     (Item : access Object_Type);
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is
@@ -206,6 +248,7 @@ private
       record
          MouseButtonsPressed : MouseButton_Array  := NoMouseButtons;
          MouseSelection      : Object_ClassAccess := null;
+         FocusObject         : Object_ClassAccess := null;
       end record;
 
    procedure Initialize
@@ -274,5 +317,17 @@ private
      (Context : Context_ClassAccess;
       AbsX    : Integer;
       AbsY    : Integer);
+
+   procedure CharacterInput
+     (Context : Context_ClassAccess;
+      Chars   : Unbounded_String);
+
+   procedure KeyDown
+     (Context : Context_ClassAccess;
+      Key     : Key_Type);
+
+   procedure KeyUp
+     (Context : Context_ClassAccess;
+      Key     : Key_Type);
 
 end GUI;

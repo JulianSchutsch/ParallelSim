@@ -78,7 +78,8 @@ package body SimRegion.ControlClient is
 
       use type SimCommon.NetworkIDString;
 
-     PrevPosition : Ada.Streams.Stream_Element_Offset;
+      PrevPosition : Ada.Streams.Stream_Element_Offset;
+      pragma Warnings(Off,PrevPosition);
 
    begin
       loop
@@ -126,6 +127,7 @@ package body SimRegion.ControlClient is
       pragma Warnings(Off,Item);
 
       PrevPosition : Ada.Streams.Stream_Element_Offset;
+      pragma Warnings(Off,PrevPosition);
 
    begin
       loop

@@ -19,12 +19,36 @@ pragma Ada_2005;
 
 with Ada.Text_IO.Unbounded_IO; use Ada.Text_IO.Unbounded_IO;
 with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Unchecked_Conversion;
 with Interfaces;
 with System.Address_Image;
+with System.WCh_Cnv;
+with System.WCh_Con;
 
 package body Basics is
    use type Ada.Containers.Hash_Type;
+
+   function UCS2ToUTF8
+     (Char : Wide_Character)
+      return Unbounded_String is
+
+      procedure Add(PartChar : Character);
+      procedure Convert is new System.WCh_Cnv.Wide_Char_To_Char_Sequence
+        (Add);
+
+      Result : Unbounded_String;
+
+      procedure Add(PartChar : Character) is
+      begin
+         Result:=Result&PartChar;
+      end Add;
+
+   begin
+      Convert(Char,System.WCh_Con.WCEM_UTF8);
+      return Result;
+   end UCS2ToUTF8;
+   ---------------------------------------------------------------------------
 
    function UTF8ToUCS4
      (String : Unbounded_String)
@@ -79,6 +103,7 @@ package body Basics is
             end if;
             Code := Interfaces.Shift_Left(Code,8)
               +Interfaces.Unsigned_32(ToUnsigned8(Element(String,StringPos)));
+            StringPos:=StringPos+1;
          end loop;
 
          BufferUsed         := BufferUsed+1;

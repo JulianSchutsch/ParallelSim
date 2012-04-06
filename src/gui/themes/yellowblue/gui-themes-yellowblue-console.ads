@@ -18,27 +18,15 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   25.Mar 2012 Julian Schutsch
+--   6.Apr 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with GUI.Window;
-with GUI.ScrollBar;
-with GUI.Console;
+package GUI.Themes.YellowBlue.Console is
 
-package GUI.Themes is
+   function NewConsole
+     (Parent : Object_ClassAccess)
+      return GUI.Console.Console_ClassAccess;
 
-   type Implementation_Type is
-      record
-         NewWindow              : GUI.Window.Window_Constructor:=null;
-         NewVerticalScrollBar   : GUI.ScrollBar.ScrollBar_Constructor:=null;
-         VerticalScrollBarWidth : Integer;
-         NewConsole             : GUI.Console.Console_Constructor:=null;
-      end record;
-
-   package Implementations is new Config.Implementations
-     (Implementation_Type => Implementation_Type,
-      IdentifierKey       => To_Unbounded_String("Theme"));
-
-end GUI.Themes;
+end GUI.Themes.YellowBlue.Console;

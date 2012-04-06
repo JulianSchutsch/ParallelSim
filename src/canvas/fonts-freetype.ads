@@ -58,7 +58,14 @@ private
          FaceHandle : aliased FT_Face_Access;
          Scaler     : aliased FTC_Scaler_Type;
          BaseLine   : Integer;
+         LineHeight : Integer;
       end record;
+
+   overriding
+   function Height
+     (Font : access FreeTypeFont_Type)
+      return Integer;
+
    ---------------------------------------------------------------------------
 
 end Fonts.FreeType;

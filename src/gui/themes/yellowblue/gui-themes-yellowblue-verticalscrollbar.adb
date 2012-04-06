@@ -24,7 +24,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body GUI.Themes.YellowBlue.VerticalScrollBar is
 
-   ButtonHeight           : constant Float:=21.0;
+   ButtonHeight           : constant Float:=20.0;
    TriangleBorderDistance : constant Float:=4.0;
    HandleBorderDistance   : constant Integer:=3;
    MinimumBarHeight       : constant Integer:=9;
@@ -82,12 +82,12 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
      (ScrollBar : access ScrollBar_Type);
 
    overriding
-   procedure MouseDown
+   function MouseDown
      (Item   : access ScrollBar_Type;
       Button : MouseButton_Enum;
       X      : Integer;
-      Y      : Integer;
-      Taken  : out Boolean);
+      Y      : Integer)
+      return Boolean;
 
    overriding
    procedure MouseUp
@@ -176,12 +176,12 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
    end MouseUp;
    ---------------------------------------------------------------------------
 
-   procedure MouseDown
+   function MouseDown
      (Item   : access ScrollBar_Type;
       Button : MouseButton_Enum;
       X      : Integer;
-      Y      : Integer;
-      Taken  : out Boolean) is
+      Y      : Integer)
+      return Boolean is
 
       SlideLength : constant Integer
         :=Item.Priv.Bounds.Height-2*Integer(ButtonHeight)
@@ -189,56 +189,48 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
 
 
    begin
-      Taken:=True;
 
       if (Item.MouseMode/=MouseModeNull) or (Button/=LeftButton) then
-         return;
+         return True;
       end if;
 
       if Y<Integer(ButtonHeight) then
-         Put("UpButton");
-         New_Line;
          Item.MouseMode:=MouseModeUpButton;
-         return;
+         return True;
       end if;
 
       if Y>=Item.Priv.Bounds.Height-Integer(ButtonHeight) then
-         Put("DownButton");
-         New_Line;
          Item.MouseMode:=MouseModeDownButton;
-         return;
+         return True;
       end if;
 
       if Item.BarMode=BarModeNull then
-         return;
+         return True;
       end if;
 
       if (X<BarBorderDistance) or
         (X>=Item.Priv.Bounds.Width-BarBorderDistance) then
-         return;
+         return True;
       end if;
 
       if (Y<SlideTop)
         or (Y>=SlideTop+SlideLength) then
-         return;
+         return True;
       end if;
 
       if Y<SlideTop+Item.BarPosition then
-         Put("UpSlide");
-         New_Line;
          Item.MouseMode:=MouseModeUpSlide;
-         return;
+         return True;
       end if;
 
       if Y<SlideTop+Item.BarPosition+Item.BarHeight then
          Item.MouseDelta:=Y-SlideTop-Item.BarPosition;
          Item.MouseMode:=MouseModeBar;
-         return;
+         return True;
       end if;
 
-      Put("DownSlide");
-      New_Line;
       Item.MouseMode:=MouseModeDownSlide;
+      return True;
 
    end MouseDown;
    ---------------------------------------------------------------------------

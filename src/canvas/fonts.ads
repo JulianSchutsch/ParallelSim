@@ -41,6 +41,10 @@ package Fonts is
       Char   : Wide_Wide_Character;
       Color  : Standard.Canvas.Color_Type) is abstract;
 
+   function Height
+     (Font : access Font_Type)
+      return Integer is abstract;
+
    function CharacterWidth
      (Font : access Font_Type;
       Char : Wide_Wide_Character)
@@ -88,8 +92,13 @@ package Fonts is
         Attributes : Attributes_Type)
         return Font_ClassAccess;
 
+   type Unload_Access is
+     access procedure
+       (Font : Font_ClassAccess);
+
    procedure Register
-     (Load : Load_Access);
+     (Load   : Load_Access;
+      Unload : Unload_Access);
 
    procedure UnRegister
      (Load : Load_Access);
@@ -106,6 +115,7 @@ private
          Attributes     : Attributes_Access;
          Next           : Font_ClassAccess;
          Last           : Font_ClassAccess;
+         Unload         : Unload_Access;
       end record;
 
 end Fonts;

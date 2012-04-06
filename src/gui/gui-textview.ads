@@ -32,13 +32,12 @@ package GUI.TextView is
    type TextView_Access is access all TextView_Type;
    type TextView_ClassAccess is access all TextView_Type'Class;
 
+   type Line_Type is private;
+   type Line_Access is access Line_Type;
+
    procedure Initialize
      (Item   : TextView_Access;
       Parent : Object_ClassAccess);
-
-   procedure SetFont
-     (Item : TextView_Access;
-      Font : Fonts.Font_ClassAccess);
 
    overriding
    procedure Finalize
@@ -48,20 +47,49 @@ package GUI.TextView is
    procedure Resize
      (Item : access TextView_Type);
 
+   overriding
+   function MouseDown
+     (Item   : access TextView_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean;
+
    procedure WriteLine
      (Item   : access TextView_Type;
       String : Unbounded_String;
       Color  : Canvas.Color_Type);
 
+   function NewLine
+     (Item : access TextView_Type;
+      String : Unbounded_String;
+      Color : Canvas.Color_Type)
+      return Line_Access;
+
+   procedure InsertBefore
+     (Item   : access TextView_Type;
+      Line   : Line_Access;
+      String : Unbounded_String;
+      Color  : Canvas.Color_Type);
+
+   function InsertCharacters
+     (Item     : access TextView_Type;
+      Line     : Line_Access;
+      Position : Natural;
+      String   : Unbounded_String;
+      Color    : Canvas.Color_Type)
+      return Integer;
+
    procedure Clear
      (Item : access TextView_Type);
+
+   procedure SetFont
+     (Item : access TextView_Type;
+      Font : Fonts.Font_ClassAccess);
 
 private
 
    use Fonts.ColorStrings;
-
-   type Line_Type;
-   type Line_Access is access Line_Type;
 
    type Line_Type is new Fonts.ColorStrings.ColorString_Type with
       record
@@ -87,7 +115,7 @@ private
          CanvasLines            : CanvasLine_Access:=null;
          Font                   : Fonts.Font_ClassAccess:=null;
          SpaceCharWidth         : Integer;
-         LineHeight             : Integer := 19; -- TODO: Obtain it properly
+         LineHeight             : Integer;
          FirstWrappedLine       : Natural := 0;
          InWrappedLinePosition  : Natural := 0;
       end record;

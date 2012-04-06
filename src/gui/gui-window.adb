@@ -130,6 +130,8 @@ package body GUI.Window is
         (Item   => Object_Access(Item),
          Parent => Parent);
 
+      Item.FocusStyle:=FocusStyleContainer;
+
    end Initialize;
    ---------------------------------------------------------------------------
 

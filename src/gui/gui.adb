@@ -33,12 +33,207 @@ package body GUI is
       Name   => Canvas_ClassAccess);
    ---------------------------------------------------------------------------
 
-   procedure MouseDown
+   procedure CharacterInput
+     (Context : Context_ClassAccess;
+      Chars   : Unbounded_String) is
+
+   begin
+
+      if Context.Priv.FocusObject/=null then
+         if not Context.Priv.FocusObject.CharacterInput(Chars) then
+            Put("Character rejected:");
+            Put(To_String(Chars));
+            New_Line;
+         end if;
+      end if;
+
+   end CharacterInput;
+   ---------------------------------------------------------------------------
+
+   procedure KeyDown
+     (Context : Context_ClassAccess;
+      Key     : Key_Type) is
+   begin
+
+      if Context.Priv.FocusObject/=null then
+         if not Context.Priv.FocusObject.KeyDown(Key) then
+            Put("Key rejected");
+            New_Line;
+         end if;
+      end if;
+
+   end KeyDown;
+   ---------------------------------------------------------------------------
+
+   procedure KeyUp
+     (Context : Context_ClassAccess;
+      Key     : Key_Type) is
+   begin
+
+      if Context.Priv.FocusObject/=null then
+         if not Context.Priv.FocusObject.KeyUp(Key) then
+            Put("Key up rejected");
+            New_Line;
+         end if;
+      end if;
+
+   end KeyUp;
+   ---------------------------------------------------------------------------
+
+   procedure ClearFocusTree
+     (Object : Object_ClassAccess) is
+
+      Cursor : Object_ClassAccess;
+
+   begin
+
+      Cursor:=Object.Context.Priv.FocusObject;
+
+      while Cursor/=null loop
+
+         if (Cursor.FocusStyle=FocusStyleContainer) and
+           (Cursor.FocusObject=Object.Context.Priv.FocusObject) then
+
+            Cursor.FocusObject:=null;
+
+         end if;
+
+         Cursor.Focussed:=False;
+         Cursor.Defocus;
+
+         Cursor:=Cursor.Priv.Parent;
+
+      end loop;
+
+   end ClearFocusTree;
+   ---------------------------------------------------------------------------
+
+   procedure SetFocusTree
+     (Object : Object_ClassAccess) is
+
+         Cursor : Object_ClassAccess;
+
+   begin
+
+      ClearFocusTree(Object);
+
+      Object.Context.Priv.FocusObject:=Object;
+      Cursor:=Object;
+
+      while Cursor/=null loop
+
+         if (Cursor.FocusStyle=FocusStyleContainer) and
+           (Cursor.FocusObject/=Object) then
+
+            Cursor.FocusObject:=null;
+
+         end if;
+
+         Cursor.Focussed:=True;
+         Cursor.Focus;
+
+         Cursor:=Cursor.Priv.Parent;
+
+      end loop;
+
+   end;
+   ---------------------------------------------------------------------------
+
+   procedure SetFocus
+     (Item : access Object_Type) is
+
+      Cursor : Object_ClassAccess;
+
+   begin
+
+      Cursor:=Object_ClassAccess(Item);
+
+      while (Cursor/=null) loop
+         Put(Cursor.all'Address);
+         New_Line;
+
+         case Cursor.FocusStyle is
+
+            when FocusStyleNone =>
+               Cursor:=Cursor.Priv.Parent;
+
+            when FocusStyleAccept =>
+               Put("Accept..therefore set");
+               New_Line;
+               SetFocusTree(Cursor);
+               return;
+
+            when FocusStyleContainer =>
+
+               Put("Container Reflection");
+               New_Line;
+               if Cursor.FocusObject/=null then
+                  Cursor:=Cursor.FocusObject;
+               else
+                  SetFocusTree(Cursor);
+                  return;
+               end if;
+
+            when FocusStyleRedirect =>
+               Put("Redirect");
+               New_Line;
+               if Cursor.FocusObject=null then
+                  raise FocusRedirectionToNull;
+               end if;
+               SetFocusTree(Cursor);
+               return;
+
+         end case;
+
+      end loop;
+
+   end;
+   ---------------------------------------------------------------------------
+
+   function KeyDown
+     (Item : access Object_Type;
+      Key  : Key_Type)
+      return Boolean is
+
+      pragma Unreferenced(Item);
+      pragma Unreferenced(Key);
+
+   begin
+      return True;
+   end KeyDown;
+   ---------------------------------------------------------------------------
+
+   function KeyUp
+     (Item : access Object_Type;
+      Key  : Key_Type)
+      return Boolean is
+
+      pragma Unreferenced(Item);
+      pragma Unreferenced(Key);
+
+   begin
+      return True;
+   end KeyUp;
+   ---------------------------------------------------------------------------
+
+   function CharacterInput
+     (Item  : access Object_Type;
+      Chars : Unbounded_String)
+      return Boolean is
+
+      pragma Unreferenced(Item);
+      pragma Unreferenced(Chars);
+
+   begin
+      return False;
+   end CharacterInput;
+
+   function MouseDown
      (Item   : access Object_Type;
       Button : MouseButton_Enum;
       X      : Integer;
-      Y      : Integer;
-      Taken  : out Boolean) is
+      Y      : Integer)
+      return Boolean is
 
       pragma Unreferenced(Item);
       pragma Unreferenced(Button);
@@ -46,7 +241,7 @@ package body GUI is
       pragma Unreferenced(Y);
 
    begin
-      Taken:=False;
+      return False;
    end MouseDown;
    ---------------------------------------------------------------------------
 
@@ -88,11 +283,10 @@ package body GUI is
                Bounds : AbsBounds_Type renames
                  Object.Priv.AbsBounds;
             begin
-               Object.MouseDown
+               MouseEventTaken:=Object.MouseDown
                  (Button => MouseButton,
                   X      => AbsX-Bounds.AbsLeft+Bounds.AbsSubLeft,
-                  Y      => AbsY-Bounds.AbsTop+Bounds.AbsSubTop,
-                  Taken  => MouseEventTaken);
+                  Y      => AbsY-Bounds.AbsTop+Bounds.AbsSubTop);
             end;
 
             if MouseEventTaken then
@@ -126,6 +320,13 @@ package body GUI is
             end if;
          end;
 
+         if Context.Priv.MouseSelection/=null then
+            Put("Set Focus");
+            Put(Context.Priv.MouseSelection.all'Address);
+            New_Line;
+            Context.Priv.MouseSelection.SetFocus;
+         end if;
+
       else
 
          if Context.Priv.MouseSelection/=null then
@@ -139,11 +340,10 @@ package body GUI is
                   Bounds : AbsBounds_Type renames
                     Context.Priv.MouseSelection.Priv.AbsBounds;
                begin
-                  Context.Priv.MouseSelection.MouseDown
+                  MouseEventTaken:=Context.Priv.MouseSelection.MouseDown
                     (Button => MouseButton,
                      X      => AbsX-Bounds.AbsLeft+Bounds.AbsSubLeft,
-                     Y      => AbsY-Bounds.AbsTop+Bounds.AbsSubTop,
-                     Taken  => MouseEventTaken);
+                     Y      => AbsY-Bounds.AbsTop+Bounds.AbsSubTop);
                end;
 
             end;
@@ -499,17 +699,40 @@ package body GUI is
 
    begin
 
-      -- TODO: Replaces dangerous loops by less dangerous ones
+      -- TODO: This is not enough, there can be referenced through containers
+      -- be left which MUST be removed too
+      if Item.Context.Priv.FocusObject=Object_ClassAccess(Item) then
+         ClearFocusTree(Object_ClassAccess(Item));
+      end if;
+
       -- Finalize all Childs
 
-      while Item.Priv.FirstChild/=null loop
-         Item.Priv.FirstChild.Finalize;
-      end loop;
+      declare
+         Object     : Object_ClassAccess;
+         NextObject : Object_ClassAccess;
+      begin
+         Object:=Item.Priv.FirstChild;
+
+         while Object/=null loop
+            NextObject:=Object.Priv.Next;
+            Object.Finalize;
+            Object:=NextObject;
+         end loop;
+      end;
 
       -- Free all Canvasse
-      while Item.Priv.Canvasse/=null loop
-         Item.Context.FreeCanvas(Item.Priv.Canvasse);
-      end loop;
+      declare
+         Canvas     : Canvas_ClassAccess;
+         NextCanvas : Canvas_ClassAccess;
+      begin
+         Canvas := Item.Priv.Canvasse;
+
+         while Canvas/=null loop
+            NextCanvas:=Canvas.Next;
+            Item.Context.FreeCanvas(Canvas);
+            Canvas:=NextCanvas;
+         end loop;
+      end;
 
       -- Remove Object from the tree
       ItemVal:=Object_Access(Item);

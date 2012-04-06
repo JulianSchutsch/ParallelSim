@@ -319,6 +319,11 @@ package Freetype is
       return FT_Error_Type;
    pragma Import(C,FTC_SBitCache_LookupScaler,"FTC_SBitCache_LookupScaler");
 
+   procedure FTC_Manager_RemoveFaceID
+     (manager : FTC_Manager_Access;
+      face_id : FTC_FaceID_Type);
+   pragma Import(C,FTC_Manager_RemoveFaceID,"FTC_Manager_RemoveFaceID");
+
    function Convert is new Ada.Unchecked_Conversion
      (Source => FT_Glyph_Access,
       Target => FT_BitmapGlyph_Access);

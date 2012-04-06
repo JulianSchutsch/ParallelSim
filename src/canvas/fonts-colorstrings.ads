@@ -27,6 +27,7 @@ package Fonts.ColorStrings is
 
    FontNotAssigned    : Exception;
    InvalidWrappedLine : Exception;
+   IndexOutOfRange    : Exception;
 
    type ColorStringElement_Type is private;
 
@@ -68,11 +69,24 @@ package Fonts.ColorStrings is
    procedure Clear
      (ColorString : in out ColorString_Type);
 
+   procedure Reinitialize
+     (ColorString : in out ColorString_Type;
+      Font        : Font_ClassAccess);
+
    procedure Initialize
      (ColorString : in out ColorString_Type;
       String      : Unbounded_String;
       Color       : Canvas.Color_Type;
       Font        : Font_ClassAccess);
+
+   -- The position is in wide_wide_char units
+   -- The length of the input string in wide_wide_chars is returned
+   function Insert
+     (ColorString : access ColorString_Type;
+      Position    : Integer;
+      String      : Unbounded_String;
+      Color       : Canvas.Color_Type)
+      return Integer;
 
 private
    type ColorStringElement_Type is

@@ -30,6 +30,23 @@ package body GUI.TextView is
      (Object => CanvasLine_Type,
       Name   => CanvasLine_Access);
 
+   function MouseDown
+     (Item   : access TextView_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean is
+
+      pragma Unreferenced(Item);
+      pragma Unreferenced(X);
+      pragma Unreferenced(Y);
+      pragma Unreferenced(Button);
+
+   begin
+      return True;
+   end MouseDown;
+   ---------------------------------------------------------------------------
+
    procedure FreeCanvasLine
      (Item       : access TextView_Type;
       CanvasLine : in out CanvasLine_Access) is
@@ -111,7 +128,7 @@ package body GUI.TextView is
 
    begin
       if Item.Font=null then
-         raise NoFontSelected;
+         return;
       end if;
 
       Item.Context.NewCanvas
@@ -300,6 +317,93 @@ package body GUI.TextView is
    end Clear;
    ---------------------------------------------------------------------------
 
+   function InsertCharacters
+     (Item     : access TextView_Type;
+      Line     : Line_Access;
+      Position : Natural;
+      String   : Unbounded_String;
+      Color    : Canvas.Color_Type)
+      return Integer is
+
+      Result : Integer;
+   begin
+      Result:=Line.Insert
+        (Position => Position,
+         String   => String,
+         Color    => Color);
+      Line.GreedyWrapping(Item.Priv.Bounds.Width);
+      ClearCanvasLines(Item); -- TEMP HACK
+      CompleteCanvasLines(Item);
+
+      return Result;
+   end InsertCharacters;
+   ---------------------------------------------------------------------------
+
+   -- TODO: Visible Lines change easily with this, update them!
+   -- TEMPFIX : Clearing all
+   procedure InsertBefore
+     (Item   : access TextView_Type;
+      Line   : Line_Access;
+      String : Unbounded_String;
+      Color  : Canvas.Color_Type) is
+
+      NewLine : Line_Access;
+
+   begin
+      NewLine:=new Line_Type;
+      NewLine.Initialize
+        (String      => String,
+         Color       => Color,
+         Font        => Item.Font);
+
+      NewLine.Next:=Line;
+      NewLine.Last:=Line.Last;
+      Line.Last:=NewLine;
+      if NewLine.Last/=null then
+         NewLine.Last.Next:=NewLine;
+      else
+         Item.FirstLine:=NewLine;
+      end if;
+
+      NewLine.GreedyWrapping(Item.Priv.Bounds.Width);
+      ClearCanvasLines(Item); -- TEMP HACK
+      CompleteCanvasLines(Item);
+
+   end InsertBefore;
+   ---------------------------------------------------------------------------
+
+   function NewLine
+     (Item : access TextView_Type;
+      String : Unbounded_String;
+      Color : Canvas.Color_Type)
+      return Line_Access is
+
+      NewLine : Line_Access;
+
+   begin
+
+      NewLine:=new Line_Type;
+      NewLine.Initialize
+        (String      => String,
+         Color       => Color,
+         Font        => Item.Font);
+
+      NewLine.Last:=Item.LastLine;
+      if Item.LastLine/=null then
+         Item.LastLine.Next:=NewLine;
+      else
+         Item.FirstLine:=NewLine;
+      end if;
+      Item.LastLine:=NewLine;
+
+      NewLine.GreedyWrapping(Item.Priv.Bounds.Width);
+      CompleteCanvasLines(Item);
+
+      return NewLine;
+
+   end NewLine;
+   ---------------------------------------------------------------------------
+
    procedure WriteLine
      (Item   : access TextView_Type;
       String : Unbounded_String;
@@ -312,7 +416,7 @@ package body GUI.TextView is
       NewLine.Initialize
         (String      => String,
          Color       => Color,
-         Font => Item.Font);
+         Font        => Item.Font);
 
       NewLine.Last:=Item.LastLine;
       if Item.LastLine/=null then
@@ -345,14 +449,38 @@ package body GUI.TextView is
       CompleteCanvasLines(Item);
 
    end Resize;
+   ---------------------------------------------------------------------------
+
+   procedure Reinitialize
+     (Item : access TextView_Type) is
+
+      Line : Line_Access;
+
+   begin
+
+      Line:=Item.FirstLine;
+      while Line/=null loop
+         Line.Reinitialize(Item.Font);
+         Line:=Line.Next;
+      end loop;
+
+   end Reinitialize;
+   ---------------------------------------------------------------------------
 
    procedure SetFont
-     (Item : TextView_Access;
+     (Item : access TextView_Type;
       Font : Fonts.Font_ClassAccess) is
    begin
       -- TODO: Calculate Font Specific things.
-      Item.Font:=Font;
-      Item.SpaceCharWidth:=Font.TextWidth(To_Unbounded_String(" "));
+      Item.Font           := Font;
+      Item.SpaceCharWidth := Font.TextWidth(To_Unbounded_String(" "));
+      Item.LineHeight     := Font.Height;
+
+      Reinitialize(Item);
+      ClearCanvasLines(Item);
+      CalculateLineBreaks(Item);
+      CompleteCanvasLines(Item);
+
    end SetFont;
    ---------------------------------------------------------------------------
 

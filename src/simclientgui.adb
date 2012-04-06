@@ -5,10 +5,10 @@ with Basics; use Basics;
 with ProcessLoop;
 with GUI.Window;
 with GUI.Themes;
+with GUI.Console;
 with Ada.Text_IO; use Ada.Text_IO;
-With Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with GUI.ScrollBar;
 with BoundsCalc;
+with Fonts;
 
 package body SimClientGUI is
 
@@ -17,7 +17,7 @@ package body SimClientGUI is
    GUIContext          : GUI.Context_ClassAccess:=null;
    Terminated          : Boolean;
    Window              : GUI.Window.Window_ClassAccess:=null;
-   ScrollBar           : GUI.ScrollBar.ScrollBar_ClassAccess:=null;
+   Console             : GUI.Console.Console_ClassAccess:=null;
 
    procedure OnCloseContext
      (CallBackObject : AnyObject_ClassAccess) is
@@ -28,15 +28,6 @@ package body SimClientGUI is
       Terminated:=True;
    end OnCloseContext;
    ---------------------------------------------------------------------------
-
-   procedure OnPositionChange
-     (CallBackObject : AnyObject_ClassAccess) is
-      pragma Unreferenced(CallBackObject);
-   begin
-      Put("PositionChange called:");
-      Put(ScrollBar.GetPosition);
-      New_Line;
-   end OnPositionChange;
 
    procedure Initialize
      (Configuration : Config.Config_Type) is
@@ -81,21 +72,31 @@ package body SimClientGUI is
       declare
          Bounds : constant BoundsCalc.Bounds_Type:=Window.Client.GetBounds;
       begin
-         ScrollBar:=ThemeImplementation.NewVerticalScrollbar
+         Console:=ThemeImplementation.NewConsole
            (Parent => GUI.Object_ClassAccess(Window));
-         ScrollBar.OnPositionChange:=OnPositionChange'Access;
-         ScrollBar.SetBounds
+         Console.SetFont
+           (Font => Fonts.Lookup
+              (Name       => To_Unbounded_String("./Vera.ttf"),
+               Size       => 9,
+               Attributes => Fonts.NoAttributes));
+         Console.SetBounds
            (Top     => 0,
-            Left    => Bounds.Width-ThemeImplementation.VerticalScrollbarWidth,
+            Left    => 0,
             Height  => Bounds.Height,
-            Width   => ThemeImplementation.VerticalScrollBarWidth,
+            Width   => Bounds.Width,
             Visible => True);
-         ScrollBar.SetAnchors
+         Console.SetAnchors
            (Top    => True,
-            Left   => False,
+            Left   => True,
             Right  => True,
             Bottom => True);
       end;
+      Console.WriteLine
+        (String => To_Unbounded_String("Hallo"),
+         Color  => 16#FFFFFF00#);
+      Console.WriteLine
+        (String => To_Unbounded_String("Wie gehts?"),
+         Color  => 16#FF00FF00#);
 
       Put("End of Simclientgui init");
       New_Line;

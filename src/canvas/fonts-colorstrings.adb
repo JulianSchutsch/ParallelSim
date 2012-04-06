@@ -19,8 +19,8 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
---with Ada.Text_IO; use Ada.Text_IO;
---with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Fonts.ColorStrings is
 
@@ -39,6 +39,10 @@ package body Fonts.ColorStrings is
       YPosition : Integer:=Y;
 
    begin
+
+      if ColorString.Font=null then
+         raise FontNotAssigned;
+      end if;
 
       for i in ColorString.CurrentPosition
         ..ColorString.Content(ColorString.CurrentPosition).NextLine-1 loop
@@ -264,7 +268,7 @@ package body Fonts.ColorStrings is
    begin
 
       if ColorString.Font=null then
-         raise FontNotAssigned;
+         return;
       end if;
 
       for i in ColorString.Content'Range loop
@@ -275,11 +279,13 @@ package body Fonts.ColorStrings is
            := AccumWidth+ColorString.Font.CharacterWidth(ThisChar);
 
          ColorString.Content(i).AccumWidth := AccumWidth;
+         ColorString.Content(i).NextLine := 0; -- Reset this to reset wrapping
 
          AccumWidth
            := AccumWidth+ColorString.Font.Kerning(PreviousChar,ThisChar);
 
          PreviousChar:=ThisChar;
+
 
       end loop;
 
@@ -295,6 +301,84 @@ package body Fonts.ColorStrings is
       end if;
 
    end Clear;
+   ---------------------------------------------------------------------------
+
+   procedure Reinitialize
+     (ColorString : in out ColorString_Type;
+      Font        : Font_ClassAccess) is
+   begin
+      ColorString.Font:=Font;
+      CalculateDimensions(ColorString);
+   end Reinitialize;
+   ---------------------------------------------------------------------------
+
+   function Insert
+     (ColorString : access ColorString_Type;
+      Position    : Integer;
+      String      : Unbounded_String;
+      Color       : Canvas.Color_Type)
+      return Integer is
+
+      UCS4       : Unbounded_Wide_Wide_String;
+      NewContent : ColorStringArray_Access;
+
+   begin
+
+      UCS4:=UTF8ToUCS4(String);
+
+      if ColorString.Content=null then
+         if Position=1 then
+            -- Simply create the entire thing
+
+            ColorString.Initialize
+              (String => String,
+               Color  => Color,
+               Font   => ColorString.Font);
+
+            return Length(UCS4);
+
+         end if;
+         raise IndexOutOfRange;
+      end if;
+
+      if Position not in ColorString.Content'First..ColorString.Content'Last+1 then
+         raise IndexOutOfRange;
+      end if;
+
+      Put("Old Dimensions");
+      Put(ColorString.Content'First);
+      Put(ColorString.Content'Last);
+      New_Line;
+
+      NewContent:=new ColorStringArray_Type
+        (1..ColorString.Content'Last+Length(UCS4));
+      Put("New Dimensions");
+      Put(NewContent'First);
+      Put(NewContent'Last);
+      New_Line;
+
+      for i in 1..Position-1 loop
+         NewContent(i):=ColorString.Content(i);
+      end loop;
+
+      for i in 1..Length(UCS4) loop
+         NewContent(Position+i-1).Char  := Element(UCS4,i);
+         NewContent(Position+i-1).Color := Color;
+      end loop;
+
+      for i in Position..ColorString.Content'Last loop
+         NewContent(i+Length(UCS4)):=ColorString.Content(i);
+      end loop;
+
+      Free(ColorString.Content);
+
+      ColorString.Content:=NewContent;
+
+      CalculateDimensions(ColorString.all);
+
+      return Length(UCS4);
+
+   end Insert;
    ---------------------------------------------------------------------------
 
    procedure Initialize
