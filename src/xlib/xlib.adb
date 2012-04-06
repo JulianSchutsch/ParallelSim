@@ -22,7 +22,7 @@ pragma Ada_2005;
 with Ada.Unchecked_Conversion;
 with System.Storage_Elements; use System.Storage_Elements;
 
-package body xlib is
+package body Xlib is
 
    function "+" (Left : XIMStyle_Access; Right : Interfaces.C.size_t)
                  return XIMStyle_Access is

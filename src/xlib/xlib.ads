@@ -71,18 +71,33 @@ package Xlib is
 
    type Time_Type is new Interfaces.C.long;
 
+   type XWMHints_Type is
+      record
+         flags         : Interfaces.C.long := 0;
+         input         : Interfaces.Unsigned_32 := 0;
+         initial_state : Interfaces.C.int  := 0;
+         icon_pixmap   : Pixmap_Type       := 0;
+         icon_window   : Window_Type       := 0;
+         icon_x        : Interfaces.C.int  := 0;
+         icon_y        : Interfaces.C.int  := 0;
+         icon_mask     : Pixmap_Type       := 0;
+         window_group  : XID_Type          := 0;
+      end record;
+   pragma Convention(C,XWMHints_Type);
+   type XWMHints_Access is access all XWMHints_Type;
+
    type XVisualInfo_Type is
       record
-         visual        : Visual_Access;
-         visualid      : VisualID_Type;
-         screen        : Interfaces.C.int;
-         depth         : Interfaces.C.int;
-         class         : Interfaces.C.int;
-         red_mask      : Interfaces.C.long;
-         green_mask    : Interfaces.C.long;
-         blue_mask     : Interfaces.C.long;
-         colormap_size : Interfaces.C.int;
-         bits_per_rgb  : Interfaces.C.int;
+         visual        : Visual_Access:=null;
+         visualid      : VisualID_Type:=0;
+         screen        : Interfaces.C.int:=0;
+         depth         : Interfaces.C.int:=0;
+         class         : Interfaces.C.int:=0;
+         red_mask      : Interfaces.C.long:=0;
+         green_mask    : Interfaces.C.long:=0;
+         blue_mask     : Interfaces.C.long:=0;
+         colormap_size : Interfaces.C.int:=0;
+         bits_per_rgb  : Interfaces.C.int:=0;
       end record;
    pragma Convention(C,XVisualInfo_Type);
    type XVisualInfo_Access is access all XVisualInfo_Type;
@@ -97,21 +112,21 @@ package Xlib is
 
    type XSetWindowAttributes_Type is
       record
-         background_pixmap    : Pixmap_Type:=0;
-         background_pixel     : Interfaces.C.long:=0;
-         border_pixmap        : Pixmap_Type:=0;
-         border_pixel         : Interfaces.C.long:=0;
-         bit_gravity          : Interfaces.C.int:=0;
-         win_gravity          : Interfaces.C.int:=0;
-         backing_store        : Interfaces.C.int:=0;
-         backing_planes       : Interfaces.C.long:=0;
-         backing_pixel        : Interfaces.C.long:=0;
-         save_under           : Interfaces.C.int:=0;
-         event_mask           : Interfaces.C.long:=0;
-         do_not_propagate_ask : Interfaces.C.long:=0;
-         override_redirect    : Interfaces.C.int:=0;
-         colormap             : Colormap_Type:=0;
-         cursor               : Cursor_Type:=0;
+         background_pixmap    : Pixmap_Type       := 0;
+         background_pixel     : Interfaces.C.long := 0;
+         border_pixmap        : Pixmap_Type       := 0;
+         border_pixel         : Interfaces.C.long := 0;
+         bit_gravity          : Interfaces.C.int  := 0;
+         win_gravity          : Interfaces.C.int  := 0;
+         backing_store        : Interfaces.C.int  := 0;
+         backing_planes       : Interfaces.C.long := 0;
+         backing_pixel        : Interfaces.C.long := 0;
+         save_under           : Interfaces.C.int  := 0;
+         event_mask           : Interfaces.C.long := 0;
+         do_not_propagate_ask : Interfaces.C.long := 0;
+         override_redirect    : Interfaces.C.int  := 0;
+         colormap             : Colormap_Type     := 0;
+         cursor               : Cursor_Type       := 0;
       end record;
    pragma Convention(C,XSetWindowAttributes_Type);
    type XSetWindowAttributes_Access is access all XSetWindowAttributes_Type;
@@ -180,7 +195,7 @@ package Xlib is
          y_root      : Interfaces.C.int;
          state       : Interfaces.C.unsigned;
          button      : Interfaces.C.unsigned;
-         same_screen : Interfaces.C.int;
+         same_screen : Interfaces.Unsigned_32;
       end record;
    pragma Convention(C,XButtonEvent_Type);
 
@@ -256,6 +271,7 @@ package Xlib is
       EventTypeResizeRequest,
       EventTypeReparentNotify);
 
+   MapNotify       : constant:=19;
    ClientMessage   : constant:=33;
    Expose          : constant:=12;
    ButtonPress     : constant:=4;
@@ -488,6 +504,27 @@ package Xlib is
       status_return : Status_Access)
       return Interfaces.C.int;
    pragma Import(C,XUtf8LookupString,"Xutf8LookupString");
+
+   procedure XSetWMHints
+     (display : Display_Access;
+      window  : Window_Type;
+      wmhints : XWMHints_Access);
+   pragma Import(C,XSetWMHints,"XSetWMHints");
+
+   function XAllocWMHints
+     return XWMHints_Access;
+   pragma Import(C,XAllocWMHints,"XAllocWMHints");
+
+   procedure XDestroyIC
+     (xic : XIC_Access);
+   pragma Import(C,XDestroyIC,"XDestroyIC");
+
+   procedure XCloseIM
+     (xim : XIM_Access);
+   pragma Import(C,XCloseIM,"XCloseIM");
+
+   procedure EnableDebug;
+   pragma Import(C,EnableDebug,"EnableDebug");
 
    function "+" (Left : XIMStyle_Access; Right : Interfaces.C.size_t)
                  return XIMStyle_Access;

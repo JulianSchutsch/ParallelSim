@@ -51,3 +51,8 @@ XIC _XCreateIC_1(XIM xim,Window window,int inputstyle)
     XNFocusWindow,window,
     NULL);
 }
+
+void EnableDebug(void)
+{
+  _Xdebug = 1;
+}

@@ -72,22 +72,24 @@ package body GUI.OpenGL.Native is
    type Context_Access is access all Context_Type;
    type Context_Type is new GUI.OpenGL.Context_Type with
       record
-         Display             : XLib.Display_Access     := Null;
-         NextContext         : Context_Access          := Null;
-         LastContext         : Context_Access          := Null;
+         Display             : XLib.Display_Access     := null;
+         NextContext         : Context_Access          := null;
+         LastContext         : Context_Access          := null;
          DestroyedSignalSend : Boolean                 := False;
          GLXMajor            : aliased GLint_Type      := 0;
          GLXMinor            : aliased GLint_Type      := 0;
          Screen              : Interfaces.C.int        := 0;
-         Visual              : XLib.XVisualInfo_Access := Null;
+         Visual              : XLib.XVisualInfo_Access := null;
          ColorMap            : XLib.ColorMap_Type      := 0;
          Window              : XLib.Window_Type        := 0;
          DeleteWindowAtom    : aliased XLib.Atom_Type  := 0;
-         GLXContext          : glX.GLXContext_Access   := Null;
-         InputIM             : Xlib.XIM_Access         := Null;
-         InputContext        : Xlib.XIC_Access         := Null;
+         GLXContext          : glX.GLXContext_Access   := null;
+         InputIM             : Xlib.XIM_Access         := null;
+         InputContext        : Xlib.XIC_Access         := null;
          DoubleBuffered      : Boolean                 := True;
          ContextInitialized  : Boolean                 := False;
+         WMHints             : XLib.XWMHints_Access    := null;
+         MapNotified         : Boolean                 := False;
       end record;
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -109,14 +111,14 @@ package body GUI.OpenGL.Native is
 
       procedure Paint is
       begin
-               GUI.OpenGL.Paint(GUI.OpenGL.Context_Type(Context.all));
-               if Context.DoubleBuffered then
-                  glX.glXSwapBuffers
-                    (dpy => Context.Display,
-                     drawable => glX.GLXDrawable_Type(Context.Window));
-               else
-                  glFinish;
-               end if;
+         GUI.OpenGL.Paint(GUI.OpenGL.Context_Type(Context.all));
+         if Context.DoubleBuffered then
+            glX.glXSwapBuffers
+              (dpy => Context.Display,
+               drawable => glX.GLXDrawable_Type(Context.Window));
+         else
+            glFinish;
+         end if;
       end Paint;
 
    begin
@@ -157,6 +159,8 @@ package body GUI.OpenGL.Native is
                end if;
 
             when Xlib.Expose =>
+               Put("Expose");
+               New_Line;
                Paint;
 
             when Xlib.ButtonPress =>
@@ -255,7 +259,11 @@ package body GUI.OpenGL.Native is
                -- TODO: Send update signal
 
             when Xlib.ReparentNotify =>
-               null;
+               Put("Reparent");
+               New_Line;
+
+            when Xlib.MapNotify =>
+               Context.MapNotified:=True;
 
             when others =>
                Put("Unknown Event Type:");
@@ -300,6 +308,9 @@ package body GUI.OpenGL.Native is
       use type Xlib.Window_Type;
       use type Xlib.Display_Access;
       use type Xlib.XVisualInfo_Access;
+      use type Xlib.XIC_Access;
+      use type Xlib.XWMHints_Access;
+      use type Xlib.XIM_Access;
 
       Cont : Context_Access;
 
@@ -310,6 +321,19 @@ package body GUI.OpenGL.Native is
       if Cont.ContextInitialized then
          GUI.Finalize
            (Context => GUI.Context_Type(Cont.all));
+      end if;
+
+      if Cont.InputContext/=null then
+         XLib.XDestroyIC(Cont.InputContext);
+      end if;
+
+      if Cont.InputIM/=null then
+         XLib.XCloseIM(Cont.InputIM);
+      end if;
+
+      if Cont.WMHints/=null then
+         XLib.XFree
+           (Cont.WMHints.all'Address);
       end if;
 
       if Cont.Visual/=null then
@@ -383,6 +407,7 @@ package body GUI.OpenGL.Native is
       Context : Context_Access;
 
    begin
+      Xlib.EnableDebug;
       -- Create new context object and add it to the contexts list
       Context:=new Context_Type;
       context.NextContext:=Contexts;
@@ -573,6 +598,15 @@ package body GUI.OpenGL.Native is
            with "Call to glxMakeCurrent failed"
              &ErrorCodeString;
       end if;
+
+      Put("Waiting For MapNotify");
+      New_Line;
+      -- TODO: Build a timeout in here
+      while not Context.MapNotified loop
+         Process;
+      end loop;
+      Put("Done");
+      New_Line;
 
       Context.InputIM:=Xlib.XOpenIM
         (display   => Context.Display,
