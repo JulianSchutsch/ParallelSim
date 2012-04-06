@@ -198,7 +198,39 @@ package body GUI.OpenGL.Native is
                   AbsY    => Integer(Event.ButtonMotion.y-2));
 
             when Xlib.KeyPress =>
-               null;
+               declare
+
+                  use type Xlib.Status_Type;
+
+                  BufferLength  : constant:=64;
+                  NumberOfChars : Interfaces.C.int;
+                  AdaBuffer     : String(1..BufferLength):=(others => ' ');
+                  Buffer        : Interfaces.C.Strings.chars_ptr;
+                  Status        : aliased Xlib.Status_Type;
+                  KeySym        : aliased Xlib.KeySim_Type;
+
+               begin
+
+                  Buffer:=Interfaces.C.Strings.New_String(AdaBuffer);
+                  NumberOfChars:=Xlib.XUtf8LookupString
+                    (ic            => Context.InputContext,
+                     event         => Event'Access,
+                     Buffer_Return => Buffer,
+                     Bytes_Buffer  => BufferLength,
+                     KeySym_Return => KeySym'Unchecked_Access,
+                     Status_Return => Status'Unchecked_Access);
+                  if (NumberOfChars/=0)
+                    and ((Status=Xlib.XLookupChars)
+                         or (Status=Xlib.XLookupBoth)) then
+                     AdaBuffer(1..Integer(NumberOfChars)):=Interfaces.C.Strings.Value
+                       (Item   => Buffer,
+                        Length => Interfaces.C.size_t(NumberOfChars));
+                     GUI.CharacterInput
+                       (Context => Context_ClassAccess(Context),
+                        Chars   => To_Unbounded_String(AdaBuffer(1..Integer(NumberOfChars))));
+                  end if;
+
+               end;
 
             when Xlib.KeyRelease =>
                null;

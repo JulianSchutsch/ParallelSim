@@ -30,6 +30,9 @@ package Xlib is
    type XID_Type is new Interfaces.C.long;
    type XID_Access is access all XID_Type;
 
+   type KeySim_Type is new XID_Type;
+   type KeySim_Access is access all KeySim_Type;
+
    type Window_Type is new XID_Type;
    type Window_Access is access all Window_Type;
 
@@ -61,6 +64,7 @@ package Xlib is
    type XIM_Access is access all XIM_Type;
 
    type Status_Type is new Interfaces.C.int;
+   type Status_Access is access all Status_Type;
 
    type XrmDatabase_Type is null record;
    type XrmDatabase_Access is access all XrmDatabase_Type;
@@ -266,6 +270,10 @@ package Xlib is
    Button1 : constant:=1;
    Button2 : constant:=2;
 
+   XLookupChars  : constant Status_Type:=2;
+   XLookupBoth   : constant Status_Type:=4;
+   XLookupKeySym : constant Status_Type:=3;
+
    type XEvent_Type(EventType : EventType_Enum:=EventTypeUnknown) is
       record
          ttype      : Interfaces.C.int;
@@ -300,6 +308,7 @@ package Xlib is
       end record;
    pragma Unchecked_Union(XEvent_Type);
    pragma Convention(C,XEvent_Type);
+   type XEvent_Access is access all XEvent_Type;
 
    type XErrorEvent_Type is
       record
@@ -312,8 +321,6 @@ package Xlib is
       end record;
    pragma Convention(C,XErrorEvent_Type);
    type XErrorEvent_Access is access XErrorevent_Type;
-
-   type XEvent_Access is access all XEvent_Type;
 
    type XIMStyle_Type is new Interfaces.C.long;
    pragma Convention(C,XIMStyle_Type);
@@ -471,6 +478,16 @@ package Xlib is
       im_supported_styles : access XIMStyles_Access)
       return Interfaces.C.Strings.chars_ptr;
    pragma Import(C,XGetIMValues_1,"XGetIMValues_1");
+
+   function XUtf8LookupString
+     (ic            : XIC_Access;
+      event         : access XEvent_Type;
+      buffer_return : Interfaces.C.Strings.chars_ptr;
+      bytes_buffer  : Interfaces.C.int;
+      keysym_return : KeySim_Access;
+      status_return : Status_Access)
+      return Interfaces.C.int;
+   pragma Import(C,XUtf8LookupString,"Xutf8LookupString");
 
    function "+" (Left : XIMStyle_Access; Right : Interfaces.C.size_t)
                  return XIMStyle_Access;
