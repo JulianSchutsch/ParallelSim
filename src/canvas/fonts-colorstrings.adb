@@ -19,14 +19,41 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Fonts.ColorStrings is
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => ColorStringArray_Type,
       Name   => ColorStringArray_Access);
+   ---------------------------------------------------------------------------
+
+   function GetWrappedLine
+     (ColorString : access ColorString_Type;
+      Position    : Integer)
+      return Integer is
+
+      LinePosition : Integer;
+      LineNumber   : Integer:=0;
+
+   begin
+      LinePosition:=ColorString.Content'First;
+
+      while LinePosition<=ColorString.Content'Last loop
+
+         if Position in LinePosition..ColorString.Content(LinePosition).NextLine-1 then
+            return LineNumber;
+         end if;
+
+         LinePosition := ColorString.Content(LinePosition).NextLine;
+         LineNumber   := LineNumber+1;
+
+      end loop;
+
+      return LineNumber;
+
+   end GetWrappedLine;
    ---------------------------------------------------------------------------
 
    procedure Render
@@ -345,17 +372,8 @@ package body Fonts.ColorStrings is
          raise IndexOutOfRange;
       end if;
 
-      Put("Old Dimensions");
-      Put(ColorString.Content'First);
-      Put(ColorString.Content'Last);
-      New_Line;
-
       NewContent:=new ColorStringArray_Type
         (1..ColorString.Content'Last+Length(UCS4));
-      Put("New Dimensions");
-      Put(NewContent'First);
-      Put(NewContent'Last);
-      New_Line;
 
       for i in 1..Position-1 loop
          NewContent(i):=ColorString.Content(i);

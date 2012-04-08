@@ -70,7 +70,7 @@ package body SimClientGUI is
          Bottom => False);
 
       declare
-         Bounds : constant BoundsCalc.Bounds_Type:=Window.Client.GetBounds;
+         Bounds : constant BoundsCalc.Bounds_Type:=Window.GetClient.GetBounds;
       begin
          Console:=ThemeImplementation.NewConsole
            (Parent => GUI.Object_ClassAccess(Window));

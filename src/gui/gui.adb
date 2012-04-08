@@ -33,6 +33,22 @@ package body GUI is
       Name   => Canvas_ClassAccess);
    ---------------------------------------------------------------------------
 
+   procedure SetClient
+     (Object : access Object_Type;
+      Client : Object_ClassAccess) is
+   begin
+      Object.Client:=Client;
+   end SetClient;
+   ---------------------------------------------------------------------------
+
+   function GetClient
+     (Object : access Object_Type)
+      return Object_ClassAccess is
+   begin
+      return Object.Client;
+   end GetClient;
+   ---------------------------------------------------------------------------
+
    procedure CharacterInput
      (Context : Context_ClassAccess;
       Chars   : Unbounded_String) is
@@ -101,7 +117,7 @@ package body GUI is
          Cursor.Focussed:=False;
          Cursor.Defocus;
 
-         Cursor:=Cursor.Priv.Parent;
+         Cursor:=Cursor.Parent;
 
       end loop;
 
@@ -132,7 +148,7 @@ package body GUI is
          Cursor.Focussed:=True;
          Cursor.Focus;
 
-         Cursor:=Cursor.Priv.Parent;
+         Cursor:=Cursor.Parent;
 
       end loop;
 
@@ -155,7 +171,7 @@ package body GUI is
          case Cursor.FocusStyle is
 
             when FocusStyleNone =>
-               Cursor:=Cursor.Priv.Parent;
+               Cursor:=Cursor.Parent;
 
             when FocusStyleAccept =>
                Put("Accept..therefore set");
@@ -264,24 +280,24 @@ package body GUI is
       begin
 
          if TestInsideAbsBounds
-           (AbsBounds => Object.Priv.AbsBounds,
+           (AbsBounds => Object.AbsBounds,
             AbsX      => AbsX,
             AbsY      => AbsY) then
 
             -- Test if any nested object wants the mouse signal
-            ObjectCursor:=Object.Priv.FirstChild;
+            ObjectCursor:=Object.FirstChild;
 
             while ObjectCursor/=null loop
                if SubMouseDown(ObjectCursor) then
                   return True;
                end if;
-               ObjectCursor:=ObjectCursor.Priv.Next;
+               ObjectCursor:=ObjectCursor.Next;
             end loop;
 
             -- Test if this object wants the mouse signal
             declare
                Bounds : AbsBounds_Type renames
-                 Object.Priv.AbsBounds;
+                 Object.AbsBounds;
             begin
                MouseEventTaken:=Object.MouseDown
                  (Button => MouseButton,
@@ -338,7 +354,7 @@ package body GUI is
 
                declare
                   Bounds : AbsBounds_Type renames
-                    Context.Priv.MouseSelection.Priv.AbsBounds;
+                    Context.Priv.MouseSelection.AbsBounds;
                begin
                   MouseEventTaken:=Context.Priv.MouseSelection.MouseDown
                     (Button => MouseButton,
@@ -369,7 +385,7 @@ package body GUI is
 
          declare
             Bounds : AbsBounds_Type renames
-              Context.Priv.MouseSelection.Priv.AbsBounds;
+              Context.Priv.MouseSelection.AbsBounds;
          begin
             Context.Priv.MouseSelection.MouseUp
               (Button => MouseButton,
@@ -396,7 +412,7 @@ package body GUI is
 
          declare
             Bounds : AbsBounds_Type renames
-              Context.Priv.MouseSelection.Priv.AbsBounds;
+              Context.Priv.MouseSelection.AbsBounds;
          begin
             Context.Priv.MouseSelection.MouseMove
               (X => AbsX-Bounds.AbsLeft+Bounds.AbsSubLeft,
@@ -416,71 +432,71 @@ package body GUI is
 
    begin
 
-      if Object.Priv.Parent/=null then
+      if Object.Parent/=null then
 
          RestoreAnchors
-           (Anchors      => Object.Priv.Anchors,
-            ClientBounds => Object.Priv.Bounds,
-            ParentBounds => Object.Priv.Parent.Priv.Bounds);
+           (Anchors      => Object.Anchors,
+            ClientBounds => Object.Bounds,
+            ParentBounds => Object.Parent.Bounds);
 
          ApplyConstraint
-           (Constraint => Object.Priv.TopHeightConstraint,
-            Value      => Object.Priv.Bounds.Top,
-            Size       => Object.Priv.Bounds.Height,
-            OldValue   => Object.Priv.PrevBounds.Top,
-            OldSize    => Object.Priv.PrevBounds.Height,
-            ParentSize => Object.Priv.Parent.Priv.Bounds.Height);
+           (Constraint => Object.TopHeightConstraint,
+            Value      => Object.Bounds.Top,
+            Size       => Object.Bounds.Height,
+            OldValue   => Object.PrevBounds.Top,
+            OldSize    => Object.PrevBounds.Height,
+            ParentSize => Object.Parent.Bounds.Height);
          ApplyConstraint
-           (Constraint => Object.Priv.LeftWidthConstraint,
-            Value      => Object.Priv.Bounds.Left,
-            Size       => Object.Priv.Bounds.Width,
-            OldValue   => Object.Priv.PrevBounds.Left,
-            OldSize    => Object.Priv.PrevBounds.Width,
-            ParentSize => Object.Priv.Parent.Priv.Bounds.Width);
+           (Constraint => Object.LeftWidthConstraint,
+            Value      => Object.Bounds.Left,
+            Size       => Object.Bounds.Width,
+            OldValue   => Object.PrevBounds.Left,
+            OldSize    => Object.PrevBounds.Width,
+            ParentSize => Object.Parent.Bounds.Width);
 
          NestBounds
-           (ParentAbsBounds => Object.Priv.Parent.Priv.AbsBounds,
-            RectBounds      => Object.Priv.Bounds,
-            ResultBounds    => Object.Priv.AbsBounds);
+           (ParentAbsBounds => Object.Parent.AbsBounds,
+            RectBounds      => Object.Bounds,
+            ResultBounds    => Object.AbsBounds);
       else
-         Object.Priv.AbsBounds:=
-           (AbsTop     => Object.Priv.Bounds.Top,
-            AbsLeft    => Object.Priv.Bounds.Left,
-            AbsHeight  => Object.Priv.Bounds.Height,
-            AbsWidth   => Object.Priv.Bounds.Width,
+         Object.AbsBounds:=
+           (AbsTop     => Object.Bounds.Top,
+            AbsLeft    => Object.Bounds.Left,
+            AbsHeight  => Object.Bounds.Height,
+            AbsWidth   => Object.Bounds.Width,
             AbsSubTop  => 0,
             AbsSubLeft => 0,
-            AbsVisible => Object.Priv.Bounds.Visible);
+            AbsVisible => Object.Bounds.Visible);
       end if;
       ------------------------------------------------------------------------
 
-      CanvasCursor:=Object.Priv.Canvasse;
+      CanvasCursor:=Object.Canvasse;
 
       while CanvasCursor/=null loop
          RestoreAnchors
            (Anchors      => CanvasCursor.Anchors,
             ClientBounds => CanvasCursor.Bounds,
-            ParentBounds => Object.Priv.Bounds);
+            ParentBounds => Object.Bounds);
          CanvasCursor:=CanvasCursor.Next;
       end loop;
       ------------------------------------------------------------------------
 
-      ObjectCursor:=Object.Priv.FirstChild;
+      ObjectCursor:=Object.FirstChild;
 
       while ObjectCursor/=null loop
          ResizeTree(ObjectCursor);
-         ObjectCursor:=ObjectCursor.Priv.Next;
+         ObjectCursor:=ObjectCursor.Next;
       end loop;
       ------------------------------------------------------------------------
 
-      if (Object.Priv.Bounds.Height/=Object.Priv.PrevBounds.Height)
-        or (Object.Priv.Bounds.Width/=Object.Priv.PrevBounds.Width) then
+      if (Object.Bounds.Height/=Object.PrevBounds.Height)
+        or (Object.Bounds.Width/=Object.PrevBounds.Width) then
 
          Object.Resize;
 
       end if;
 
-      Object.Priv.PrevBounds := Object.Priv.Bounds;
+      Object.PrevBounds := Object.Bounds;
 
    end ResizeTree;
    ---------------------------------------------------------------------------
@@ -532,16 +548,16 @@ package body GUI is
       Right  : Boolean;
       Bottom : Boolean) is
    begin
-      Object.Priv.Anchors.Top    := Top;
-      Object.Priv.Anchors.Left   := Left;
-      Object.Priv.Anchors.Right  := Right;
-      Object.Priv.Anchors.Bottom := Bottom;
+      Object.Anchors.Top    := Top;
+      Object.Anchors.Left   := Left;
+      Object.Anchors.Right  := Right;
+      Object.Anchors.Bottom := Bottom;
 
-      if Object.Priv.Parent/=null then
+      if Object.Parent/=null then
          StoreAnchors
-           (Anchors      => Object.Priv.Anchors,
-            ClientBounds => Object.Priv.Bounds,
-            ParentBounds => Object.Priv.Parent.Priv.Bounds);
+           (Anchors      => Object.Anchors,
+            ClientBounds => Object.Bounds,
+            ParentBounds => Object.Parent.Bounds);
       end if;
 
    end SetAnchors;
@@ -567,7 +583,7 @@ package body GUI is
       StoreAnchors
         (Anchors => Canvas.Anchors,
          ClientBounds => Canvas.Bounds,
-         ParentBounds => Canvas.Object.Priv.Bounds);
+         ParentBounds => Canvas.Object.Bounds);
 
    end SetBounds;
    ---------------------------------------------------------------------------
@@ -589,7 +605,7 @@ package body GUI is
       StoreAnchors
         (Anchors      => Canvas.Anchors,
          ClientBounds => Canvas.Bounds,
-         ParentBounds => Canvas.Object.Priv.Bounds);
+         ParentBounds => Canvas.Object.Bounds);
 
    end SetAnchors;
    ---------------------------------------------------------------------------
@@ -603,7 +619,7 @@ package body GUI is
       Visible : Boolean) is
    begin
 
-      Object.Priv.Bounds:=
+      Object.Bounds:=
         (Top     => Top,
          Left    => Left,
          Height  => Height,
@@ -615,11 +631,19 @@ package body GUI is
    end SetBounds;
    ---------------------------------------------------------------------------
 
-   function GetBounds
-     (Object : Object_Type'Class)
+   function GetPrevBounds
+     (Object : access Object_Type)
       return Bounds_Type is
    begin
-      return Object.Priv.Bounds;
+      return Object.PrevBounds;
+   end GetPrevBounds;
+   ---------------------------------------------------------------------------
+
+   function GetBounds
+     (Object : access Object_Type)
+      return Bounds_Type is
+   begin
+      return Object.Bounds;
    end GetBounds;
    ---------------------------------------------------------------------------
 
@@ -628,11 +652,11 @@ package body GUI is
       Canvas : Canvas_ClassAccess) is
    begin
 
-      Canvas.Next:=Object.Priv.Canvasse;
+      Canvas.Next:=Object.Canvasse;
       if Canvas.Next/=null then
          Canvas.Next.Last:=Canvas;
       end if;
-      Object.Priv.Canvasse:=Canvas;
+      Object.Canvasse:=Canvas;
 
       Canvas.Object:=Object;
 
@@ -651,7 +675,7 @@ package body GUI is
       if Canvas.Last/=null then
          Canvas.Last.Next:=Canvas.Next;
       else
-         Canvas.Object.Priv.Canvasse:=Canvas.Next;
+         Canvas.Object.Canvasse:=Canvas.Next;
       end if;
 
       Free(CanvasVal);
@@ -675,19 +699,19 @@ package body GUI is
          Par:=Par.Client;
       end loop;
 
-      Item.Priv.Parent:=Par;
+      Item.Parent:=Par;
 
       Item.Context := Par.Context;
 
-      Item.Priv.Next:=Par.Priv.FirstChild;
+      Item.Next:=Par.FirstChild;
 
-      if Item.Priv.Next/=null then
-         Item.Priv.Next.Priv.Last:=Object_ClassAccess(Item);
+      if Item.Next/=null then
+         Item.Next.Last:=Object_ClassAccess(Item);
       else
-         Par.Priv.LastChild:=Object_ClassAccess(Item);
+         Par.LastChild:=Object_ClassAccess(Item);
       end if;
 
-      Par.Priv.FirstChild:=Object_ClassAccess(Item);
+      Par.FirstChild:=Object_ClassAccess(Item);
 
    end Initialize;
    ---------------------------------------------------------------------------
@@ -711,10 +735,10 @@ package body GUI is
          Object     : Object_ClassAccess;
          NextObject : Object_ClassAccess;
       begin
-         Object:=Item.Priv.FirstChild;
+         Object:=Item.FirstChild;
 
          while Object/=null loop
-            NextObject:=Object.Priv.Next;
+            NextObject:=Object.Next;
             Object.Finalize;
             Object:=NextObject;
          end loop;
@@ -725,7 +749,7 @@ package body GUI is
          Canvas     : Canvas_ClassAccess;
          NextCanvas : Canvas_ClassAccess;
       begin
-         Canvas := Item.Priv.Canvasse;
+         Canvas := Item.Canvasse;
 
          while Canvas/=null loop
             NextCanvas:=Canvas.Next;
@@ -737,17 +761,17 @@ package body GUI is
       -- Remove Object from the tree
       ItemVal:=Object_Access(Item);
 
-      if Item.Priv.Parent/=null then
-         if Item.Priv.Next/=null then
-            Item.Priv.Next.Priv.Last:=Item.Priv.Last;
+      if Item.Parent/=null then
+         if Item.Next/=null then
+            Item.Next.Last:=Item.Last;
          else
-            Item.Priv.Parent.Priv.LastChild:=Item.Priv.Last;
+            Item.Parent.LastChild:=Item.Last;
          end if;
 
-         if Item.Priv.Last/=null then
-            Item.Priv.Last.Priv.Next:=Item.Priv.Next;
+         if Item.Last/=null then
+            Item.Last.Next:=Item.Next;
          else
-            Item.Priv.Parent.Priv.FirstChild:=Item.Priv.Next;
+            Item.Parent.FirstChild:=Item.Next;
          end if;
       end if;
 

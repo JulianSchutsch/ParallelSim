@@ -109,7 +109,7 @@ package body GUI.Themes.YellowBlue.Window is
                return True;
             end if;
 
-            if X>=Item.Priv.Bounds.Width-CornerSize then
+            if X>=Item.GetBounds.Width-CornerSize then
                Item.StartChange
                  (RefX => X,
                   RefY => Y,
@@ -125,7 +125,7 @@ package body GUI.Themes.YellowBlue.Window is
 
          end if;
 
-         if Y>=Item.Priv.Bounds.Height-BorderWidth then
+         if Y>=Item.GetBounds.Height-BorderWidth then
 
             if X<CornerSize then
                Item.StartChange
@@ -135,7 +135,7 @@ package body GUI.Themes.YellowBlue.Window is
                return True;
             end if;
 
-            if X>=Item.Priv.Bounds.Width-CornerSize then
+            if X>=Item.GetBounds.Width-CornerSize then
                Item.StartChange
                  (Refx => X,
                   Refy => Y,
@@ -161,7 +161,7 @@ package body GUI.Themes.YellowBlue.Window is
                return True;
             end if;
 
-            if Y>=Item.Priv.Bounds.Height-CornerSize then
+            if Y>=Item.GetBounds.Height-CornerSize then
                Item.StartChange
                  (Refx => X,
                   Refy => Y,
@@ -177,7 +177,7 @@ package body GUI.Themes.YellowBlue.Window is
 
          end if;
 
-         if X>=Item.Priv.Bounds.Width-BorderWidth then
+         if X>=Item.GetBounds.Width-BorderWidth then
 
             if Y<CornerSize then
                Item.StartChange
@@ -187,7 +187,7 @@ package body GUI.Themes.YellowBlue.Window is
                return True;
             end if;
 
-            if Y>=Item.Priv.Bounds.Height-CornerSize then
+            if Y>=Item.GetBounds.Height-CornerSize then
                Item.StartChange
                  (Refx => X,
                   Refy => Y,
@@ -652,7 +652,7 @@ package body GUI.Themes.YellowBlue.Window is
          Bottom => True);
       ------------------------------------------------------------------------
 
-      NewWindow.Priv.TopHeightConstraint:=
+      NewWindow.TopHeightConstraint:=
         (MinValueConstraint => ConstraintConstant,
          MinValueConstant   => 0,
          MaxValueConstraint => ConstraintUsingParentSize,
@@ -661,7 +661,7 @@ package body GUI.Themes.YellowBlue.Window is
          MinSizeConstant    => 100,
          MaxSizeConstraint  => ConstraintUsingParentSize,
          MaxSizeConstant    => 0);
-      NewWindow.Priv.LeftWidthConstraint:=
+      NewWindow.LeftWidthConstraint:=
         (MinValueConstraint => ConstraintUsingSize,
          MinValueConstant   => 10,
          MaxValueConstraint => ConstraintUsingParentSize,
@@ -678,21 +678,21 @@ package body GUI.Themes.YellowBlue.Window is
          GUI.Initialize
            (Item   => Client,
             Parent => Object_ClassAccess(NewWindow));
-         NewWindow.Client:=Object_ClassAccess(Client);
+         NewWindow.SetClient(Object_ClassAccess(Client));
+
+         Client.SetBounds
+           (Top     => TopBarHeight,
+            Left    => BorderWidth,
+            Height  => -TopBarHeight-BorderWidth,
+            Width   => -2*BorderWidth,
+            Visible => True);
+
+         Client.SetAnchors
+           (Top    => True,
+            Left   => True,
+            Right  => True,
+           Bottom => True);
       end;
-
-      NewWindow.Client.SetBounds
-        (Top     => TopBarHeight,
-         Left    => BorderWidth,
-         Height  => -TopBarHeight-BorderWidth,
-         Width   => -2*BorderWidth,
-         Visible => True);
-
-      NewWindow.Client.SetAnchors
-        (Top    => True,
-         Left   => True,
-         Right  => True,
-         Bottom => True);
 
       return GUI.Window.Window_ClassAccess(NewWindow);
 

@@ -112,7 +112,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       pragma Unreferenced(X);
 
       SlideLength : constant Integer
-        :=Item.Priv.Bounds.Height-2*Integer(ButtonHeight)
+        :=Item.GetBounds.Height-2*Integer(ButtonHeight)
         -2*BarButtonDistance;
 
       NewPos : Integer;
@@ -184,7 +184,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       return Boolean is
 
       SlideLength : constant Integer
-        :=Item.Priv.Bounds.Height-2*Integer(ButtonHeight)
+        :=Item.GetBounds.Height-2*Integer(ButtonHeight)
         -2*BarButtonDistance;
 
 
@@ -199,7 +199,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
          return True;
       end if;
 
-      if Y>=Item.Priv.Bounds.Height-Integer(ButtonHeight) then
+      if Y>=Item.GetBounds.Height-Integer(ButtonHeight) then
          Item.MouseMode:=MouseModeDownButton;
          return True;
       end if;
@@ -209,7 +209,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       end if;
 
       if (X<BarBorderDistance) or
-        (X>=Item.Priv.Bounds.Width-BarBorderDistance) then
+        (X>=Item.GetBounds.Width-BarBorderDistance) then
          return True;
       end if;
 
@@ -239,7 +239,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
      (ScrollBar : access ScrollBar_Type) is
 
       BarWidth : constant Integer
-        :=ScrollBar.Priv.Bounds.Width-2*BarBorderDistance;
+        :=ScrollBar.GetBounds.Width-2*BarBorderDistance;
 
    begin
       if ScrollBar.BarTopBorderCanvas/=null then
@@ -358,10 +358,10 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
      (ScrollBar : access ScrollBar_Type) is
 
       BarWidth : constant Integer
-        := ScrollBar.Priv.Bounds.Width-2*BarBorderDistance;
+        := ScrollBar.GetBounds.Width-2*BarBorderDistance;
 
       SlideLength : constant Integer
-        :=ScrollBar.Priv.Bounds.Height-2*Integer(ButtonHeight)
+        :=ScrollBar.GetBounds.Height-2*Integer(ButtonHeight)
         -2*BarButtonDistance;
 
       RequestedTicks : Integer;
@@ -444,7 +444,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       MiddleX : Float;
 
    begin
-      MiddleX := Float(ScrollBar.Priv.Bounds.Width-1)/2.0;
+      MiddleX := Float(ScrollBar.GetBounds.Width-1)/2.0;
 
       if ScrollBar.UpButtonCanvas/=null then
          ScrollBar.Context.FreeCanvas(ScrollBar.UpButtonCanvas);
@@ -453,7 +453,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       ScrollBar.Context.NewCanvas
         (Object => Object_ClassAccess(ScrollBar),
          Height => Integer(ButtonHeight),
-         Width  => ScrollBar.Priv.Bounds.Width,
+         Width  => ScrollBar.GetBounds.Width,
          Canvas => ScrollBar.UpButtonCanvas);
 
       ScrollBar.UpButtonCanvas.Clear
@@ -461,7 +461,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       ScrollBar.UpButtonCanvas.WuLine
         (X1    => MiddleX,
          Y1    => TriangleBorderDistance,
-         X2    => Float(ScrollBar.Priv.Bounds.Width)-TriangleBorderDistance-1.0,
+         X2    => Float(ScrollBar.GetBounds.Width)-TriangleBorderDistance-1.0,
          Y2    => ButtonHeight-TriangleBorderDistance-1.0,
          Color => ButtonTriangleColor);
       ScrollBar.UpButtonCanvas.WuLine
@@ -473,7 +473,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       ScrollBar.UpButtonCanvas.WuLine
         (X1    => TriangleBorderDistance,
          Y1    => ButtonHeight-TriangleBorderDistance-1.0,
-         X2    => Float(ScrollBar.Priv.Bounds.Width)-TriangleBorderDistance-1.0,
+         X2    => Float(ScrollBar.GetBounds.Width)-TriangleBorderDistance-1.0,
          Y2    => ButtonHeight-TriangleBorderDistance-1.0,
          Color => ButtonTriangleColor);
 
@@ -481,14 +481,14 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
         (X      => 0,
          Y      => 0,
          Height => Integer(ButtonHeight),
-         Width  => ScrollBar.Priv.Bounds.Width,
+         Width  => ScrollBar.GetBounds.Width,
          Color  => ButtonRectangleColor);
 
       ScrollBar.UpButtonCanvas.SetBounds
         (Top     => 0,
          Left    => 0,
          Height  => Integer(ButtonHeight),
-         Width   => ScrollBar.Priv.Bounds.Width,
+         Width   => ScrollBar.GetBounds.Width,
          Visible => True);
 
       if ScrollBar.DownButtonCanvas/=null then
@@ -498,7 +498,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       ScrollBar.Context.NewCanvas
         (Object => Object_ClassAccess(ScrollBar),
          Height => Integer(ButtonHeight),
-         Width  => ScrollBar.Priv.Bounds.Width,
+         Width  => ScrollBar.GetBounds.Width,
          Canvas => ScrollBar.DownButtonCanvas);
 
       ScrollBar.DownButtonCanvas.Clear
@@ -506,7 +506,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       ScrollBar.DownButtonCanvas.WuLine
         (X1    => TriangleBorderDistance,
          Y1    => TriangleBorderDistance,
-         X2    => Float(ScrollBar.Priv.Bounds.Width)-TriangleBorderDistance-1.0,
+         X2    => Float(ScrollBar.GetBounds.Width)-TriangleBorderDistance-1.0,
          Y2    => TriangleBorderDistance,
          Color => ButtonTriangleColor);
       ScrollBar.DownButtonCanvas.WuLine
@@ -516,7 +516,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
          Y2    => ButtonHeight-TriangleBorderDistance-1.0,
          Color => ButtonTriangleColor);
       ScrollBar.DownButtonCanvas.WuLine
-        (X1    => Float(ScrollBar.Priv.Bounds.Width)-TriangleBorderDistance-1.0,
+        (X1    => Float(ScrollBar.GetBounds.Width)-TriangleBorderDistance-1.0,
          Y1    => TriangleBorderDistance,
          X2    => MiddleX,
          Y2    => ButtonHeight-TriangleBorderDistance-1.0,
@@ -526,14 +526,14 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
         (X      => 0,
          Y      => 0,
          Height => Integer(ButtonHeight),
-         Width  => ScrollBar.Priv.Bounds.Width,
+         Width  => ScrollBar.GetBounds.Width,
          Color  => ButtonRectangleColor);
 
       ScrollBar.DownButtonCanvas.SetBounds
-        (Top     => ScrollBar.Priv.Bounds.Height-Integer(ButtonHeight),
+        (Top     => ScrollBar.GetBounds.Height-Integer(ButtonHeight),
          Left    => 0,
          Height  => Integer(ButtonHeight),
-         Width   => ScrollBar.Priv.Bounds.Width,
+         Width   => ScrollBar.GetBounds.Width,
          Visible => True);
       ScrollBar.DownButtonCanvas.SetAnchors
         (Top    => False,
@@ -557,18 +557,18 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
       ScrollBar.Context.NewCanvas
         (Object => Object_ClassAccess(ScrollBar),
          Height => 1,
-         Width  => ScrollBar.Priv.Bounds.Width,
+         Width  => ScrollBar.GetBounds.Width,
          Canvas => ScrollBar.SlideCanvas);
       ScrollBar.SlideCanvas.Clear
         (Color => SlideFaceColor);
       ScrollBar.SlideCanvas.Image(0,0):=SlideFrameColor;
-      ScrollBar.SlideCanvas.Image(0,ScrollBar.Priv.Bounds.Width-1):=SlideFrameColor;
+      ScrollBar.SlideCanvas.Image(0,ScrollBar.GetBounds.Width-1):=SlideFrameColor;
 
       ScrollBar.SlideCanvas.SetBounds
         (Top     => Integer(ButtonHeight),
          Left    => 0,
-         Height  => ScrollBar.Priv.Bounds.Height-2*Integer(ButtonHeight),
-         Width   => ScrollBar.Priv.Bounds.Width,
+         Height  => ScrollBar.GetBounds.Height-2*Integer(ButtonHeight),
+         Width   => ScrollBar.GetBounds.Width,
          Visible => True);
       ScrollBar.SlideCanvas.SetAnchors
         (Top    => True,
@@ -583,7 +583,7 @@ package body GUI.Themes.YellowBlue.VerticalScrollBar is
      (Item : access ScrollBar_Type) is
    begin
 
-      if Item.Priv.Bounds.Width/=Item.Priv.PrevBounds.Width then
+      if Item.GetBounds.Width/=Item.GetPrevBounds.Width then
          DrawCanvasse(Item);
       end if;
       UpdateBarPosition(Item);

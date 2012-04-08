@@ -77,35 +77,33 @@ package GUI is
 
    NoMouseButtons : MouseButton_Array:=(False,False);
 
-   FailedToCreateContext : Exception;
-   InvalidContext : Exception;
+   FailedToCreateContext  : Exception;
+   InvalidContext         : Exception;
    FailedToDestroyContext : Exception;
 
    type Render_Enum is
      (RenderCanvasse,
       RenderCustom);
 
-   type Object_Type;
-   type Object_Access is access all Object_Type;
-   type Object_ClassAccess is access all Object_Type'Class;
-
    type Context_Type;
    type Context_ClassAccess is access all Context_Type'Class;
    ---------------------------------------------------------------------------
 
-   type Object_Private is private;
-
-   type Object_Type is new AnyObject_Type with
+   type Object_Public is new AnyObject_Type with
       record
          Render         : Render_Enum:=RenderCanvasse;
          CallBackObject : AnyObject_ClassAccess;
          Context        : Context_ClassAccess;
-         Client         : Object_ClassAccess;
-         Priv           : Object_Private;
          FocusStyle     : FocusStyle_Enum:=FocusStyleNone;
-         FocusObject    : Object_ClassAccess:=null;
          Focussed       : Boolean:=False;
+         TopHeightConstraint : Constraint_Type;
+         LeftWidthConstraint : Constraint_Type;
+         -- Read only
       end record;
+
+   type Object_Type is new Object_Public with private;
+   type Object_Access is access all Object_Type;
+   type Object_ClassAccess is access all Object_Type'Class;
 
    procedure Focus
      (Item : access Object_Type) is null;
@@ -158,7 +156,11 @@ package GUI is
       Visible : Boolean);
 
    function GetBounds
-     (Object : Object_Type'Class)
+     (Object : access Object_Type)
+      return Bounds_Type;
+
+   function GetPrevBounds
+     (Object : access Object_Type)
       return Bounds_Type;
 
    procedure SetAnchors
@@ -167,6 +169,14 @@ package GUI is
       Left   : Boolean;
       Right  : Boolean;
       Bottom : Boolean);
+
+   function GetClient
+     (Object : access Object_Type)
+      return Object_ClassAccess;
+
+   procedure SetClient
+     (Object : access Object_Type;
+      Client : Object_ClassAccess);
 
    procedure Resize
      (Item : access Object_Type) is null;
@@ -182,11 +192,11 @@ package GUI is
 
    type Context_Type is tagged
       record
-         CallBackObject : AnyObject_ClassAccess := null;
-         OnClose        : OnCloseContext_Access := null;
-         WindowArea     : Object_ClassAccess    := null;
-         ModalArea      : Object_ClassAccess    := null;
-         ContextArea    : Object_ClassAccess    := null;
+         CallBackObject      : AnyObject_ClassAccess := null;
+         OnClose             : OnCloseContext_Access := null;
+         WindowArea          : Object_ClassAccess    := null;
+         ModalArea           : Object_ClassAccess    := null;
+         ContextArea         : Object_ClassAccess    := null;
          -- Read only
          Bounds         : Bounds_Type;
          Priv           : Context_Private;
@@ -267,20 +277,20 @@ private
      (Context : in out Context_Type);
    ---------------------------------------------------------------------------
 
-   type Object_Private is
+   type Object_Type is new Object_Public with
       record
          Canvasse            : Canvas_ClassAccess:=null;
          Bounds              : Bounds_Type;
          PrevBounds          : Bounds_Type;
          AbsBounds           : AbsBounds_Type;
          Anchors             : Anchors_Type;
-         TopHeightConstraint : Constraint_Type;
-         LeftWidthConstraint : Constraint_Type;
          Next                : Object_ClassAccess:=null;
          Last                : Object_ClassAccess:=null;
          Parent              : Object_ClassAccess:=null;
          FirstChild          : Object_ClassAccess:=null;
          LastChild           : Object_ClassAccess:=null;
+         Client              : Object_ClassAccess:=null;
+         FocusObject         : Object_ClassAccess:=null;
       end record;
 
    ---------------------------------------------------------------------------

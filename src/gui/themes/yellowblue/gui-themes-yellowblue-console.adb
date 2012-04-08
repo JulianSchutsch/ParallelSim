@@ -70,6 +70,9 @@ package body GUI.Themes.YellowBlue.Console is
          Position =>Item.InputPosition,
          String => Chars,
          Color => 16#FFFF00FF#);
+      Item.TextView.MakeVisible
+        (Line     => Item.EditLine,
+         Position => Item.InputPosition);
 
    end Msg_CharacterInput;
    ---------------------------------------------------------------------------
@@ -92,6 +95,9 @@ package body GUI.Themes.YellowBlue.Console is
         (Line => Item.EditLine,
          String => String,
          Color  => Color);
+      Item.TextView.MakeVisible
+        (Line     => Item.EditLine,
+         Position => Item.InputPosition);
    end WriteLine;
    ---------------------------------------------------------------------------
 

@@ -28,7 +28,17 @@ package GUI.TextView is
 
    NoFontSelected : Exception;
 
-   type TextView_Type is new Object_Type with private;
+   type OnWrappedLineCountChange_Access is
+     access procedure
+       (LineCount : Integer);
+
+   type TextView_Public is new Object_Type with
+      record
+         OnWrappedLineCountChange : OnWrappedLineCountChange_Access:=null;
+      end record;
+
+   type TextView_Type is new TextView_Public with private;
+
    type TextView_Access is access all TextView_Type;
    type TextView_ClassAccess is access all TextView_Type'Class;
 
@@ -80,6 +90,12 @@ package GUI.TextView is
       Color    : Canvas.Color_Type)
       return Integer;
 
+   -- Scrolls to make the specified position visible
+   procedure MakeVisible
+     (TextView : access TextView_Type;
+      Line     : Line_Access;
+      Position : Integer);
+
    procedure Clear
      (Item : access TextView_Type);
 
@@ -108,7 +124,7 @@ private
          Last        : CanvasLine_Access  := null;
       end record;
 
-   type TextView_Type is new Object_Type with
+   type TextView_Type is new TextView_Public with
       record
          FirstLine              : Line_Access:=null;
          LastLine               : Line_Access:=null;

@@ -88,6 +88,11 @@ package Fonts.ColorStrings is
       Color       : Canvas.Color_Type)
       return Integer;
 
+   function GetWrappedLine
+     (ColorString : access ColorString_Type;
+      Position    : Integer)
+      return Integer;
+
 private
    type ColorStringElement_Type is
       record

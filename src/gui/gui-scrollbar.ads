@@ -31,12 +31,12 @@ package GUI.ScrollBar is
      access procedure
        (CallBackObject : AnyObject_ClassAccess);
 
-   type ScrollBar_Private is private;
-   type ScrollBar_Type is new Object_Type with
+   type ScrollBar_Public is new GUI.Object_Type with
       record
          OnPositionChange : OnPositionChange_Access:=null;
-         SPriv            : ScrollBar_Private;
       end record;
+
+   type ScrollBar_Type is new ScrollBar_Public with private;
 
    type ScrollBar_Access is access all ScrollBar_Type;
    type ScrollBar_ClassAccess is access all ScrollBar_Type'Class;
@@ -75,7 +75,7 @@ package GUI.ScrollBar is
 
 private
 
-   type ScrollBar_Private is
+   type ScrollBar_Type is new ScrollBar_Public with
       record
          Min      : Integer:=1;
          Max      : Integer:=100;

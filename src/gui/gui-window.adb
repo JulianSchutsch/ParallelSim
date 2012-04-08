@@ -29,8 +29,8 @@ package body GUI.Window is
    begin
       Window.RefX      := RefX;
       Window.RefY      := RefY;
-      Window.RefHeight := Window.Priv.Bounds.Height;
-      Window.RefWidth  := Window.Priv.Bounds.Width;
+      Window.RefHeight := Window.Bounds.Height;
+      Window.RefWidth  := Window.Bounds.Width;
       Window.Mode:=Mode;
    end StartChange;
    ---------------------------------------------------------------------------
@@ -40,7 +40,7 @@ package body GUI.Window is
       RefX   : Integer;
       RefY   : Integer) is
 
-      Bounds : Bounds_Type renames Window.Priv.Bounds;
+      Bounds : Bounds_Type renames Window.Bounds;
 
    begin
       case Window.Mode is

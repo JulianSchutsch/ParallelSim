@@ -146,9 +146,9 @@ package body GUI.OpenGL is
 
                when RenderCanvasse =>
 
-                  ObjectAbsBounds:=p.Priv.AbsBounds;
+                  ObjectAbsBounds:=p.AbsBounds;
 
-                  CanvasCursor:=Canvas_Access(p.Priv.Canvasse);
+                  CanvasCursor:=Canvas_Access(p.Canvasse);
 
                   CanvasLoop:
                   while CanvasCursor/=null loop
@@ -235,18 +235,18 @@ package body GUI.OpenGL is
 
             end case;
 
-            if p.Priv.LastChild/=null then
+            if p.LastChild/=null then
 
-               p:=p.Priv.LastChild;
+               p:=p.LastChild;
 
             else
 
-               while (p/=null) and then (p.Priv.Last=null) loop
-                  p := p.Priv.Parent;
+               while (p/=null) and then (p.Last=null) loop
+                  p := p.Parent;
                end loop;
 
                if p/=null then
-                  p:=p.Priv.Last;
+                  p:=p.Last;
                end if;
 
             end if;

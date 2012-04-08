@@ -25,7 +25,7 @@ package body GUI.ScrollBar is
      (Item : access ScrollBar_Type)
       return Integer is
    begin
-      return Item.SPriv.Min;
+      return Item.Min;
    end GetMin;
    ---------------------------------------------------------------------------
 
@@ -33,7 +33,7 @@ package body GUI.ScrollBar is
      (Item : access ScrollBar_Type)
       return Integer is
    begin
-      return Item.SPriv.Max;
+      return Item.Max;
    end GetMax;
    ---------------------------------------------------------------------------
 
@@ -41,7 +41,7 @@ package body GUI.ScrollBar is
      (Item : access ScrollBar_Type)
       return Integer is
    begin
-      return Item.SPriv.Position;
+      return Item.Position;
    end GetPosition;
    ---------------------------------------------------------------------------
 
@@ -51,14 +51,14 @@ package body GUI.ScrollBar is
 
    begin
 
-      if (Position<Item.SPriv.Min) or
-        (Position>Item.SPriv.Max) then
+      if (Position<Item.Min) or
+        (Position>Item.Max) then
          raise InvalidScrollBarPosition;
       end if;
 
-      if (Item.SPriv.Position/=Position) then
+      if (Item.Position/=Position) then
 
-         Item.SPriv.Position:=Position;
+         Item.Position:=Position;
          ScrollBar_ClassAccess(Item).UpdateBarPosition;
 
          if Item.OnPositionChange/=null then
