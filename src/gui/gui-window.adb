@@ -21,6 +21,13 @@ pragma Ada_2005;
 
 package body GUI.Window is
 
+   procedure Focus
+     (Item : access Window_Type) is
+   begin
+      GUI.BringToFront(Object_ClassAccess(Item));
+   end Focus;
+   ---------------------------------------------------------------------------
+
    procedure StartChange
      (Window : access Window_Type;
       RefX   : Integer;

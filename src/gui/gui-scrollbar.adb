@@ -53,7 +53,10 @@ package body GUI.ScrollBar is
 
       if (Position<Item.Min) or
         (Position>Item.Max) then
-         raise InvalidScrollBarPosition;
+         raise InvalidScrollBarPosition
+           with Integer'Image(Item.Min)&".."
+           &Integer'Image(Item.Max)&" does not contain "
+           &Integer'Image(Position);
       end if;
 
       if (Item.Position/=Position) then
@@ -68,6 +71,43 @@ package body GUI.ScrollBar is
       end if;
 
    end SetPosition;
+   ---------------------------------------------------------------------------
+
+   procedure SetRange
+     (Item     : access ScrollBar_Type;
+      Min      : Integer;
+      Max      : Integer;
+      Position : Integer) is
+   begin
+
+      if Max<Min then
+         raise InvalidScrollBarRange;
+      end if;
+      if (Position<Min) or
+        (Position>Max) then
+         raise InvalidScrollBarPosition;
+      end if;
+
+      if (Item.Min/=Min) or (Item.Max/=Max) then
+
+         Item.Min:=Min;
+         Item.Max:=Max;
+         ScrollBar_ClassAccess(Item).UpdateBarPosition;
+
+         if Item.Position/=Position then
+            Item.Position:=Position;
+            if Item.OnPositionChange/=null then
+               Item.OnPositionChange(Item.CallBackObject);
+            end if;
+         end if;
+
+         return;
+
+      end if;
+
+      SetPosition(Item,Position);
+
+   end SetRange;
    ---------------------------------------------------------------------------
 
    procedure Initialize

@@ -34,14 +34,13 @@ package GUI.TextBasis is
 
    NoFontSelected : Exception;
 
-   type OnWrappedLineCountChange_Access is
-     access procedure
-       (LineCount : Integer);
+   type OnVisualChange_Access is
+     access procedure (CallbackObject : AnyObject_ClassAccess);
 
    type TextBasis_Public is new Object_Type with
       record
-         OnWrappedLineCountChange : OnWrappedLineCountChange_Access:=null;
-         MinimumEditPosition      : Integer;
+         OnVisualChange      : OnVisualChange_Access;
+         MinimumEditPosition : Integer;
       end record;
 
    type TextBasis_Type is new TextBasis_Public with private;
@@ -105,6 +104,22 @@ package GUI.TextBasis is
      (Item       : access TextBasis_Type;
       LineNumber : Natural;
       Prompt     : Unbounded_String);
+
+   function VisibleLineCount
+     (Item : access TextBasis_Type)
+      return Integer;
+
+   function WrappedLineCount
+     (Item : access TextBasis_Type)
+      return Integer;
+
+   function GetWrappedLineIndex
+     (Item : access TextBasis_Type)
+      return Integer;
+
+   procedure SetWrappedLineIndex
+     (TextBasis : access TextBasis_Type;
+      Index     : Integer);
 
 private
 

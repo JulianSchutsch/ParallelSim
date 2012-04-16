@@ -33,6 +33,28 @@ package body GUI is
       Name   => Canvas_ClassAccess);
    ---------------------------------------------------------------------------
 
+   procedure BringToFront
+     (Item : Object_ClassAccess) is
+   begin
+      if Item.Last=null then
+         return;
+      end if;
+
+      if Item.Next/=null then
+         Item.Next.Last:=Item.Last;
+      else
+         Item.Parent.LastChild:=Item.Last;
+      end if;
+
+      Item.Last.Next := Item.Next;
+
+      Item.Next      := Item.Parent.FirstChild;
+      Item.Last      := null;
+      Item.Next.Last := Item;
+      Item.Parent.FirstChild := Item;
+   end BringToFront;
+   ---------------------------------------------------------------------------
+
    procedure SetClient
      (Object : access Object_Type;
       Client : Object_ClassAccess) is

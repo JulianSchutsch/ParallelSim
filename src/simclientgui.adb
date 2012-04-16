@@ -100,6 +100,42 @@ package body SimClientGUI is
 
       Put("End of Simclientgui init");
       New_Line;
+      Window:=ThemeImplementation.NewWindow
+        (Parent => GUIContext.WindowArea);
+      Window.SetBounds
+        (Top     => 10,
+         Left    => 10,
+         Height  => 100,
+         Width   => 200,
+         Visible => True);
+      Window.SetAnchors
+        (Top    => True,
+         Left   => True,
+         Right  => False,
+         Bottom => False);
+
+      declare
+         Bounds : constant BoundsCalc.Bounds_Type:=Window.GetClient.GetBounds;
+      begin
+         Console:=ThemeImplementation.NewConsole
+           (Parent => GUI.Object_ClassAccess(Window));
+         Console.SetFont
+           (Font => Fonts.Lookup
+              (Name       => To_Unbounded_String("./Vera.ttf"),
+               Size       => 19,
+               Attributes => Fonts.NoAttributes));
+         Console.SetBounds
+           (Top     => 0,
+            Left    => 0,
+            Height  => Bounds.Height,
+            Width   => Bounds.Width,
+            Visible => True);
+         Console.SetAnchors
+           (Top    => True,
+            Left   => True,
+            Right  => True,
+            Bottom => True);
+      end;
 
    end Initialize;
    ---------------------------------------------------------------------------

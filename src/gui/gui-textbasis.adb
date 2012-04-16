@@ -49,6 +49,38 @@ package body GUI.TextBasis is
    end MouseDown;
    ---------------------------------------------------------------------------
 
+   function VisibleLineCount
+     (Item : access TextBasis_Type)
+      return Integer is
+   begin
+      if Item.LineHeight/=0 then
+         return Item.GetBounds.Height/Item.LineHeight;
+      else
+         return 0;
+      end if;
+   end VisibleLineCount;
+   ---------------------------------------------------------------------------
+
+   function WrappedLineCount
+     (Item : access TextBasis_Type)
+      return Integer is
+
+      Line  : Line_Access;
+      Count : Integer:=0;
+
+   begin
+
+      Line:=Item.FirstLine;
+      while Line/=null loop
+         Count:=Count+Line.WrappedLineCount;
+         Line:=Line.Next;
+      end loop;
+
+      return Count;
+
+   end WrappedLineCount;
+   ---------------------------------------------------------------------------
+
    procedure FreeCanvasLine
      (Item       : access TextBasis_Type;
       CanvasLine : in out CanvasLine_Access) is
@@ -106,6 +138,7 @@ package body GUI.TextBasis is
 
       WrappedLine : Integer;
       Offset      : Integer;
+      VisibleLineCount : Integer;
 
    begin
 
@@ -118,13 +151,14 @@ package body GUI.TextBasis is
         (Position    => TextBasis.EditPos,
          WrappedLine => WrappedLine,
          Offset      => Offset);
-      Put("XXX");
-      Put(WrappedLine);
       WrappedLine:=WrappedLine+GetFirstWrappedLine(TextBasis,TextBasis.EditLine);
-      Put(WrappedLine);
-      New_Line;
+      if TextBasis.LineHeight/=0 then
+         VisibleLineCount:=TextBasis.GetBounds.Height/TextBasis.LineHeight;
+      else
+         VisibleLineCount:=0;
+      end if;
       if (WrappedLine>=TextBasis.WrappedLineIndex) and
-        (WrappedLine<=TextBasis.WrappedLineIndex+TextBasis.GetBounds.Height/TextBasis.LineHeight) then
+        (WrappedLine<=TextBasis.WrappedLineIndex+VisibleLineCount) then
          TextBasis.CursorCanvas.SetBounds
            (Top     => (WrappedLine-TextBasis.WrappedLineIndex)*TextBasis.LineHeight,
             Left    => Offset,
@@ -411,6 +445,14 @@ package body GUI.TextBasis is
    end UpdateCanvasLines;
    ---------------------------------------------------------------------------
 
+   function GetWrappedLineIndex
+     (Item : access TextBasis_Type)
+      return Integer is
+   begin
+      return Item.WrappedLineIndex;
+   end GetWrappedLineIndex;
+   ---------------------------------------------------------------------------
+
    procedure WrapAllLines
      (TextBasis : access TextBasis_Type) is
 
@@ -430,13 +472,13 @@ package body GUI.TextBasis is
 
    procedure SetWrappedLineIndex
      (TextBasis  : access TextBasis_Type;
-      LineNumber : Integer) is
+      Index      : Integer) is
    begin
       --TODO: Make it faster (different call)
       Put("Goto");
-      Put(LineNumber);
+      Put(Index);
       New_Line;
-      TextBasis.WrappedLineIndex:=LineNumber;
+      TextBasis.WrappedLineIndex:=Index;
 
       UpdateCanvasLines(TextBasis);
       UpdateCursor(TextBasis);
@@ -450,7 +492,7 @@ package body GUI.TextBasis is
       Position  : Integer) is
 
       WrappedLine  : Integer;
-      VisibleLines : Integer;
+      VisLines : Integer;
 
    begin
 
@@ -458,7 +500,7 @@ package body GUI.TextBasis is
          return;
       end if;
 
-      VisibleLines :=TextBasis.GetBounds.Height/TextBasis.LineHeight-1;
+      VisLines := VisibleLineCount(TextBasis);
       WrappedLine:=Line.GetWrappedLine(Position)
         +GetFirstWrappedLine(TextBasis,Line);
       New_Line;
@@ -468,12 +510,16 @@ package body GUI.TextBasis is
          return;
       end if;
 
-      if WrappedLine-TextBasis.WrappedLineIndex>VisibleLines then
-         SetWrappedLineIndex(TextBasis,WrappedLine-VisibleLines);
+      if WrappedLine-TextBasis.WrappedLineIndex>VisLines then
+         SetWrappedLineIndex(TextBasis,WrappedLine-VisLines);
       end if;
 
       UpdateCanvasLines(TextBasis);
       UpdateCursor(TextBasis);
+
+      if TextBasis.OnVisualChange/=null then
+         TextBasis.OnVisualChange.all(TextBasis.CallBackObject);
+      end if;
 
    end MakeVisible;
    ---------------------------------------------------------------------------
@@ -483,6 +529,9 @@ package body GUI.TextBasis is
       Line              : Line_Access;
       KeepCursorVisible : Boolean) is
    begin
+
+      Put("ContentChange");
+      New_Line;
 
       Line.GreedyWrapping
         (Width => TextBasis.Bounds.Width);
@@ -497,6 +546,10 @@ package body GUI.TextBasis is
 
       UpdateCanvasLines(TextBasis);
       UpdateCursor(TextBasis);
+
+      if TextBasis.OnVisualChange/=null then
+         TextBasis.OnVisualChange.all(TextBasis.CallBackObject);
+      end if;
 
    end UpdateAfterContentChange;
    ---------------------------------------------------------------------------
@@ -554,9 +607,10 @@ package body GUI.TextBasis is
          Item.FirstLine:=NewLine;
       end if;
 
-      NewLine.GreedyWrapping(Item.Bounds.Width);
-      ClearCanvasLines(Item); -- TEMP HACK
-      RenderCanvasLines(Item);
+      UpdateAfterContentChange
+        (TextBasis         => Item,
+         Line              => NewLine,
+         KeepCursorVisible => True);
 
    end InsertBefore;
    ---------------------------------------------------------------------------
@@ -585,8 +639,10 @@ package body GUI.TextBasis is
       end if;
       Item.LastLine:=NewLine;
 
-      NewLine.GreedyWrapping(Item.Bounds.Width);
-      RenderCanvasLines(Item);
+      UpdateAfterContentChange
+        (TextBasis => Item,
+         Line      => NewLine,
+         KeepCursorVisible => True);
 
       return NewLine;
 
@@ -630,12 +686,17 @@ package body GUI.TextBasis is
          return;
       end if;
 
-      ClearCanvasLines(Item);
       if Item.Bounds.Width/=Item.PrevBounds.Width then
          WrapAllLines(Item);
       end if;
 
-      RenderCanvasLines(Item);
+      ClearCanvasLines(Item);
+      UpdateCanvasLines(Item);
+      UpdateCursor(Item);
+
+      if Item.OnVisualChange/=null then
+         Item.OnVisualChange.all(Item.CallBackObject);
+      end if;
 
    end Resize;
    ---------------------------------------------------------------------------

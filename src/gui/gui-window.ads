@@ -54,6 +54,10 @@ package GUI.Window is
    procedure Finalize
      (Item : access Window_Type);
 
+   overriding
+   procedure Focus
+     (Item : access Window_Type);
+
    procedure StartChange
      (Window : access Window_Type;
       Refx   : Integer;

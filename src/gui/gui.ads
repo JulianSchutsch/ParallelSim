@@ -183,6 +183,9 @@ package GUI is
 
    procedure SetFocus
      (Item : access Object_Type);
+
+   procedure BringToFront
+     (Item : Object_ClassAccess);
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is
@@ -229,7 +232,7 @@ package GUI is
 
    procedure FreeCanvas
      (Context : in out Context_Type;
-      Canvas  : Canvas_ClassAccess) is null;
+      Canvas  : in out Canvas_ClassAccess) is null;
    ---------------------------------------------------------------------------
    type Context_Constructor is
      access function

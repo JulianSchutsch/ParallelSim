@@ -105,7 +105,7 @@ package body GUI.OpenGL is
 
    procedure FreeCanvas
      (Context : in out Context_Type;
-      Canvas  : Canvas_ClassAccess) is
+      Canvas  : in out Canvas_ClassAccess) is
 
       pragma Unreferenced(Context);
 
@@ -119,6 +119,8 @@ package body GUI.OpenGL is
 
       GUI.RemoveCanvas
         (Canvas => Canvas);
+
+      Canvas:=null;
 
    end FreeCanvas;
    ---------------------------------------------------------------------------

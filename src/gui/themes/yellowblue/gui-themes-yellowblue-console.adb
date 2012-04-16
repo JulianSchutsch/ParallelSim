@@ -23,6 +23,8 @@ with GUI.TextBasis;
 with GUI.ScrollBar;
 with GUI.Themes.YellowBlue.VerticalScrollBar;
 with Fonts;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 --with Ada.Text_IO; use Ada.Text_IO;
 
@@ -34,7 +36,7 @@ package body GUI.Themes.YellowBlue.Console is
          VerticalScrollBar : GUI.ScrollBar.ScrollBar_ClassAccess:=null;
          EditLineNumber    : Natural := 0;
       end record;
-   type Console_Access is access Console_Type;
+   type Console_Access is access all Console_Type;
 
    overriding
    procedure WriteLine
@@ -69,6 +71,67 @@ package body GUI.Themes.YellowBlue.Console is
    end WriteLine;
    ---------------------------------------------------------------------------
 
+   procedure ScrollPositionChange
+     (CallBackObject : AnyObject_ClassAccess) is
+
+      use type GUI.TextBasis.TextBasis_ClassAccess;
+
+      Console : constant Console_Access:=Console_Access(CallbackObject);
+   begin
+      if Console.TextBasis=null then
+         return;
+      end if;
+
+      Console.TextBasis.SetWrappedLineIndex
+        (Index => Console.VerticalScrollBar.GetPosition);
+
+   end ScrollPositionChange;
+   ---------------------------------------------------------------------------
+
+   procedure VisualChange
+     (CallbackObject : Basics.AnyObject_ClassAccess) is
+
+      Console : constant Console_Access:=Console_Access(CallbackObject);
+
+      use type GUI.ScrollBar.ScrollBar_ClassAccess;
+
+      ScrollRange    : Integer;
+      ScrollPosition : Integer;
+
+   begin
+
+      if Console.VerticalScrollBar=null then
+         return;
+      end if;
+      Put("Scan");
+
+      ScrollRange:=Console.TextBasis.WrappedLineCount-Console.TextBasis.VisibleLineCount;
+      ScrollPosition:=Console.TextBasis.GetWrappedLineIndex;
+      if ScrollRange<0 then
+         ScrollRange:=0;
+      end if;
+      if ScrollPosition>=ScrollRange then
+         ScrollPosition:=ScrollRange;
+      end if;
+      if ScrollPosition<0 then
+         ScrollPosition:=0;
+      end if;
+
+      Put("LineSEL");
+      Put(Console.TextBasis.GetWrappedLineIndex);
+      Put(ScrollRange);
+      Put(ScrollPosition);
+      New_Line;
+      Console.VerticalScrollBar.SetRange
+        (Min      => 0,
+         Max      => ScrollRange,
+         Position => ScrollPosition);
+      Put("////");
+      New_Line;
+
+   end VisualChange;
+   ---------------------------------------------------------------------------
+
    function NewConsole
      (Parent : Object_ClassAccess)
       return GUI.Console.Console_ClassAccess is
@@ -90,10 +153,14 @@ package body GUI.Themes.YellowBlue.Console is
          Parent => Object_ClassAccess(NewConsole));
 
       NewConsole.TextBasis.EnableInput(0,To_Unbounded_String(">"));
+      NewConsole.TextBasis.CallBackObject:=AnyObject_ClassAccess(NewConsole);
+      NewConsole.TextBasis.OnVisualChange:=VisualChange'Access;
 
       NewConsole.VerticalScrollBar
         :=GUI.Themes.YellowBlue.VerticalScrollBar.NewVerticalScrollBar
           (Parent => Object_ClassAccess(NewConsole));
+      NewConsole.VerticalScrollBar.CallBackObject:=AnyObject_ClassAccess(NewConsole);
+      NewConsole.VerticalScrollBar.OnPositionChange:=ScrollPositionChange'Access;
 
       NewConsole.TextBasis.SetBounds
         (Top     => 0,

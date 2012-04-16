@@ -26,6 +26,7 @@ pragma Ada_2005;
 package GUI.ScrollBar is
 
    InvalidScrollBarPosition : Exception;
+   InvalidScrollBarRange    : Exception;
 
    type OnPositionChange_Access is
      access procedure
@@ -68,6 +69,12 @@ package GUI.ScrollBar is
 
    procedure SetPosition
      (Item     : access ScrollBar_Type;
+      Position : Integer);
+
+   procedure SetRange
+     (Item     : access ScrollBar_Type;
+      Min      : Integer;
+      Max      : Integer;
       Position : Integer);
 
    procedure UpdateBarPosition

@@ -46,7 +46,7 @@ private
    overriding
    procedure FreeCanvas
      (Context : in out Context_Type;
-      Canvas  : Canvas_ClassAccess);
+      Canvas  : in out Canvas_ClassAccess);
 
    procedure Paint
      (Context : in out Context_Type);
