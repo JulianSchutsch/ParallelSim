@@ -19,14 +19,77 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
---with Ada.Text_IO; use Ada.Text_IO;
---with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Fonts.ColorStrings is
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => ColorStringArray_Type,
       Name   => ColorStringArray_Access);
+   ---------------------------------------------------------------------------
+
+   procedure DecodePosition
+     (ColorString : access ColorString_Type;
+      Position    : Natural;
+      WrappedLine : out Natural;
+      Offset      : out Integer) is
+
+      LinePosition     : Integer;
+      LineNumber       : Integer:=0;
+      LastLinePosition : Integer:=ColorString.Content'First;
+      LastLineNumber   : Integer:=0;
+
+      function CalculateOffset
+        return Integer is
+
+         Start : Integer;
+
+      begin
+
+         if LinePosition-1>=ColorString.Content'First then
+            Start:=Colorstring.Content(LinePosition-1).AccumWidth;
+         else
+            Start:=0;
+         end if;
+
+         if Position>ColorString.Content'Last then
+            return ColorString.Content(ColorString.Content'Last).AccumWidth
+              -Start;
+         else
+            return ColorString.Content(Position).AccumWidth
+              -Start;
+         end if;
+
+      end CalculateOffset;
+
+   begin
+      LinePosition:=ColorString.Content'First;
+
+      while LinePosition<=ColorString.Content'Last loop
+
+         if Position in LinePosition..ColorString.Content(LinePosition).NextLine-1 then
+            WrappedLine := LineNumber;
+            Offset      := CalculateOffset;
+            return;
+         end if;
+
+         LastLinePosition := LinePosition;
+         LinePosition     := ColorString.Content(LinePosition).NextLine;
+         LastLineNumber   := LineNumber;
+         LineNumber       := LineNumber+1;
+
+      end loop;
+
+      LinePosition := LastLinePosition;
+      WrappedLine  := LastLineNumber;
+      Offset       := CalculateOffset;
+      Put(WrappedLine);
+      Put(Offset);
+      Put(Position);
+      Put(ColorString.Content(LinePosition).AccumWidth);
+      New_Line;
+   end DecodePosition;
    ---------------------------------------------------------------------------
 
    function GetWrappedLine
@@ -202,6 +265,11 @@ package body Fonts.ColorStrings is
       StopLine;
 
       -- TODO: Check if this is even possible (Range /=0)
+      if (ColorString.Content=null)
+        or (ColorString.Content'First>ColorString.Content'Last) then
+         return;
+      end if;
+
       Position:=ColorString.Content'First+1;
       LineNext:=ColorString.Content(ColorString.Content'First).NextLine;
 
@@ -278,8 +346,12 @@ package body Fonts.ColorStrings is
       end loop;
 
       ColorString.CurrentWrappedLine:=WrappedLine;
-      ColorString.CurrentWidth
-        := ColorString.Content(ColorString.CurrentPosition).LineWidth;
+      if ColorString.CurrentPosition<=ColorString.Content'Last then
+         ColorString.CurrentWidth
+           := ColorString.Content(ColorString.CurrentPosition).LineWidth;
+      else
+         ColorString.CurrentWidth:=0;
+      end if;
 
    end SelectWrappedLine;
    ---------------------------------------------------------------------------

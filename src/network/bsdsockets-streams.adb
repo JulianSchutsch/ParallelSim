@@ -22,14 +22,123 @@ pragma Ada_2005;
 with ProcessLoop;
 with Ada.Strings;
 with Config;
+with Network.Streams;
+with Ada.Calendar;
+with Network.Packets;
+with Basics; use Basics;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body BSDSockets.Streams is
+
+   type BSDSocketChannel_Type is new Network.Streams.Channel_Type with
+      record
+         SelectEntry        : aliased BSDSockets.SelectEntry;
+         FirstSendPacket    : Network.Packets.Packet_Access := null;
+         -- The current send packet is the last sendpacket in the list
+         SendPacket         : Network.Packets.Packet_Access := null;
+         SendPacketPos      : Integer := 0;
+         ReceivePacket      : Network.Packets.Packet_Access := null;
+         ReceivePacketPos   : Integer := 0;
+      end record;
+
+   overriding
+   function SendBufferEmpty
+     (Item : access BSDSocketChannel_Type)
+      return Boolean;
+
+   overriding
+   procedure SendPacket
+     (Item   : access BSDSocketChannel_Type;
+      Packet : Network.Packets.Packet_Access);
+   ---------------------------------------------------------------------------
+
+   procedure SendPacket
+     (Item : access BSDSocketChannel_Type;
+      Packet : Network.Packets.Packet_Access) is
+
+      use type Network.Packets.Packet_Access;
+
+   begin
+
+      Packet.Next:=Item.FirstSendPacket;
+      if Item.FirstSendPacket/=null then
+         Item.FirstSendPacket.Last:=Packet;
+      else
+         Item.SendPacket:=Packet;
+      end if;
+      Item.FirstSendPacket:=Packet;
+
+   end SendPacket;
+   ---------------------------------------------------------------------------
+
+   type ServerChannel_Type;
+   type ServerChannel_Access is access all ServerChannel_Type;
+   type Server_Type;
+   type Server_Access is access all Server_Type;
+
+   type ServerChannel_Type is new BSDSocketChannel_Type with
+      record
+         NextChannel : ServerChannel_Access;
+         LastChannel : ServerChannel_Access;
+         Server      : Server_Access;
+      end record;
+
+   overriding
+   procedure Disconnect
+     (Item : access ServerChannel_Type);
+   ---------------------------------------------------------------------------
+
+   type Server_Type is new Network.Streams.Server_Type with
+      record
+         Family       : Unbounded_String;
+         SelectEntry  : aliased BSDSockets.SelectEntry;
+         NextServer   : Server_Access:=null;
+         LastServer   : Server_Access:=null;
+         FirstChannel : ServerChannel_Access:=null;
+      end record;
+   ---------------------------------------------------------------------------
+
+   type ClientModeEnum is
+     (ClientModeConnecting,
+      ClientModeConnected,
+      ClientModeFailedConnect,
+      ClientModeDisconnected);
+
+   type Client_Type;
+   type Client_Access is access all Client_Type;
+   type Client_Type is new BSDSocketChannel_Type with
+      record
+         FirstAddrInfo : AddrInfoAccess:=null;
+         CurrAddrInfo  : AddrInfoAccess:=null;
+         ClientMode    : ClientModeEnum:=ClientModeConnecting;
+         LastTime      : Ada.Calendar.Time;
+         Port          : PortID;
+         NextClient    : Client_Access:=null;
+         LastClient    : Client_Access:=null;
+      end record;
+
+   overriding
+   procedure Disconnect
+     (Item : access Client_Type);
+   ---------------------------------------------------------------------------
+
    use type Network.Streams.ServerCallBack_ClassAccess;
    use type Network.Streams.ChannelCallBack_ClassAccess;
-   use type Ada.Streams.Stream_Element_Offset;
 
    Servers        : Server_Access  := null;
    Clients        : Client_Access := null;
+
+   function SendBufferEmpty
+     (Item : access BSDSocketChannel_Type)
+      return Boolean is
+
+      use type Network.Packets.Packet_Access;
+
+   begin
+      return (Item.SendPacket=null);
+   end SendBufferEmpty;
+   ---------------------------------------------------------------------------
 
    -- Procedure called by NewStreamClient to
    --  loop of GetAddrInfo data.
@@ -101,6 +210,9 @@ package body BSDSockets.Streams is
       VarItem : ServerChannel_Access;
 
    begin
+      Put("Finalize");
+      Put(Item.all'Address);
+      New_Line;
 
       BSDSockets.RemoveEntry
         (Entr => Item.SelectEntry'Access);
@@ -275,7 +387,7 @@ package body BSDSockets.Streams is
 
    begin
 
-      Item:=new Client_Type(Max=>1023);
+      Item:=new Client_Type;
 
       PortStr   := Configuration.Element(Node&".Port");
       FamilyStr := Configuration.Element(Node&".Family");
@@ -306,6 +418,8 @@ package body BSDSockets.Streams is
       Clients:=Item;
 
       Item.LastTime:=Ada.Calendar.Clock;
+      -- TODO: variable Buffer size
+      Item.Content:=new ByteOperations.ByteArray_Type(0..1023);
 
       return Network.Streams.Client_ClassAccess(Item);
 
@@ -368,7 +482,7 @@ package body BSDSockets.Streams is
          Port      => Port,
          NewSocket => NewSock);
 
-      NewServerChannel                    := new ServerChannel_Type(Max=>1023);
+      NewServerChannel                    := new ServerChannel_Type;
       NewServerChannel.SelectEntry.Socket := NewSock;
       NewServerChannel.Server             := Item;
       NewServerChannel.NextChannel        := Item.FirstChannel;
@@ -391,6 +505,9 @@ package body BSDSockets.Streams is
       end if;
 
       Item.FirstChannel := NewServerChannel;
+      -- TODO: variable Buffer size
+      NewServerChannel.Content:=new ByteOperations.ByteArray_Type(0..1023);
+
 
       BSDSockets.AddEntry
         (List => BSDSockets.DefaultSelectList'Access,
@@ -406,31 +523,43 @@ package body BSDSockets.Streams is
 
    ---------------------------------------------------------------------------
    function Send
-     (Item    : access BSDSocketChannel_Type'Class)
+     (Item : access BSDSocketChannel_Type'Class)
       return Boolean is
 
-      SendAmount : Ada.Streams.Stream_Element_Count;
+      use type Network.Packets.Packet_Access;
+
+      SendAmount   : Integer;
+      PacketToFree : Network.Packets.Packet_Access;
 
    begin
-      if Item.WritePosition=0 then
-         if Item.CallBack/=null then
-            Item.CallBack.OnCanSend;
+
+      while Item.SendPacket/=null loop
+         Put("Send");
+         Put(Item.SendPacketPos);
+         Put("..");
+         Put(Item.SendPacket.Position);
+         New_Line;
+         BSDSockets.Send
+           (Socket => Item.SelectEntry.Socket,
+            Data   => Item.SendPacket.Content
+              (Item.SendPacketPos..Item.SendPacket.Position-1),
+            Flags  => BSDSockets.MSG_NONE,
+            Send   => SendAmount);
+
+         Item.SendPacketPos:=Item.SendPacketPos+SendAmount;
+         if Item.SendPacketPos>=Item.SendPacket.Position then
+            PacketToFree    := Item.SendPacket;
+            Item.SendPacket := PacketToFree.Last;
+            Item.SendPacketPos:=0;
+            Network.Packets.Free(PacketToFree);
+
+            if Item.SendPacket=null then
+               Item.FirstSendPacket:=null;
+            end if;
+
          end if;
-         if Item.WritePosition=0 then
-            return True;
-         end if;
-      end if;
 
-      BSDSockets.Send
-        (Socket => Item.SelectEntry.Socket,
-         Data   => Item.WrittenContent(0..Item.WritePosition-1),
-         Flags  => BSDSockets.MSG_NONE,
-         Send   => SendAmount);
-
-      Item.WrittenContent(0..Item.WritePosition-SendAmount-1)
-        :=Item.WrittenContent(SendAmount..Item.WritePosition-1);
-
-      Item.WritePosition := Item.WritePosition - SendAmount;
+      end loop;
 
       return True;
 
@@ -446,24 +575,35 @@ package body BSDSockets.Streams is
      (Item : access BSDSocketChannel_Type'Class)
       return Boolean is
 
-      RecvAmount : Ada.Streams.Stream_Element_Count;
+      RecvAmount : Integer;
 
    begin
-      Item.ReceivedContent(0..Item.AmountReceived-Item.ReceivePosition-1)
-        :=Item.ReceivedContent(Item.ReceivePosition..Item.AmountReceived-1);
 
-      Item.AmountReceived  := Item.AmountReceived-Item.ReceivePosition;
+      -- Clear the interval 0..Item.Position to make space for new content
+      Put("ReceiveStat");
+      Put(Item.all'Address);
+      Put(Item.Position);
+      Put(Item.Amount);
+      New_Line;
+      Item.Content(0..Item.Amount-Item.Position-1)
+        :=Item.Content(Item.Position..Item.Amount-1);
+
+      Item.Amount  := Item.Amount-Item.Position;
 
       BSDSockets.Recv
         (Socket => Item.SelectEntry.Socket,
-         Data   => Item.ReceivedContent(Item.AmountReceived..Item.ReceivedContent'Last),
+         Data   => Item.Content(Item.Amount..Item.Content'Last),
          Flags  => BSDSockets.MSG_NONE,
          Read   => RecvAmount);
 
-      Item.AmountReceived := Item.AmountReceived+RecvAmount;
-      Item.ReceivePosition := 0;
+      Item.Amount := Item.Amount+RecvAmount;
+      Item.Position := 0;
+      Put("Receive");
+      Put(RecvAmount);
+      Put(Item.Amount);
+      New_Line;
 
-      if Item.AmountReceived/=0 then
+      if Item.Amount/=0 then
          if Item.CallBack/=null then
             Item.CallBack.OnReceive;
          end if;

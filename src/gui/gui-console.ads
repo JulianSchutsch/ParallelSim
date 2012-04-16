@@ -37,13 +37,6 @@ package GUI.Console is
        (Parent : Object_ClassAccess)
         return Console_ClassAccess;
 
-
-   overriding
-   function CharacterInput
-     (Item  : access Console_Type;
-      Chars : Unbounded_String)
-      return Boolean;
-
    overriding
    procedure Finalize
      (Item : access Console_Type);
@@ -61,17 +54,11 @@ package GUI.Console is
      (Item   : Console_Access;
       Parent : Object_ClassAccess);
 
-   procedure Msg_CharacterInput
-     (Item  : access Console_Type;
-      Chars : Unbounded_String) is abstract;
-
 private
 
    type Console_Type is abstract new Object_Type with
       record
-         InputContent      : Unbounded_String;
-         InputPosition     : Natural:=1;
-         InputUCS4Position : Natural;
+         null;
       end record;
 
 end GUI.Console;

@@ -35,6 +35,7 @@ package SimAdmin is
      return Boolean;
 
    procedure WaitForCompletion;
+   procedure WaitForDisconnect;
 
    procedure SendMessage
      (Message : Unbounded_String);

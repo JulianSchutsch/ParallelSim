@@ -21,26 +21,20 @@ pragma Ada_2005;
 
 with Logging;
 with Network.Streams;
-with SimCommon;
-with Ada.Streams;
+with Network.Packets;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Text_IO; use Ada.Text_IO;
+with ControlProtocol;
 
 package body SimRegion.ControlClient is
 
-   type SendStatus_Enum is
-     (SendStatusIdentify,
-      SendStatusReceive,
-      SendStatusReady);
-
    type ReceiveStatus_Enum is
-     (ReceiveStatusSend,
-      ReceiveStatusWaitForIdentification,
+     (ReceiveStatusWaitForIdentification,
       ReceiveStatusReady,
       ReceiveStatusInvalid);
 
    StreamImplementation : Network.Streams.Implementation_Type;
    Client               : Network.Streams.Client_ClassAccess;
-   SendStatus           : SendStatus_Enum;
    ReceiveStatus        : ReceiveStatus_Enum;
    LogImplementation    : Logging.Implementation_Type;
    LogContext           : Logging.Context_ClassAccess;
@@ -64,37 +58,30 @@ package body SimRegion.ControlClient is
      (Item : in out ClientCallBack_Type);
 
    overriding
-   procedure OnCanSend
-     (Item : in out ClientCallBack_Type);
-
-   overriding
    procedure OnReceive
      (Item : in out ClientCallBack_Type);
    ---------------------------------------------------------------------------
 
    procedure OnReceive
+     -- TODO: Check all warnings for reason
      (Item : in out ClientCallBack_Type) is
       pragma Warnings(Off,Item);
 
-      use type SimCommon.NetworkIDString;
-
-      PrevPosition : Ada.Streams.Stream_Element_Offset;
+      PrevPosition : Integer;
       pragma Warnings(Off,PrevPosition);
 
    begin
+      Put("RECV..a");
       loop
-         PrevPosition := Client.ReceivePosition;
+         PrevPosition := Client.Position;
          case ReceiveStatus is
-            when ReceiveStatusSend =>
-               return;
             when ReceiveStatusWaitForIdentification =>
+               Put("XXX");
                declare
-                  Identification : SimCommon.NetworkIDString;
+                  Identification : Unbounded_String;
                begin
-                  SimCommon.NetworkIDString'Read
-                    (Client,
-                     Identification);
-                  if Identification/=SimCommon.NetworkControlServerID then
+                  Identification:=Client.Read;
+                  if Identification/=ControlProtocol.ServerID then
                      LogChannel.Write
                        (Level   => Logging.LevelInvalid,
                         Message => "Identification (Control) send by the server is invalid");
@@ -109,7 +96,6 @@ package body SimRegion.ControlClient is
                end;
                -- NOT YET VALID
                ReceiveStatus := ReceiveStatusReady;
-               SendStatus    := SendStatusReady;
             when ReceiveStatusReady =>
                return;
             when ReceiveStatusInvalid =>
@@ -117,55 +103,22 @@ package body SimRegion.ControlClient is
          end case;
       end loop;
    exception
-      when Network.Streams.StreamOverflow =>
-         Client.ReceivePosition := PrevPosition;
+      when Network.Packets.PacketOutOfData =>
+         Client.Position := PrevPosition;
    end OnReceive;
-   ---------------------------------------------------------------------------
-
-   procedure OnCanSend
-     (Item : in out ClientCallBack_Type) is
-      pragma Warnings(Off,Item);
-
-      PrevPosition : Ada.Streams.Stream_Element_Offset;
-      pragma Warnings(Off,PrevPosition);
-
-   begin
-      loop
-         PrevPosition := Client.WritePosition;
-         case SendStatus is
-            when SendStatusIdentify =>
-               LogChannel.Write
-                 (Level   => Logging.LevelDebug,
-                  Message => "Sending Control-Client identification");
-               SimCommon.NetworkIDString'Write
-                 (Client,
-                  SimCommon.NetworkControlClientID);
-               -- Check
-               ReceiveStatus := ReceiveStatusWaitForIdentification;
-               SendStatus    := SendStatusReceive;
-            when SendStatusReceive =>
-               return;
-            when SendStatusReady =>
-               return;
-         end case;
-      end loop;
-   exception
-      when Network.Streams.StreamOverflow =>
-         Client.WritePosition:=PrevPosition;
-   end OnCanSend;
    ---------------------------------------------------------------------------
 
    procedure OnFailedConnect
      (Item  : in out ClientCallBack_Type;
       Retry : in out Boolean) is
-      pragma Warnings(Off,Item);
+      pragma Unreferenced(Item);
    begin
       LogChannel.Write
         (Level   => Logging.LevelFailure,
          Message => "Failed to connect to Control network");
       if ConnectTriesLeft>0 then
-         ConnecttriesLeft:=ConnectTriesLeft-1;
-         Retry:=True;
+         ConnecttriesLeft := ConnectTriesLeft-1;
+         Retry            := True;
       else
          Retry      := False;
          Terminated := True;
@@ -175,13 +128,18 @@ package body SimRegion.ControlClient is
 
    procedure OnConnect
      (Item : in out ClientCallBack_Type) is
-      pragma Warnings(Off,Item);
+      pragma Unreferenced(Item);
+
+      Packet : Network.Packets.Packet_Access;
+
    begin
       LogChannel.Write
         (Level   => Logging.LevelEvent,
          Message => "Connected to Control network");
-      SendStatus    := SendStatusIdentify;
-      ReceiveStatus := ReceiveStatusSend;
+      ReceiveStatus := ReceiveStatusWaitForIdentification;
+      Packet:=new Network.Packets.Packet_Type;
+      Packet.Write(ControlProtocol.ClientID);
+      Client.SendPacket(Packet);
    end OnConnect;
    ---------------------------------------------------------------------------
 

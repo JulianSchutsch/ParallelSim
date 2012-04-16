@@ -91,12 +91,12 @@ package body SimClientGUI is
             Right  => True,
             Bottom => True);
       end;
-      Console.WriteLine
-        (String => To_Unbounded_String("Hallo"),
-         Color  => 16#FFFFFF00#);
-      Console.WriteLine
-        (String => To_Unbounded_String("Wie gehts?"),
-         Color  => 16#FF00FF00#);
+--      Console.WriteLine
+--        (String => To_Unbounded_String("Hallo"),
+--         Color  => 16#FFFFFF00#);
+--      Console.WriteLine
+--        (String => To_Unbounded_String("Wie gehts?"),
+--         Color  => 16#FF00FF00#);
 
       Put("End of Simclientgui init");
       New_Line;

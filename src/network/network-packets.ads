@@ -18,28 +18,47 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   7.Mar 2012 Julian Schutsch
+--  16.Apr 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
+with ByteOperations;
 with Types;
-with Endianess;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-package AdminProtocol is
+package Network.Packets is
 
-   subtype ServerCmd_NativeType is Types.Integer32;
-   subtype ServerCmd_NetworkType is Endianess.LittleEndianInteger32;
+   PacketOutOfData : Exception;
 
-   ServerCmdMessage  : constant ServerCmd_NativeType:=0;
-   ServerCmdShutdown : constant ServerCmd_NativeType:=1;
+   type Packet_Type is tagged;
+   type Packet_Access is access all Packet_Type;
+   type Packet_Type is tagged
+      record
+         Content     : ByteOperations.ByteArray_Access := null;
+         Position    : Integer       := 0;
+         Amount      : Integer       := 0;
+         Next        : Packet_Access := null;
+         Last        : Packet_Access := null;
+      end record;
 
-   subtype ServerCmd_Msg_NativeType is Types.Integer32;
-   subtype ServerCmd_Msg_NetworkType is Endianess.LittleEndianInteger32;
+   procedure Write
+     (Packet : access Packet_Type;
+      Item   : Types.Integer32);
 
-   ServerCmd_Msg_MaxLength : constant ServerCmd_Msg_NativeType:=128;
+   procedure Write
+     (Packet : access Packet_Type;
+      Item   : Unbounded_String);
 
-   ServerID : constant Unbounded_String:=To_Unbounded_String("ParallelSimAdminServer");
-   ClientID : constant Unbounded_String:=To_Unbounded_String("ParallelSimAdminClient");
-end AdminProtocol;
+   function Read
+     (Packet : access Packet_Type)
+      return Unbounded_String;
+
+   function Read
+     (Packet : access Packet_Type)
+      return Types.Integer32;
+
+   procedure Free
+     (Packet : access Packet_Type);
+
+end Network.Packets;

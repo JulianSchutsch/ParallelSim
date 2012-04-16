@@ -16,36 +16,31 @@
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
+
 pragma Ada_2005;
 
-with Ada.Text_IO; use Ada.Text_IO;
+with Interfaces.C;
 
-package body GUI.Console is
+package body ByteOperations is
 
-   procedure Initialize
-     (Item   : Console_Access;
-      Parent : Object_ClassAccess) is
+   function "+"
+     (Left  : Byte_Access;
+      Right : Integer)
+      return Byte_Access is
+
+      use type Interfaces.C.size_t;
+
+      function ByteAccessToSizeT is new Ada.Unchecked_Conversion
+        (Source => Byte_Access,
+         Target => Interfaces.C.size_t);
+
+      function SizeTToByteAccess is new Ada.Unchecked_Conversion
+        (Source => Interfaces.C.size_t,
+         Target => Byte_Access);
+
    begin
-      Put("Initialize Console");
-      Put(Item.all'Address);
-      New_Line;
+      return SizeTToByteAccess
+        (ByteAccessToSizeT(Left)+Interfaces.C.size_t(Right));
+   end "+";
 
-      GUI.Initialize
-        (Item   => Object_Access(Item),
-         Parent => Parent);
-
-      Item.FocusStyle:=FocusStyleAccept;
-
-   end Initialize;
-   ---------------------------------------------------------------------------
-
-   procedure Finalize
-     (Item : access Console_Type) is
-   begin
-
-      Object_Access(Item).Finalize;
-
-   end Finalize;
-   ---------------------------------------------------------------------------
-
-end GUI.Console;
+end ByteOperations;

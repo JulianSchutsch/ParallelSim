@@ -21,25 +21,15 @@ pragma Ada_2005;
 
 with Ada.Calendar;
 with Network.Streams;
+with Network.Packets;
 with ProcessLoop;
 with Logging;
-with Ada.Streams;
-with SimCommon;
-with TaskQueue;
 with AdminProtocol;
-with Endianess;
 
 package body SimAdmin is
 
-   type SendStatus_Enum is
-     (SendStatusIdentify,
-      SendStatusWaitForIdentification,
-      SendStatusReady,
-      SendStatusProcessJob);
-
    type ReceiveStatus_Enum is
-     (ReceiveStatusSendingIdentification,
-      ReceiveStatusWaitForIdentification,
+     (ReceiveStatusWaitForIdentification,
       ReceiveStatusWaitForCommand);
 
    type ClientCallBack_Type is
@@ -61,161 +51,38 @@ package body SimAdmin is
    overriding
    procedure OnReceive
      (Item : in out ClientCallBack_Type);
-
-   overriding
-   procedure OnCanSend
-     (Item : in out ClientCallBack_Type);
    ---------------------------------------------------------------------------
-
-   type MsgMessage_Type is new TaskQueue.Task_Type with
-      record
-         Message : Unbounded_String;
-      end record;
-   type MsgMessage_Access is access MsgMessage_Type;
-   overriding
-   function Execute
-     (Item      : access MsgMessage_Type)
-      return Boolean;
-
-   type MsgShutdown_Type is new TaskQueue.Task_Type with null record;
-   type MsgShutdown_Access is access MsgShutdown_Type;
-   overriding
-   function Execute
-     (Item : access MsgShutdown_Type)
-      return Boolean;
-
 
    StreamImplementation : Network.Streams.Implementation_Type;
    Client               : Network.Streams.Client_ClassAccess;
    LogImplementation    : Logging.Implementation_Type;
    LogContext           : Logging.Context_ClassAccess;
    LogChannel           : Logging.Channel_ClassAccess;
-   SendStatus           : SendStatus_Enum;
    ReceiveStatus        : ReceiveStatus_Enum;
    ClientCallBack       : aliased ClientCallBack_Type;
    Connected            : Boolean:=False;
-   SendQueue            : aliased TaskQueue.Queue_Type;
-   CurrentSendJob       : TaskQueue.Task_ClassAccess;
 
-   CurrentSendJobNotFreed    : Exception;
-   CurrentSendJobNotAssigned : Exception;
-
-   ---------------------------------------------------------------------------
-
-   function Execute
-     (Item : access MsgMessage_Type)
-      return Boolean is
-   begin
-      LogChannel.Write
-        (Level   => Logging.LevelEvent,
-         Message => "Sending Message...");
-
-      AdminProtocol.ServerCmd_NetworkType'Write
-        (Client,
-         Endianess.To(AdminProtocol.ServerCmdMessage));
-
-      AdminProtocol.ServerCmd_Msg_NetworkType'Write
-        (Client,
-         Endianess.To
-           (AdminProtocol.ServerCmd_Msg_NativeType(Length(Item.Message))));
-
-      String'Write
-        (Client,
-         To_String(Item.Message));
-
-      return True;
-   end Execute;
-   ---------------------------------------------------------------------------
-
-   function Execute
-     (Item : access MsgShutdown_Type)
-      return Boolean is
-      pragma Unreferenced(Item);
-   begin
-      LogChannel.Write
-        (Level => Logging.LevelEvent,
-         Message => "Send shutdown message to Admin server");
-      AdminProtocol.ServerCmd_NetworkType'Write
-        (Client,
-         Endianess.To(AdminProtocol.ServerCmdShutdown));
-      return True;
-   end Execute;
-   ---------------------------------------------------------------------------
-
-   procedure OnCanSend
-     (Item : in out ClientCallBack_Type) is
-      pragma Warnings(Off,Item);
-
-      use type TaskQueue.Task_ClassAccess;
-
-      PrevPosition : Ada.Streams.Stream_Element_Offset;
-      pragma Warnings(Off,PrevPosition);
-
-   begin
-      loop
-         PrevPosition:=Client.WritePosition;
-         case SendStatus is
-            when SendStatusIdentify =>
-               SimCommon.NetworkIDString'Write
-                 (Client,
-                  SimCommon.NetworkAdminClientID);
-               SendStatus    := SendStatusWaitForIdentification;
-               ReceiveStatus := ReceiveStatusWaitForIdentification;
-               return;
-            when SendStatusWaitForIdentification =>
-               return;
-            when SendStatusReady =>
-               if CurrentSendJob/=null then
-                  raise CurrentSendJobNotFreed;
-               end if;
-               TaskQueue.First
-                 (Queue   => SendQueue,
-                  Element => CurrentSendJob);
-               if CurrentSendJob/=null then
-                  SendStatus:=SendStatusProcessJob;
-               else
-                  return;
-               end if;
-            when SendStatusProcessJob =>
-               if CurrentSendJob=null then
-                  raise CurrentSendJobNotAssigned;
-               end if;
-               if CurrentSendJob.Execute then
-                  TaskQueue.FreeTask(CurrentSendJob);
-                  CurrentSendJob := null;
-                  SendStatus     := SendStatusReady;
-               end if;
-         end case;
-      end loop;
-   exception
-      when Network.Streams.StreamOverflow =>
-         Client.WritePosition:=PrevPosition;
-   end OnCanSend;
    ---------------------------------------------------------------------------
 
    procedure OnReceive
      (Item : in out ClientCallBack_Type) is
       pragma Warnings(Off,Item);
 
-      use type SimCommon.NetworkIDString;
-
-      PrevPosition : Ada.Streams.Stream_Element_Offset;
+      PrevPosition : Integer;
       pragma Warnings(Off,PrevPosition);
 
    begin
       loop
-         PrevPosition:=Client.ReceivePosition;
+         PrevPosition:=Client.Position;
          case ReceiveStatus is
-            when ReceiveStatusSendingIdentification =>
-               return;
             when ReceiveStatusWaitForIdentification =>
                declare
-                  Identifier : SimCommon.NetworkIDString;
+                  Identifier : Unbounded_String;
                begin
-                  SimCommon.NetworkIDString'Read
-                    (Client,
-                     Identifier);
-                  if Identifier/=SimCommon.NetworkAdminServerID then
+
+                  Identifier:=Client.Read;
+
+                  if Identifier/=AdminProtocol.ServerID then
                      LogChannel.Write
                        (Level => Logging.LevelInvalid,
                         Message => "Identification (Admin) send by the server is invalid.");
@@ -225,7 +92,6 @@ package body SimAdmin is
                      LogChannel.Write
                        (Level   => Logging.LevelEvent,
                         Message => "Identification (Admin) send by the server is valid.");
-                     SendStatus    := SendStatusReady;
                      ReceiveStatus := ReceiveStatusWaitForCommand;
                   end if;
                end;
@@ -234,20 +100,25 @@ package body SimAdmin is
          end case;
       end loop;
    exception
-      when Network.Streams.StreamOverflow =>
-         Client.ReceivePosition:=PrevPosition;
+      when Network.Packets.PacketOutOfData =>
+         Client.Position:=PrevPosition;
    end OnReceive;
    ---------------------------------------------------------------------------
 
    procedure OnConnect
      (Item : in out ClientCallBack_Type) is
-      pragma Warnings(Off,Item);
+      pragma Unreferenced(Item);
+      Packet : Network.Packets.Packet_Access;
    begin
       LogChannel.Write
         (Level   => Logging.LevelEvent,
          Message => "Succeded to connect to Admin server.");
-      SendStatus    := SendStatusIdentify;
-      ReceiveStatus := ReceiveStatusSendingIdentification;
+      ReceiveStatus := ReceiveStatusWaitForIdentification;
+
+      Packet:=new Network.Packets.Packet_Type;
+      Packet.Write(AdminProtocol.ClientID);
+      Client.SendPacket(Packet);
+
       Connected:=True;
    end OnConnect;
    ---------------------------------------------------------------------------
@@ -255,7 +126,7 @@ package body SimAdmin is
    procedure OnFailedConnect
      (Item  : in out ClientCallBack_Type;
       Retry : in out Boolean) is
-      pragma Warnings(Off,Item);
+      pragma Unreferenced(Item);
    begin
       LogChannel.Write
         (Level   => Logging.LevelFailure,
@@ -275,7 +146,7 @@ package body SimAdmin is
 
    procedure WaitForCompletion is
    begin
-      while not TaskQueue.Empty(SendQueue) loop
+      while not Client.SendBufferEmpty loop
          ProcessLoop.Process;
       end loop;
    end WaitForCompletion;
@@ -298,6 +169,22 @@ package body SimAdmin is
       end loop;
       return Connected;
    end WaitForConnection;
+   ---------------------------------------------------------------------------
+
+   procedure  WaitForDisconnect is
+
+      use type Ada.Calendar.Time;
+
+      StartTime : Ada.Calendar.Time;
+
+   begin
+      StartTime:=Ada.Calendar.Clock;
+      loop
+         ProcessLoop.Process;
+         exit when (Ada.Calendar.Clock-StartTime)>15.0;
+         exit when not Connected;
+      end loop;
+   end WaitForDisconnect;
    ---------------------------------------------------------------------------
 
    procedure Initialize
@@ -328,22 +215,27 @@ package body SimAdmin is
 
    end Initialize;
    ---------------------------------------------------------------------------
+
    procedure SendShutdown is
-      Msg : MsgShutdown_Access;
+      Packet : Network.Packets.Packet_Access;
    begin
       if not Connected then
          raise NotConnected;
       end if;
-      Msg:=new MsgShutdown_Type;
-      TaskQueue.AddTask
-        (Queue => SendQueue'Access,
-         Item  => TaskQueue.Task_ClassAccess(Msg));
+
+      Packet:=new Network.Packets.Packet_Type;
+      Packet.Write(AdminProtocol.ServerCmdShutdown);
+
+      Client.SendPacket(Packet);
+
    end SendShutdown;
    ---------------------------------------------------------------------------
 
    procedure SendMessage
      (Message : Unbounded_String) is
-      Msg : MsgMessage_Access;
+
+      Packet : Network.Packets.Packet_Access;
+
    begin
       if not Connected then
          raise NotConnected;
@@ -351,11 +243,11 @@ package body SimAdmin is
       if Length(Message)>128 then
          raise FailedSend with "Message too long. Must not exceed 128 characters";
       end if;
-      Msg:=new MsgMessage_Type;
-      Msg.Message:=Message;
-      TaskQueue.AddTask
-        (Queue => SendQueue'Access,
-         Item  => TaskQueue.Task_ClassAccess(Msg));
+
+      Packet:=new Network.Packets.Packet_Type;
+      Packet.Write(AdminProtocol.ServerCmdMessage);
+      Packet.Write(Message);
+      Client.SendPacket(Packet);
    end SendMessage;
    ---------------------------------------------------------------------------
 

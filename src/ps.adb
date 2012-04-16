@@ -124,9 +124,9 @@ begin
      (Program => "simctr" & To_String(Processes.Suffix),
       Amount  => 1);
 
-   ProcessesImplementation.Spawn
-     (Program => "simreg" & To_String(Processes.Suffix),
-      Amount  => 1);
+--   ProcessesImplementation.Spawn
+--     (Program => "simreg" & To_String(Processes.Suffix),
+--      Amount  => 1);
 
    ProcessesImplementation.Finalize.all;
 

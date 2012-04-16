@@ -46,16 +46,13 @@
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Streams; use Ada.Streams;
 with Ada.Unchecked_Deallocation;
 with Basics; use Basics;
 with Config.Implementations;
+with Network.Packets;
 
 package Network.Streams is
 
-   pragma Elaborate_Body;
-
-   StreamOverflow : Exception;
    IncompleteData   : Exception;
    InvalidData      : Exception;
 
@@ -71,15 +68,9 @@ package Network.Streams is
    type ChannelCallBack_Type;
    type ChannelCallBack_ClassAccess is access all ChannelCallBack_Type'Class;
 
-   type Channel_Type(Max: Stream_Element_Count) is
-     abstract new Root_Stream_Type with
+   type Channel_Type is abstract new Network.Packets.Packet_Type with
       record
          PeerAddress     : StringStringMap.Map;
-         ReceivedContent : aliased Stream_Element_Array(0..Max);
-         ReceivePosition : Stream_Element_Offset:=0;
-         AmountReceived  : Stream_Element_Count:=0;
-         WrittenContent  : aliased Stream_Element_Array(0..Max);
-         WritePosition   : Stream_Element_Offset:=0;
          CallBack        : ChannelCallBack_ClassAccess:=null;
       end record;
 
@@ -97,34 +88,23 @@ package Network.Streams is
    procedure Disconnect
      (Item : access Channel_Type) is null;
 
-   overriding
-   procedure Read
-     (Stream : in out Channel_Type;
-      Item   : out Stream_Element_Array;
-      Last   : out Stream_Element_Offset);
+   procedure SendPacket
+     (Item   : access Channel_Type;
+      Packet : Network.Packets.Packet_Access) is abstract;
 
-   overriding
-   procedure Write
-     (Stream : in out Channel_Type;
-      Item   : in Stream_Element_Array);
+   function SendBufferEmpty
+     (Item : access  Channel_Type)
+      return Boolean is abstract;
 
-   procedure DebugReceive
-     (Stream : Channel_Type'Class);
-
-   procedure DebugSend
-     (Stream : Channel_Type'Class);
-   ---------------------------------------------------------------------------
+---------------------------------------------------------------------------
 
    type ChannelCallBack_Type is tagged limited
       record
          null;
       end record;
 
-   procedure OnCanSend
-     (Item : in out ChannelCallBack_Type) is null;
-
    procedure OnReceive
-     (Item : in out ChannelCallBack_Type) is null;
+     (Item   : in out ChannelCallBack_Type) is null;
 
    procedure OnConnect
      (Item : in out ChannelCallBack_Type) is null;
@@ -162,15 +142,6 @@ package Network.Streams is
       Channel : Channel_ClassAccess) is null;
    ---------------------------------------------------------------------------
 
-   -- TODO: These should not be public
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Channel_Type'Class,
-      Name   => Channel_ClassAccess);
-
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Channel_Type'Class,
-      Name   => Client_ClassAccess);
-
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Server_Type'Class,
       Name   => Server_ClassAccess);
@@ -183,12 +154,12 @@ package Network.Streams is
 
    type Implementation_Type is
       record
-         Initialize : Network.Streams.Initialize_Access:=null;
-         Finalize   : Network.Streams.Finalize_Access:=null;
-         NewServer  : Network.Streams.Server_Constructor:=null;
-         FreeServer : Network.Streams.Server_Destructor:=null;
-         NewClient  : Network.Streams.Client_Constructor:=null;
-         FreeClient : Network.Streams.Client_Destructor:=null;
+         Initialize : Network.Streams.Initialize_Access  := null;
+         Finalize   : Network.Streams.Finalize_Access    := null;
+         NewServer  : Network.Streams.Server_Constructor := null;
+         FreeServer : Network.Streams.Server_Destructor  := null;
+         NewClient  : Network.Streams.Client_Constructor := null;
+         FreeClient : Network.Streams.Client_Destructor  := null;
       end record;
 
    package Implementations is new Config.Implementations

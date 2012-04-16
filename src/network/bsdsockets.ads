@@ -49,7 +49,7 @@ pragma Ada_2005;
 with Interfaces.C;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with SysAddrInfo;
-with Ada.Streams;
+with ByteOperations;
 
 package BSDSockets is
 
@@ -191,15 +191,15 @@ package BSDSockets is
 
    procedure Send
      (Socket : SocketID;
-      Data   : Ada.Streams.Stream_Element_Array;
+      Data   : ByteOperations.ByteArray_Type;
       Flags  : SendEnum;
-      Send   : out Ada.Streams.Stream_Element_Count);
+      Send   : out Integer);
 
    procedure Recv
      (Socket : SocketID;
-      Data   : in out Ada.Streams.Stream_Element_Array;
+      Data   : in out ByteOperations.ByteArray_Type;
       Flags  : SendEnum;
-      Read   : out Ada.Streams.Stream_Element_Count);
+      Read   : out Integer);
 
    procedure FreeAddrInfo
      (AddrInfo: not null AddrInfoAccess);

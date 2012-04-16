@@ -19,22 +19,20 @@
 
 pragma Ada_2005;
 
-with GUI.TextView;
+with GUI.TextBasis;
 with GUI.ScrollBar;
 with GUI.Themes.YellowBlue.VerticalScrollBar;
 with Fonts;
 
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 
 package body GUI.Themes.YellowBlue.Console is
 
    type Console_Type is new GUI.Console.Console_Type with
       record
-         TextView          : GUI.TextView.TextView_ClassAccess:=null;
+         TextBasis         : GUI.TextBasis.TextBasis_ClassAccess:=null;
          VerticalScrollBar : GUI.ScrollBar.ScrollBar_ClassAccess:=null;
-         InputPosition     : Integer;
-         PromptLength      : Integer;
-         EditLine          : GUI.TextView.Line_Access:=null;
+         EditLineNumber    : Natural := 0;
       end record;
    type Console_Access is access Console_Type;
 
@@ -49,39 +47,11 @@ package body GUI.Themes.YellowBlue.Console is
      (Item : access Console_Type;
       Font : Fonts.Font_ClassAccess);
 
-   overriding
-   procedure Msg_CharacterInput
-     (Item  : access Console_Type;
-      Chars : Unbounded_String);
-   ---------------------------------------------------------------------------
-
-   procedure Msg_CharacterInput
-     (Item  : access Console_Type;
-      Chars : Unbounded_String) is
-
-   begin
-
-      Put("Receive CHARS:");
-      Put(To_String(Chars));
-      New_Line;
-      Item.InputPosition:=Item.InputPosition
-        +Item.TextView.InsertCharacters
-        (Line => Item.EditLine,
-         Position =>Item.InputPosition,
-         String => Chars,
-         Color => 16#FFFF00FF#);
-      Item.TextView.MakeVisible
-        (Line     => Item.EditLine,
-         Position => Item.InputPosition);
-
-   end Msg_CharacterInput;
-   ---------------------------------------------------------------------------
-
    procedure SetFont
      (Item   : access Console_Type;
       Font   : Fonts.Font_ClassAccess) is
    begin
-      Item.TextView.SetFont
+      Item.TextBasis.SetFont
         (Font => Font);
    end SetFont;
    ---------------------------------------------------------------------------
@@ -91,13 +61,11 @@ package body GUI.Themes.YellowBlue.Console is
       String : Unbounded_String;
       Color  : Canvas.Color_Type) is
    begin
-      Item.TextView.InsertBefore
-        (Line => Item.EditLine,
-         String => String,
-         Color  => Color);
-      Item.TextView.MakeVisible
-        (Line     => Item.EditLine,
-         Position => Item.InputPosition);
+      Item.TextBasis.InsertBefore
+        (LineNumber => Item.EditLineNumber,
+         String     => String,
+         Color      => Color);
+      Item.EditLineNumber:=Item.EditLineNumber+1;
    end WriteLine;
    ---------------------------------------------------------------------------
 
@@ -115,30 +83,25 @@ package body GUI.Themes.YellowBlue.Console is
         (Item   => GUI.Console.Console_Access(NewConsole),
          Parent => Parent);
 
-      NewConsole.TextView := new GUI.TextView.TextView_Type;
+      NewConsole.TextBasis := new GUI.TextBasis.TextBasis_Type;
 
-      GUI.TextView.Initialize
-        (Item   => GUI.TextView.TextView_Access(NewConsole.TextView),
+      GUI.TextBasis.Initialize
+        (Item   => GUI.TextBasis.TextBasis_Access(NewConsole.TextBasis),
          Parent => Object_ClassAccess(NewConsole));
 
-      NewConsole.EditLine:=NewConsole.TextView.NewLine
-        (String => To_Unbounded_String(">"),
-         Color  => 16#FFFFFFFF#);
-
-      NewConsole.PromptLength  := 1;
-      NewConsole.InputPosition := 2; -- Directly after the prompt
+      NewConsole.TextBasis.EnableInput(0,To_Unbounded_String(">"));
 
       NewConsole.VerticalScrollBar
         :=GUI.Themes.YellowBlue.VerticalScrollBar.NewVerticalScrollBar
           (Parent => Object_ClassAccess(NewConsole));
 
-      NewConsole.TextView.SetBounds
+      NewConsole.TextBasis.SetBounds
         (Top     => 0,
          Left    => 0,
          Height  => 0,
          Width   => -GUI.Themes.YellowBlue.VerticalScrollBar.VerticalScrollBarWidth,
          Visible => True);
-      NewConsole.TextView.SetAnchors
+      NewConsole.TextBasis.SetAnchors
         (Top    => True,
          Left   => True,
          Right  => True,

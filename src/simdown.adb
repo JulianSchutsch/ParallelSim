@@ -42,9 +42,10 @@ begin
 
    if SimAdmin.WaitForConnection then
       SimAdmin.SendMessage
-        (Message => To_Unbounded_String("Shutdown command sending..."));
+        (Message => To_Unbounded_String("AAA"));
       SimAdmin.SendShutdown;
-      SimAdmin.WaitForCompletion;
+
+      SimAdmin.WaitForDisconnect;
    end if;
 
    SimAdmin.Finalize;

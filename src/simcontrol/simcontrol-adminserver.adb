@@ -22,10 +22,8 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Network.Streams;
-with Endianess;
-with Ada.Streams;
+with Network.Packets;
 with Types;
-with SimCommon;
 with AdminProtocol;
 with Logging;
 with Basics; use Basics;
@@ -34,30 +32,20 @@ package body SimControl.AdminServer is
 
    type ReceiveStatus_Enum is
      (ReceiveStatusWaitForIdentification,
-      ReceiveStatusSend,
       ReceiveStatusWaitForCommand,
       ReceiveStatusProcessCommand);
 
-   type SendStatus_Enum is
-     (SendStatusReceive,
-      SendStatusIdentify,
-      SendStatusReady);
    ---------------------------------------------------------------------------
 
    type ServerChannelCallBack_Type is
      new Network.Streams.ChannelCallBack_Type with
       record
          ReceiveStatus : ReceiveStatus_Enum;
-         SendStatus    : SendStatus_Enum;
          Channel       : Network.Streams.Channel_ClassAccess;
          LogChannel    : Logging.Channel_ClassAccess;
       end record;
 
    type ServerChannelCallBack_Access is access ServerChannelCallBack_Type;
-
-   overriding
-   procedure OnCanSend
-     (Item : in out ServerChannelCallBack_Type);
 
    overriding
    procedure OnReceive
@@ -92,39 +80,17 @@ package body SimControl.AdminServer is
 
       use type AdminProtocol.ServerCmd_Msg_NativeType;
 
-      Message       : String(1..128);
-      NetMessageLen : AdminProtocol.ServerCmd_Msg_NetworkType;
-      MessageLen    : AdminProtocol.ServerCmd_Msg_NativeType;
+      Message       : Unbounded_String;
 
    begin
 
-      Endianess.LittleEndianInteger32'Read
-        (Item.Channel,
-         NetMessageLen);
-
-      MessageLen := Endianess.From(NetMessageLen);
-      if (MessageLen<0)
-        or (MessageLen>AdminProtocol.ServerCmd_Msg_MaxLength) then
-         Item.LogChannel.Write
-           (Level => Logging.LevelInvalid,
-            Message => "Invalid Length for Message packet");
-         -- TODO : Instruct this channel to be deleted
-         return True;
-      end if;
+      Message:=Item.Channel.Read;
       Item.LogChannel.Write
-        (Level => Logging.LevelDebug,
-         Message => AdminProtocol.ServerCmd_NativeType'Image
-           (MessageLen));
-
-      String'Read
-        (Item.Channel,
-         Message(1..Integer(MessageLen)));
-
-      Item.LogChannel.Write
-        (Level => Logging.LevelEvent,
-         Message => "Message:" & Message(1..Integer(MessageLen)));
+        (Level   => Logging.LevelEvent,
+         Message => To_String("Message:" & Message));
 
       return True;
+
    end Cmd_AdminServerMessage;
    ---------------------------------------------------------------------------
 
@@ -151,61 +117,50 @@ package body SimControl.AdminServer is
    procedure OnReceive
      (Item : in out ServerChannelCallBack_Type) is
 
-      use type SimCommon.NetworkIDString;
-
-      PrevPosition : Ada.Streams.Stream_Element_Offset;
+      PrevPosition : Integer;
 
       pragma Warnings(Off,PrevPosition);
 
    begin
       loop
-         PrevPosition:=Item.Channel.ReceivePosition;
+         PrevPosition:=Item.Channel.Position;
          case Item.ReceiveStatus is
             when ReceiveStatusWaitForIdentification =>
                declare
-                  Identity : SimCommon.NetworkIDString;
+                  Identity : Unbounded_String;
                begin
-                  SimCommon.NetworkIDString'Read
-                    (Item.Channel,
-                     Identity);
-                  if Identity/=SimCommon.NetworkAdminClientID then
+                  Identity:=Item.Channel.Read;
+                  if Identity/=AdminProtocol.ClientID then
                      Item.LogChannel.Write
                        (Level   => Logging.LevelInvalid,
                         Message => "Wrong identification of the client for Network Admin");
                      -- TODO: Kill channel
-                     return;
-                  end if;
-                  Item.ReceiveStatus := ReceiveStatusSend;
-                  Item.SendStatus    := SendStatusIdentify;
-                  return;
-               end;
-            when ReceiveStatusSend =>
-               raise ServerStatusError;
-            when ReceiveStatusWaitForCommand =>
-               declare
-                  Command : AdminProtocol.ServerCmd_NetworkType;
-               begin
-                  AdminProtocol.ServerCmd_NetworkType'Read
-                    (Item.Channel,
-                     Command);
-                  CurrentCommand:=Endianess.From(Command);
-                  Item.LogChannel.Write
-                    (Level => Logging.LevelCommonEvent,
-                     Message => "Received Command :"&
-                     Types.Integer32'Image(CurrentCommand));
-                  if CurrentCommand not in Cmds'Range then
+                  else
                      Item.LogChannel.Write
-                       (Level => Logging.LevelFailure,
-                        Message => "Received Command "&
-                        Types.Integer32'Image(CurrentCommand)&" not in valid range");
-                     -- TODO: Kill channel
-                     return;
+                       (Level => Logging.LevelEvent,
+                        Message => "Admin Client has valid identification");
                   end if;
-                  Item.ReceiveStatus:=ReceiveStatusProcessCommand;
-                  Item.LogChannel.Write
-                    (Level   => Logging.LevelCommonEvent,
-                     Message => "Command Receive Status");
+                  Item.ReceiveStatus := ReceiveStatusWaitForCommand;
                end;
+            when ReceiveStatusWaitForCommand =>
+               CurrentCommand:=Item.Channel.Read;
+               Item.LogChannel.Write
+                 (Level => Logging.LevelCommonEvent,
+                  Message => "Received Command :"&
+                  Types.Integer32'Image(CurrentCommand));
+               if CurrentCommand not in Cmds'Range then
+                  Item.LogChannel.Write
+                    (Level => Logging.LevelFailure,
+                     Message => "Received Command "&
+                     Types.Integer32'Image(CurrentCommand)&" not in valid range");
+                  -- TODO: Kill channel
+                  return;
+               end if;
+               Item.ReceiveStatus:=ReceiveStatusProcessCommand;
+               Item.LogChannel.Write
+                 (Level   => Logging.LevelCommonEvent,
+                  Message => "Command Receive Status");
+
             when ReceiveStatusProcessCommand =>
                Item.LogChannel.Write
                  (Level => Logging.LevelCommonEvent,
@@ -217,38 +172,9 @@ package body SimControl.AdminServer is
          end case;
       end loop;
    exception
-      when Network.Streams.StreamOverflow =>
-         Item.Channel.ReceivePosition := PrevPosition;
+      when Network.Packets.PacketOutOfData =>
+         Item.Channel.Position := PrevPosition;
    end OnReceive;
-   ---------------------------------------------------------------------------
-
-   procedure OnCanSend
-     (Item : in out ServerChannelCallBack_Type) is
-
-      PrevPosition : Ada.Streams.Stream_Element_Offset;
-      pragma Warnings(Off,PrevPosition);
-
-   begin
-      loop
-         PrevPosition:=Item.Channel.WritePosition;
-         case Item.SendStatus is
-            when SendStatusReceive =>
-               return;
-            when SendStatusIdentify =>
-               SimCommon.NetworkIDString'Write
-                 (Item.Channel,
-                  SimCommon.NetworkAdminServerID);
-               Item.ReceiveStatus := ReceiveStatusWaitForCommand;
-               Item.SendStatus    := SendStatusReady;
-               return;
-            when SendStatusReady =>
-               return;
-         end case;
-      end loop;
-   exception
-      when Network.Streams.StreamOverflow =>
-         Item.Channel.WritePosition:=PrevPosition;
-   end OnCanSend;
    ---------------------------------------------------------------------------
 
    procedure OnDisconnect
@@ -269,6 +195,7 @@ package body SimControl.AdminServer is
       pragma Warnings(Off,Item);
 
       NewCallBack : ServerChannelCallBack_Access;
+      Packet      : Network.Packets.Packet_Access;
 
    begin
       LogMainChannel.Write
@@ -276,7 +203,6 @@ package body SimControl.AdminServer is
          Message => "Accept connection for Admin server");
       NewCallBack := new ServerChannelCallBack_Type;
       NewCallBack.ReceiveStatus := ReceiveStatusWaitForIdentification;
-      NewCallBack.SendStatus    := SendStatusReceive;
       NewCallBack.Channel       := Channel;
       LogContext.NewChannel
         (ChannelName => ConcatElements
@@ -285,6 +211,10 @@ package body SimControl.AdminServer is
          Channel     => NewCallBack.LogChannel);
       Channel.CallBack
         := Network.Streams.ChannelCallBack_ClassAccess(NewCallBack);
+
+      Packet:=new Network.Packets.Packet_Type;
+      Packet.Write(AdminProtocol.ServerID);
+      Channel.SendPacket(Packet);
    end OnAccept;
    ---------------------------------------------------------------------------
 

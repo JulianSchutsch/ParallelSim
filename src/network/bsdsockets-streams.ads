@@ -23,77 +23,8 @@
 
 pragma Ada_2005;
 
-with Network.Streams;
-with Ada.Calendar;
-
 package BSDSockets.Streams is
 
-   type BSDSocketChannel_Type is new Network.Streams.Channel_Type with private;
-   type Client_Type is new BSDSocketChannel_Type with private;
-   type Client_Access is access all Client_Type;
-
-   ---------------------------------------------------------------------------
-
-   type Server_Type is new Network.Streams.Server_Type with private;
-   type Server_Access is access all Server_Type;
-
-   ---------------------------------------------------------------------------
-
    procedure Register;
-
-private
-
-   type BSDSocketChannel_Type is new Network.Streams.Channel_Type with
-      record
-         SelectEntry : aliased BSDSockets.SelectEntry;
-      end record;
-
-   type ServerChannel_Type;
-
-   type ServerChannel_Access is access all ServerChannel_Type;
-
-   type ServerChannel_Type is new BSDSocketChannel_Type with
-      record
-         NextChannel : ServerChannel_Access;
-         LastChannel : ServerChannel_Access;
-         Server      : Server_Access;
-      end record;
-
-   overriding
-   procedure Disconnect
-     (Item : access ServerChannel_Type);
-   ---------------------------------------------------------------------------
-
-   type Server_Type is new Network.Streams.Server_Type with
-      record
-         Family       : Unbounded_String;
-         SelectEntry  : aliased BSDSockets.SelectEntry;
-         NextServer   : Server_Access:=null;
-         LastServer   : Server_Access:=null;
-         FirstChannel : ServerChannel_Access:=null;
-      end record;
-   ---------------------------------------------------------------------------
-
-   type ClientModeEnum is
-     (ClientModeConnecting,
-      ClientModeConnected,
-      ClientModeFailedConnect,
-      ClientModeDisconnected);
-
-   type Client_Type is new BSDSocketChannel_Type with
-      record
-         FirstAddrInfo : AddrInfoAccess:=null;
-         CurrAddrInfo  : AddrInfoAccess:=null;
-         ClientMode    : ClientModeEnum:=ClientModeConnecting;
-         LastTime      : Ada.Calendar.Time;
-         Port          : PortID;
-         NextClient    : Client_Access:=null;
-         LastClient    : Client_Access:=null;
-      end record;
-
-   overriding
-   procedure Disconnect
-     (Item : access Client_Type);
-   ---------------------------------------------------------------------------
 
 end BSDSockets.Streams;

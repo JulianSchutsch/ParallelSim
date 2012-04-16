@@ -54,9 +54,9 @@ package body BSDSockets is
 
    procedure Recv
      (Socket : SocketID;
-      Data   : in out Ada.Streams.Stream_Element_Array;
+      Data   : in out ByteOperations.ByteArray_Type;
       Flags  : SendEnum;
-      Read   : out Ada.Streams.Stream_Element_Count) is
+      Read   : out Integer) is
 
       Result : Interfaces.C.int;
 
@@ -71,15 +71,15 @@ package body BSDSockets is
          raise FailedRecv;
       end if;
 
-      Read := Ada.Streams.Stream_Element_Count(Result);
+      Read := Integer(Result);
    end Recv;
    ---------------------------------------------------------------------------
 
    procedure Send
      (Socket : SocketID;
-      Data   : Ada.Streams.Stream_Element_Array;
+      Data   : ByteOperations.ByteArray_Type;
       Flags  : SendEnum;
-      Send   : out Ada.Streams.Stream_Element_Count) is
+      Send   : out Integer) is
 
       Result : Interfaces.C.int;
 
@@ -94,7 +94,7 @@ package body BSDSockets is
          raise FailedSend;
       end if;
 
-      Send := Ada.Streams.Stream_Element_Count(Result);
+      Send := Integer(Result);
    end;
    ---------------------------------------------------------------------------
 

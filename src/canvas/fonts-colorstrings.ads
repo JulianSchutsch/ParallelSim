@@ -66,6 +66,12 @@ package Fonts.ColorStrings is
      (ColorString : access ColorString_Type)
       return Boolean;
 
+   procedure DecodePosition
+     (ColorString : access ColorString_Type;
+      Position    : Natural;
+      WrappedLine : out Natural;
+      Offset      : out Integer);
+
    procedure Clear
      (ColorString : in out ColorString_Type);
 
