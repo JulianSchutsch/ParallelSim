@@ -19,14 +19,61 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Fonts.ColorStrings is
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => ColorStringArray_Type,
       Name   => ColorStringArray_Access);
+   ---------------------------------------------------------------------------
+
+   function Length
+     (ColorString : access ColorString_Type)
+      return Integer is
+   begin
+      return ColorString.Content'Length;
+   end Length;
+   ---------------------------------------------------------------------------
+
+   function GetStringSlice
+     (ColorString : access ColorString_Type;
+      Start       : Integer;
+      Stop        : Integer)
+      return Unbounded_String is
+
+      Result : Unbounded_String;
+
+   begin
+
+      if (Stop<ColorString.Content'First) or
+        (Start>ColorString.Content'Last) then
+         raise IndexOutOfRange;
+      end if;
+
+      for i in Start..Stop loop
+         Result:=Result&UCS4ToUTF8(ColorString.Content(i).Char);
+      end loop;
+      return Result;
+
+   end GetStringSlice;
+   ---------------------------------------------------------------------------
+
+   function GetString
+     (ColorString : access ColorString_Type)
+      return Unbounded_String is
+
+      Result : Unbounded_String;
+
+   begin
+
+      for i in ColorString.Content'First..ColorString.Content'Last loop
+         Result:=Result&UCS4ToUTF8(ColorString.Content(i).Char);
+      end loop;
+      return Result;
+
+   end GetString;
    ---------------------------------------------------------------------------
 
    procedure DecodePosition
@@ -37,7 +84,7 @@ package body Fonts.ColorStrings is
 
       LinePosition     : Integer;
       LineNumber       : Integer:=0;
-      LastLinePosition : Integer:=ColorString.Content'First;
+      LastLinePosition : Integer;
       LastLineNumber   : Integer:=0;
 
       function CalculateOffset
@@ -46,6 +93,10 @@ package body Fonts.ColorStrings is
          Start : Integer;
 
       begin
+
+         if ColorString.Content'Length=0 then
+            return 0;
+         end if;
 
          if LinePosition-1>=ColorString.Content'First then
             Start:=Colorstring.Content(LinePosition-1).AccumWidth;
@@ -57,14 +108,22 @@ package body Fonts.ColorStrings is
             return ColorString.Content(ColorString.Content'Last).AccumWidth
               -Start;
          else
-            return ColorString.Content(Position).AccumWidth
+            return ColorString.Content(Position-1).AccumWidth
               -Start;
          end if;
 
       end CalculateOffset;
 
    begin
-      LinePosition:=ColorString.Content'First;
+
+      if ColorString.Content=null then
+         WrappedLine := 0;
+         Offset      := 0;
+         return;
+      end if;
+
+      LinePosition     := ColorString.Content'First;
+      LastLinePosition := LinePosition;
 
       while LinePosition<=ColorString.Content'Last loop
 
@@ -84,11 +143,6 @@ package body Fonts.ColorStrings is
       LinePosition := LastLinePosition;
       WrappedLine  := LastLineNumber;
       Offset       := CalculateOffset;
-      Put(WrappedLine);
-      Put(Offset);
-      Put(Position);
-      Put(ColorString.Content(LinePosition).AccumWidth);
-      New_Line;
    end DecodePosition;
    ---------------------------------------------------------------------------
 
@@ -101,6 +155,11 @@ package body Fonts.ColorStrings is
       LineNumber   : Integer:=0;
 
    begin
+
+      if ColorString.Content=null then
+         return 0;
+      end if;
+
       LinePosition:=ColorString.Content'First;
 
       while LinePosition<=ColorString.Content'Last loop
@@ -134,6 +193,10 @@ package body Fonts.ColorStrings is
          raise FontNotAssigned;
       end if;
 
+      if ColorString.Content=null then
+         return;
+      end if;
+
       for i in ColorString.CurrentPosition
         ..ColorString.Content(ColorString.CurrentPosition).NextLine-1 loop
 
@@ -156,10 +219,10 @@ package body Fonts.ColorStrings is
       InWord              : Boolean:=False;
       WordStart           : Integer:=0;
       LineAccumWidth      : Integer:=0;
-      LineStart           : Natural:=ColorString.Content'First;
+      LineStart           : Natural;
       LineNext            : Natural;
       LineWordCount       : Integer:=0;
-      Position            : Natural:=ColorString.Content'First;
+      Position            : Natural;
       Overflow            : Boolean;
 
       procedure NewLine is
@@ -200,6 +263,13 @@ package body Fonts.ColorStrings is
       ------------------------------------------------------------------------
 
    begin
+
+      if ColorString.Content=null then
+         return;
+      end if;
+
+      LineStart := ColorString.Content'First;
+      Position  := ColorString.Content'First;
 
       ColorString.WrappedLineCount:=0;
 
@@ -310,6 +380,10 @@ package body Fonts.ColorStrings is
       return Boolean is
    begin
 
+      if ColorString.Content=null then
+         return False;
+      end if;
+
       ColorString.CurrentWrappedLine:=ColorString.CurrentWrappedLine+1;
 
       if ColorString.CurrentWrappedLine=ColorString.WrappedLineCount then
@@ -333,6 +407,11 @@ package body Fonts.ColorStrings is
       WrappedLine : Natural) is
 
    begin
+
+      if ColorString.Content=null then
+         ColorString.CurrentPosition:=0;
+         return;
+      end if;
 
       if WrappedLine>=ColorString.WrappedLineCount then
          raise InvalidWrappedLine;
@@ -409,6 +488,39 @@ package body Fonts.ColorStrings is
       ColorString.Font:=Font;
       CalculateDimensions(ColorString);
    end Reinitialize;
+   ---------------------------------------------------------------------------
+
+   procedure Delete
+     (ColorString : access ColorString_Type;
+      Position    : Integer;
+      Length      : Positive) is
+
+      NewContent : ColorStringArray_Access;
+
+   begin
+
+      if (Position<ColorString.Content'First)
+        or (Position+Length-1>ColorString.Content'Last) then
+         raise IndexOutOfRange;
+      end if;
+
+      NewContent:=new ColorStringArray_Type
+        (1..ColorString.Content'Last-Length);
+
+      for i in 1..Position-1 loop
+         NewContent(i):=ColorString.Content(i);
+      end loop;
+
+      for i in Position..NewContent'Last loop
+         NewContent(i):=ColorString.Content(i+Length);
+      end loop;
+
+      Free(ColorString.Content);
+      ColorString.Content:=NewContent;
+
+      CalculateDimensions(ColorString.all);
+
+   end Delete;
    ---------------------------------------------------------------------------
 
    function Insert
@@ -490,9 +602,9 @@ package body Fonts.ColorStrings is
       end if;
 
       ColorString.Content := new ColorStringArray_Type
-         (1..Length(UCS4));
+        (1..Length(UCS4));
 
-      for i in 1..Length(String) loop
+      for i in 1..Length(UCS4) loop
          ColorString.Content(i).Color := Color;
          Colorstring.Content(i).Char  := Element(UCS4,i);
       end loop;

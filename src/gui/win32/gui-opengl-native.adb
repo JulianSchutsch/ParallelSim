@@ -31,7 +31,77 @@ with Interfaces.C.Strings;
 with System;
 with ProcessLoop;
 
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+
 package body GUI.OpenGL.Native is
+
+   KeyTable : constant array(0..255) of Key_Enum:=
+     (KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 0..3
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 4..7
+      KeyBackspace,KeyUnknown,KeyUnknown,KeyUnknown,  -- 8..11
+      KeyUnknown,KeyReturn ,KeyUnknown,KeyUnknown,  -- 12..15
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 16..19
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 20..23
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 24..27
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 28..31
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyEnd,      -- 32..35
+      KeyHome   ,KeyLeft,KeyUnknown,KeyRight,       -- 36..39
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 40..43
+      KeyUnknown,KeyUnknown,KeyDelete ,KeyUnknown,  -- 44..47
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 48..51
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 52..55
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 56..59
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 60..63
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 64..67
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 68..71
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 72..75
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 76..79
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 80..83
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 84..87
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 88..91
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 92..95
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 96..99
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 100..103
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 104..107
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 108..111
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 112..115
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 116..119
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 120..123
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 124..127
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 128..131
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 132..135
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 136..139
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 140..143
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 144..147
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 148..151
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 152..155
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 156..159
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 160..163
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 164..167
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 168..171
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 172..175
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 176..179
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 180..183
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 184..187
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 188..191
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 192..195
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 196..199
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 200..203
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 204..207
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 208..211
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 212..215
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 216..219
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 220..223
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 224..227
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 228..231
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 232..235
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 236..239
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 240..243
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 244..247
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 248..251
+      KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown); -- 252..255
+
 
    type Context_Type;
    type Context_Access is access all Context_Type;
@@ -151,6 +221,8 @@ package body GUI.OpenGL.Native is
       return Win32.LRESULT_Type is
 
       pragma Warnings(Off,wParam);
+
+      use type Win32.WPARAM_Type;
 
       -- Context belonging to this window
       Context : Context_Access;
@@ -296,6 +368,7 @@ package body GUI.OpenGL.Native is
                uMsg => uMsg,
                wParam => wParam,
                lParam => lParam);
+
          when Win32.WM_DESTROY =>
             declare
                BoolResult : Win32.BOOL_Type;
@@ -309,18 +382,35 @@ package body GUI.OpenGL.Native is
             end;
             Context.DestroySignalSend:=True;
             return 0;
+
          when Win32.WM_TIMER =>
             Paint(Context.all);
             return 0;
+
          when Win32.WM_ERASEBKGND =>
             return 1;
+
          when Win32.WM_KEYDOWN =>
+            Put("KeyDown");
+            Put(Integer(wParam));
+            New_Line;
+            if wParam<=255 then
+               GUI.KeyDown
+                 (Context => Context_ClassAccess(Context),
+                  Key     => KeyTable(Integer(wparam)));
+            end if;
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,
                uMsg => uMsg,
                wParam => wParam,
                lParam => lParam);
+
          when Win32.WM_KEYUP =>
+            if wParam<=255 then
+               GUI.KeyUp
+                 (Context => Context_ClassAccess(Context),
+                  Key     => KeyTable(Integer(wParam)));
+            end if;
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,
                uMsg => uMsg,
@@ -336,9 +426,11 @@ package body GUI.OpenGL.Native is
                   Target => Wide_Character);
                pragma Warnings(On);
             begin
-               GUI.CharacterInput
-                 (Context => Context_ClassAccess(Context),
-                  Chars   => UCS2ToUTF8(Convert(wParam)));
+               if wParam>=32 then
+                  GUI.CharacterInput
+                    (Context => Context_ClassAccess(Context),
+                     Chars   => UCS2ToUTF8(Convert(wParam)));
+               end if;
             end;
             return Win32.User32.DefWindowProc
               (hWnd => hWnd,

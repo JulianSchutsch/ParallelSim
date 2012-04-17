@@ -33,6 +33,14 @@ package body GUI is
       Name   => Canvas_ClassAccess);
    ---------------------------------------------------------------------------
 
+   procedure SetFocusObject
+     (Item   : access Object_Type;
+      Object : Object_ClassAccess) is
+   begin
+      Item.FocusObject:=Object;
+   end SetFocusObject;
+   ---------------------------------------------------------------------------
+
    procedure BringToFront
      (Item : Object_ClassAccess) is
    begin
@@ -90,7 +98,7 @@ package body GUI is
 
    procedure KeyDown
      (Context : Context_ClassAccess;
-      Key     : Key_Type) is
+      Key     : Key_Enum) is
    begin
 
       if Context.Priv.FocusObject/=null then
@@ -105,7 +113,7 @@ package body GUI is
 
    procedure KeyUp
      (Context : Context_ClassAccess;
-      Key     : Key_Type) is
+      Key     : Key_Enum) is
    begin
 
       if Context.Priv.FocusObject/=null then
@@ -160,10 +168,9 @@ package body GUI is
 
       while Cursor/=null loop
 
-         if (Cursor.FocusStyle=FocusStyleContainer) and
-           (Cursor.FocusObject/=Object) then
+         if (Cursor.FocusStyle=FocusStyleContainer) then
 
-            Cursor.FocusObject:=null;
+            Cursor.FocusObject:=Object;
 
          end if;
 
@@ -218,7 +225,7 @@ package body GUI is
                if Cursor.FocusObject=null then
                   raise FocusRedirectionToNull;
                end if;
-               SetFocusTree(Cursor);
+               SetFocusTree(Cursor.FocusObject);
                return;
 
          end case;
@@ -230,7 +237,7 @@ package body GUI is
 
    function KeyDown
      (Item : access Object_Type;
-      Key  : Key_Type)
+      Key  : Key_Enum)
       return Boolean is
 
       pragma Unreferenced(Item);
@@ -243,7 +250,7 @@ package body GUI is
 
    function KeyUp
      (Item : access Object_Type;
-      Key  : Key_Type)
+      Key  : Key_Enum)
       return Boolean is
 
       pragma Unreferenced(Item);

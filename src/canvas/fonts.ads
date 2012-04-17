@@ -77,7 +77,7 @@ package Fonts is
    NoAttributes : Attributes_Type(0..-1);
 
    procedure Release
-     (Font : Font_ClassAccess);
+     (Font : in out Font_ClassAccess);
 
    function Lookup
      (Name       : Unbounded_String;

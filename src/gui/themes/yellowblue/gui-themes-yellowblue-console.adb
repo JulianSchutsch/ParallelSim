@@ -132,6 +132,25 @@ package body GUI.Themes.YellowBlue.Console is
    end VisualChange;
    ---------------------------------------------------------------------------
 
+   procedure InputEnter
+     (CallBackObject : Basics.AnyObject_ClassAccess;
+      Input          : Unbounded_String) is
+
+      use type GUI.TextBasis.OnInputEnter_Access;
+
+      Console : constant Console_Access:=Console_Access(CallbackObject);
+
+   begin
+
+      if Console.OnInputEnter/=null then
+         Console.OnInputEnter.all
+           (CallBackObject => Console.CallBackObject,
+            Input          => Input);
+      end if;
+
+   end InputEnter;
+   ---------------------------------------------------------------------------
+
    function NewConsole
      (Parent : Object_ClassAccess)
       return GUI.Console.Console_ClassAccess is
@@ -153,8 +172,9 @@ package body GUI.Themes.YellowBlue.Console is
          Parent => Object_ClassAccess(NewConsole));
 
       NewConsole.TextBasis.EnableInput(0,To_Unbounded_String(">"));
-      NewConsole.TextBasis.CallBackObject:=AnyObject_ClassAccess(NewConsole);
-      NewConsole.TextBasis.OnVisualChange:=VisualChange'Access;
+      NewConsole.TextBasis.CallBackObject := AnyObject_ClassAccess(NewConsole);
+      NewConsole.TextBasis.OnVisualChange := VisualChange'Access;
+      NewConsole.TextBasis.OnInputEnter   := InputEnter'Access;
 
       NewConsole.VerticalScrollBar
         :=GUI.Themes.YellowBlue.VerticalScrollBar.NewVerticalScrollBar
@@ -184,6 +204,14 @@ package body GUI.Themes.YellowBlue.Console is
          Left   => False,
          Right  => True,
          Bottom => True);
+
+      NewConsole.FocusStyle  := FocusStyleRedirect;
+      NewConsole.SetFocusObject(Object_ClassAccess(NewConsole.TextBasis));
+
+      NewConsole.VerticalScrollBar.FocusStyle:=FocusStyleRedirect;
+      NewConsole.VerticalScrollBar.SetFocusObject
+        (Object_ClassAccess(NewConsole.TextBasis));
+
 
       return GUI.Console.Console_ClassAccess(NewConsole);
 

@@ -25,10 +25,16 @@ pragma Ada_2005;
 
 with Canvas;
 with Fonts;
+with GUI.TextBasis;
 
 package GUI.Console is
 
-   type Console_Type is abstract new Object_Type with private;
+   type Console_Public is abstract new Object_Type with
+      record
+         OnInputEnter : GUI.TextBasis.OnInputEnter_Access;
+      end record;
+
+   type Console_Type is abstract new Console_Public with private;
    type Console_Access is access all Console_Type;
    type Console_ClassAccess is access all Console_Type'Class;
 
@@ -56,7 +62,7 @@ package GUI.Console is
 
 private
 
-   type Console_Type is abstract new Object_Type with
+   type Console_Type is abstract new Console_Public with
       record
          null;
       end record;

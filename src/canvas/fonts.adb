@@ -220,9 +220,7 @@ package body Fonts is
    ---------------------------------------------------------------------------
 
    procedure Release
-     (Font : Font_ClassAccess) is
-
-      FontVar : Font_ClassAccess;
+     (Font : in out Font_ClassAccess) is
 
    begin
       Font.ReferenceCount:=Font.ReferenceCount-1;
@@ -237,9 +235,8 @@ package body Fonts is
             Fonts:=Font.Next;
          end if;
 
-         FontVar:=Font;
          Free(Font.Attributes);
-         Free(FontVar);
+         Free(Font);
 
       end if;
    end Release;

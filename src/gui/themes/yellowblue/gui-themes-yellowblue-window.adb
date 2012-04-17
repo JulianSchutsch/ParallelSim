@@ -261,6 +261,8 @@ package body GUI.Themes.YellowBlue.Window is
    procedure DrawCanvasse
      (Window : access Window_Type) is
 
+      use type Fonts.Font_ClassAccess;
+
       TitleBarColor       : Canvas.Color_Type;
       BorderLineColor     : Canvas.Color_Type;
       BorderEdgeLineColor : Canvas.Color_Type;
@@ -287,38 +289,40 @@ package body GUI.Themes.YellowBlue.Window is
          Window.Context.FreeCanvas(Window.TitleCanvas);
       end if;
 
-      declare
-         TextWidth : constant Integer
-           :=Window.Font.TextWidth(To_Unbounded_String("Hallo"));
-      begin
-         Window.Context.NewCanvas
-           (Object => Object_ClassAccess(Window),
-            Height => TitleBarHeight,
-            Width  => TextWidth,
-            Canvas => Window.TitleCanvas);
-         Window.TitleCanvas.Clear
-           (Color => 16#00000000#);
+      if Window.Font/=null then
+         declare
+            TextWidth : constant Integer
+              :=Window.Font.TextWidth(To_Unbounded_String("Hallo"));
+         begin
+            Window.Context.NewCanvas
+              (Object => Object_ClassAccess(Window),
+               Height => TitleBarHeight,
+               Width  => TextWidth,
+               Canvas => Window.TitleCanvas);
+            Window.TitleCanvas.Clear
+              (Color => 16#00000000#);
 
-         Window.Font.TextOut
-           (Canvas => Canvas.Canvas_ClassAccess(Window.TitleCanvas),
-            X => 0,
-            Y => 0,
-            Text => To_Unbounded_String("Hallo"),
-            Color => 16#FFFFFFFF#);
+            Window.Font.TextOut
+              (Canvas => Canvas.Canvas_ClassAccess(Window.TitleCanvas),
+               X => 0,
+               Y => 0,
+               Text => To_Unbounded_String("Hallo"),
+               Color => 16#FFFFFFFF#);
 
-         Window.TitleCanvas.SetBounds
-           (Top     => BorderWidth+1,
-            Left    => BorderWidth+2,
-            Height  => TitleBarHeight,
-            Width   => TextWidth,
-            Visible => True);
+            Window.TitleCanvas.SetBounds
+              (Top     => BorderWidth+1,
+               Left    => BorderWidth+2,
+               Height  => TitleBarHeight,
+               Width   => TextWidth,
+               Visible => True);
 
-         Window.TitleCanvas.SetAnchors
-           (Top    => False,
-            Left   => False,
-            Right  => False,
-            Bottom => False);
-      end;
+            Window.TitleCanvas.SetAnchors
+              (Top    => False,
+               Left   => False,
+               Right  => False,
+               Bottom => False);
+         end;
+      end if;
       ------------------------------------------------------------------------
 
       if Window.TopLeftCorner/=null then

@@ -94,9 +94,28 @@ package Fonts.ColorStrings is
       Color       : Canvas.Color_Type)
       return Integer;
 
+   procedure Delete
+     (ColorString : access ColorString_Type;
+      Position    : Integer;
+      Length      : Positive);
+
    function GetWrappedLine
      (ColorString : access ColorString_Type;
       Position    : Integer)
+      return Integer;
+
+   function GetString
+     (ColorString : access ColorString_Type)
+      return Unbounded_String;
+
+   function GetStringSlice
+     (ColorString : access ColorString_Type;
+      Start       : Integer;
+      Stop        : Integer)
+      return Unbounded_String;
+
+   function Length
+     (ColorString : access ColorString_Type)
       return Integer;
 
 private

@@ -76,6 +76,10 @@ package Basics is
      (Char : Wide_Character)
       return Unbounded_String;
 
+   function UCS4ToUTF8
+     (Char : Wide_Wide_Character)
+      return Unbounded_String;
+
    procedure Swap
      (Value1 : in out Float;
       Value2 : in out Float);

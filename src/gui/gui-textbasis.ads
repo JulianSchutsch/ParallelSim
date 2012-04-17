@@ -35,12 +35,18 @@ package GUI.TextBasis is
    NoFontSelected : Exception;
 
    type OnVisualChange_Access is
-     access procedure (CallbackObject : AnyObject_ClassAccess);
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess);
+
+   type OnInputEnter_Access is
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess;
+        Input          : Unbounded_String);
 
    type TextBasis_Public is new Object_Type with
       record
-         OnVisualChange      : OnVisualChange_Access;
-         MinimumEditPosition : Integer;
+         OnVisualChange      : OnVisualChange_Access:=null;
+         OnInputEnter        : OnInputEnter_Access:=null;
       end record;
 
    type TextBasis_Type is new TextBasis_Public with private;
@@ -100,6 +106,11 @@ package GUI.TextBasis is
       Chars : Unbounded_String)
       return Boolean;
 
+   function KeyDown
+     (Item : access TextBasis_Type;
+      Key : Key_Enum)
+      return Boolean;
+
    procedure EnableInput
      (Item       : access TextBasis_Type;
       LineNumber : Natural;
@@ -153,7 +164,8 @@ private
          WrappedLineIndex       : Natural := 0;
          InWrappedLineIndex     : Natural := 0;
          EditLine               : Line_Access:=null;
-         EditPos                : Integer;
+         EditPos                : Integer:=0;
+         MinimumEditPos         : Integer:=0;
          CursorCanvas           : Canvas_ClassAccess:=null;
       end record;
 

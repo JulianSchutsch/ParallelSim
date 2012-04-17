@@ -112,11 +112,7 @@ package body GUI.TextBasis is
          Cursor:=Cursor.Last;
       end loop;
 
-      if WrappedLines=0 then
-         return 0;
-      else
-         return WrappedLines-1;
-      end if;
+      return WrappedLines;
 
    end GetFirstWrappedLine;
    ---------------------------------------------------------------------------
@@ -748,19 +744,146 @@ package body GUI.TextBasis is
    begin
 
       Item.EditLine := SelectLine(Item,LineNumber);
+
       if Item.EditLine=null then
          Item.EditLine:=Item.NewLine(To_Unbounded_String(""),16#FFFFFFFF#);
       end if;
+
       Item.EditPos:=1+Item.EditLine.Insert
         (Position => 1,
          String   => Prompt,
          Color    => 16#FF00FF00#);
+
+      Item.MinimumEditPos:=Item.EditPos;
+
       UpdateAfterContentChange
         (TextBasis         => Item,
          Line              => Item.EditLine,
          KeepCursorVisible => True);
 
    end EnableInput;
+   ---------------------------------------------------------------------------
+
+   function KeyDown
+     (Item : access TextBasis_Type;
+      Key  : Key_Enum)
+      return Boolean is
+
+   begin
+      case Key is
+         when KeyBackspace =>
+            if (Item.EditLine/=null) and (Item.EditPos>Item.MinimumEditPos) then
+               Item.EditPos:=Item.EditPos-1;
+               Item.EditLine.Delete
+                 (Position => Item.EditPos,
+                  Length   => 1);
+               UpdateAfterContentChange
+                 (TextBasis         => Item,
+                  Line              => Item.EditLine,
+                  KeepCursorVisible => True);
+            end if;
+            return True;
+
+         when KeyReturn =>
+
+            if Item.EditLine/=null then
+
+               if Item.OnInputEnter/=null then
+                  if Item.EditLine.Length+1>Item.MinimumEditPos then
+                     Item.OnInputEnter.all
+                       (CallBackObject => Item.CallBackObject,
+                        Input          => Item.EditLine.GetStringSlice
+                          (Start => Item.MinimumEditPos,
+                           Stop => Item.EditLine.Length));
+                  else
+                     Item.OnInputEnter.all
+                       (CallBackObject => Item.CallBackObject,
+                        Input          => To_Unbounded_String(""));
+                  end if;
+               end if;
+
+               Item.EditPos:=Item.MinimumEditPos;
+
+               if Item.EditLine.Length+1>Item.MinimumEditPos then
+                  Item.EditLine.Delete
+                    (Position => Item.MinimumEditPos,
+                     Length   => Item.EditLine.Length-Item.MinimumEditPos+1);
+                  UpdateAfterContentChange
+                    (TextBasis         => Item,
+                     Line              => Item.EditLine,
+                     KeepCursorVisible => True);
+               end if;
+
+            end if;
+
+            return True;
+
+         when KeyLeft =>
+            if Item.EditLine/=null then
+               if Item.EditPos>Item.MinimumEditPos then
+                  Item.EditPos:=Item.EditPos-1;
+                  UpdateAfterContentChange
+                    (TextBasis         => Item,
+                     Line              => Item.EditLine,
+                     KeepCursorVisible => True);
+               end if;
+            end if;
+            return True;
+
+         when KeyRight =>
+            if Item.EditLine/=null then
+               if Item.EditPos<=Item.EditLine.Length then
+                  Item.EditPos:=Item.EditPos+1;
+                  UpdateAfterContentChange
+                    (TextBasis         => Item,
+                     Line              => Item.EditLine,
+                     KeepCursorVisible => True);
+               end if;
+            end if;
+            return True;
+
+         when KeyHome =>
+            if Item.EditLine/=null then
+               if Item.EditPos/=Item.MinimumEditPos then
+                  Item.EditPos:=Item.MinimumEditPos;
+                  UpdateAfterContentChange
+                    (TextBasis         => Item,
+                     Line              => Item.EditLine,
+                     KeepCursorVisible => True);
+               end if;
+            end if;
+            return True;
+
+         when KeyEnd =>
+            if Item.EditLine/=null then
+               if Item.EditPos/=Item.EditLine.Length+1 then
+                  Item.EditPos:=Item.EditLine.Length+1;
+                  UpdateAfterContentChange
+                    (TextBasis         => Item,
+                     Line              => Item.EditLine,
+                     KeepCursorVisible => True);
+               end if;
+            end if;
+            return True;
+
+         when KeyDelete =>
+            if Item.EditLine/=null then
+               if Item.EditPos<=Item.EditLine.Length then
+                  Item.EditLine.Delete
+                    (Position => Item.EditPos,
+                     Length   => 1);
+                  UpdateAfterContentChange
+                    (TextBasis         => Item,
+                     Line              => Item.EditLine,
+                     KeepCursorVisible => True);
+               end if;
+            end if;
+            return True;
+
+         when others =>
+            return False;
+      end case;
+   end KeyDown;
    ---------------------------------------------------------------------------
 
    function CharacterInput

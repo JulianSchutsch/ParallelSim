@@ -63,12 +63,18 @@ package GUI is
       FocusStyleContainer,
       FocusStyleRedirect);
 
-   type Key_Type is
+   type Key_Enum is
      (KeyUnknown,
       KeyUp,
       KeyLeft,
       KeyRight,
-      KeyDown);
+      KeyDown,
+      KeyBackspace,
+      KeyReturn,
+      KeyEnter,
+      KeyHome,
+      KeyEnd,
+      KeyDelete);
 
    type MouseButton_Enum is
      (LeftButton,
@@ -121,12 +127,12 @@ package GUI is
 
    function KeyDown
      (Item : access Object_Type;
-      Key  : Key_Type)
+      Key  : Key_Enum)
       return Boolean;
 
    function KeyUp
      (Item : access Object_Type;
-      Key  : Key_Type)
+      Key  : Key_Enum)
       return Boolean;
 
    function MouseDown
@@ -186,6 +192,10 @@ package GUI is
 
    procedure BringToFront
      (Item : Object_ClassAccess);
+
+   procedure SetFocusObject
+     (Item   : access Object_Type;
+      Object : Object_ClassAccess);
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is
@@ -337,10 +347,10 @@ private
 
    procedure KeyDown
      (Context : Context_ClassAccess;
-      Key     : Key_Type);
+      Key     : Key_Enum);
 
    procedure KeyUp
      (Context : Context_ClassAccess;
-      Key     : Key_Type);
+      Key     : Key_Enum);
 
 end GUI;
