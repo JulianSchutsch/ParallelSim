@@ -33,7 +33,8 @@ package body SimControl.AdminServer is
    type ReceiveStatus_Enum is
      (ReceiveStatusWaitForIdentification,
       ReceiveStatusWaitForCommand,
-      ReceiveStatusProcessCommand);
+      ReceiveStatusProcessCommand,
+      ReceiveStatusInvalid);
 
    ---------------------------------------------------------------------------
 
@@ -78,8 +79,6 @@ package body SimControl.AdminServer is
      (Item : in ServerChannelCallBack_Type)
       return Boolean is
 
-      use type AdminProtocol.ServerCmd_Msg_NativeType;
-
       Message       : Unbounded_String;
 
    begin
@@ -97,16 +96,19 @@ package body SimControl.AdminServer is
    function Cmd_Shutdown
      (Item : in ServerChannelCallBack_Type)
       return Boolean is
+
    begin
+
       Item.LogChannel.Write
         (Level => Logging.LevelEvent,
          Message => "Received shutdown command");
       Terminated:=True;
       return True;
+
    end Cmd_Shutdown;
    ---------------------------------------------------------------------------
 
-   type CmdArray is array (AdminProtocol.ServerCmd_NativeType range <>) of
+   type CmdArray is array (AdminProtocol.ServerCmd_Type range <>) of
      access function
        (Item : in ServerChannelCallBack_Type) return Boolean;
 
@@ -125,43 +127,46 @@ package body SimControl.AdminServer is
       loop
          PrevPosition:=Item.Channel.Position;
          case Item.ReceiveStatus is
+
             when ReceiveStatusWaitForIdentification =>
-               declare
-                  Identity : Unbounded_String;
-               begin
-                  Identity:=Item.Channel.Read;
-                  if Identity/=AdminProtocol.ClientID then
-                     Item.LogChannel.Write
-                       (Level   => Logging.LevelInvalid,
-                        Message => "Wrong identification of the client for Network Admin");
-                     -- TODO: Kill channel
-                  else
-                     Item.LogChannel.Write
-                       (Level => Logging.LevelEvent,
-                        Message => "Admin Client has valid identification");
-                  end if;
-                  Item.ReceiveStatus := ReceiveStatusWaitForCommand;
-               end;
+
+               if Item.Channel.Read/=AdminProtocol.ClientID then
+                  Item.LogChannel.Write
+                    (Level   => Logging.LevelInvalid,
+                     Message => "Wrong identification of the client for Network Admin");
+                  Item.ReceiveStatus:=ReceiveStatusInvalid;
+                  Item.Channel.Disconnect;
+                  return;
+               else
+                  Item.LogChannel.Write
+                    (Level => Logging.LevelEvent,
+                     Message => "Admin Client has valid identification");
+               end if;
+               Item.ReceiveStatus := ReceiveStatusWaitForCommand;
+
             when ReceiveStatusWaitForCommand =>
+
                CurrentCommand:=Item.Channel.Read;
+
                Item.LogChannel.Write
                  (Level => Logging.LevelCommonEvent,
                   Message => "Received Command :"&
-                  Types.Integer32'Image(CurrentCommand));
+                  AdminProtocol.ServerCmd_Type'Image(CurrentCommand));
+
                if CurrentCommand not in Cmds'Range then
                   Item.LogChannel.Write
                     (Level => Logging.LevelFailure,
                      Message => "Received Command "&
-                     Types.Integer32'Image(CurrentCommand)&" not in valid range");
-                  -- TODO: Kill channel
+                     AdminProtocol.ServerCmd_Type'Image(CurrentCommand)&" not in valid range");
+                  Item.ReceiveStatus:=ReceiveStatusInvalid;
+                  Item.Channel.Disconnect;
                   return;
                end if;
+
                Item.ReceiveStatus:=ReceiveStatusProcessCommand;
-               Item.LogChannel.Write
-                 (Level   => Logging.LevelCommonEvent,
-                  Message => "Command Receive Status");
 
             when ReceiveStatusProcessCommand =>
+
                Item.LogChannel.Write
                  (Level => Logging.LevelCommonEvent,
                   Message => "Process Command");
@@ -169,6 +174,11 @@ package body SimControl.AdminServer is
                  (Item=> Item) then
                   Item.ReceiveStatus:=ReceiveStatusWaitForCommand;
                end if;
+
+            when ReceiveStatusInvalid =>
+
+               return;
+
          end case;
       end loop;
    exception

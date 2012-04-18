@@ -29,6 +29,19 @@ with System.WCh_Con;
 package body Basics is
    use type Ada.Containers.Hash_Type;
 
+   function TryStringToInteger
+     (String : Unbounded_String;
+      Value  : access Integer)
+      return Boolean is
+   begin
+      Value.all:=Integer'Value(To_String(String));
+      return True;
+   exception
+      when others =>
+         return False;
+   end TryStringToInteger;
+   ----------------------------------------------------------------------------
+
    function UCS4ToUTF8
      (Char : Wide_Wide_Character)
       return Unbounded_String is
@@ -45,7 +58,8 @@ package body Basics is
       end Add;
 
    begin
-      Convert(System.WCh_Cnv.UTF_32_Code(Wide_Wide_Character'Pos(Char)),System.WCh_Con.WCEM_UTF8);
+      Convert(System.WCh_Cnv.UTF_32_Code(Wide_Wide_Character'Pos(Char)),
+              System.WCh_Con.WCEM_UTF8);
       return Result;
    end UCS4ToUTF8;
    ---------------------------------------------------------------------------

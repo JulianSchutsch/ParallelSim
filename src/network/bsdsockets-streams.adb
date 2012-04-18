@@ -26,6 +26,9 @@ with Network.Streams;
 with Ada.Calendar;
 with Network.Packets;
 with Basics; use Basics;
+with Node;
+with Expressions;
+
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
@@ -392,6 +395,11 @@ package body BSDSockets.Streams is
       PortStr   := Configuration.Element(Node&".Port");
       FamilyStr := Configuration.Element(Node&".Family");
       Host      := Configuration.Element(Node&".Host");
+
+      PortStr := Expressions.Process
+        (String    => PortStr,
+         Variables => Standard.Node.Variables);
+
       Item.Port := PortID'Value(To_String(PortStr));
       if FamilyStr="IPv4" then
          Family:=AF_INET;
@@ -580,21 +588,19 @@ package body BSDSockets.Streams is
    begin
 
       -- Clear the interval 0..Item.Position to make space for new content
-      Put("ReceiveStat");
-      Put(Item.all'Address);
-      Put(Item.Position);
-      Put(Item.Amount);
-      New_Line;
       Item.Content(0..Item.Amount-Item.Position-1)
         :=Item.Content(Item.Position..Item.Amount-1);
 
       Item.Amount  := Item.Amount-Item.Position;
 
+      Put("Recv");
       BSDSockets.Recv
         (Socket => Item.SelectEntry.Socket,
          Data   => Item.Content(Item.Amount..Item.Content'Last),
          Flags  => BSDSockets.MSG_NONE,
          Read   => RecvAmount);
+      Put("//");
+      New_Line;
 
       Item.Amount := Item.Amount+RecvAmount;
       Item.Position := 0;
@@ -636,31 +642,36 @@ package body BSDSockets.Streams is
 
          NextClientItem:=ClientItem.NextClient;
 
-         OperationSuccess:=True;
 
-         if ClientItem.SelectEntry.Readable then
-            OperationSuccess:=Recv
-              (Item => ClientItem);
-         else
-            if ClientItem.ClientMode=ClientModeConnecting then
-               -- TODO : Currently a timeout of 1 second is assumed
-               --        This should become a configurable value
-               if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
-                  Next
-                    (Item=>ClientItem);
-               end if;
+         if ClientItem.ClientMode/=ClientModeConnecting then
+
+            OperationSuccess:=True;
+
+            if ClientItem.SelectEntry.Readable then
+               OperationSuccess:=Recv
+                 (Item => ClientItem);
             end if;
-         end if;
 
-         if ClientItem.SelectEntry.Writeable then
-            OperationSuccess
-              :=Send(Item => ClientItem)
-              and OperationSuccess;
-         end if;
+            if ClientItem.SelectEntry.Writeable then
+               OperationSuccess
+                 :=Send(Item => ClientItem)
+                 and OperationSuccess;
+            end if;
 
-         if not OperationSuccess then
-            Finalize
-              (Item => ClientItem);
+            if not OperationSuccess then
+               Finalize
+                 (Item => ClientItem);
+            end if;
+
+         else
+
+            -- TODO : Currently a timeout of 1 second is assumed
+            --        This should become a configurable value
+            if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
+               Next
+                 (Item=>ClientItem);
+            end if;
+
          end if;
 
          ClientItem:=NextClientItem;

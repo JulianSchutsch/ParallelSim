@@ -29,17 +29,14 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package AdminProtocol is
 
-   subtype ServerCmd_NativeType is Types.Integer32;
-   subtype ServerCmd_NetworkType is Endianess.LittleEndianInteger32;
+   subtype ServerCmd_Type is Types.Integer32;
 
-   ServerCmdMessage  : constant ServerCmd_NativeType:=0;
-   ServerCmdShutdown : constant ServerCmd_NativeType:=1;
+   ServerCmdMessage  : constant ServerCmd_Type:=0;
+   ServerCmdShutdown : constant ServerCmd_Type:=1;
 
-   subtype ServerCmd_Msg_NativeType is Types.Integer32;
-   subtype ServerCmd_Msg_NetworkType is Endianess.LittleEndianInteger32;
-
-   ServerCmd_Msg_MaxLength : constant ServerCmd_Msg_NativeType:=128;
+   ServerCmd_Msg_MaxLength : constant:=128;
 
    ServerID : constant Unbounded_String:=To_Unbounded_String("ParallelSimAdminServer");
    ClientID : constant Unbounded_String:=To_Unbounded_String("ParallelSimAdminClient");
+
 end AdminProtocol;

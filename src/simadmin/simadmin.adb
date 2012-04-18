@@ -94,6 +94,7 @@ package body SimAdmin is
                         Message => "Identification (Admin) send by the server is valid.");
                      ReceiveStatus := ReceiveStatusWaitForCommand;
                   end if;
+
                end;
             when ReceiveStatusWaitForCommand =>
                return;

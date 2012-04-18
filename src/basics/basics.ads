@@ -85,4 +85,9 @@ package Basics is
       Value2 : in out Float);
    pragma Inline(Swap);
 
+   function TryStringToInteger
+     (String : Unbounded_String;
+      Value  : access Integer)
+      return Boolean;
+
 end Basics;

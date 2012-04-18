@@ -23,23 +23,24 @@ with Logging;
 with Network.Streams;
 with Network.Packets;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 with ControlProtocol;
 
 package body SimRegion.ControlClient is
 
    type ReceiveStatus_Enum is
      (ReceiveStatusWaitForIdentification,
-      ReceiveStatusReady,
+      ReceiveStatusWaitForCommand,
       ReceiveStatusInvalid);
 
-   StreamImplementation : Network.Streams.Implementation_Type;
-   Client               : Network.Streams.Client_ClassAccess;
-   ReceiveStatus        : ReceiveStatus_Enum;
-   LogImplementation    : Logging.Implementation_Type;
-   LogContext           : Logging.Context_ClassAccess;
-   LogChannel           : Logging.Channel_ClassAccess;
-   ConnectTriesLeft     : Natural;
+   StreamImplementation  : Network.Streams.Implementation_Type;
+   Client                : Network.Streams.Client_ClassAccess;
+   ReceiveStatus         : ReceiveStatus_Enum;
+   LogImplementation     : Logging.Implementation_Type;
+   LogContext            : Logging.Context_ClassAccess;
+   LogChannel            : Logging.Channel_ClassAccess;
+   ConnectTriesLeft      : Natural;
+   CurrentCommand        : ControlProtocol.ServerCmd_Type;
 
    type ClientCallBack_Type is
      new Network.Streams.ChannelCallBack_Type with null record;
@@ -65,18 +66,17 @@ package body SimRegion.ControlClient is
    procedure OnReceive
      -- TODO: Check all warnings for reason
      (Item : in out ClientCallBack_Type) is
-      pragma Warnings(Off,Item);
+
+      pragma Unreferenced(Item);
 
       PrevPosition : Integer;
       pragma Warnings(Off,PrevPosition);
 
    begin
-      Put("RECV..a");
       loop
          PrevPosition := Client.Position;
          case ReceiveStatus is
             when ReceiveStatusWaitForIdentification =>
-               Put("XXX");
                declare
                   Identification : Unbounded_String;
                begin
@@ -86,17 +86,21 @@ package body SimRegion.ControlClient is
                        (Level   => Logging.LevelInvalid,
                         Message => "Identification (Control) send by the server is invalid");
                      ReceiveStatus := ReceiveStatusInvalid;
+                     Client.Disconnect;
                      return;
                   else
                      LogChannel.Write
                        (Level   => Logging.LevelEvent,
                         Message => "Identification (Control) send by the server is valid");
-                     ReceiveStatus:=ReceiveStatusReady;
+                     ReceiveStatus:=ReceiveStatusWaitForCommand;
                   end if;
                end;
-               -- NOT YET VALID
-               ReceiveStatus := ReceiveStatusReady;
-            when ReceiveStatusReady =>
+            when ReceiveStatusWaitForCommand =>
+               CurrentCommand:=Client.Read;
+               LogChannel.Write
+                 (Level => Logging.LevelCommonEvent,
+                  Message => "Received Command :"&
+                  ControlProtocol.ServerCmd_Type'Image(CurrentCommand));
                return;
             when ReceiveStatusInvalid =>
                return;
