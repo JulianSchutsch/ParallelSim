@@ -54,7 +54,7 @@ package body Config is
    ---------------------------------------------------------------------------
 
    procedure SaveToFile
-     (Item     : in out Config_Type;
+     (Item     : in Config_Type;
       FileName : String) is
 
       use type StringStringMap.Cursor;

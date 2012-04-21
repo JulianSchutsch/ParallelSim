@@ -54,7 +54,7 @@ package Config is
    type Config_Access is access Config_Type;
 
    procedure SaveToFile
-     (Item     : in out Config_Type;
+     (Item     : in Config_Type;
       FileName : String);
 
    procedure LoadFromFile

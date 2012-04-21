@@ -22,21 +22,23 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with ProcessLoop;
 
-with SimRegion.ControlClient;
+--with SimRegion.ControlClient;
 
 package body SimRegion is
 
    procedure Initialize
      (Configuration : Config.Config_Type) is
    begin
-      SimRegion.ControlClient.Initialize
-        (Configuration);
+--      SimRegion.ControlClient.Initialize
+--        (Configuration);
+      null;
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      SimRegion.ControlClient.Finalize;
+      --      SimRegion.ControlClient.Finalize;
+      null;
    end Finalize;
    ---------------------------------------------------------------------------
 

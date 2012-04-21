@@ -24,7 +24,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with ProcessLoop;
 
 with SimControl.AdminServer;
-with SimControl.ControlServer;
+--with SimControl.ControlServer;
 
 package body SimControl is
 
@@ -34,13 +34,13 @@ package body SimControl is
       Terminated:=False;
       SimControl.AdminServer.Initialize
         (Configuration => Configuration);
-      SimControl.ControlServer.Initialize
-        (Configuration => Configuration);
+--      SimControl.ControlServer.Initialize
+--        (Configuration => Configuration);
    end Initialize;
 
    procedure Finalize is
    begin
-      SimControl.ControlServer.Finalize;
+--      SimControl.ControlServer.Finalize;
       SimControl.AdminServer.Finalize;
       Terminated:=True;
    end Finalize;

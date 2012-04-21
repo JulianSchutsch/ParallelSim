@@ -25,17 +25,16 @@
 --   Executing programs without attaching them to the executing program is
 --   not specified in the Ada standard library.
 
+pragma Ada_2005;
+
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+
 package Processes is
 
    FailedExecute : Exception;
 
-   Suffix : Unbounded_String;
-
    procedure Execute
-     (ProgramName : String;
-      Arguments   : String);
-
-   procedure Initialize;
+     (ProgramName : Unbounded_String;
+      Arguments   : Unbounded_String);
 
 end Processes;

@@ -24,7 +24,6 @@
 pragma Ada_2005;
 
 with Types;
-with Endianess;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package AdminProtocol is

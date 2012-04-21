@@ -1,37 +1,42 @@
 with Config;
 
 with BSDSockets.Streams;
-with Network.Processes.Local;
 
 with ProgramArguments;
 with SimRegion;
-with Processes;
+with DistributedSystems;
+with DistributedSystems.MPI;
 
 with ExceptionOutput;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Logging.StdOut;
 
+with Ada.Text_IO; use Ada.Text_IO;
+
 procedure simreg is
 
    Configuration : Config.Config_Type;
-   ProcessesImplementation : Network.Processes.Implementation_Type;
+   DistributedSystemsImpl : DistributedSystems.Implementation_Type;
 
 begin
-   Processes.Initialize;
+   Put("This is SIMREG");
+   New_Line;
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
-   Network.Processes.Local.Register;
    Logging.StdOut.Register;
+   DistributedSystems.MPI.Register;
 
    ProgramArguments.Debug;
 
-   ProcessesImplementation
-     :=Network.Processes.Implementations.Find
+   DistributedSystemsImpl
+     :=DistributedSystems.Implementations.Find
        (Configuration => ProgramArguments.Configuration,
         Node          => To_Unbounded_String("Arguments"));
-   ProcessesImplementation.LoadConfig
-     (Configuration => Configuration);
+
+   DistributedSystemsImpl.InitializeNode
+     (Configuration => Configuration,
+      Group         => 0); -- TODO: Not yet valid GroupID
 
    Config.Debug
      (Item => Configuration);
@@ -44,6 +49,11 @@ begin
    end loop;
 
    SimRegion.Finalize;
+
+   DistributedSystemsImpl.FinalizeNode.all;
+
+   DistributedSystems.MPI.Unregister;
+
 exception
    when E:others =>
       ExceptionOutput.Put(E);

@@ -25,6 +25,25 @@ pragma Ada_2005;
 
 package Win32.Kernel32 is
 
+   function CreateProcess
+     (lpApplicationName    : Interfaces.C.Strings.chars_ptr;
+      lpCommandLine        : Interfaces.C.Strings.chars_ptr;
+      lpProcessAttributes  : access SecurityAttributes:=null;
+      lpThreadAttributes   : access SecurityAttributes:=null;
+      bInheritHandles      : Interfaces.C.int;
+      dwCreationFlags      : Interfaces.Unsigned_32;
+      lpEnvironment        : System.Address;
+      lpCurrentDirectory   : Interfaces.C.Strings.chars_ptr;
+      lpStartupInfo        : access StartupInfo:=null;
+      lpProcessInformation : access ProcessInformation)
+      return Interfaces.C.int;
+   pragma Import(StdCall,CreateProcess,"CreateProcessA");
+
+   function CloseHandle
+     (hObject : Interfaces.C.ptrdiff_t)
+      return Interfaces.C.int;
+   pragma Import(Stdcall,CloseHandle,"CloseHandle");
+
    function GetModuleHandle
      (lpModuleName : LPCTSTR_Type)
       return HInstance_Type;

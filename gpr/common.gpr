@@ -7,6 +7,7 @@ abstract project Common is
    OS        : OS_Type        := external("OS","Linux");
    Backtrace : Backtrace_Type := external("Backtrace","Off");
    Profiling : Profiling_Type := external("Profiling","Off");
+   LD_LIBRARY_PATH := external("LD_LIBRARY_PATH",".");
 
 --   Dir := Common'Project_Dir & "/";
    Dir := "";
@@ -24,7 +25,8 @@ abstract project Common is
       Dir & "../src/gui",
       Dir & "../src/opengl",
       Dir & "../src/gui/themes/yellowblue",
-      Dir & "../src/canvas");
+      Dir & "../src/canvas",
+      Dir & "../src/distributedsystems");
 
    Object_Directory:=Dir & "../build";
 
@@ -42,7 +44,7 @@ abstract project Common is
       "-O3"
      );
 
-   Linker_Switches:=("-lgmem");
+   Linker_Switches:=("-lgmem","-lmpi");
 
    case Profiling is
 
@@ -68,6 +70,11 @@ abstract project Common is
 
       when "Windows_NT" =>
 
+         -- LD_LIBRARY_PATH is not available to gcc on windows
+         -- This hack makes it available by passing it manually
+		 -- The default value is set to "." to avoid warnings/errors from gcc
+         Linker_Switches:=Linker_Switches & ("-L"&LD_LIBRARY_PATH);
+
          Source_Directories:=Source_Directories &
            (Dir & "../src/network/win32",
             Dir & "../src/basics/win32",
@@ -80,6 +87,7 @@ abstract project Common is
             "-lkernel32",
             "-luser32",
             "-lgdi32",
+            "-lshell32",
             "-lopengl32",
             "-lfreetype");
 

@@ -124,6 +124,8 @@ package Win32 is
    IDI_EXCLAMATION : constant:=32515;
    IDC_ARROW   : constant:=32512;
 
+   SW_SHOWNOACTIVATE : constant:=8;
+
    type WNDPROC_Access is
      access function
        (hWnd    : HWND_Type;
@@ -213,6 +215,45 @@ package Win32 is
          dwDamageMask    : DWORD_Type := 0;
       end record;
    pragma Convention(C,PIXELFORMATDESCRIPTOR_Type);
+
+   type SecurityAttributes is
+      record
+         nLength              : Interfaces.Unsigned_32;
+         lpSecurityDescriptor : System.Address;
+         bInheritedHandle     : Boolean;
+      end record;
+   pragma Convention(C,SecurityAttributes);
+
+   type StartupInfo is
+      record
+         cb : Interfaces.Unsigned_32;
+         lpReserved      : Interfaces.C.Strings.chars_ptr:=Interfaces.C.Strings.Null_Ptr;
+         lpDesktop       : Interfaces.C.Strings.chars_ptr:=Interfaces.C.Strings.Null_Ptr;
+         lpTitle         : Interfaces.C.Strings.chars_ptr:=Interfaces.C.Strings.Null_Ptr;
+         dwX             : Interfaces.Unsigned_32:=0;
+         dwY             : Interfaces.Unsigned_32:=0;
+         dwXSize         : Interfaces.Unsigned_32:=0;
+         dwYSize         : Interfaces.Unsigned_32:=0;
+         dwXCountChars   : Interfaces.Unsigned_32:=0;
+         dwYCountChars   : Interfaces.Unsigned_32:=0;
+         dwFillAttribute : Interfaces.Unsigned_32:=0;
+         dwFlags         : Interfaces.Unsigned_32:=0;
+         wShowWindow     : Interfaces.Unsigned_16:=0;
+         cbReserved2     : Interfaces.Unsigned_16:=0;
+         hStdInput       : Interfaces.C.ptrdiff_t:=0;
+         hStdOutput      : Interfaces.C.ptrdiff_t:=0;
+         hStderr         : Interfaces.C.ptrdiff_t:=0;
+      end record;
+   pragma Convention(C,StartupInfo);
+
+   type ProcessInformation is
+      record
+         hProcess    : Interfaces.C.ptrdiff_t:=0;
+         hThread     : Interfaces.C.ptrdiff_t:=0;
+         dwProcessID : Interfaces.Unsigned_32:=0;
+         dwThreadID  : Interfaces.Unsigned_32:=0;
+      end record;
+   pragma Convention(C,ProcessInformation);
 
    function GetLastError
      return DWORD_TYPE;

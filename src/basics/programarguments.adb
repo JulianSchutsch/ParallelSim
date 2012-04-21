@@ -52,29 +52,31 @@ package body ProgramArguments is
 
    begin
 
-      Put("Processing Arguments");
-      New_Line;
       for i in 1..Ada.Command_Line.Argument_Count loop
          Argument:=To_Unbounded_String
            (Ada.Command_Line.Argument(i));
-         Put("in");
-         Put(To_String(Argument));
-         New_Line;
          if Element(Argument,1)='-' then
             EqualPos:=Index
               (Source  => Argument,
                Pattern => "=",
                From    => 1);
             if EqualPos/=0 then
-               Configuration.Insert
-                 ("Arguments."&Unbounded_Slice
-                    (Source => Argument,
-                     Low    => 2,
-                     High   => EqualPos-1),
-                  Unbounded_Slice
-                    (Source => Argument,
-                     Low    => EqualPos+1,
-                     High   => Length(Argument)));
+               -- Exceptions are ignored to avoid trouble with
+               -- garbage arguments (calling with mpiexec for example)
+               begin
+                  Configuration.Insert
+                    ("Arguments."&Unbounded_Slice
+                       (Source => Argument,
+                        Low    => 2,
+                        High   => EqualPos-1),
+                     Unbounded_Slice
+                       (Source => Argument,
+                        Low    => EqualPos+1,
+                        High   => Length(Argument)));
+               exception
+                  when Others =>
+                     null;
+               end;
             else
                Configuration.Insert
                  ("Arguments."&Unbounded_Slice
@@ -84,12 +86,11 @@ package body ProgramArguments is
                   To_Unbounded_String(""));
             end if;
          else
-            New_Line;
             Parameters.Append
               (New_Item => Argument);
          end if;
-         New_Line;
       end loop;
+
    end Initialize;
    ---------------------------------------------------------------------------
 
