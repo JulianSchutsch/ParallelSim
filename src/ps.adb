@@ -5,6 +5,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with BSDSockets.Streams;
 with DistributedSystems.MPI;
 with ProgramArguments;
+with Ada.Directories;
 
 with Config;
 
@@ -83,9 +84,9 @@ begin
    ProcessesImplementation.SpawnNodes
      (Configuration => Configuration,
       Executables =>
-        ((Executable => To_Unbounded_String("simctr"),
+        ((Executable => To_Unbounded_String(Ada.Directories.Full_Name("simctr")),
           Amount     => 1),
-         (Executable => To_Unbounded_String("simreg"),
+         (Executable => To_Unbounded_String(Ada.Directories.Full_name("simreg")),
           Amount     => 1)));
    Put("Done");
    New_Line;

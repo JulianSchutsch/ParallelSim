@@ -19,54 +19,50 @@
 with Interfaces.C;
 with Interfaces.C.Strings;
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Processes is
 
    -- WARNING: Return value is assumed to be a c int, this is true for
    --          GNU/linux.
-   function fork return Interfaces.C.int;
-   pragma Import(C,fork,"fork");
+--   function fork return Interfaces.C.int;
+--   pragma Import(C,fork,"fork");
 
-   function Execve
-     (FileName  : Interfaces.C.Strings.chars_ptr;
-      Arguments : access Interfaces.C.Strings.chars_ptr;
-      Envp      : access Interfaces.C.Strings.chars_ptr)
+--   function Execve
+--     (FileName  : Interfaces.C.Strings.chars_ptr;
+--      Arguments : access Interfaces.C.Strings.chars_ptr;
+--      Envp      : access Interfaces.C.Strings.chars_ptr)
+--      return Interfaces.C.int;
+--   pragma Import(C,Execve,"execve");
+
+   function System
+     (command : Interfaces.C.Strings.chars_ptr)
       return Interfaces.C.int;
-   pragma Import(C,Execve,"execve");
+   pragma Import(C,System,"system");
+   ---------------------------------------------------------------------------
 
    procedure Execute
-     (ProgramName : String;
-      Arguments   : String) is
+     (ProgramName : Unbounded_String;
+      Arguments   : Unbounded_String) is
 
       use type Interfaces.C.int;
 
-      CProgramName : Interfaces.C.Strings.chars_ptr;
-      CArgument    : aliased array (0..2) of aliased Interfaces.C.Strings.chars_ptr;
-      CEnvp        : aliased array (0..0) of aliased Interfaces.C.Strings.chars_ptr;
+      CArgument    : aliased Interfaces.C.Strings.chars_ptr;
 
       Result : Interfaces.C.int;
 
    begin
-      CProgramName := Interfaces.C.Strings.New_String(ProgramName);
-      CArgument(0) := CProgramName;
-      CArgument(1) := Interfaces.C.Strings.New_String(Arguments);
-      CArgument(2) := Interfaces.C.Strings.Null_Ptr;
-      CEnvp(0)     := Interfaces.C.Strings.Null_Ptr;
-      Put(ProgramName);
-      if fork=0 then
-         Result:=Execve
-           (FileName  => CProgramName,
-            Arguments => CArgument(0)'Access,
-            Envp      => CEnvp(0)'Access);
-         Put("Returned with some error");
-         Put(Integer(Result));
+      Put("PROC:");
+      Put(To_String(ProgramName & " " & Arguments));
+      New_Line;
+      CArgument := Interfaces.C.Strings.New_String
+        (To_String(ProgramName & " " & Arguments));
+      Result:=System(CArgument);
+      if Result=-1 then
+         raise FailedExecute;
       end if;
+      Interfaces.C.Strings.Free(CArgument);
    end Execute;
-
-   procedure Initialize is
-   begin
-      null;
-   end Initialize;
+   ---------------------------------------------------------------------------
 
 end Processes;

@@ -39,7 +39,11 @@ package body DistributedSystems.MPI is
          Arguments:=Arguments& "-n"
            &Positive'Image(Executables(i).Amount)&" "
            &Executables(i).Executable
-           &" -DistributedSystemsImplementation=MPI : ";
+           &" -DistributedSystemsImplementation=MPI";
+         if i/=Executables'Last then
+            Arguments:=Arguments&" : ";
+         end if;
+
       end loop;
       Put("Start mpiexec with ");
       Put(To_String(Arguments));
