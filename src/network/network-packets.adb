@@ -27,6 +27,8 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Network.Packets is
 
+   PacketSizeIncrease : constant:=1024;
+
    procedure Debug
      (Packet : access Packet_Type) is
 
@@ -55,26 +57,33 @@ package body Network.Packets is
      (Packet : access Packet_Type;
       Size   : Integer) is
       use type  ByteOperations.ByteArray_Access;
+
+      NewSize : Integer;
+
    begin
+      NewSize:=((Packet.Position+Size)/PacketSizeIncrease)*PacketSizeIncrease;
+      if (Packet.Position+Size) mod PacketSizeIncrease/=0 then
+         NewSize:=NewSize+PacketSizeIncrease;
+      end if;
+
+      -- Allocate initial memory
       if (Packet.Content=null) then
-         Packet.Content:=new ByteOperations.ByteArray_Type(0..1024);
+         Packet.Content:=new ByteOperations.ByteArray_Type(0..NewSize-1);
          return;
       end if;
+
+      -- Allocate additional memory
       if (Packet.Position+Size>Packet.Content'Last) then
          declare
             NewContent : ByteOperations.ByteArray_Access;
-            NewLast    : Integer;
          begin
-            -- TODO: Simplify loop to single statement
-            while Packet.Position+Size>Packet.Content'Last loop
-               NewLast:=Packet.Content'Last+1024;
-            end loop;
-            NewContent:=new ByteOperations.ByteArray_Type(0..NewLast);
+            NewContent:=new ByteOperations.ByteArray_Type(0..NewSize-1);
             NewContent(0..Packet.Content'Last):=Packet.Content.all;
             ByteOperations.Free(Packet.Content);
             Packet.Content:=NewContent;
          end;
       end if;
+
    end AddPacketSize;
    ---------------------------------------------------------------------------
 
