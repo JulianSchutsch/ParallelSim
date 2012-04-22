@@ -90,4 +90,8 @@ package Basics is
       Value  : access Integer)
       return Boolean;
 
+   function U
+     (Source : String)
+      return Unbounded_String renames To_Unbounded_String;
+
 end Basics;

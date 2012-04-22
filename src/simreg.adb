@@ -11,6 +11,7 @@ with ExceptionOutput;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Logging.StdOut;
+with Logging.Client;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
@@ -20,11 +21,10 @@ procedure simreg is
    DistributedSystemsImpl : DistributedSystems.Implementation_Type;
 
 begin
-   Put("This is SIMREG");
-   New_Line;
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
    Logging.StdOut.Register;
+   Logging.Client.Register;
    DistributedSystems.MPI.Register;
 
    ProgramArguments.Debug;
@@ -38,9 +38,6 @@ begin
      (Configuration => Configuration,
       Group         => 0); -- TODO: Not yet valid GroupID
 
-   Config.Debug
-     (Item => Configuration);
-
    SimRegion.Initialize
      (Configuration => Configuration);
 
@@ -50,6 +47,7 @@ begin
 
    SimRegion.Finalize;
 
+   Logging.Client.Unregister;
    DistributedSystemsImpl.FinalizeNode.all;
 
    DistributedSystems.MPI.Unregister;

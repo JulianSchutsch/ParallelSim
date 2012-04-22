@@ -26,7 +26,7 @@ with ProcessLoop;
 with Logging;
 with AdminProtocol;
 
-package body SimAdmin is
+package body SimClient.AdminClient is
 
    type ReceiveStatus_Enum is
      (ReceiveStatusWaitForIdentification,
@@ -271,4 +271,4 @@ package body SimAdmin is
    end Process;
    ---------------------------------------------------------------------------
 
-end SimAdmin;
+end SimClient.AdminClient;

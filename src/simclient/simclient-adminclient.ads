@@ -18,26 +18,35 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   3.Feb 2012 Julian Schutsch
+--   4.Mar 2012 Julian Schutsch
 --     - Original version
 
--- Reasons for implementation
---   A barrier is a synchronisation method where each participating client
---   stops at a certain point to wait for all other clients to arrive at
---   the same point.
---   For very large numbers of clients, these barriers become notoriously
---   expensive in terms of network bandwidth costs.
---   This modul provides an abstract tagged type for easy replacement
---   of barrier implementations.
+pragma Ada_2005;
 
-package Network.Barrier is
-   type BarrierType is abstract tagged null record;
+with Config;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
-   procedure SignalReady
-     (Barrier : in out BarrierType) is abstract;
+package SimClient.AdminClient is
 
-   function AllReady
-     (Barrier : in BarrierType)
-      return Boolean is abstract;
+   NotConnected : Exception;
+   FailedSend   : Exception;
 
-end Network.Barrier;
+   function WaitForConnection
+     return Boolean;
+
+   procedure WaitForCompletion;
+   procedure WaitForDisconnect;
+
+   procedure SendMessage
+     (Message : Unbounded_String);
+   procedure SendShutdown;
+
+   procedure Initialize
+     (Configuration : Config.Config_Type);
+
+   procedure Finalize;
+
+   function Process
+     return Boolean;
+
+end SimClient.AdminClient;

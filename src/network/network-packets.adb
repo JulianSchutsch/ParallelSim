@@ -27,6 +27,30 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Network.Packets is
 
+   procedure Debug
+     (Packet : access Packet_Type) is
+
+      ElementCount : Integer:=0;
+
+   begin
+      Put("Amount:");
+      Put(Packet.Amount);
+      New_Line;
+      for i in Packet.Content'First..Packet.Amount-1 loop
+         Put(Integer(Packet.Content(i)),Base => 16);
+         ElementCount:=ElementCount+1;
+         if ElementCount mod 6=0 then
+            New_Line;
+         else
+            Put(" ");
+         end if;
+      end loop;
+      if ElementCount mod 6/=0 then
+         New_Line;
+      end if;
+   end Debug;
+   ---------------------------------------------------------------------------
+
    procedure AddPacketSize
      (Packet : access Packet_Type;
       Size   : Integer) is
@@ -72,6 +96,7 @@ package body Network.Packets is
          Packet.Position := Packet.Position+1;
          Pnt             := Pnt+1;
       end loop;
+      Packet.Amount:=Packet.Position;
 
    end Write;
    ---------------------------------------------------------------------------
@@ -86,6 +111,10 @@ package body Network.Packets is
       Pnt : ByteOperations.Byte_Access:=Pointer;
 
    begin
+
+--      Put("Read :");
+--      Put(Size);
+--      new_Line;
 
       if Packet.Position+Size>Packet.Amount then
          raise PacketOutOfData;
@@ -125,6 +154,7 @@ package body Network.Packets is
          Packet.Content(Packet.Position) := Character'Pos(Element(Item,i));
          Packet.Position                 := Packet.Position+1;
       end loop;
+      Packet.Amount:=Packet.Position;
 
    end Write;
    ---------------------------------------------------------------------------
@@ -162,9 +192,9 @@ package body Network.Packets is
          raise PacketOutOfData;
       end if;
 
-      Put("Read Unbounded String");
-      Put(Integer(Length));
-      New_Line;
+--      Put("Read Unbounded String");
+--      Put(Integer(Length));
+--      New_Line;
 
       -- TODO: Add maximum length check
       -- TODO: Reduce amount of reallocation in this loop!

@@ -41,6 +41,15 @@ package Logging is
       LevelRareEvent,
       LevelCommonEvent);
 
+   for Level_Enum use
+     (LevelException => 0,
+      LevelFailure => 1,
+      LevelInvalid => 2,
+      LevelDebug => 3,
+      LevelEvent => 4,
+      LevelRareEvent => 5,
+      LevelCommonEvent => 6);
+
    type Channel_Type is abstract tagged limited null record;
    type Channel_ClassAccess is access all Channel_Type'Class;
 
@@ -65,6 +74,7 @@ package Logging is
    type Context_Constructor is
      access function
        (Configuration : Config.Config_Type;
+        ConfigNode    : Unbounded_String;
         ModuleName    : Unbounded_String)
         return Context_ClassAccess;
 

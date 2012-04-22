@@ -103,16 +103,16 @@ package Network.Streams is
          null;
       end record;
 
-   procedure OnReceive
+   procedure Receive
      (Item   : in out ChannelCallBack_Type) is null;
 
-   procedure OnConnect
+   procedure Connect
      (Item : in out ChannelCallBack_Type) is null;
 
-   procedure OnDisconnect
+   procedure Disconnect
      (Item : in out ChannelCallBack_Type) is null;
 
-   procedure OnFailedConnect
+   procedure FailedConnect
      (Item  : in out ChannelCallBack_Type;
       Retry : in out Boolean) is null;
    ---------------------------------------------------------------------------
@@ -137,7 +137,7 @@ package Network.Streams is
 
    type ServerCallBack_Type is tagged null record;
 
-   procedure OnAccept
+   procedure AAccept
      (Item    : in out ServerCallBack_Type;
       Channel : Channel_ClassAccess) is null;
    ---------------------------------------------------------------------------

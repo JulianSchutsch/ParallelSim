@@ -18,15 +18,29 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   3.Feb 2012 Julian Schutsch
+--   21.Apr 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-package BSDSockets.Streams is
+with Config;
+with Basics; use Basics;
 
-   procedure Register;
+package Logging.Server is
 
-   procedure Unregister;
+   type LogEvent_Access is
+     access procedure
+       (Source  : StringStringMap.Map;
+        Level   : Level_Enum;
+        Module  : Unbounded_String;
+        Channel : Unbounded_String;
+        Message : Unbounded_String);
 
-end BSDSockets.Streams;
+   OnLogEvent : Logevent_Access:=null;
+
+   procedure Initialize
+     (Configuration : Config.Config_Type);
+
+   procedure Finalize;
+
+end Logging.Server;

@@ -20,8 +20,10 @@
 pragma Ada_2005;
 
 with Processes;
-with MPI;
+with MPI; use MPI;
 with Ada.Text_IO; use Ada.Text_IO;
+with Basics; use Basics;
+with Interfaces.C;
 
 package body DistributedSystems.MPI is
 
@@ -59,20 +61,51 @@ package body DistributedSystems.MPI is
      (Configuration : out Config.Config_Type;
       Group         : Group_Type) is
       pragma Unreferenced(Group);
+
+      use type Interfaces.C.int;
+
+      WorldRank : aliased Interfaces.C.int;
+      WorldSize : aliased Interfaces.C.int;
+      Result    : Interfaces.C.int;
+
    begin
 
       Configuration.LoadFromFile
         (FileName => "_MyConfig");
-      Standard.MPI.Init
+      MPI_Init
         (Argc => null,
          Args => null);
+
+      Result:=MPI_Comm_Rank
+        (comm => MPI_COMM_WORLD,
+         rank => WorldRank'Access);
+
+      if Result/=MPI_SUCCESS then
+         raise FailedNodeInitialization
+           with "Call to MPI_Comm_Rank failed with "
+             &ReturnValueToString(Result);
+      end if;
+
+      Result:=MPI_Comm_Size
+        (comm => MPI_COMM_WORLD,
+         size => WorldSize'Access);
+
+      if Result/=MPI_Success then
+         raise FailedNodeInitialization
+           with "Call to MPI_COMM_Size failed with "
+             &ReturnValueToString(Result);
+      end if;
+
+      MyGlobalID    := Node_Type(WorldRank);
+      FirstGlobalID := 0;
+      LastGlobalID  := Node_Type(WorldSize-1);
 
    end InitializeNode;
    ---------------------------------------------------------------------------
 
    procedure FinalizeNode is
    begin
-      Standard.MPI.Finalize;
+      MPI_Finalize;
    end FinalizeNode;
    ---------------------------------------------------------------------------
 
@@ -86,7 +119,7 @@ package body DistributedSystems.MPI is
 
       Implementations.Register
         (Implementation => Implementation,
-         Identifier     => To_Unbounded_String("MPI"));
+         Identifier     => U("MPI"));
 
    end Register;
    ---------------------------------------------------------------------------
@@ -95,7 +128,7 @@ package body DistributedSystems.MPI is
    begin
 
       Implementations.Unregister
-        (Identifier => To_Unbounded_String("MPI"));
+        (Identifier => U("MPI"));
 
    end Unregister;
    ---------------------------------------------------------------------------

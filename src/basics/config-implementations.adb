@@ -20,6 +20,7 @@
 pragma Ada_2005;
 
 with Ada.Containers.Doubly_Linked_Lists;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Config.Implementations is
 
@@ -36,7 +37,7 @@ package body Config.Implementations is
 
    List : List_Pack.List;
 
-   procedure UnRegister
+   procedure Unregister
      (Identifier : Unbounded_String) is
 
       use type List_Pack.Cursor;
@@ -75,6 +76,27 @@ package body Config.Implementations is
 
    end Register;
    ---------------------------------------------------------------------------
+
+   procedure Debug is
+
+      use type List_Pack.Cursor;
+
+      Cursor             : List_Pack.Cursor;
+      ImplementationDesc : ImplementationDesc_Type;
+
+   begin
+
+      Cursor:=List.First;
+      while Cursor/=List_Pack.No_Element loop
+         ImplementationDesc:=List_Pack.Element(Cursor);
+         Put(To_String(ImplementationDesc.Identifier));
+         New_Line;
+         Cursor:=List_Pack.Next(Cursor);
+      end loop;
+
+   end Debug;
+   ---------------------------------------------------------------------------
+
    function Find
      (ImplementationName : Unbounded_String)
       return Implementation_Type is
@@ -85,6 +107,7 @@ package body Config.Implementations is
       ImplementationDesc : ImplementationDesc_Type;
 
    begin
+
       Cursor:=List.First;
       while Cursor/=List_Pack.No_Element loop
          ImplementationDesc:=List_Pack.Element(Cursor);
@@ -94,7 +117,9 @@ package body Config.Implementations is
          Cursor :=List_Pack.Next(Cursor);
       end loop;
 
-      raise ImplementationNotFound;
+      raise ImplementationNotFound
+        with To_String(ImplementationName);
+
    end Find;
    ---------------------------------------------------------------------------
 

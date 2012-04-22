@@ -58,6 +58,9 @@ package Network.Packets is
      (Packet : access Packet_Type)
       return Types.Integer32;
 
+   procedure Debug
+     (Packet : access Packet_Type);
+
    procedure Free
      (Packet : access Packet_Type);
 

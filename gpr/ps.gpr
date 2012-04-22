@@ -7,7 +7,7 @@ project Ps is
    type Backtrace_Type is
       ("On", "Off");
    for Exec_Dir use Common.Exec_Directory;
-   for Main use ("ps.adb", "simctr.adb", "simreg.adb", "simdown.adb", "client");
+   for Main use ("ps.adb", "simctr.adb", "simreg.adb", "client","logserver");
    for Languages use Common.Languagesused;
    Backtrace : Backtrace_Type := external ("Backtrace","Off");
    OS : Os_Type := external ("OS","Linux");

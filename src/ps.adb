@@ -8,8 +8,10 @@ with ProgramArguments;
 with Ada.Directories;
 
 with Config;
+with Basics; use Basics;
 
 with Logging.StdOut;
+with Logging.Client;
 
 with ExceptionOutput;
 
@@ -30,46 +32,60 @@ begin
    BSDSockets.Streams.Register;
    DistributedSystems.MPI.Register;
    Logging.StdOut.Register;
+   Logging.Client.Register;
 
    Config.Insert
      (Container => Configuration,
-      Key       => To_Unbounded_String("Admin.Network.StreamImplementation"),
-      New_Item  => To_Unbounded_String("BSDSockets.Stream"));
+      Key       => U("Admin.Network.StreamImplementation"),
+      New_Item  => U("BSDSockets"));
 
    Config.Insert
      (Container => Configuration,
-      Key       => To_Unbounded_String("Admin.Server.Network.Family"),
-      New_Item  => To_Unbounded_String(Family));
+      Key       => U("Admin.Server.Network.Family"),
+      New_Item  => U(Family));
 
    Config.Insert
      (Container => Configuration,
-      Key       => To_Unbounded_String("Admin.Server.Network.Host"),
-      New_Item  => To_Unbounded_String(BindHost));
+      Key       => U("Admin.Server.Network.Host"),
+      New_Item  => U(BindHost));
 
    Config.Insert
      (Container => Configuration,
-      Key       => To_Unbounded_String("Admin.Server.Network.Port"),
-      New_Item  => To_Unbounded_String(AdminServerPort));
+      Key       => U("Admin.Server.Network.Port"),
+      New_Item  => U(AdminServerPort));
 
    Config.Insert
      (Container => Configuration,
-      Key       => To_Unbounded_String("Admin.Client.Network.Family"),
-      New_Item  => To_Unbounded_String(Family));
+      Key       => U("Admin.Client.Network.Family"),
+      New_Item  => U("Family"));
 
    Config.Insert
      (Container => Configuration,
-      Key       => To_Unbounded_String("Admin.Client.Network.Host"),
-      New_Item  => To_Unbounded_String(RemoteHost));
+      Key       => U("Admin.Client.Network.Host"),
+      New_Item  => U(RemoteHost));
 
    Config.Insert
      (Container => Configuration,
-      Key       => To_Unbounded_String("Admin.Client.Network.Port"),
-      New_Item  => To_Unbounded_String(AdminServerPort));
+      Key       => U("Admin.Client.Network.Port"),
+      New_Item  => U(AdminServerPort));
 
    Config.Insert
      (Container => Configuration,
-      Key       => To_Unbounded_String("Logging.Implementation"),
-      New_Item  => To_Unbounded_String("StdOut"));
+      Key       => U("Logging.Implementation"),
+      New_Item  => U("Network"));
+
+   Configuration.Insert
+     (Key      => U("Logging.Network.StreamImplementation"),
+      New_Item => U("BSDSockets"));
+   Configuration.Insert
+     (Key      => U("Logging.Client.Network.Family"),
+      New_Item => U("IPv6"));
+   Configuration.Insert
+     (Key      => U("Logging.Client.Network.Host"),
+      New_Item => U("::1"));
+   Configuration.Insert
+     (Key      => U("Logging.Client.Network.Port"),
+      New_Item => U("20000"));
 
    ProcessesImplementation:=DistributedSystems.Implementations.Find
      (ImplementationName => To_Unbounded_String("MPI"));
@@ -91,6 +107,7 @@ begin
    Put("Done");
    New_Line;
 
+   Logging.Client.Unregister;
    DistributedSystems.MPI.Unregister;
 
 exception

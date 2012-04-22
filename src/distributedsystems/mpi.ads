@@ -33,26 +33,31 @@ package MPI is
    type Group_Type is new Interfaces.C.int;
    type Op_Type is new Interfaces.C.int;
 
-   COMM_WORLD : constant:=MPIConstants.MPI_COMM_WORLD;
+   MPI_COMM_WORLD : constant:=MPIConstants.MPI_COMM_WORLD;
+   MPI_SUCCESS    : constant:=MPIConstants.MPI_SUCCESS;
 
-   procedure Init
+   procedure MPI_Init
      (Argc : access Interfaces.C.int;
       Args : access Interfaces.C.Strings.chars_ptr);
-   pragma Import(C,Init,"MPI_Init");
+   pragma Import(C,MPI_Init,"MPI_Init");
 
-   procedure Finalize;
-   pragma Import(C,Finalize,"MPI_Finalize");
+   procedure MPI_Finalize;
+   pragma Import(C,MPI_Finalize,"MPI_Finalize");
 
-   function Comm_Size
+   function MPI_Comm_Size
      (comm : Comm_Type;
       size : access Interfaces.C.int)
       return Interfaces.C.int;
-   pragma Import(C,Comm_Size,"MPI_Comm_Size");
+   pragma Import(C,MPI_Comm_Size,"MPI_Comm_size");
 
-   function Comm_Rank
+   function MPI_Comm_Rank
      (comm : Comm_Type;
       rank : access Interfaces.C.int)
       return Interfaces.C.int;
-   pragma Import(C,Comm_Rank,"MPI_Comm_Rank");
+   pragma Import(C,MPI_Comm_Rank,"MPI_Comm_rank");
+
+   function ReturnValueToString
+     (ReturnValue : Interfaces.C.int)
+      return String;
 
 end MPI;

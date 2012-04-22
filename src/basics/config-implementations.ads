@@ -50,7 +50,7 @@ package Config.Implementations is
      (Identifier     : Unbounded_String;
       Implementation : Implementation_Type);
 
-   procedure UnRegister
+   procedure Unregister
      (Identifier : Unbounded_String);
 
    -- Find selects an identifier from the Configuration using ModuleName and
@@ -65,6 +65,6 @@ package Config.Implementations is
      (ImplementationName : Unbounded_String)
       return Implementation_Type;
 
-   -- TODO : Add Listing function (Debug)
+   procedure Debug;
 
 end Config.Implementations;

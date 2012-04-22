@@ -25,6 +25,7 @@ pragma Ada_2005;
 
 with Types;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Basics; use Basics;
 
 package AdminProtocol is
 
@@ -35,7 +36,7 @@ package AdminProtocol is
 
    ServerCmd_Msg_MaxLength : constant:=128;
 
-   ServerID : constant Unbounded_String:=To_Unbounded_String("ParallelSimAdminServer");
-   ClientID : constant Unbounded_String:=To_Unbounded_String("ParallelSimAdminClient");
+   ServerID : constant Unbounded_String:=U("ParallelSimAdminServer");
+   ClientID : constant Unbounded_String:=U("ParallelSimAdminClient");
 
 end AdminProtocol;

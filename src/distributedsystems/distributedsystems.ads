@@ -28,6 +28,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package DistributedSystems is
 
+   FailedNodeInitialization : Exception;
+
    type Group_Type is new Integer;
    type Node_Type is new Integer;
 

@@ -25,12 +25,13 @@ pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Types;
+with Basics; use Basics;
 
 package ControlProtocol is
 
    subtype ServerCmd_Type is Types.Integer32;
 
-   ServerID : constant Unbounded_String:=To_Unbounded_String("ParallelSimControlServer");
-   ClientID : constant Unbounded_String:=To_Unbounded_String("ParallelSimControlClient");
+   ServerID : constant Unbounded_String:=U("ParallelSimControlServer");
+   ClientID : constant Unbounded_String:=U("ParallelSimControlClient");
 
 end ControlProtocol;

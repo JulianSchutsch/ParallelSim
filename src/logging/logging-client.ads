@@ -18,35 +18,14 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   4.Mar 2012 Julian Schutsch
+--   21.Apr 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with Config;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+package Logging.Client is
 
-package SimAdmin is
+   procedure Register;
+   procedure Unregister;
 
-   NotConnected : Exception;
-   FailedSend   : Exception;
-
-   function WaitForConnection
-     return Boolean;
-
-   procedure WaitForCompletion;
-   procedure WaitForDisconnect;
-
-   procedure SendMessage
-     (Message : Unbounded_String);
-   procedure SendShutdown;
-
-   procedure Initialize
-     (Configuration : Config.Config_Type);
-
-   procedure Finalize;
-
-   function Process
-     return Boolean;
-
-end SimAdmin;
+end Logging.Client;

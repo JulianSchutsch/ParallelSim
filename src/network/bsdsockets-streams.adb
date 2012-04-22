@@ -29,8 +29,8 @@ with Basics; use Basics;
 with Node;
 with Expressions;
 
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body BSDSockets.Streams is
 
@@ -43,6 +43,10 @@ package body BSDSockets.Streams is
          SendPacketPos      : Integer := 0;
          ReceivePacket      : Network.Packets.Packet_Access := null;
          ReceivePacketPos   : Integer := 0;
+         -- Indicates wether someone is processing this element
+         -- at the moment or not. You must not delete the element
+         -- if active is true.
+         Active             : Boolean:=False;
       end record;
 
    overriding
@@ -168,7 +172,7 @@ package body BSDSockets.Streams is
 
             Item.ClientMode:=ClientModeConnected;
             if Item.CallBack/=null then
-               Item.CallBack.OnConnect;
+               Item.CallBack.Connect;
             end if;
             FreeAddrInfo
               (AddrInfo => Item.FirstAddrInfo);
@@ -188,7 +192,7 @@ package body BSDSockets.Streams is
 
       else
          if Item.CallBack/=null then
-            Item.CallBack.OnFailedConnect
+            Item.CallBack.FailedConnect
               (Retry => RetryConnect);
          end if;
 
@@ -213,12 +217,19 @@ package body BSDSockets.Streams is
       VarItem : ServerChannel_Access;
 
    begin
-      Put("Finalize");
-      Put(Item.all'Address);
-      New_Line;
+--      Put("Finalize");
+--      Put(Item.all'Address);
+--      New_Line;
 
-      BSDSockets.RemoveEntry
-        (Entr => Item.SelectEntry'Access);
+      begin
+
+         BSDSockets.RemoveEntry
+           (Entr => Item.SelectEntry'Access);
+
+      exception
+         when BSDSockets.EntryNotAddedToAnyList =>
+            null;
+      end;
 
       begin
          BSDSockets.CloseSocket
@@ -226,25 +237,29 @@ package body BSDSockets.Streams is
       exception
          when BSDSockets.FailedCloseSocket =>
             null;
-       end;
+      end;
 
-      if Item.LastChannel/=null then
-         Item.LastChannel.NextChannel:=Item.NextChannel;
-      else
-         Item.Server.FirstChannel:=Item.NextChannel;
+      if not Item.Active then
+
+         if Item.LastChannel/=null then
+            Item.LastChannel.NextChannel:=Item.NextChannel;
+         else
+            Item.Server.FirstChannel:=Item.NextChannel;
+         end if;
+
+         if Item.NextChannel/=null then
+            Item.NextChannel.LastChannel:=Item.LastChannel;
+         end if;
+
+         if Item.CallBack/=null then
+            Item.CallBack.Disconnect;
+         end if;
+
+         VarItem:=Item;
+
+         Network.Streams.Free(Network.Streams.Channel_ClassAccess(VarItem));
+
       end if;
-
-      if Item.NextChannel/=null then
-         Item.NextChannel.LastChannel:=Item.LastChannel;
-      end if;
-
-      if Item.CallBack/=null then
-         Item.CallBack.OnDisconnect;
-      end if;
-
-      VarItem:=Item;
-
-      Network.Streams.Free(Network.Streams.Channel_ClassAccess(VarItem));
 
    end Finalize;
    ---------------------------------------------------------------------------
@@ -277,7 +292,7 @@ package body BSDSockets.Streams is
       Item.NextClient:=null;
 
       if Item.CallBack/=null then
-         Item.CallBack.OnDisconnect;
+         Item.CallBack.Disconnect;
       end if;
 
       Item.ClientMode:=ClientModeDisconnected;
@@ -522,7 +537,7 @@ package body BSDSockets.Streams is
          Entr => NewServerChannel.SelectEntry'Access);
 
       if Item.CallBack/=null then
-         Item.CallBack.OnAccept
+         Item.CallBack.AAccept
            (Channel => Network.Streams.Channel_ClassAccess(NewServerChannel));
       end if;
 
@@ -542,11 +557,11 @@ package body BSDSockets.Streams is
    begin
 
       while Item.SendPacket/=null loop
-         Put("Send");
-         Put(Item.SendPacketPos);
-         Put("..");
-         Put(Item.SendPacket.Position);
-         New_Line;
+--         Put("Send");
+--         Put(Item.SendPacketPos);
+--         Put("..");
+--         Put(Item.SendPacket.Position);
+--         New_Line;
          BSDSockets.Send
            (Socket => Item.SelectEntry.Socket,
             Data   => Item.SendPacket.Content
@@ -592,26 +607,25 @@ package body BSDSockets.Streams is
         :=Item.Content(Item.Position..Item.Amount-1);
 
       Item.Amount  := Item.Amount-Item.Position;
+      Item.Position := 0;
 
-      Put("Recv");
+--      Put("Recv");
+--      Put(Item.Amount);
+--      Put(Item.Content.all'Address);
+--      Put(Item.Content'First);
+--      Put(Item.Content'Last);
+--      New_Line;
       BSDSockets.Recv
         (Socket => Item.SelectEntry.Socket,
          Data   => Item.Content(Item.Amount..Item.Content'Last),
          Flags  => BSDSockets.MSG_NONE,
          Read   => RecvAmount);
-      Put("//");
-      New_Line;
 
       Item.Amount := Item.Amount+RecvAmount;
-      Item.Position := 0;
-      Put("Receive");
-      Put(RecvAmount);
-      Put(Item.Amount);
-      New_Line;
 
       if Item.Amount/=0 then
          if Item.CallBack/=null then
-            Item.CallBack.OnReceive;
+            Item.CallBack.Receive;
          end if;
       end if;
       return True;
@@ -642,6 +656,8 @@ package body BSDSockets.Streams is
 
          NextClientItem:=ClientItem.NextClient;
 
+         ClientItem.Active:=True;
+
 
          if ClientItem.ClientMode/=ClientModeConnecting then
 
@@ -659,8 +675,8 @@ package body BSDSockets.Streams is
             end if;
 
             if not OperationSuccess then
-               Finalize
-                 (Item => ClientItem);
+               ClientItem.Active:=False;
+               Finalize(ClientItem);
             end if;
 
          else
@@ -668,11 +684,12 @@ package body BSDSockets.Streams is
             -- TODO : Currently a timeout of 1 second is assumed
             --        This should become a configurable value
             if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
-               Next
-                 (Item=>ClientItem);
+               Next(ClientItem);
             end if;
 
          end if;
+
+         ClientItem.Active:=False;
 
          ClientItem:=NextClientItem;
 
@@ -693,6 +710,8 @@ package body BSDSockets.Streams is
 
             NextServerChannelItem := ServerChannelItem.NextChannel;
 
+            ServerChannelItem.Active:=True;
+
             OperationSuccess:=True;
 
             if ServerChannelItem.SelectEntry.Readable then
@@ -707,8 +726,11 @@ package body BSDSockets.Streams is
             end if;
 
             if not OperationSuccess then
+               ServerChannelItem.Active:=False;
                Finalize(ServerChannelItem);
             end if;
+
+            ServerChannelItem.Active:=False;
 
             ServerChannelItem:=NextServerChannelItem;
 
@@ -759,8 +781,15 @@ package body BSDSockets.Streams is
    procedure Register is
    begin
       Network.Streams.Implementations.Register
-        (Identifier     => To_Unbounded_String("BSDSockets.Stream"),
+        (Identifier     => U("BSDSockets"),
          Implementation => Implementation);
    end Register;
+   ---------------------------------------------------------------------------
+
+   procedure Unregister is
+   begin
+      Network.Streams.Implementations.Unregister(U("BSDSockets"));
+   end Unregister;
+   ---------------------------------------------------------------------------
 
 end BSDSockets.Streams;

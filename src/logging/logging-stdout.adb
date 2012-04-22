@@ -137,9 +137,12 @@ package body Logging.StdOut is
 
    function NewContext
      (Configuration : Config.Config_Type;
+      ConfigNode    : Unbounded_String;
       ModuleName    : Unbounded_String)
       return Context_ClassAccess is
-      pragma Warnings(Off,Configuration);
+
+      pragma Unreferenced(Configuration);
+      pragma Unreferenced(ConfigNode);
 
       NewContext : Context_Access;
 
@@ -154,11 +157,22 @@ package body Logging.StdOut is
    procedure FreeContext
      (Item : Context_ClassAccess) is
 
-      Context : Context_Access;
+      Context     : Context_Access;
+      Channel     : Channel_Access;
+      NextChannel : Channel_Access;
 
    begin
       Context:=Context_Access(Item);
+
+      Channel:=Context.Channels;
+      while Channel/=null loop
+         NextChannel:=Channel.NextChannel;
+         Channel.FreeChannel;
+         Channel:=NextChannel;
+      end loop;
+
       Free(Context);
+
    end FreeContext;
    ---------------------------------------------------------------------------
 

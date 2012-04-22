@@ -23,10 +23,10 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with Network.Streams;
 with Network.Packets;
-with Types;
 with AdminProtocol;
 with Logging;
 with Basics; use Basics;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body SimControl.AdminServer is
 
@@ -41,19 +41,20 @@ package body SimControl.AdminServer is
    type ServerChannelCallBack_Type is
      new Network.Streams.ChannelCallBack_Type with
       record
-         ReceiveStatus : ReceiveStatus_Enum;
-         Channel       : Network.Streams.Channel_ClassAccess;
-         LogChannel    : Logging.Channel_ClassAccess;
+         ReceiveStatus  : ReceiveStatus_Enum;
+         Channel        : Network.Streams.Channel_ClassAccess;
+         LogChannel     : Logging.Channel_ClassAccess;
+         CurrentCommand : AdminProtocol.ServerCmd_Type;
       end record;
 
    type ServerChannelCallBack_Access is access ServerChannelCallBack_Type;
 
    overriding
-   procedure OnReceive
+   procedure Receive
      (Item : in out ServerChannelCallBack_Type);
 
    overriding
-   procedure OnDisconnect
+   procedure Disconnect
      (Item : in out ServerChannelCallBack_Type);
    ---------------------------------------------------------------------------
 
@@ -61,15 +62,14 @@ package body SimControl.AdminServer is
      new Network.Streams.ServerCallBack_Type with null record;
 
    overriding
-   procedure OnAccept
+   procedure AAccept
      (Item    : in out ServerCallBack_Type;
       Channel : Network.Streams.Channel_ClassAccess);
    ---------------------------------------------------------------------------
 
    StreamImplementation : Network.Streams.Implementation_Type;
    Server               : Network.Streams.Server_ClassAccess:=null;
-   ServerCallBack       : aliased ServercallBack_Type;
-   CurrentCommand       : Types.Integer32;
+   ServerCallBack       : aliased ServerCallBack_Type;
    LogImplementation    : Logging.Implementation_Type;
    LogContext           : Logging.Context_ClassAccess:=null;
    LogMainChannel       : Logging.Channel_ClassAccess:=null;
@@ -116,7 +116,7 @@ package body SimControl.AdminServer is
      (AdminProtocol.ServerCmdMessage  => Cmd_AdminServerMessage'Access,
       AdminProtocol.ServerCmdShutdown => Cmd_Shutdown'Access);
 
-   procedure OnReceive
+   procedure Receive
      (Item : in out ServerChannelCallBack_Type) is
 
       PrevPosition : Integer;
@@ -146,18 +146,18 @@ package body SimControl.AdminServer is
 
             when ReceiveStatusWaitForCommand =>
 
-               CurrentCommand:=Item.Channel.Read;
+               Item.CurrentCommand:=Item.Channel.Read;
 
                Item.LogChannel.Write
                  (Level => Logging.LevelCommonEvent,
                   Message => "Received Command :"&
-                  AdminProtocol.ServerCmd_Type'Image(CurrentCommand));
+                  AdminProtocol.ServerCmd_Type'Image(Item.CurrentCommand));
 
-               if CurrentCommand not in Cmds'Range then
+               if Item.CurrentCommand not in Cmds'Range then
                   Item.LogChannel.Write
                     (Level => Logging.LevelFailure,
                      Message => "Received Command "&
-                     AdminProtocol.ServerCmd_Type'Image(CurrentCommand)&" not in valid range");
+                     AdminProtocol.ServerCmd_Type'Image(Item.CurrentCommand)&" not in valid range");
                   Item.ReceiveStatus:=ReceiveStatusInvalid;
                   Item.Channel.Disconnect;
                   return;
@@ -170,7 +170,7 @@ package body SimControl.AdminServer is
                Item.LogChannel.Write
                  (Level => Logging.LevelCommonEvent,
                   Message => "Process Command");
-               if Cmds(CurrentCommand).all
+               if Cmds(Item.CurrentCommand).all
                  (Item=> Item) then
                   Item.ReceiveStatus:=ReceiveStatusWaitForCommand;
                end if;
@@ -184,10 +184,10 @@ package body SimControl.AdminServer is
    exception
       when Network.Packets.PacketOutOfData =>
          Item.Channel.Position := PrevPosition;
-   end OnReceive;
+   end Receive;
    ---------------------------------------------------------------------------
 
-   procedure OnDisconnect
+   procedure Disconnect
      (Item : in out ServerChannelCallBack_Type) is
       pragma Warnings(Off,Item);
    begin
@@ -196,13 +196,13 @@ package body SimControl.AdminServer is
          Message => "Disconnected client");
       Item.LogChannel.FreeChannel;
       Network.Streams.Free(Item.Channel.CallBack);
-   end OnDisconnect;
+   end Disconnect;
    ---------------------------------------------------------------------------
 
-   procedure OnAccept
+   procedure AAccept
      (Item : in out ServerCallBack_Type;
       Channel : Network.Streams.Channel_ClassAccess) is
-      pragma Warnings(Off,Item);
+      pragma Unreferenced(Item);
 
       NewCallBack : ServerChannelCallBack_Access;
       Packet      : Network.Packets.Packet_Access;
@@ -225,43 +225,54 @@ package body SimControl.AdminServer is
       Packet:=new Network.Packets.Packet_Type;
       Packet.Write(AdminProtocol.ServerID);
       Channel.SendPacket(Packet);
-   end OnAccept;
+   end AAccept;
    ---------------------------------------------------------------------------
 
    procedure Initialize
      (Configuration : Config.Config_Type) is
    begin
+
       LogImplementation:=
         Logging.Implementations.Find
           (Configuration => Configuration,
            Node          => To_Unbounded_String("Logging"));
+
       LogContext:=LogImplementation.NewContext
         (Configuration => Configuration,
-         ModuleName    => To_Unbounded_String("Control.Admin"));
+         ConfigNode    => U("Logging"),
+         ModuleName    => U("Control.Admin"));
+
       LogContext.NewChannel
-        (ChannelName => To_Unbounded_String("Server"),
+        (ChannelName => U("Server"),
          Channel     => LogMainChannel);
 
       StreamImplementation:=
         Network.Streams.Implementations.Find
           (Configuration => Configuration,
-           Node          => To_Unbounded_String("Admin.Network"));
+           Node          => U("Admin.Network"));
 
       StreamImplementation.Initialize.all;
 
       Server
         :=StreamImplementation.NewServer
           (Configuration => Configuration,
-           Node          => To_Unbounded_String("Admin.Server.Network"));
+           Node          => U("Admin.Server.Network"));
+      Server.CallBack:=ServerCallBack'Access;
 
-      Server.CallBack := ServerCallBack'Access;
+      Put("Send Server Initialized");
+      New_Line;
+      LogMainChannel.Write
+        (Level   => Logging.LevelEvent,
+         Message => "Server initialized");
+
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      StreamImplementation.FreeServer
-        (Item => Server);
+
+      StreamImplementation.FreeServer(Server);
+
       StreamImplementation.Finalize.all;
 
       LogImplementation.FreeContext
