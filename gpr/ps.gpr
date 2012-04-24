@@ -5,13 +5,13 @@ with "network";
 
 project Ps is
 
-   for Exec_Dir use Common.Exec_Directory;
-   for Main use ("ps.adb", "simctr.adb", "simreg.adb", "client","logserver");
+   for Exec_Dir use Common.ExecDirectory;
+   for Main use ("client.adb","region.adb","front.adb");
    for Languages use Common.Languagesused;
 
    package Compiler is
       for Default_Switches ("ada") use
-         Common.Compiler_Switches
+         Common.CompilerSwitches
         &DistributedSystems.CompilerSwitches
         &GUI.CompilerSwitches
 		&Network.CompilerSwitches;
@@ -19,7 +19,7 @@ project Ps is
 
    package Binder is
       for Default_Switches ("ada") use
-         Common.Binder_Switches
+         Common.BinderSwitches
         &DistributedSystems.BinderSwitches
         &GUI.BinderSwitches
 		&Network.BinderSwitches;
@@ -27,14 +27,14 @@ project Ps is
 
    package Linker is
       for Default_Switches ("ada") use
-         Common.Linker_Switches
+         Common.LinkerSwitches
         &DistributedSystems.LinkerSwitches
         &GUI.LinkerSwitches
-		&Network.LinkerSwitches;
+        &Network.LinkerSwitches;
    end Linker;
 
-   for Object_Dir use Common.Object_Directory;
-   for Source_Dirs use Common.Source_Directories;
+   for Object_Dir use Common.ObjectDirectory;
+   for Source_Dirs use Common.SourceDirectories;
 
 end Ps;
 

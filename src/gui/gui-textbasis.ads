@@ -58,7 +58,7 @@ package GUI.TextBasis is
    type Line_Access is access Line_Type;
 
    procedure Initialize
-     (Item   : TextBasis_Access;
+     (Item   : access TextBasis_Type;
       Parent : Object_ClassAccess);
 
    overriding

@@ -915,7 +915,7 @@ package body GUI.TextBasis is
    ---------------------------------------------------------------------------
 
    procedure Initialize
-     (Item   : TextBasis_Access;
+     (Item   : access TextBasis_Type;
       Parent : Object_ClassAccess) is
    begin
 

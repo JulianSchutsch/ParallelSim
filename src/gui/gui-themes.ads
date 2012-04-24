@@ -26,15 +26,17 @@ pragma Ada_2005;
 with GUI.Window;
 with GUI.ScrollBar;
 with GUI.Console;
+with GUI.Button;
 
 package GUI.Themes is
 
    type Implementation_Type is
       record
-         NewWindow              : GUI.Window.Window_Constructor:=null;
-         NewVerticalScrollBar   : GUI.ScrollBar.ScrollBar_Constructor:=null;
+         NewWindow              : GUI.Window.Window_Constructor       := null;
+         NewVerticalScrollBar   : GUI.ScrollBar.ScrollBar_Constructor := null;
          VerticalScrollBarWidth : Integer;
-         NewConsole             : GUI.Console.Console_Constructor:=null;
+         NewConsole             : GUI.Console.Console_Constructor     := null;
+         NewButton              : GUI.Button.Button_Constructor       := null;
       end record;
 
    package Implementations is new Config.Implementations

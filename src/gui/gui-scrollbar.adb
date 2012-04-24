@@ -111,7 +111,7 @@ package body GUI.ScrollBar is
    ---------------------------------------------------------------------------
 
    procedure Initialize
-     (Item    : ScrollBar_Access;
+     (Item    : access ScrollBar_Type;
       Parent  : Object_ClassAccess) is
    begin
 

@@ -129,7 +129,7 @@ package body GUI.Window is
    ---------------------------------------------------------------------------
 
    procedure Initialize
-     (Item    : Window_Access;
+     (Item    : access Window_Type;
       Parent  : Object_ClassAccess) is
    begin
 

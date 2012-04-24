@@ -7,12 +7,10 @@ abstract project Common is
 
    Backtrace : Backtrace_Type := external("Backtrace","Off");
    Profiling : Profiling_Type := external("Profiling","Off");
-   LD_LIBRARY_PATH := external("LD_LIBRARY_PATH",".");
 
---   Dir := Common'Project_Dir & "/";
-   Dir := "";
+   Dir := Common'Project_Dir & "/";
 
-   Source_Directories:=
+   SourceDirectories:=
      (Dir & "../src",
       Dir & "../src/basics",
       Dir & "../src/basics/littleendian", -- Currently no plattform supported has different endianess
@@ -27,35 +25,33 @@ abstract project Common is
       Dir & "../src/canvas",
       Dir & "../src/distributedsystems",
       Dir & "../src/distributedsystems/mpi",
+      Dir & "../src/simclientgui",
       Dir & "../src/logging",
       Dir & "../src/xlib",
       Dir & "../src/win32");
 
-   Object_Directory:=Dir & "../build";
-
-   Exec_Directory:=".";
+   CompilerSwitches:=();
+   ObjectDirectory:=Dir & "../build";
+   ExecDirectory:=".";
 
    Compiler_Switches:=
      ("-gnato", -- Overflow checking
       "-gnatn", -- Inlining
       "-g",     -- Generate Debugging information
       "-gnatf", -- Full error messages
-      "-gnatVn",
---      "-gnatp",
-      "-Wall",
-      "-fno-strict-aliasing",
-      "-O3"
+      "-Wall",  -- All warnings enabled
+      "-O3"     -- Full optimisation
      );
 
-   Linker_Switches:=("-lgmem");
+   LinkerSwitches:=("-lgmem");
 
    case Profiling is
 
       when "On" =>
 
-         Compiler_Switches:=Compiler_Switches &
+         CompilerSwitches:=CompilerSwitches &
           ("-pg");
-         Linker_Switches:=Linker_Switches &
+         LinkerSwitches:=LinkerSwitches &
           ("-pg");
 
       when "Off" =>
@@ -66,36 +62,34 @@ abstract project Common is
 
    LanguagesUsed:=("Ada");
 
-   Binder_Switches:=
+   BinderSwitches:=
      ("-E");
 
    case Config.Detected is
 
       when "WindowsNT" =>
 
-         -- LD_LIBRARY_PATH is not available to gcc on windows
-         -- This hack makes it available by passing it manually
-		 -- The default value is set to "." to avoid warnings/errors from gcc
-
-         Source_Directories:=Source_Directories & 
+         SourceDirectories:=SourceDirectories & 
            (Dir & "../src/network/win32", 
             Dir & "../src/basics/win32");
 
-         Linker_Switches:=Linker_Switches &
+         LinkerSwitches:=LinkerSwitches &
            ("-L.",
             "-lfreetype");
 
       when "Linux" =>
 
-         Source_Directories:=Source_Directories &
+         SourceDirectories:=SourceDirectories &
            (Dir & "../src/network/linux",
             Dir & "../src/basics/linux");
 
-         Linker_Switches:=Linker_Switches &
+         LinkerSwitches:=LinkerSwitches &
            ("-lfreetype");
 
          LanguagesUsed:=LanguagesUsed &
            ("C");
+
+      when "Unknown" =>
 
    end case;
 
@@ -103,12 +97,12 @@ abstract project Common is
 
       when "On" =>
 
-         Source_Directories:=Source_Directories &
+         SourceDirectories:=SourceDirectories &
            (Dir & "../src/basics/backtrace");
 
       when "Off" =>
 
-         Source_Directories:=Source_Directories &
+         SourceDirectories:=SourceDirectories &
            (Dir & "../src/basics/nobacktrace");
 
    end case;

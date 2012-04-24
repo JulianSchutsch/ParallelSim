@@ -128,6 +128,10 @@ package GUI is
    type Object_Access is access all Object_Type;
    type Object_ClassAccess is access all Object_Type'Class;
 
+   procedure Initialize
+     (Item   : access Object_Type;
+      Parent : Object_ClassAccess);
+
    procedure Focus
      (Item : access Object_Type) is null;
 
@@ -340,11 +344,6 @@ private
          MouseSelection      : Object_ClassAccess := null;
          FocusObject         : Object_ClassAccess := null;
       end record;
-
-   procedure Initialize
-     (Item   : Object_Access;
-      Parent : Object_ClassAccess);
-   ---------------------------------------------------------------------------
 
    type Object_Type is new Object_Public with
       record

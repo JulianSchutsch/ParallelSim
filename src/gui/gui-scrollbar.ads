@@ -48,7 +48,7 @@ package GUI.ScrollBar is
         return ScrollBar_ClassAccess;
 
    procedure Initialize
-     (Item    : ScrollBar_Access;
+     (Item    : access ScrollBar_Type;
       Parent  : Object_ClassAccess);
 
    overriding

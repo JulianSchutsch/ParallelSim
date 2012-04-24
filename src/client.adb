@@ -1,12 +1,38 @@
+-------------------------------------------------------------------------------
+--   Copyright 2012 Julian Schutsch
+--
+--   This file is part of ParallelSim
+--
+--   ParallelSim is free software: you can redistribute it and/or modify
+--   it under the terms of the GNU Affero General Public License as published
+--   by the Free Software Foundation, either version 3 of the License, or
+--   (at your option) any later version.
+--
+--   ParallelSim is distributed in the hope that it will be useful,
+--   but WITHOUT ANY WARRANTY; without even the implied warranty of
+--   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+--   GNU Affero General Public License for more details.
+--
+--   You should have received a copy of the GNU Affero General Public License
+--   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
+-------------------------------------------------------------------------------
+
+-- Revision History
+--   24.Apr 2012 Julian Schutsch
+--     - Original version
+
 pragma Ada_2005;
 
 with Config;
-with GUI.UseImplementations;
-with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with SimClientGUI;
-with GUI.Themes.YellowBlue;
-with Fonts.Freetype;
+with Basics; use Basics;
+
 with ExceptionOutput;
+
+with GUI.UseImplementations;
+with YellowBlue;
+with Fonts.Freetype;
+
+with SimClientGUI;
 
 procedure Client is
 
@@ -15,18 +41,11 @@ procedure Client is
 begin
 
    GUI.UseImplementations.Register;
-   GUI.Themes.YellowBlue.Register;
+   YellowBlue.Register;
    Fonts.Freetype.Initialize;
 
-   Config.Insert
-     (Container => Configuration,
-      Key       => To_Unbounded_String("GUI.GUIImplementation"),
-      New_Item  => To_Unbounded_String("OpenGL"));
-
-   Config.Insert
-     (Container => Configuration,
-      Key       => To_Unbounded_String("GUI.Theme"),
-      New_Item  => To_Unbounded_String("YellowBlue"));
+   Configuration.Insert(U("GUI.GUIImplementation") , U("OpenGL"));
+   Configuration.Insert(U("GUI.Theme")             , U("YellowBlue"));
 
    SimClientGUI.Initialize
      (Configuration => Configuration);
@@ -38,7 +57,7 @@ begin
    SimClientGUI.Finalize;
 
    Fonts.Freetype.Finalize;
-   GUI.Themes.YellowBlue.UnRegister;
+   YellowBlue.UnRegister;
    GUI.UseImplementations.Unregister;
 
 exception

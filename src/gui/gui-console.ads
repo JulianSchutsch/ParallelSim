@@ -57,7 +57,7 @@ package GUI.Console is
       Font   : Fonts.Font_ClassAccess) is abstract;
 
    procedure Initialize
-     (Item   : Console_Access;
+     (Item   : access Console_Type;
       Parent : Object_ClassAccess);
 
 private

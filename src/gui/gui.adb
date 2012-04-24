@@ -743,7 +743,7 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    procedure Initialize
-     (Item   : Object_Access;
+     (Item   : access Object_Type;
       Parent : Object_ClassAccess) is
 
      Par : Object_ClassAccess;

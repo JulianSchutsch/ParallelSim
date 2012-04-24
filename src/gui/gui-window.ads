@@ -47,7 +47,7 @@ package GUI.Window is
         return Window_ClassAccess;
 
    procedure Initialize
-     (Item    : Window_Access;
+     (Item    : access Window_Type;
       Parent  : Object_ClassAccess);
 
    overriding

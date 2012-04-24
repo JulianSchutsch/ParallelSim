@@ -23,7 +23,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 package body GUI.Console is
 
    procedure Initialize
-     (Item   : Console_Access;
+     (Item   : access Console_Type;
       Parent : Object_ClassAccess) is
    begin
       Put("Initialize Console");
