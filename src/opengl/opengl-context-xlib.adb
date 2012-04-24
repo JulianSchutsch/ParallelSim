@@ -1,8 +1,7 @@
 pragma Ada_2005;
 
-with Xlib;
+with Xlib; use Xlib;
 with OpenGL; use OpenGL;
-with GUI.OpenGL;
 with Ada.Unchecked_Deallocation;
 with ProcessLoop;
 with Interfaces.C.Strings;
@@ -10,10 +9,13 @@ with glX;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Unchecked_Conversion;
+with Basics; use Basics;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Config;
 
-package body GUI.OpenGL.Native is
+package body OpenGL.Context.Xlib is
 
-   ErrorStorage : Xlib.XErrorEvent_Type;
+   ErrorStorage : XErrorEvent_Type;
    ErrorStorageSet : Boolean;
 
    function ErrorCodeString
@@ -35,14 +37,14 @@ package body GUI.OpenGL.Native is
    ---------------------------------------------------------------------------
 
    function ErrorHandler
-     (display : Xlib.Display_Access;
-      error   : XLib.XErrorEvent_Access)
+     (display : Display_Access;
+      error   : XErrorEvent_Access)
       return Interfaces.C.int;
    pragma Convention(C,ErrorHandler);
 
    function ErrorHandler
-     (display : Xlib.Display_Access;
-      error   : XLib.XErrorEvent_Access)
+     (display : Display_Access;
+      error   : XErrorEvent_Access)
       return Interfaces.C.int is
 
       pragma Unreferenced(display);
@@ -70,26 +72,26 @@ package body GUI.OpenGL.Native is
 
    type Context_Type;
    type Context_Access is access all Context_Type;
-   type Context_Type is new GUI.OpenGL.Context_Type with
+   type Context_Type is new OpenGL.Context.Context_Type with
       record
-         Display             : XLib.Display_Access     := null;
-         NextContext         : Context_Access          := null;
-         LastContext         : Context_Access          := null;
-         DestroyedSignalSend : Boolean                 := False;
-         GLXMajor            : aliased GLint_Type      := 0;
-         GLXMinor            : aliased GLint_Type      := 0;
-         Screen              : Interfaces.C.int        := 0;
-         Visual              : XLib.XVisualInfo_Access := null;
-         ColorMap            : XLib.ColorMap_Type      := 0;
-         Window              : XLib.Window_Type        := 0;
-         DeleteWindowAtom    : aliased XLib.Atom_Type  := 0;
-         GLXContext          : glX.GLXContext_Access   := null;
-         InputIM             : Xlib.XIM_Access         := null;
-         InputContext        : Xlib.XIC_Access         := null;
-         DoubleBuffered      : Boolean                 := True;
-         ContextInitialized  : Boolean                 := False;
-         WMHints             : XLib.XWMHints_Access    := null;
-         MapNotified         : Boolean                 := False;
+         Display             : Display_Access        := null;
+         NextContext         : Context_Access        := null;
+         LastContext         : Context_Access        := null;
+         DestroyedSignalSend : Boolean               := False;
+         GLXMajor            : aliased GLint_Type    := 0;
+         GLXMinor            : aliased GLint_Type    := 0;
+         Screen              : Interfaces.C.int      := 0;
+         Visual              : XVisualInfo_Access    := null;
+         ColorMap            : ColorMap_Type         := 0;
+         Window              : Window_Type           := 0;
+         DeleteWindowAtom    : aliased Atom_Type     := 0;
+         GLXContext          : glX.GLXContext_Access := null;
+         InputIM             : XIM_Access            := null;
+         InputContext        : XIC_Access            := null;
+         DoubleBuffered      : Boolean               := True;
+         ContextInitialized  : Boolean               := False;
+         WMHints             : XWMHints_Access       := null;
+         MapNotified         : Boolean               := False;
       end record;
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -103,15 +105,14 @@ package body GUI.OpenGL.Native is
 
       use type Interfaces.C.int;
       use type Interfaces.C.long;
-      use type Xlib.Window_Type;
 
       EventCount : Interfaces.C.int;
 
-      Event : aliased Xlib.XEvent_Type;
+      Event : aliased XEvent_Type;
 
       procedure Paint is
       begin
-         GUI.OpenGL.Paint(GUI.OpenGL.Context_Type(Context.all));
+         OpenGL.Context.Paint(OpenGL.Context.Context_Type(Context.all));
          if Context.DoubleBuffered then
             glX.glXSwapBuffers
               (dpy => Context.Display,
@@ -130,7 +131,7 @@ package body GUI.OpenGL.Native is
            with "glxMakeCurrent failed";
       end if;
 
-      EventCount:=Xlib.XPending
+      EventCount:=XPending
         (display => Context.Display);
 
       while EventCount>0 loop
@@ -139,13 +140,13 @@ package body GUI.OpenGL.Native is
          -- WARNING : Unchecked access necessary since Xlib makes use
          --           of the passed structure as temporary buffer,
          --           which is local to this Context.
-         Xlib.XNextEvent
+         XNextEvent
            (display => Context.Display,
             event_return => Event'Unchecked_Access);
 
          case Event.ttype is
 
-            when Xlib.ClientMessage =>
+            when ClientMessage =>
 
                Put("ClientMessage");
                Put(Integer(event.ClientMessage.l(0)));
@@ -158,22 +159,22 @@ package body GUI.OpenGL.Native is
                   return;
                end if;
 
-            when Xlib.Expose =>
+            when Expose =>
                Put("Expose");
                New_Line;
                Paint;
 
-            when Xlib.ButtonPress =>
+            when ButtonPress =>
                -- FAULT : Please may some guru explain to me why i have an
                -- offset of two pixels in every window i create using xlib?
                case Event.ButtonPress.button is
-                  when Xlib.Button1 =>
-                     MouseDown
+                  when Button1 =>
+                     ContextMouseDown
                        (Context     => Context_ClassAccess(Context),
                         MouseButton => LeftButton,
                         AbsX        => Integer(Event.ButtonPress.x),
                         AbsY        => Integer(Event.ButtonPress.y-2));
-                  when Xlib.Button2 =>
+                  when Button2 =>
                      null;
                   when others =>
                      Put("Unknown Button pressed");
@@ -181,42 +182,40 @@ package body GUI.OpenGL.Native is
                      New_Line;
                end case;
 
-            when Xlib.ButtonRelease =>
+            when ButtonRelease =>
                case Event.ButtonRelease.button is
-                  when Xlib.Button1 =>
-                     MouseUp
+                  when Button1 =>
+                     ContextMouseUp
                        (Context     => Context_ClassAccess(Context),
                         MouseButton => LeftButton,
                         AbsX        => Integer(Event.ButtonPress.x),
                         AbsY        => Integer(Event.ButtonPress.y-2));
-                  when Xlib.Button2 =>
+                  when Button2 =>
                      null;
                   when others =>
                      null;
                end case;
 
-            when Xlib.MotionNotify =>
-               MouseMove
+            when MotionNotify =>
+               ContextMouseMove
                  (Context => Context_ClassAccess(Context),
                   AbsX    => Integer(Event.ButtonMotion.x),
                   AbsY    => Integer(Event.ButtonMotion.y-2));
 
-            when Xlib.KeyPress =>
+            when KeyPress =>
                declare
-
-                  use type Xlib.Status_Type;
 
                   BufferLength  : constant:=64;
                   NumberOfChars : Interfaces.C.int;
                   AdaBuffer     : String(1..BufferLength):=(others => ' ');
                   Buffer        : Interfaces.C.Strings.chars_ptr;
-                  Status        : aliased Xlib.Status_Type;
-                  KeySym        : aliased Xlib.KeySim_Type;
+                  Status        : aliased Status_Type;
+                  KeySym        : aliased KeySim_Type;
 
                begin
 
                   Buffer:=Interfaces.C.Strings.New_String(AdaBuffer);
-                  NumberOfChars:=Xlib.XUtf8LookupString
+                  NumberOfChars:=XUtf8LookupString
                     (ic            => Context.InputContext,
                      event         => Event'Access,
                      Buffer_Return => Buffer,
@@ -224,29 +223,29 @@ package body GUI.OpenGL.Native is
                      KeySym_Return => KeySym'Unchecked_Access,
                      Status_Return => Status'Unchecked_Access);
                   if (NumberOfChars/=0)
-                    and ((Status=Xlib.XLookupChars)
-                         or (Status=Xlib.XLookupBoth)) then
+                    and ((Status=XLookupChars)
+                         or (Status=XLookupBoth)) then
                      AdaBuffer(1..Integer(NumberOfChars)):=Interfaces.C.Strings.Value
                        (Item   => Buffer,
                         Length => Interfaces.C.size_t(NumberOfChars));
-                     GUI.CharacterInput
+                     ContextCharacterInput
                        (Context => Context_ClassAccess(Context),
-                        Chars   => To_Unbounded_String(AdaBuffer(1..Integer(NumberOfChars))));
+                        Chars   => U(AdaBuffer(1..Integer(NumberOfChars))));
                   end if;
 
                end;
 
-            when Xlib.KeyRelease =>
+            when KeyRelease =>
                null;
 
-            when Xlib.ConfigureNotify =>
-               GUI.Resize
+            when ConfigureNotify =>
+               PropagateContextResize
                  (Context => Context_ClassAccess(Context),
                   Height  => Integer(Event.Configure.height),
                   Width   => Integer(Event.Configure.width));
                -- TODO: Send update signal
 
-            when Xlib.ResizeRequest =>
+            when ResizeRequest =>
 
                Put("Resize");
                New_Line;
@@ -258,11 +257,11 @@ package body GUI.OpenGL.Native is
                   Visible => True);
                -- TODO: Send update signal
 
-            when Xlib.ReparentNotify =>
+            when ReparentNotify =>
                Put("Reparent");
                New_Line;
 
-            when Xlib.MapNotify =>
+            when MapNotify =>
                Context.MapNotified:=True;
 
             when others =>
@@ -305,12 +304,6 @@ package body GUI.OpenGL.Native is
 
       use type glX.GLXContext_Access;
       use type Interfaces.C.int;
-      use type Xlib.Window_Type;
-      use type Xlib.Display_Access;
-      use type Xlib.XVisualInfo_Access;
-      use type Xlib.XIC_Access;
-      use type Xlib.XWMHints_Access;
-      use type Xlib.XIM_Access;
 
       Cont : Context_Access;
 
@@ -324,20 +317,20 @@ package body GUI.OpenGL.Native is
       end if;
 
       if Cont.InputContext/=null then
-         XLib.XDestroyIC(Cont.InputContext);
+         XDestroyIC(Cont.InputContext);
       end if;
 
       if Cont.InputIM/=null then
-         XLib.XCloseIM(Cont.InputIM);
+         XCloseIM(Cont.InputIM);
       end if;
 
       if Cont.WMHints/=null then
-         XLib.XFree
+         XFree
            (Cont.WMHints.all'Address);
       end if;
 
       if Cont.Visual/=null then
-         Xlib.XFree
+         XFree
            (Cont.Visual.all'Address);
       end if;
 
@@ -358,13 +351,13 @@ package body GUI.OpenGL.Native is
       end if;
 
       if Cont.Window/=0 then
-         Xlib.XDestroyWindow
+         XDestroyWindow
            (display => Cont.Display,
             window  => Cont.Window);
       end if;
 
       if Cont.Display/=null then
-         Xlib.XCloseDisplay
+         XCloseDisplay
            (display => Cont.Display);
       end if;
       -- Remove Context from the contexts list
@@ -391,15 +384,8 @@ package body GUI.OpenGL.Native is
       Node          : Unbounded_String)
       return Context_ClassAccess is
 
-      use type Xlib.Display_Access;
-      use type Xlib.XVisualInfo_Access;
       use type Interfaces.C.int;
       use type Interfaces.C.long;
-      use type Xlib.Window_Type;
-      use type Xlib.Atom_Type;
-      use type Xlib.Status_Type;
-      use type Xlib.XIM_Access;
-      use type Xlib.XIC_Access;
 
       pragma Unreferenced(Configuration);
       pragma Unreferenced(Node);
@@ -407,7 +393,7 @@ package body GUI.OpenGL.Native is
       Context : Context_Access;
 
    begin
-      Xlib.EnableDebug;
+      EnableDebug;
       -- Create new context object and add it to the contexts list
       Context:=new Context_Type;
       context.NextContext:=Contexts;
@@ -420,14 +406,14 @@ package body GUI.OpenGL.Native is
       Contexts:=Context;
 
       -- Initalize X context
-      Context.Display:=Xlib.XOpenDisplay(Interfaces.C.Strings.Null_Ptr);
+      Context.Display:=XOpenDisplay(Interfaces.C.Strings.Null_Ptr);
       if Context.Display=null then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
            with "Failed call to XOpenDisplay";
       end if;
 
-      if XLib.XSetErrorHandler
+      if XSetErrorHandler
         (func => ErrorHandler'Access)=0 then
          raise FailedToCreateContext
            with "Failed call to XSetErrorHandler";
@@ -463,7 +449,7 @@ package body GUI.OpenGL.Native is
 
       end if;
 
-      Context.Screen:=Xlib.DefaultScreen(Context.Display);
+      Context.Screen:=DefaultScreen(Context.Display);
 
       Context.Visual:=GLX.glXChooseVisual
         (dpy        => Context.Display,
@@ -476,33 +462,33 @@ package body GUI.OpenGL.Native is
              &ErrorCodeString;
       end if;
 
-      Context.ColorMap := Xlib.XCreateColormap
+      Context.ColorMap := XCreateColormap
         (display => Context.Display,
-         window  => Xlib.RootWindow
+         window  => RootWindow
            (display => Context.Display,
             screen  => Context.Visual.screen),
          visual  => Context.Visual.visual,
-         alloc   => Xlib.AllocNone);
+         alloc   => AllocNone);
 
       declare
-         Attr : aliased XLib.XSetWindowAttributes_Type;
+         Attr : aliased XSetWindowAttributes_Type;
       begin
          Attr.colormap:=Context.ColorMap;
          Attr.border_pixel:=16#FFFFFFFF#;
          -- This sum of events should work, but OR would be the better
          -- choice
          Attr.event_mask:=
-           Xlib.StructureNotifyMask
-           + Xlib.ExposureMask
-           + Xlib.KeyPressMask
-           + XLib.KeyReleaseMask
-           + Xlib.ButtonPressMask
-           + Xlib.ButtonReleaseMask
-           + Xlib.PointerMotionMask;
+           StructureNotifyMask
+           + ExposureMask
+           + KeyPressMask
+           + KeyReleaseMask
+           + ButtonPressMask
+           + ButtonReleaseMask
+           + PointerMotionMask;
 
-         Context.Window:=Xlib.XCreateWindow
+         Context.Window:=XCreateWindow
            (display => Context.Display,
-            parent  => Xlib.RootWindow
+            parent  => RootWindow
               (display => Context.Display,
                screen  => Context.Visual.screen),
             x       => 0,
@@ -511,12 +497,12 @@ package body GUI.OpenGL.Native is
             height  => 480,
             border_width => 0,
             depth   => Context.Visual.depth,
-            class   => Xlib.InputOutput,
+            class   => InputOutput,
             visual  => Context.Visual.visual,
-            valuemask => Xlib.CWBackPixel
-                        +Xlib.CWBorderPixel
-                        +Xlib.CWColorMap
-                        +Xlib.CWEventMask,
+            valuemask => CWBackPixel
+                        +CWBorderPixel
+                        +CWColorMap
+                        +CWEventMask,
             attributes => Attr'Unchecked_Access);
 
       end;
@@ -529,12 +515,12 @@ package body GUI.OpenGL.Native is
       end if;
 
       declare
-         SizeHints : aliased Xlib.XSizeHints_Type;
+         SizeHints : aliased XSizeHints_Type;
       begin
          SizeHints.width  := 400;
          SizeHints.height := 400;
-         SizeHints.flags  := Xlib.USSize+XLib.USPosition;
-         Xlib.XSetNormalHints
+         SizeHints.flags  := USSize+USPosition;
+         XSetNormalHints
            (display => Context.Display,
             window  => Context.Window,
             hints   => SizeHints'Unchecked_Access);
@@ -548,7 +534,7 @@ package body GUI.OpenGL.Native is
          AtomName : Interfaces.C.Strings.chars_ptr
            :=Interfaces.C.Strings.New_String("WM_DELETE_WINDOW");
       begin
-         Context.DeleteWindowAtom:=XLib.XInternAtom
+         Context.DeleteWindowAtom:=XInternAtom
            (display => Context.Display,
             atom_name => AtomName,
             only_if_exists => 1);
@@ -561,7 +547,7 @@ package body GUI.OpenGL.Native is
              &ErrorCodeString;
       end if;
 
-      if Xlib.XSetWMProtocols
+      if XSetWMProtocols
         (display   => Context.Display,
          window    => Context.Window,
          protocols => Context.DeleteWindowAtom'Access,
@@ -585,7 +571,7 @@ package body GUI.OpenGL.Native is
              &ErrorCodeString;
       end if;
 
-      Xlib.XMapWindow
+      XMapWindow
         (display => Context.Display,
          window  => Context.Window);
 
@@ -608,7 +594,7 @@ package body GUI.OpenGL.Native is
       Put("Done");
       New_Line;
 
-      Context.InputIM:=Xlib.XOpenIM
+      Context.InputIM:=XOpenIM
         (display   => Context.Display,
          db        => null,
          res_name  => Interfaces.C.Strings.Null_Ptr,
@@ -628,14 +614,13 @@ package body GUI.OpenGL.Native is
       declare
 
          use type Interfaces.C.Strings.chars_ptr;
-         use type XLib.XIMStyle_Access;
 
          ReturnString : Interfaces.C.Strings.chars_ptr;
-         styles       : aliased Xlib.XIMStyles_Access;
-         cursor       : Xlib.XIMStyle_Access;
+         styles       : aliased XIMStyles_Access;
+         cursor       : XIMStyle_Access;
 
       begin
-         ReturnString:=XLib.XGetIMValues_1
+         ReturnString:=XGetIMValues_1
            (xim                 => Context.InputIM,
             im_supported_styles => styles'Unchecked_Access);
          if Interfaces.C.Strings.Null_Ptr=ReturnString then
@@ -656,7 +641,7 @@ package body GUI.OpenGL.Native is
             Put(":");
             Put(cursor.all'Address);
             Put(":");
-            Put(XLib.XIMStyle_Type'Image(cursor.all));
+            Put(XIMStyle_Type'Image(cursor.all));
             New_Line;
             cursor:=cursor+Interfaces.C.size_t(Interfaces.C.long'Size/8);
          end loop;
@@ -665,10 +650,10 @@ package body GUI.OpenGL.Native is
       Put("*****************************************");
       New_Line;
 
-      Context.InputContext:=Xlib.XCreateIC_1
+      Context.InputContext:=XCreateIC_1
         (im         => Context.InputIM,
          window     => Context.Window,
-         inputstyle => Xlib.XIMPreeditNothing+Xlib.XIMStatusNothing);
+         inputstyle => XIMPreeditNothing+XIMStatusNothing);
 
       Put("Try to create Input Context");
       New_Line;
@@ -712,4 +697,4 @@ package body GUI.OpenGL.Native is
 
    end UnRegister;
 
-end GUI.OpenGL.Native;
+end OpenGL.Context.Xlib;

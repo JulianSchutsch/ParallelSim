@@ -21,10 +21,10 @@
 --   24.Mar 2012 Julian Schutsch
 --     - Original version
 
-package GUI.OpenGL.Native is
+package OpenGL.Context.Xlib is
 
    procedure Register;
 
    procedure UnRegister;
 
-end GUI.OpenGL.Native;
+end OpenGL.Context.Xlib;
