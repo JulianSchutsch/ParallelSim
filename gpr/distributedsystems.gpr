@@ -1,0 +1,17 @@
+with "config.gpr";
+
+abstract project DistributedSystems is
+
+   CompilerSwitches := ();
+   BinderSwitches   := ();
+   LinkerSwitches   := ();
+
+   case Config.mpich2 is
+      when "On" =>
+	     LinkerSwitches:=LinkerSwitches
+		   &("-L"&Config.MPICH2LIB)
+		   &("-lmpi");
+      when "Off" =>
+   end case;
+
+end DistributedSystems;
