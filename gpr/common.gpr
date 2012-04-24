@@ -1,4 +1,4 @@
-with "Config";
+with "config";
 
 abstract project Common is
 

@@ -137,9 +137,9 @@ package Implementations is
    -- For automatic source generation to find the filename and name for
    -- a module.
    PackageFileName : array(Module_Enum) of Unbounded_String:=
-     (ModuleNetwork            => U("..\src\network\network-useimplementations"),
-      ModuleGUI                => U("..\src\gui\gui-useimplementations"),
-      ModuleDistributedSystems => U("..\src\distributedsystems\distributedsystems-useimplementations"));
+     (ModuleNetwork            => U("../src/network/network-useimplementations"),
+      ModuleGUI                => U("../src/gui/gui-useimplementations"),
+      ModuleDistributedSystems => U("../src/distributedsystems/distributedsystems-useimplementations"));
 
    PackageName : array(Module_Enum) of Unbounded_String:=
      (ModuleNetwork            => U("Network.UseImplementations"),
