@@ -13,7 +13,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Logging.StdOut;
 with Logging.Client;
 
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 
 procedure simreg is
 

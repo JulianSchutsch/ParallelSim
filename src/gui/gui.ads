@@ -95,6 +95,21 @@ package GUI is
    type Context_ClassAccess is access all Context_Type'Class;
    ---------------------------------------------------------------------------
 
+   type Canvas_Public is new Canvas.Canvas_Type with
+      record
+         -- Read only
+         Bounds : Bounds_Type;
+      end record;
+
+   type Canvas_Type is new Canvas_Public with private;
+   type Canvas_ClassAccess is access all Canvas_Type'Class;
+
+   function GetNextCanvas
+     (Canvas : Canvas_ClassAccess)
+      return Canvas_ClassAccess;
+
+   ---------------------------------------------------------------------------
+
    type Object_Public is new AnyObject_Type with
       record
          Render         : Render_Enum:=RenderCanvasse;
@@ -105,6 +120,8 @@ package GUI is
          TopHeightConstraint : Constraint_Type;
          LeftWidthConstraint : Constraint_Type;
          -- Read only
+         AbsBounds           : AbsBounds_Type;
+         Canvasse            : Canvas_ClassAccess:=null;
       end record;
 
    type Object_Type is new Object_Public with private;
@@ -196,6 +213,10 @@ package GUI is
    procedure SetFocusObject
      (Item   : access Object_Type;
       Object : Object_ClassAccess);
+
+   function GetLastTreeObject
+     (Item : access Object_Type)
+      return Object_ClassAccess;
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is
@@ -214,9 +235,6 @@ package GUI is
          Bounds         : Bounds_Type;
          Priv           : Context_Private;
       end record;
-
-   type Canvas_Type is new Canvas.Canvas_Type with private;
-   type Canvas_ClassAccess is access all Canvas_Type'Class;
 
    procedure SetBounds
      (Canvas  : access Canvas_Type;
@@ -243,6 +261,46 @@ package GUI is
    procedure FreeCanvas
      (Context : in out Context_Type;
       Canvas  : in out Canvas_ClassAccess) is null;
+
+   procedure ContextMouseDown
+     (Context     : Context_ClassAccess;
+      MouseButton : MouseButton_Enum;
+      AbsX        : Integer;
+      AbsY        : Integer);
+
+   procedure ContextMouseUp
+     (Context     : Context_ClassAccess;
+      MouseButton : MouseButton_Enum;
+      AbsX        : Integer;
+      AbsY        : Integer);
+
+   procedure ContextMouseMove
+     (Context : Context_ClassAccess;
+      AbsX    : Integer;
+      AbsY    : Integer);
+
+   procedure ContextCharacterInput
+     (Context : Context_ClassAccess;
+      Chars   : Unbounded_String);
+
+   procedure ContextKeyDown
+     (Context : Context_ClassAccess;
+      Key     : Key_Enum);
+
+   procedure ContextKeyUp
+     (Context : Context_ClassAccess;
+      Key     : Key_Enum);
+
+   procedure PropagateContextResize
+     (Context : Context_ClassAccess;
+      Height  : Integer;
+      Width   : Integer);
+
+   procedure Initialize
+     (Context : Context_ClassAccess);
+
+   procedure Finalize
+     (Context : in out Context_Type);
    ---------------------------------------------------------------------------
    type Context_Constructor is
      access function
@@ -265,6 +323,15 @@ package GUI is
      (Implementation_Type => Implementation_Type,
       IdentifierKey       => To_Unbounded_String("GUIImplementation"));
 
+   -- These functions are special and expect fully initialized contexts
+   -- Therefore they should only be called by Context implementations.
+   procedure AddCanvasByContext
+     (Object : Object_ClassAccess;
+      Canvas : Canvas_ClassAccess);
+
+   procedure RemoveCanvasByContext
+     (Canvas : Canvas_ClassAccess);
+
 private
 
    type Context_Private is
@@ -277,25 +344,12 @@ private
    procedure Initialize
      (Item   : Object_Access;
       Parent : Object_ClassAccess);
-
-   procedure Resize
-     (Context : Context_ClassAccess;
-      Height  : Integer;
-      Width   : Integer);
-
-   procedure Initialize
-     (Context : Context_ClassAccess);
-
-   procedure Finalize
-     (Context : in out Context_Type);
    ---------------------------------------------------------------------------
 
    type Object_Type is new Object_Public with
       record
-         Canvasse            : Canvas_ClassAccess:=null;
          Bounds              : Bounds_Type;
          PrevBounds          : Bounds_Type;
-         AbsBounds           : AbsBounds_Type;
          Anchors             : Anchors_Type;
          Next                : Object_ClassAccess:=null;
          Last                : Object_ClassAccess:=null;
@@ -308,49 +362,12 @@ private
 
    ---------------------------------------------------------------------------
 
-   type Canvas_Type is new Canvas.Canvas_Type with
+   type Canvas_Type is new Canvas_Public with
       record
          Next    : Canvas_ClassAccess;
          Last    : Canvas_ClassAccess;
-         Bounds  : Bounds_Type;
          Anchors : Anchors_Type;
          Object  : Object_ClassAccess;
       end record;
-
-   procedure AddCanvas
-     (Object : Object_ClassAccess;
-      Canvas : Canvas_ClassAccess);
-
-   procedure RemoveCanvas
-     (Canvas : Canvas_ClassAccess);
-
-   procedure MouseDown
-     (Context     : Context_ClassAccess;
-      MouseButton : MouseButton_Enum;
-      AbsX        : Integer;
-      AbsY        : Integer);
-
-   procedure MouseUp
-     (Context     : Context_ClassAccess;
-      MouseButton : MouseButton_Enum;
-      AbsX        : Integer;
-      AbsY        : Integer);
-
-   procedure MouseMove
-     (Context : Context_ClassAccess;
-      AbsX    : Integer;
-      AbsY    : Integer);
-
-   procedure CharacterInput
-     (Context : Context_ClassAccess;
-      Chars   : Unbounded_String);
-
-   procedure KeyDown
-     (Context : Context_ClassAccess;
-      Key     : Key_Enum);
-
-   procedure KeyUp
-     (Context : Context_ClassAccess;
-      Key     : Key_Enum);
 
 end GUI;

@@ -33,6 +33,35 @@ package body GUI is
       Name   => Canvas_ClassAccess);
    ---------------------------------------------------------------------------
 
+   function GetLastTreeObject
+     (Item : access Object_Type)
+      return Object_ClassAccess is
+      Result : Object_ClassAccess;
+
+   begin
+      if Item.LastChild/=null then
+         return Item.LastChild;
+      else
+         Result:=Object_ClassAccess(Item);
+         while (Result/=null) and then (Result.Last=null) loop
+            Result:=Result.Parent;
+         end loop;
+         if Result/=null then
+            Result:=Result.Last;
+         end if;
+         return Result;
+      end if;
+   end GetLastTreeObject;
+   ---------------------------------------------------------------------------
+
+   function GetNextCanvas
+     (Canvas : Canvas_ClassAccess)
+      return Canvas_ClassAccess is
+   begin
+      return Canvas.Next;
+   end GetNextCanvas;
+   ---------------------------------------------------------------------------
+
    procedure SetFocusObject
      (Item   : access Object_Type;
       Object : Object_ClassAccess) is
@@ -79,7 +108,7 @@ package body GUI is
    end GetClient;
    ---------------------------------------------------------------------------
 
-   procedure CharacterInput
+   procedure ContextCharacterInput
      (Context : Context_ClassAccess;
       Chars   : Unbounded_String) is
 
@@ -93,10 +122,10 @@ package body GUI is
          end if;
       end if;
 
-   end CharacterInput;
+   end ContextCharacterInput;
    ---------------------------------------------------------------------------
 
-   procedure KeyDown
+   procedure ContextKeyDown
      (Context : Context_ClassAccess;
       Key     : Key_Enum) is
    begin
@@ -108,10 +137,10 @@ package body GUI is
          end if;
       end if;
 
-   end KeyDown;
+   end ContextKeyDown;
    ---------------------------------------------------------------------------
 
-   procedure KeyUp
+   procedure ContextKeyUp
      (Context : Context_ClassAccess;
       Key     : Key_Enum) is
    begin
@@ -123,7 +152,7 @@ package body GUI is
          end if;
       end if;
 
-   end KeyUp;
+   end ContextKeyUp;
    ---------------------------------------------------------------------------
 
    procedure ClearFocusTree
@@ -293,7 +322,7 @@ package body GUI is
    -- Global Mousedown procedure which either delivers the mouse signal to a
    -- previously selected object (mouse select) or finds a candidate to be
    -- selected.
-   procedure MouseDown
+   procedure ContextMouseDown
      (Context     : Context_ClassAccess;
       MouseButton : MouseButton_Enum;
       AbsX        : Integer;
@@ -399,10 +428,10 @@ package body GUI is
 
       Context.Priv.MouseButtonsPressed(MouseButton):=True;
 
-   end MouseDown;
+   end ContextMouseDown;
    ---------------------------------------------------------------------------
 
-   procedure MouseUp
+   procedure ContextMouseUp
      (Context     : Context_ClassAccess;
       MouseButton : MouseButton_Enum;
       AbsX        : Integer;
@@ -428,10 +457,10 @@ package body GUI is
          Context.Priv.MouseSelection:=null;
       end if;
 
-   end MouseUp;
+   end ContextMouseUp;
    ---------------------------------------------------------------------------
 
-   procedure MouseMove
+   procedure ContextMouseMove
      (Context : Context_ClassAccess;
       AbsX    : Integer;
       AbsY    : Integer) is
@@ -450,7 +479,7 @@ package body GUI is
 
       end if;
 
-   end MouseMove;
+   end ContextMouseMove;
    ---------------------------------------------------------------------------
 
    procedure ResizeTree
@@ -530,7 +559,7 @@ package body GUI is
    end ResizeTree;
    ---------------------------------------------------------------------------
 
-   procedure Resize
+   procedure PropagateContextResize
      (Context : Context_ClassAccess;
       Height  : Integer;
       Width   : Integer) is
@@ -567,7 +596,8 @@ package body GUI is
             Width   => Context.Bounds.Width,
             Visible => Context.Bounds.Visible);
       end if;
-   end Resize;
+
+   end PropagateContextResize;
    ---------------------------------------------------------------------------
 
    procedure SetAnchors
@@ -676,7 +706,7 @@ package body GUI is
    end GetBounds;
    ---------------------------------------------------------------------------
 
-   procedure AddCanvas
+   procedure AddCanvasByContext
      (Object : Object_ClassAccess;
       Canvas : Canvas_ClassAccess) is
    begin
@@ -689,10 +719,10 @@ package body GUI is
 
       Canvas.Object:=Object;
 
-   end AddCanvas;
+   end AddCanvasByContext;
    ---------------------------------------------------------------------------
 
-   procedure RemoveCanvas
+   procedure RemoveCanvasByContext
      (Canvas : Canvas_ClassAccess) is
 
       CanvasVal : Canvas_ClassAccess:=Canvas;
@@ -709,7 +739,7 @@ package body GUI is
 
       Free(CanvasVal);
 
-   end RemoveCanvas;
+   end RemoveCanvasByContext;
    ---------------------------------------------------------------------------
 
    procedure Initialize
@@ -819,7 +849,7 @@ package body GUI is
       Context.WindowArea.Context  := Context;
       Context.ModalArea.Context   := Context;
       Context.ContextArea.Context := Context;
-      Resize
+      PropagateContextResize
         (Context => Context,
          Height  => Context.Bounds.Height,
          Width   => Context.Bounds.Width);

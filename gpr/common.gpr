@@ -28,7 +28,8 @@ abstract project Common is
       Dir & "../src/gui/themes/yellowblue",
       Dir & "../src/canvas",
       Dir & "../src/distributedsystems",
-      Dir & "../src/logging");
+      Dir & "../src/logging",
+      Dir & "../src/mpi");
 
    Object_Directory:=Dir & "../build";
 
@@ -46,7 +47,7 @@ abstract project Common is
       "-O3"
      );
 
-   Linker_Switches:=("-lgmem","-lmpi");
+   Linker_Switches:=("-lgmem");
 
    case Profiling is
 
@@ -75,22 +76,14 @@ abstract project Common is
          -- LD_LIBRARY_PATH is not available to gcc on windows
          -- This hack makes it available by passing it manually
 		 -- The default value is set to "." to avoid warnings/errors from gcc
-         Linker_Switches:=Linker_Switches & ("-L"&LD_LIBRARY_PATH);
 
          Source_Directories:=Source_Directories &
            (Dir & "../src/network/win32",
             Dir & "../src/basics/win32",
-            Dir & "../src/gui/win32",
             Dir & "../src/win32");
 
          Linker_Switches:=Linker_Switches &
            ("-L.",
-            "-lws2_32",
-            "-lkernel32",
-            "-luser32",
-            "-lgdi32",
-            "-lshell32",
-            "-lopengl32",
             "-lfreetype");
 
       when "Linux" =>
@@ -102,9 +95,7 @@ abstract project Common is
             Dir & "../src/xlib");
 
          Linker_Switches:=Linker_Switches &
-           ("-lX11",
-            "-lGL",
-            "-lfreetype");
+           ("-lfreetype");
 
          LanguagesUsed:=LanguagesUsed &
            ("C");

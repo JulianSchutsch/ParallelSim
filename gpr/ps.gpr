@@ -1,28 +1,37 @@
-with "common.gpr";
+with "common";
+with "distributedsystems";
+with "gui";
+with "network";
 
 project Ps is
 
-   type Os_Type is
-      ("Windows_NT", "Linux");
-   type Backtrace_Type is
-      ("On", "Off");
    for Exec_Dir use Common.Exec_Directory;
    for Main use ("ps.adb", "simctr.adb", "simreg.adb", "client","logserver");
    for Languages use Common.Languagesused;
-   Backtrace : Backtrace_Type := external ("Backtrace","Off");
-   OS : Os_Type := external ("OS","Linux");
 
    package Compiler is
-      for Default_Switches ("ada") use Common.Compiler_Switches;
+      for Default_Switches ("ada") use
+         Common.Compiler_Switches
+        &DistributedSystems.CompilerSwitches
+        &GUI.CompilerSwitches
+		&Network.CompilerSwitches;
    end Compiler;
 
-   package Linker is
-      for Default_Switches ("ada") use Common.Linker_Switches;
-   end Linker;
-
    package Binder is
-      for Default_Switches ("ada") use Common.Binder_Switches;
+      for Default_Switches ("ada") use
+         Common.Binder_Switches
+        &DistributedSystems.BinderSwitches
+        &GUI.BinderSwitches
+		&Network.BinderSwitches;
    end Binder;
+
+   package Linker is
+      for Default_Switches ("ada") use
+         Common.Linker_Switches
+        &DistributedSystems.LinkerSwitches
+        &GUI.LinkerSwitches
+		&Network.LinkerSwitches;
+   end Linker;
 
    for Object_Dir use Common.Object_Directory;
    for Source_Dirs use Common.Source_Directories;

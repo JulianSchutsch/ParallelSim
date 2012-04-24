@@ -106,9 +106,9 @@ package Implementations is
    ImplementationListMPICH2 : aliased StringArray_Type:=
      (0 => U("DistributedSystems.MPI"));
    ImplementationListWGL : aliased StringArray_Type:=
-     (0 => U("GUI.OpenGL.Native"));
+     (0 => U("OpenGL.Context.Win32"));
    ImplementationListXlib : aliased StringArray_Type:=
-     (0 => U("GUI.OpenGL.Native"));
+     (0 => U("OpenGL.Context.Xlib"));
    ImplementationPackages : array(Implementation_Enum) of StringArray_Access:=
      (ImplementationBSDSockets => ImplementationListBSDSockets'Access,
       ImplementationMPICH2     => ImplementationListMPICH2'Access,
@@ -153,5 +153,10 @@ package Implementations is
 
    -- Must be called only after Plattform.Initialize
    procedure Initialize;
+
+   package StringList_Pack is new Ada.Containers.Doubly_Linked_Lists
+        (Element_Type => Unbounded_String,
+         "="          => "=");
+   AdditionalConfigLines : StringList_Pack.List;
 
 end Implementations;

@@ -172,9 +172,9 @@ procedure ConfigProg is
       WriteCopyright(File);
       Put_Line(File,"-- This file was automatically created by /autosrc/useimplementations.");
       Put_Line(File,"");
-      Put_Line(File,"pragma Ada_2005");
+      Put_Line(File,"pragma Ada_2005;");
       Put_Line(File,"");
-      Put_Line(File,"package "&To_String(PackageName(Module))& "is");
+      Put_Line(File,"package "&To_String(PackageName(Module))& " is");
       Put_Line(File,"");
       Put_Line(File,"   procedure Register;");
       Put_Line(File,"   procedure Unregister;");
@@ -264,7 +264,7 @@ procedure ConfigProg is
          Mode => Out_File,
          Name => To_String(BasePath)&To_String(PackageFileName(Module)&".adb"));
       WriteCopyright(File);
-      Put_Line(File,"pragma Ada_2005");
+      Put_Line(File,"pragma Ada_2005;");
       Put_Line(File,"");
       WriteWithStatements;
       Put_Line(File,"package body "&To_string(PackageName(Module))&" is");
@@ -272,13 +272,13 @@ procedure ConfigProg is
       Put_Line(File,"   procedure Register is");
       Put_Line(File,"   begin");
       WriteRegisterStatements;
-      Put_Line(File,"   end Register");
+      Put_Line(File,"   end Register;");
       Put_Line(File,"   ---------------------------------------------------------------------------");
       Put_Line(File,"");
       Put_Line(File,"   procedure Unregister is");
       Put_Line(File,"   begin");
       WriteUnregisterStatements;
-      Put_Line(File,"   end Unregister");
+      Put_Line(File,"   end Unregister;");
       Put_Line(File,"   ---------------------------------------------------------------------------");
       Put_Line(File,"");
       Put_Line(File,"end "&To_String(PackageName(Module))&";");
@@ -358,6 +358,17 @@ procedure ConfigProg is
       end loop;
 
       Put_Line(File,"");
+      declare
+         use type StringList_Pack.Cursor;
+         Cursor : StringList_Pack.Cursor;
+      begin
+         Cursor:=AdditionalConfigLines.First;
+         while Cursor/=StringList_Pack.No_Element loop
+            Put_Line(File,To_String(StringList_Pack.Element(Cursor)));
+            Cursor:=StringList_Pack.Next(Cursor);
+         end loop;
+      end;
+      Put_Line(File,"");
 
       Put_Line(File,"end Config;");
       Close(File);
@@ -407,10 +418,10 @@ begin
    New_Line;
    Put_Line("Write packages...");
    WriteModules;
-   Put_Line("Write Config.gpr...");
-   WriteConfigGpr;
    Put_Line("Initialize implementations (e.g. plattform specific constants)");
    ImplementationsInitialize;
+   Put_Line("Write Config.gpr...");
+   WriteConfigGpr;
    Put_Line("Done.");
 
 exception

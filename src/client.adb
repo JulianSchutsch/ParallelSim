@@ -1,7 +1,7 @@
 pragma Ada_2005;
 
 with Config;
-with GUI.OpenGL;
+with GUI.UseImplementations;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with SimClientGUI;
 with GUI.Themes.YellowBlue;
@@ -13,7 +13,8 @@ procedure Client is
    Configuration  : Config.Config_Type;
 
 begin
-   GUI.OpenGL.Register;
+
+   GUI.UseImplementations.Register;
    GUI.Themes.YellowBlue.Register;
    Fonts.Freetype.Initialize;
 
@@ -38,7 +39,7 @@ begin
 
    Fonts.Freetype.Finalize;
    GUI.Themes.YellowBlue.UnRegister;
-   GUI.OpenGL.UnRegister;
+   GUI.UseImplementations.Unregister;
 
 exception
    when E:others =>

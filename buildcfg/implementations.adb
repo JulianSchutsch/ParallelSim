@@ -27,8 +27,14 @@ with Plattform; use Plattform;
 
 package body Implementations is
 
+   -- MPICH2 must find the location of the libmpi and mpi.h first.
+   -- On Windows this is done by finding the base path though
+   -- locating mpiexec over the path environment variable.
+   -- On Linux it is assumed that only a /mpich2 must be added for
+   -- the mpi.h and the .so is found without any further knowledge.
    procedure MPICH2_Initialize is
       File : File_Type;
+      MPIBasePath : Unbounded_String;
 
       function CleanFileName
         (Name : String)
@@ -43,6 +49,24 @@ package body Implementations is
             return Name;
          end if;
       end CleanFileName;
+      ------------------------------------------------------------------------
+
+      procedure GetWindowsMPICH2BasePath is
+
+         use type GNAT.Strings.String_Access;
+
+         ExecPath : GNAT.OS_Lib.String_Access;
+
+      begin
+         ExecPath:=GNAT.OS_Lib.Locate_Exec_On_Path
+           (Exec_Name => "mpiexec.exe");
+         if ExecPath=null then
+            raise ImplementationInitializeFailed
+              with "Unable to locate mpiexec.exe";
+         end if;
+         MPIBasePath:=U(ExecPath.all(ExecPath.all'First..ExecPath.all'Last-16));
+         GNAT.Strings.Free(ExecPath);
+      end GetWindowsMPICH2BasePath;
       ------------------------------------------------------------------------
 
    begin
@@ -66,25 +90,25 @@ package body Implementations is
       case Detected is
          when PlattformLinux =>
             Put_Line(File,"#include ""mpich2/mpi.h""");
+            AdditionalConfigLines.Append(U("   MPICH2LIB:=""."";"));
 
          when PlattformWindowsNT =>
-            declare
-               Env : GNAT.Strings.String_Access:=GNAT.OS_Lib.GetEnv("MPIBASE");
-            begin
-               if not Exists(CleanFileName(Env.all)&"/include/mpi.h") then
-                  Close(File);
-                  GNAT.Strings.Free(Env);
-                  raise ImplementationInitializeFailed
-                    with "mpi.h not found. Please set MPIBASE environment variable.";
-               end if;
-               Put_Line(File,"#include """&CleanFileName(Env.all)&"/include/mpi.h""");
-               GNAT.Strings.Free(Env);
-            end;
+            GetWindowsMPICH2BasePath;
+            Put("MPICH2 Base Path :"&To_String(MPIBasePath));
+            New_Line;
+            if not Exists(To_String(MPIBasePath&"/include/mpi.h")) then
+               Close(File);
+               raise ImplementationInitializeFailed
+                 with "mpi.h not found. Please set MPIBASE environment variable.";
+            end if;
+            Put_Line(File,"#include """&To_String(MPIBasePath)&"/include/mpi.h""");
+            AdditionalConfigLines.Append("   MPICH2LIB:="""&MPIBasePath&"/lib"";");
 
          when others =>
             Close(File);
             raise ImplementationInitializeFailed
               with "Uncertain where to look for mpi.h, please add to implementations.adb";
+
       end case;
 
       Close(File);
