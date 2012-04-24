@@ -1,3 +1,5 @@
+with "Config";
+
 abstract project Common is
 
    type Backtrace_Type is ("On","Off");
@@ -114,12 +116,12 @@ abstract project Common is
       when "On" =>
 
          Source_Directories:=Source_Directories &
-           ("../src/basics/backtrace");
+           (Dir & "../src/basics/backtrace");
 
       when "Off" =>
 
          Source_Directories:=Source_Directories &
-           ("../src/basics/nobacktrace");
+           (Dir & "../src/basics/nobacktrace");
 
    end case;
 

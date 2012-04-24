@@ -28,7 +28,7 @@
 --  This file generates a mpiconstants.ads.
 */
 
-#include "mpi.h"
+#include "mpiconstants.h"
 #include <stdio.h>
 #include <stdlib.h>
 
@@ -36,9 +36,6 @@
 
 int main(int argc,char ** args)
 {
-
-  MPI_Init(&argc,&args);
-
   FILE *file;
 
   file=fopen(OUTPUTFILE,"w");

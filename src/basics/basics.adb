@@ -27,6 +27,7 @@ with System.WCh_Cnv;
 with System.WCh_Con;
 
 package body Basics is
+
    use type Ada.Containers.Hash_Type;
 
    function TryStringToInteger

@@ -133,6 +133,7 @@ package body Config.Implementations is
       return Find
         (ImplementationName => Configuration.Element
            (Key => Node&"."&IdentifierKey));
+
    end Find;
    ---------------------------------------------------------------------------
 
