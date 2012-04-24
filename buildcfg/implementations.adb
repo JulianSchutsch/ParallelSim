@@ -169,7 +169,7 @@ package body Implementations is
 
       Copy_File
         (Source_Name => "mpiconstants.ads",
-         Target_Name => To_String(BasePath)&"../src/mpi/mpiconstants.ads");
+         Target_Name => To_String(BasePath)&"../src/distributedsystems/mpi/mpiconstants.ads");
       Delete_File("mpiconstants.ads");
 
    end MPICH2_Initialize;

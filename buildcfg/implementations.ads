@@ -104,7 +104,7 @@ package Implementations is
    ImplementationListBSDSockets : aliased StringArray_Type:=
      (0 => U("BSDSockets.Streams"));
    ImplementationListMPICH2 : aliased StringArray_Type:=
-     (0 => U("DistributedSystems.MPI"));
+     (0 => U("MPI.Node"));
    ImplementationListWGL : aliased StringArray_Type:=
      (0 => U("OpenGL.Context.Win32"));
    ImplementationListXlib : aliased StringArray_Type:=

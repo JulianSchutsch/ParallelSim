@@ -3,7 +3,8 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 with BSDSockets.Streams;
-with DistributedSystems.MPI;
+with DistributedSystems;
+with DistributedSystems.UseImplementations;
 with ProgramArguments;
 with Ada.Directories;
 
@@ -30,7 +31,7 @@ procedure Ps is
 begin
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
-   DistributedSystems.MPI.Register;
+   DistributedSystems.UseImplementations.Register;
    Logging.StdOut.Register;
    Logging.Client.Register;
 
@@ -108,7 +109,7 @@ begin
    New_Line;
 
    Logging.Client.Unregister;
-   DistributedSystems.MPI.Unregister;
+   DistributedSystems.UseImplementations.Unregister;
 
 exception
    when E:others =>

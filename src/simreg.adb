@@ -4,8 +4,8 @@ with BSDSockets.Streams;
 
 with ProgramArguments;
 with SimRegion;
+with DistributedSystems.UseImplementations;
 with DistributedSystems;
-with DistributedSystems.MPI;
 
 with ExceptionOutput;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -25,7 +25,7 @@ begin
    BSDSockets.Streams.Register;
    Logging.StdOut.Register;
    Logging.Client.Register;
-   DistributedSystems.MPI.Register;
+   DistributedSystems.UseImplementations.Register;
 
    ProgramArguments.Debug;
 
@@ -50,7 +50,7 @@ begin
    Logging.Client.Unregister;
    DistributedSystemsImpl.FinalizeNode.all;
 
-   DistributedSystems.MPI.Unregister;
+   DistributedSystems.UseImplementations.Unregister;
 
 exception
    when E:others =>

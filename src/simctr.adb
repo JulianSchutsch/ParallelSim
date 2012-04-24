@@ -9,7 +9,7 @@ with Logging.StdOut;
 with Logging.Client;
 with ExceptionOutput;
 with DistributedSystems;
-with DistributedSystems.MPI;
+with DistributedSystems.UseImplementations;
 
 --with Ada.Text_IO; use Ada.Text_IO;
 
@@ -21,7 +21,7 @@ procedure SimCtr is
 begin
    ProgramArguments.Initialize;
    BSDSockets.Streams.Register;
-   DistributedSystems.MPI.Register;
+   DistributedSystems.UseImplementations.Register;
    Logging.StdOut.Register;
    Logging.Client.Register;
 
@@ -44,7 +44,7 @@ begin
    Logging.Client.Unregister;
    DistributedSystemsImpl.FinalizeNode.all;
    SimControl.Finalize;
-   DistributedSystems.MPI.Unregister;
+   DistributedSystems.UseImplementations.Unregister;
 
 exception
    when E:others =>

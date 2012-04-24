@@ -28,8 +28,8 @@ abstract project Common is
       Dir & "../src/gui/themes/yellowblue",
       Dir & "../src/canvas",
       Dir & "../src/distributedsystems",
-      Dir & "../src/logging",
-      Dir & "../src/mpi");
+      Dir & "../src/distributedsystems/mpi",
+      Dir & "../src/logging");
 
    Object_Directory:=Dir & "../build";
 
