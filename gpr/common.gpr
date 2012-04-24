@@ -3,10 +3,8 @@ with "config";
 abstract project Common is
 
    type Backtrace_Type is ("On","Off");
-   type OS_Type is ("Windows_NT","Linux");
    type Profiling_Type is ("On","Off");
 
-   OS        : OS_Type        := external("OS","Linux");
    Backtrace : Backtrace_Type := external("Backtrace","Off");
    Profiling : Profiling_Type := external("Profiling","Off");
    LD_LIBRARY_PATH := external("LD_LIBRARY_PATH",".");
@@ -29,7 +27,9 @@ abstract project Common is
       Dir & "../src/canvas",
       Dir & "../src/distributedsystems",
       Dir & "../src/distributedsystems/mpi",
-      Dir & "../src/logging");
+      Dir & "../src/logging",
+      Dir & "../src/xlib",
+      Dir & "../src/win32");
 
    Object_Directory:=Dir & "../build";
 
@@ -69,18 +69,17 @@ abstract project Common is
    Binder_Switches:=
      ("-E");
 
-   case OS is
+   case Config.Detected is
 
-      when "Windows_NT" =>
+      when "WindowsNT" =>
 
          -- LD_LIBRARY_PATH is not available to gcc on windows
          -- This hack makes it available by passing it manually
 		 -- The default value is set to "." to avoid warnings/errors from gcc
 
-         Source_Directories:=Source_Directories &
-           (Dir & "../src/network/win32",
-            Dir & "../src/basics/win32",
-            Dir & "../src/win32");
+         Source_Directories:=Source_Directories & 
+           (Dir & "../src/network/win32", 
+            Dir & "../src/basics/win32");
 
          Linker_Switches:=Linker_Switches &
            ("-L.",
@@ -90,9 +89,7 @@ abstract project Common is
 
          Source_Directories:=Source_Directories &
            (Dir & "../src/network/linux",
-            Dir & "../src/basics/linux",
-            Dir & "../src/gui/linux",
-            Dir & "../src/xlib");
+            Dir & "../src/basics/linux");
 
          Linker_Switches:=Linker_Switches &
            ("-lfreetype");
