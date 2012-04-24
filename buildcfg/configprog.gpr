@@ -6,7 +6,7 @@ project ConfigProg is
    for Languages use ("Ada");
 
    package Compiler is
-      for Default_Switches ("ada") use ("-O3");
+      for Default_Switches ("ada") use ("-g","-O3");
    end Compiler;
 
    package Linker is

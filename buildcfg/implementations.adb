@@ -90,22 +90,63 @@ package body Implementations is
       Close(File);
 
       declare
+
+         use type GNAT.OS_Lib.String_Access;
+
+         ExecPath   : GNAT.OS_Lib.String_Access;
          Arguments  : GNAT.OS_Lib.String_List_Access;
          Success    : Boolean;
       begin
+         ExecPath := GNAT.OS_Lib.Locate_Exec_On_Path
+           (Exec_Name => "gcc");
+         if ExecPath=null then
+            raise ImplementationInitializeFailed
+              with "Unable to locate gcc";
+         end if;
          Arguments:=GNAT.OS_Lib.Argument_String_To_List
            (To_String(BasePath)&"mpiconstants.c -o "
             &To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix));
          GNAT.OS_Lib.Spawn
-           (Program_Name => "gcc",
+           (Program_Name => ExecPath.all,
             Args         => Arguments.all,
             Success      => Success);
          GNAT.Strings.Free(Arguments);
+         GNAT.Strings.Free(ExecPath);
+
          if not Success then
             raise ImplementationInitializeFailed
               with "Unable to compile mpiconstants.c for mpich2 module";
          end if;
       end;
+
+      declare
+
+         use type GNAT.OS_Lib.String_Access;
+
+         Arguments  : GNAT.OS_Lib.String_List_Access;
+         Success    : Boolean;
+
+      begin
+
+         Arguments:=GNAT.OS_Lib.Argument_String_To_List
+           (To_String(BasePath)&"mpiconstants.c -o "
+            &To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix));
+         GNAT.OS_Lib.Spawn
+           (Program_Name => To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix),
+            Args         => Arguments.all,
+            Success      => Success);
+         GNAT.Strings.Free(Arguments);
+
+         if not Success then
+            raise ImplementationInitializeFailed
+              with "Unable to execute mpiconstants for mpich2";
+         end if;
+      end;
+
+      Copy_File
+        (Source_Name => "mpiconstants.ads",
+         Target_Name => To_String(BasePath)&"../src/mpi/mpiconstants.ads");
+      Delete_File("mpiconstants.ads");
 
    end MPICH2_Initialize;
    ---------------------------------------------------------------------------

@@ -23,6 +23,9 @@ with GNAT.OS_Lib;
 with GNAT.Strings;
 with GNAT.Regpat;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.IO_Exceptions;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Directories;
 
 package body Plattform is
 
@@ -30,22 +33,34 @@ package body Plattform is
 
       ReturnCode : Integer;
       Success    : Boolean;
-      Arguments  : GNAT.OS_Lib.String_List_Access;
 
    begin
 
       -- uname plattform detection, if possible
-      Arguments:=GNAT.OS_Lib.Argument_String_To_List("-s");
-      GNAT.OS_Lib.Spawn
-        (Program_Name => "uname",
-         Args         => Arguments.all,
-         Output_File  => "uname.out",
-         Success      => Success,
-         Return_Code  => ReturnCode,
-         Err_To_Out   => False);
-      GNAT.Strings.Free(Arguments);
+      declare
 
-      if Success then
+         use type GNAT.Strings.String_Access;
+
+         Arguments : GNAT.OS_Lib.String_List_Access;
+         ExecPath  : GNAT.OS_Lib.String_Access;
+      begin
+         ExecPath := GNAT.OS_Lib.Locate_Exec_On_Path
+           (Exec_Name => "uname");
+         if ExecPath/=null then
+            Arguments:=GNAT.OS_Lib.Argument_String_To_List("-s");
+            GNAT.OS_Lib.Spawn
+              (Program_Name => ExecPath.all,
+               Args         => Arguments.all,
+               Output_File  => "uname.out",
+               Success      => Success,
+               Return_Code  => ReturnCode,
+               Err_To_Out   => True);
+            GNAT.Strings.Free(Arguments);
+         end if;
+         GNAT.Strings.Free(ExecPath);
+      end;
+
+      if (ReturnCode=0) and Success then
          declare
             File : File_Type;
          begin
@@ -53,23 +68,29 @@ package body Plattform is
               (File => File,
                Mode => In_File,
                Name => "uname.out");
-            declare
-               Content : String:=Get_Line(File);
             begin
-               Close(File);
-               if GNAT.Regpat.Match
-                 (Expression => "MINGW",
-                  Data       => Content) then
-                  ExecutableSuffix:=U(".exe");
-                  Detected:=PlattformWindowsNT;
-                  return;
-               end if;
-               if GNAT.Regpat.Match
-                 (Expression => "Linux",
-                  Data       => Content) then
-                  Detected:=PlattformLinux;
-                  return;
-               end if;
+               declare
+                  Content : String:=Get_Line(File);
+               begin
+                  Close(File);
+                  Ada.Directories.Delete_File("uname.out");
+                  if GNAT.Regpat.Match
+                    (Expression => "MINGW",
+                     Data       => Content) then
+                     ExecutableSuffix:=U(".exe");
+                     Detected:=PlattformWindowsNT;
+                     return;
+                  end if;
+                  if GNAT.Regpat.Match
+                    (Expression => "Linux",
+                     Data       => Content) then
+                     Detected:=PlattformLinux;
+                     return;
+                  end if;
+               end;
+            exception
+               when Ada.IO_Exceptions.End_Error =>
+                  null;
             end;
          end;
 
