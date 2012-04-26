@@ -84,7 +84,7 @@ abstract project Common is
             Dir & "../src/basics/linux");
 
          LinkerSwitches:=LinkerSwitches &
-           ("-lfreetype6");
+           ("-lfreetype");
 
          LanguagesUsed:=LanguagesUsed &
            ("C");
