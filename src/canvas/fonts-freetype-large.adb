@@ -56,8 +56,8 @@ package body Fonts.FreeType.Large is
    procedure GlyphOut
      (Font : access LargeFont_Type;
       Canvas     : Standard.Canvas.Canvas_ClassAccess;
-      X          : in out Integer;
-      Y          : in out Integer;
+      X          : in out Float;
+      Y          : in out Float;
       Color      : Standard.Canvas.Color_Type) is
 
       X1 : Integer;
@@ -87,8 +87,8 @@ package body Fonts.FreeType.Large is
       -- Advance = Glyph.advance.x div 1024 div 64
       -- Top = lbaseline-Bitmap.Top
       -- Left = Bitmap.Left
-      X1 := X+Integer(Bitmap.left);
-      Y1 := Y+Font.BaseLine-Integer(Bitmap.top);
+      X1 := Integer(Float'Rounding(X))+Integer(Bitmap.left/64);
+      Y1 := Integer(Float'Rounding(Y))+Font.BaseLine-Integer(Bitmap.top);
       X2 := X1+Width-1;
       Y2 := Y1+Height-1;
       if (X2>=0)
@@ -132,15 +132,15 @@ package body Fonts.FreeType.Large is
 
       end if;
 
-      X:=X+Integer(Glyph.advance.x/(64*1024));
-      Y:=Y+Integer(Glyph.advance.y/(64*1024));
+      X:=X+Float(Glyph.advance.x)/(64.0*1024.0);
+      Y:=Y+FLoat(Glyph.advance.y)/(64.0*1024.0);
    end GlyphOut;
    ---------------------------------------------------------------------------
 
    function CharacterWidth
      (Font : access LargeFont_Type;
       Char : Wide_Wide_Character)
-      return Integer is
+      return Float is
       CharGlyph : FT_UInt_Type;
    begin
       CharGlyph:=FTC_CMapCache_Lookup
@@ -149,30 +149,15 @@ package body Fonts.FreeType.Large is
          cmap_index => -1,
          char_code => Wide_Wide_Character'Pos(Char));
       SelectGlyph(Font,CharGlyph,FT_LOAD_DEFAULT);
-      return Integer(Glyph.advance.x/(64*1024));
+      return Float(Glyph.advance.x)/(64.0*1024.0);
    end CharacterWidth;
-   ---------------------------------------------------------------------------
-
-   function Kerning
-     (Font       : access LargeFont_Type;
-      FirstChar  : Wide_Wide_Character;
-      SecondChar : Wide_Wide_Character)
-      return Integer is
-
-      pragma Unreferenced(Font);
-      pragma Unreferenced(FirstChar);
-      pragma Unreferenced(SecondChar);
-
-   begin
-      return 0;
-   end Kerning;
    ---------------------------------------------------------------------------
 
    procedure CharacterOut
      (Font   : access LargeFont_Type;
       Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : in out Integer;
-      Y      : in out Integer;
+      X      : in out Float;
+      Y      : in out Float;
       Char   : Wide_Wide_Character;
       Color  : Standard.Canvas.Color_Type) is
 

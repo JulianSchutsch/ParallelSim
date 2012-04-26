@@ -20,6 +20,8 @@
 -- Revision History
 --   30.Mar 2012 Julian Schutsch
 --     - Original version
+--   26.Apr 2012 Julian Schutsch
+--     - change FT_Char_Type from Unsigned_8 to Integer_8
 
 pragma Ada_2005;
 
@@ -36,15 +38,19 @@ package Freetype is
    type FT_Int_Type is new Interfaces.C.int;
    type FT_UInt_Type is new Interfaces.C.unsigned;
    type FT_ULong_Type is new Interfaces.C.unsigned_long;
-   type FT_Long_Type is new Interfaces.C.long;
+   subtype FT_Long_Type is Interfaces.C.long;
    type FT_Error_Type is new Interfaces.C.int;
    type FT_UShort_Type is new Interfaces.C.unsigned_short;
    type FT_Fixed_Type is new Interfaces.C.long;
    type FT_Pos_Type is new Interfaces.C.long;
    type FT_UInt32_Type is new Interfaces.Unsigned_32;
    type FT_Byte_Type is new Interfaces.C.unsigned_char;
-   type FT_Char_Type is new Interfaces.Unsigned_8;
+   type FT_Char_Type is new Interfaces.Integer_8;
    type FT_Short_Type is new Interfaces.C.short;
+   type FT_Int32_Type is new Interfaces.Integer_32;
+
+   type FT_GlyphSlot_Opaque is null record;
+   type FT_GlyphSlot_Access is access FT_GlyphSlot_Opaque;
 
    type FTC_Node_Opaque is null record;
    type FTC_Node_Access is access FTC_Node_Opaque;
@@ -58,8 +64,6 @@ package Freetype is
    type FTC_CMapCache_Access is access all FTC_CMapCache_Opaque;
    subtype FT_Pointer_Type is System.Address;
    type FTC_FaceID_Type is new FT_Pointer_Type;
-   type FT_Face_Opaque is null record;
-   type FT_Face_Access is access all FT_Face_Opaque;
    type FT_Generic_Finalizer_Access is
      access procedure
        (object : System.Address);
@@ -74,6 +78,17 @@ package Freetype is
       FT_RENDER_MODE_LCD_V,
       FT_RENDER_MODE_MAX);
    pragma Convention(C,FT_Render_Mode_Enum);
+
+   type FT_Encoding_Enum is
+     (FT_ENCODING_UNICODE);
+
+   for FT_Encoding_Enum use
+     (FT_ENCODING_UNICODE =>
+        Character'Pos('c')
+      +Character'Pos('i')*2**8
+      +Character'Pos('n')*2**16
+      +Character'Pos('u')*2**24);
+   pragma Convention(C,FT_Encoding_Enum);
 
    type FT_Vector_Type is
       record
@@ -98,6 +113,50 @@ package Freetype is
          finalizer : FT_Generic_Finalizer_Access;
       end record;
    pragma Convention(C,FT_Generic_Type);
+
+   type FT_BBox_Type is
+      record
+         xMin : FT_Pos_Type;
+         yMin : FT_Pos_Type;
+         xMax : FT_Pos_Type;
+         yMax : FT_Pos_Type;
+      end record;
+
+   FT_FACE_FLAG_KERNING : constant:=2**6;
+
+   type FT_Face_Type is
+      record
+         num_faces           : FT_Long_Type;
+         face_index          : FT_Long_Type;
+         -- The type is against the definition given by freetype,
+         -- but compatible both to the definition and bit wise operations
+         face_flags          : Interfaces.C.unsigned_long;
+         style_flags         : FT_Long_Type;
+         num_glyphs          : FT_Long_Type;
+         family_name         : System.Address;
+         style_name          : System.Address;
+         num_fixed_sizes     : FT_Int_Type;
+         available_sizes     : System.Address;
+         num_charmaps        : FT_Int_Type;
+         charmaps            : System.Address;
+         ggeneric            : FT_Generic_Type;
+         bbox                : FT_BBox_Type;
+         units_per_EM        : FT_UShort_Type;
+         ascender            : FT_Short_Type;
+         descender           : FT_Short_Type;
+         height              : FT_Short_Type;
+         max_advance_width   : FT_Short_Type;
+         max_advance_height  : FT_Short_Type;
+         underline_position  : FT_Short_Type;
+         underline_thickness : FT_Short_Type;
+         glyph               : FT_GlyphSlot_Access;
+         size                : System.Address;
+         charmap             : System.Address;
+         -- Some private stuff follows, but is not mentioned here
+         -- since we never allocate the memory for it.
+      end record;
+   pragma Convention(C,FT_Face_Type);
+   type FT_Face_Access is access all FT_Face_Type;
 
    type FT_Size_Metrics_Type is
       record
@@ -189,8 +248,8 @@ package Freetype is
    type FTC_SBit_Access is access FTC_SBit_Type;
 
    ---------------------------------------------------------------------------
-   FT_LOAD_DEFAULT : constant FT_ULong_Type:=0;
-   FT_LOAD_RENDER  : constant FT_ULong_Type:=4;
+   FT_LOAD_DEFAULT : constant:=0;
+   FT_LOAD_RENDER  : constant:=4;
 
    ---------------------------------------------------------------------------
 
@@ -273,15 +332,6 @@ package Freetype is
       return FT_UInt_Type;
    pragma Import(C,FTC_CMapCache_Lookup,"FTC_CMapCache_Lookup");
 
---   function FTC_ImageCache_Lookup
---     (cache      : FTC_ImageCache_Access;
---      ttype      : FTC_ImageType;
---      gindex     : FT_UInt_Type;
---      aglyph     : access FT_Glyph_Access;
---      anode      : access FTC_Node_Access)
---      return FT_Error_Type;
---   pragma Import(C,FTC_ImageCache_Lookup,"FTC_ImageCache_Lookup");
-
    function FTC_ImageCache_LookupScaler
      (cache      : FTC_ImageCache_Access;
       scaler     : access FTC_Scaler_Type;
@@ -323,6 +373,44 @@ package Freetype is
      (manager : FTC_Manager_Access;
       face_id : FTC_FaceID_Type);
    pragma Import(C,FTC_Manager_RemoveFaceID,"FTC_Manager_RemoveFaceID");
+
+   function FT_Get_Kerning
+     (face        : FT_Face_Access;
+      left_glyph  : FT_UInt_Type;
+      right_glyph : FT_UInt_Type;
+      kern_mode   : FT_Uint_Type;
+      akerning    : access FT_Vector_Type)
+      return FT_Error_Type;
+   pragma Import(C,FT_Get_Kerning,"FT_Get_Kerning");
+
+   function FT_Get_Char_Index
+     (face     : FT_Face_Access;
+      charcode : FT_ULong_Type)
+      return FT_UInt_Type;
+   pragma Import(C,FT_Get_Char_Index,"FT_Get_Char_Index");
+
+   function FT_Get_Glyph
+     (slot   : FT_GlyphSlot_Access;
+      aglyph : access FT_Glyph_Access)
+      return FT_Error_Type;
+   pragma Import(C,FT_Get_Glyph, "FT_Get_Glyph");
+
+   function FT_Load_Glyph
+     (face        : FT_Face_Access;
+      glyph_index : FT_UInt_Type;
+      load_flags  : FT_Int32_Type)
+      return FT_Error_Type;
+   pragma Import(C,FT_Load_Glyph,"FT_Load_Glyph");
+
+   function FT_Select_Charmap
+     (face     : FT_Face_Access;
+      encoding : FT_Encoding_Enum)
+      return FT_Error_Type;
+   pragma Import(C,FT_Select_Charmap,"FT_Select_Charmap");
+
+   function FT_HAS_KERNING
+     (face : FT_Face_Access)
+      return Boolean;
 
    function Convert is new Ada.Unchecked_Conversion
      (Source => FT_Glyph_Access,

@@ -22,6 +22,8 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Fonts is
 
@@ -57,48 +59,69 @@ package body Fonts is
       Text : Unbounded_String)
       return Integer is
 
+      PreviousCharacter : Wide_Wide_Character:=Wide_Wide_Character'Val(0);
+      ThisCharacter : Wide_Wide_Character;
       UCS4  : constant Unbounded_Wide_Wide_String:=UTF8ToUCS4(Text);
-      Width : Integer:=0;
+      Width : Float:=0.0;
 
    begin
 
       for i in 1..Length(UCS4) loop
 
-         Width:=Width+Font.CharacterWidth(Element(UCS4,i));
+         ThisCharacter:=Element(UCS4,i);
+         Width:=Width+Font_ClassAccess(Font).Kerning
+           (FirstChar  => PreviousCharacter,
+            SecondChar => ThisCharacter);
+
+         Width:=Width+Font.CharacterWidth(ThisCharacter);
 
       end loop;
 
-      return Width;
+      return Integer(Float'Rounding(Width));
 
    end;
    ---------------------------------------------------------------------------
 
    procedure TextOut
-     (Font   : access Font_Type'Class;
+     (Font   : access Font_Type;
       Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : Integer;
-      Y      : Integer;
+      X      : Float;
+      Y      : Float;
       Text   : Unbounded_String;
       Color  : Standard.Canvas.Color_Type) is
 
-      XPosition : Integer;
-      YPosition : Integer;
+      XPosition : Float;
+      YPosition : Float;
 
-      UCS4 : constant Unbounded_Wide_Wide_String:=UTF8ToUCS4(Text);
+      UCS4              : constant Unbounded_Wide_Wide_String:=UTF8ToUCS4(Text);
+      ThisCharacter     : Wide_Wide_Character;
+      PreviousCharacter : Wide_Wide_Character:=Wide_Wide_Character'Val(0);
 
    begin
 
       XPosition := X;
       YPosition := Y;
+      New_Line;
 
       for i in 1..Length(UCS4) loop
 
-         Font.CharacterOut
+         ThisCharacter:=Element(UCS4,i);
+
+         XPosition:=XPosition+Font_ClassAccess(Font).Kerning
+           (FirstChar  => PreviousCharacter,
+            SecondChar => ThisCharacter);
+         Put("Pos");
+         Put(Float'Image(XPosition));
+         New_Line;
+
+         Font_ClassAccess(Font).CharacterOut
            (Canvas      => Canvas,
             X           => XPosition,
             Y           => YPosition,
-            Char        => Element(UCS4,i),
+            Char        => ThisCharacter,
             Color       => Color);
+
+         PreviousCharacter:=ThisCharacter;
 
       end loop;
 

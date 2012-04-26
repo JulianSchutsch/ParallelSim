@@ -307,8 +307,8 @@ package body YellowBlue.Window is
 
             Window.Font.TextOut
               (Canvas => Canvas.Canvas_ClassAccess(Window.TitleCanvas),
-               X => 0,
-               Y => 0,
+               X => 0.0,
+               Y => 0.0,
                Text => U("Hallo"),
                Color => 16#FFFFFFFF#);
 

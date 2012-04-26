@@ -20,12 +20,14 @@
 pragma Ada_2005;
 
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
 with Interfaces.C.Strings;
 with Fonts.FreeType.Large; use Fonts.FreeType.Large;
 with Fonts.Freetype.Small; use Fonts.FreeType.Small;
+with Basics; use Basics;
 
 package body Fonts.Freetype is
 
@@ -46,6 +48,54 @@ package body Fonts.Freetype is
    begin
       return Font.LineHeight;
    end Height;
+   ---------------------------------------------------------------------------
+
+   function Kerning
+     (Font       : access FreeTypeFont_Type;
+      FirstChar  : Wide_Wide_Character;
+      SecondChar : Wide_Wide_Character)
+      return Float is
+
+      KerningVector : aliased FT_Vector_Type;
+      Result        : FT_Error_Type;
+--      pragma Unreferenced(Result);
+      FirstGlyph  : FT_UInt_Type;
+      SecondGlyph : FT_UInt_Type;
+      FontSize    : aliased FT_Size_Access;
+
+   begin
+
+      if Font.Kerning
+        and Wide_Wide_Character'Pos(FirstChar)/=0 then
+
+         Result:=FTC_Manager_LookUpSize(Manager,Font.Scaler'Access,FontSize'Access);
+         Put(FontSize.face.charmap);
+
+         FirstGlyph:=FTC_CMapCache_Lookup
+           (cache      => CMapCache,
+            face_id    => FTC_FaceID_Type(Font.all'Address),
+            cmap_index => -1, -- Default Charmap
+            char_code  => Wide_Wide_Character'Pos(FirstChar));
+
+         SecondGlyph:=FTC_CMapCache_Lookup
+           (cache      => CMapCache,
+            face_id    => FTC_FaceID_Type(Font.all'Address),
+            cmap_index => -1, -- Default Charmap
+            char_code  => Wide_Wide_Character'Pos(SecondChar));
+
+         Result:=FT_GET_KERNING
+           (face        => FontSize.face,
+            left_glyph  => FirstGlyph,
+            right_glyph => SecondGlyph,
+            kern_mode   => 0,
+            akerning    => KerningVector'Access);
+
+         return Float(KerningVector.x)/64.0;
+      else
+         return 0.0;
+      end if;
+
+   end Kerning;
    ---------------------------------------------------------------------------
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -73,8 +123,8 @@ package body Fonts.Freetype is
       Error  : FT_Error_Type;
 
    begin
-      -- Being here means we need to create a new font with specific size
-      -- we do not need to do any lookups
+      -- Small Fonts can be stored as bitmaps by Freetype
+      -- but a different cache interface has to be used for this
       if Size>20 then
          declare
             LargeFont : LargeFont_Access;
@@ -139,6 +189,16 @@ package body Fonts.Freetype is
            -FaceSize.metrics.descender)/64);
 
       end;
+      Error:=FT_Select_Charmap(Font.FaceHandle,FT_ENCODING_UNICODE);
+      if Error/=0 then
+         Put("Failed to Select Charmap");
+         Put(Integer(Error));
+         New_Line;
+         Free(Font);
+         return null;
+      end if;
+
+      Font.Kerning:=FT_HAS_KERNING(Font.FaceHandle);
 
       return Font_ClassAccess(Font);
    end Load;
@@ -168,6 +228,23 @@ package body Fonts.Freetype is
          filepathname => CFileName,
          face_index   => Font.Index,
          aface        => aface);
+      if Result/=0 then
+         Put("FAILED LOADING FONT");
+         Put(Integer(Result));
+         New_Line;
+      end if;
+      Put("Num Glyphs");
+      Put(Integer(aface.all.num_glyphs));
+      New_Line;
+      Put("Num Charmaps");
+      Put(Integer(aface.all.num_charmaps));
+      New_Line;
+      Put("Ascender");
+      Put(Integer(aface.all.ascender));
+      New_Line;
+      Put("Height");
+      Put(Integer(aface.all.height));
+      New_Line;
       Interfaces.C.Strings.Free(CFileName);
 
       return Result;

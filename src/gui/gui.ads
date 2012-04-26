@@ -104,6 +104,10 @@ package GUI is
    type Canvas_Type is new Canvas_Public with private;
    type Canvas_ClassAccess is access all Canvas_Type'Class;
 
+   type OnResize_Access is
+     access procedure
+       (CallbackObject : AnyObject_ClassAccess);
+
    function GetNextCanvas
      (Canvas : Canvas_ClassAccess)
       return Canvas_ClassAccess;
@@ -122,6 +126,7 @@ package GUI is
          -- Read only
          AbsBounds           : AbsBounds_Type;
          Canvasse            : Canvas_ClassAccess:=null;
+         OnResize            : OnResize_Access:=null;
       end record;
 
    type Object_Type is new Object_Public with private;

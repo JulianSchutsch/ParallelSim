@@ -32,8 +32,8 @@ package Fonts.FreeType.Small is
    procedure CharacterOut
      (Font   : access SmallFont_Type;
       Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : in out Integer;
-      Y      : in out Integer;
+      X      : in out Float;
+      Y      : in out Float;
       Char   : Wide_Wide_Character;
       Color  : Standard.Canvas.Color_Type);
 
@@ -41,14 +41,7 @@ package Fonts.FreeType.Small is
    function CharacterWidth
      (Font : access SmallFont_Type;
       Char : Wide_Wide_Character)
-      return Integer;
-
-   overriding
-   function Kerning
-     (Font       : access SmallFont_Type;
-      FirstChar  : Wide_Wide_Character;
-      SecondChar : Wide_Wide_Character)
-      return Integer;
+      return Float;
 
 private
 

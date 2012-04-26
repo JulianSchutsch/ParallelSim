@@ -20,34 +20,117 @@
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Fonts;
+with Basics; use Basics;
+with BoundsCalc; use BoundsCalc;
+with Canvas;
 
 package body YellowBlue.Button is
 
    type Button_Type is new GUI.Button.Button_Type with
       record
-         null;
+         Font   : Fonts.Font_ClassAccess;
+         Canvas : Canvas_ClassAccess;
       end record;
    type Button_Access is access Button_Type;
 
    overriding
-   procedure ReportCaptionChange
+   procedure SetCaption
+     (Item    : access Button_Type;
+      Caption : Unbounded_String);
+
+   overriding
+   procedure Resize
+     (Item : access Button_Type);
+   ---------------------------------------------------------------------------
+
+   procedure DrawCanvas
+     (Item : access Button_Type) is
+
+      use type Fonts.Font_ClassAccess;
+
+      Bounds : Bounds_Type:=Item.GetBounds;
+
+   begin
+
+      if Item.Canvas/=null then
+         Item.Context.FreeCanvas(Item.Canvas);
+      end if;
+      if (Bounds.Height<=0)
+        or (Bounds.Width<=0) then
+         return;
+      end if;
+      Item.Context.NewCanvas
+        (Object => Object_ClassAccess(Item),
+         Height => Bounds.Height,
+         Width  => Bounds.Width,
+         Canvas => Item.Canvas);
+      Item.Canvas.Clear(16#FF7F0000#);
+      Item.Canvas.Rectangle
+        (X => 0,
+         Y => 0,
+         Height => Bounds.Height,
+         Width => Bounds.Width,
+         Color => 16#FFFFFFFF#);
+
+      Item.Canvas.SetBounds
+        (Top     => 0,
+         Left    => 0,
+         Height  => Bounds.Height,
+         Width   => Bounds.Width,
+         Visible => True);
+
+      if Item.Font/=null then
+
+         declare
+            Width  : Integer:=Item.Font.TextWidth(Item.Caption);
+            Height : Integer:=Item.Font.Height;
+         begin
+            Item.Font.TextOut
+              (Canvas => Canvas.Canvas_ClassAccess(Item.Canvas),
+               X => Float((Bounds.Width-Width)/2-1),
+               Y => Float((Bounds.Height-Height)/2-1),
+               Text => Item.Caption,
+               Color => 16#FFFFFFFF#);
+         end;
+
+      end if;
+
+   end DrawCanvas;
+   ---------------------------------------------------------------------------
+
+   procedure SetCaption
      (Item    : access Button_Type;
       Caption : Unbounded_String) is
    begin
-      null;
-   end ReportCaptionChange;
+      GUI.Button.Button_Access(Item).SetCaption(Caption);
+      DrawCanvas(Item);
+   end SetCaption;
+   ---------------------------------------------------------------------------
+
+   procedure Resize
+     (Item : access Button_Type) is
+   begin
+      DrawCanvas(Item);
+   end Resize;
    ---------------------------------------------------------------------------
 
    function NewButton
      (Parent : Object_ClassAccess)
       return Button_ClassAccess is
 
-      Button : Button_Access;
+      NewButton : Button_Access;
 
    begin
-      Button:=new Button_Type;
-      Object_Access(Button).Initialize(Parent);
-      return Button_ClassAccess(Button);
+      NewButton:=new Button_Type;
+      Object_Access(NewButton).Initialize(Parent);
+      NewButton.Font:=Fonts.Lookup
+        (Name       => U("./Vera.ttf"),
+         Size       => 25,
+         Attributes => Fonts.NoAttributes);
+      return Button_ClassAccess(NewButton);
    end NewButton;
    ---------------------------------------------------------------------------
 

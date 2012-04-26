@@ -70,12 +70,12 @@ abstract project Common is
       when "WindowsNT" =>
 
          SourceDirectories:=SourceDirectories & 
-           (Dir & "../src/network/win32", 
+           (Dir & "../src/network/win32",
             Dir & "../src/basics/win32");
 
          LinkerSwitches:=LinkerSwitches &
            ("-L.",
-            "-lfreetype");
+            "-lfreetype6");
 
       when "Linux" =>
 
@@ -84,7 +84,7 @@ abstract project Common is
             Dir & "../src/basics/linux");
 
          LinkerSwitches:=LinkerSwitches &
-           ("-lfreetype");
+           ("-lfreetype6");
 
          LanguagesUsed:=LanguagesUsed &
            ("C");

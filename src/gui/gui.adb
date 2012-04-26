@@ -551,6 +551,9 @@ package body GUI is
         or (Object.Bounds.Width/=Object.PrevBounds.Width) then
 
          Object.Resize;
+         if Object.OnResize/=null then
+            Object.OnResize(Object.CallBackObject);
+         end if;
 
       end if;
 

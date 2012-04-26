@@ -202,8 +202,8 @@ package body Fonts.ColorStrings is
 
          ColorString.Font.CharacterOut
            (Canvas => Canvas,
-            X      => XPosition,
-            Y      => YPosition,
+            X      => Float(XPosition),
+            Y      => Float(YPosition),
             Char   => ColorString.Content(i).Char,
             Color  => ColorString.Content(i).Color);
 
@@ -454,13 +454,13 @@ package body Fonts.ColorStrings is
          ThisChar             := ColorString.Content(i).Char;
 
          AccumWidth
-           := AccumWidth+ColorString.Font.CharacterWidth(ThisChar);
+           := AccumWidth+Integer(ColorString.Font.CharacterWidth(ThisChar));
 
          ColorString.Content(i).AccumWidth := AccumWidth;
          ColorString.Content(i).NextLine := 0; -- Reset this to reset wrapping
 
          AccumWidth
-           := AccumWidth+ColorString.Font.Kerning(PreviousChar,ThisChar);
+           := AccumWidth+Integer(ColorString.Font.Kerning(PreviousChar,ThisChar));
 
          PreviousChar:=ThisChar;
 

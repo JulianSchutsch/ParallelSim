@@ -32,16 +32,12 @@ package GUI.Button is
       end record;
 
    type Button_Type is new Button_Public with private;
+   type Button_Access is access all Button_Type;
    type Button_ClassAccess is access all Button_Type'Class;
 
    procedure SetCaption
      (Item    : access Button_Type;
       Caption : Unbounded_String);
-
-   -- Call "up" procedure to bind to theme
-   procedure ReportCaptionChange
-     (Item    : access Button_Type;
-      Caption : Unbounded_String) is null;
 
    type Button_Constructor is
      access function

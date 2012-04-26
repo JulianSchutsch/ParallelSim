@@ -20,6 +20,8 @@
 pragma Ada_2005;
 
 with Interfaces.C;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Fonts.FreeType.Small is
 
@@ -56,7 +58,7 @@ package body Fonts.FreeType.Small is
    function CharacterWidth
      (Font : access SmallFont_Type;
       Char : Wide_Wide_Character)
-      return Integer is
+      return Float is
       CharGlyph : FT_UInt_Type;
    begin
       CharGlyph:=FTC_CMapCache_Lookup
@@ -65,30 +67,15 @@ package body Fonts.FreeType.Small is
          cmap_index => -1,
          char_code => Wide_Wide_Character'Pos(Char));
       SelectGlyph(Font,CharGlyph,FT_LOAD_DEFAULT);
-      return Integer(SBit.xadvance);
+      return Float(SBit.xadvance);
    end CharacterWidth;
-   ---------------------------------------------------------------------------
-
-   function Kerning
-     (Font       : access SmallFont_Type;
-      FirstChar  : Wide_Wide_Character;
-      SecondChar : Wide_Wide_Character)
-      return Integer is
-
-      pragma Unreferenced(Font);
-      pragma Unreferenced(FirstChar);
-      pragma Unreferenced(SecondChar);
-
-   begin
-      return 0;
-   end Kerning;
    ---------------------------------------------------------------------------
 
    procedure GlyphOut
      (Font       : access SmallFont_Type;
       Canvas     : Standard.Canvas.Canvas_ClassAccess;
-      X          : in out Integer;
-      Y          : in out Integer;
+      X          : in out Float;
+      Y          : in out Float;
       Color      : Standard.Canvas.Color_Type) is
 
       X1 : Integer;
@@ -116,8 +103,8 @@ package body Fonts.FreeType.Small is
       -- Advance = Glyph.advance.x div 1024 div 64
       -- Top = lbaseline-Bitmap.Top
       -- Left = Bitmap.Left
-      X1 := X+Integer(SBit.left);
-      Y1 := Y+Font.BaseLine-Integer(Sbit.top);
+      X1 := Integer(Float'Rounding(X))+Integer(SBit.left/64);
+      Y1 := Integer(Float'Rounding(Y))+Font.BaseLine-Integer(Sbit.top);
       X2 := X1+Width-1;
       Y2 := Y1+Height-1;
       if (X2>=0)
@@ -161,16 +148,16 @@ package body Fonts.FreeType.Small is
 
       end if;
 
-      X:=X+Integer(SBit.xadvance);
-      Y:=Y+Integer(Sbit.yadvance);
+      X:=X+Float(SBit.xadvance);
+      Y:=Y+Float(Sbit.yadvance);
    end GlyphOut;
    ---------------------------------------------------------------------------
 
    procedure CharacterOut
      (Font   : access SmallFont_Type;
       Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : in out Integer;
-      Y      : in out Integer;
+      X      : in out Float;
+      Y      : in out Float;
       Char   : Wide_Wide_Character;
       Color  : Standard.Canvas.Color_Type) is
 

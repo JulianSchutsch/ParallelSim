@@ -22,6 +22,15 @@ with System.Storage_Elements; use System.Storage_Elements;
 
 package body FreeType is
 
+   function FT_HAS_KERNING
+     (face : FT_Face_Access)
+      return Boolean is
+      use type Interfaces.C.unsigned_long;
+   begin
+      return (face.face_flags and FT_FACE_FLAG_KERNING)/=0;
+   end FT_HAS_KERNING;
+   ---------------------------------------------------------------------------
+
    function "+" (Left : GrayValue_Access; Right : Interfaces.C.size_t)
                  return GrayValue_Access is
 
@@ -38,5 +47,6 @@ package body FreeType is
         (To_Address(Left)
          +Storage_Offset(Right));
    end "+";
+   ---------------------------------------------------------------------------
 
 end FreeType;

@@ -39,8 +39,8 @@ private
    procedure CharacterOut
      (Font   : access LargeFont_Type;
       Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : in out Integer;
-      Y      : in out Integer;
+      X      : in out Float;
+      Y      : in out Float;
       Char   : Wide_Wide_Character;
       Color  : Standard.Canvas.Color_Type);
 
@@ -48,13 +48,6 @@ private
    function CharacterWidth
      (Font : access LargeFont_Type;
       Char : Wide_Wide_Character)
-      return Integer;
-
-   overriding
-   function Kerning
-     (Font       : access LargeFont_Type;
-      FirstChar  : Wide_Wide_Character;
-      SecondChar : Wide_Wide_Character)
-      return Integer;
+      return Float;
 
 end Fonts.FreeType.Large;

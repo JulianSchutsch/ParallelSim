@@ -36,8 +36,8 @@ package Fonts is
    procedure CharacterOut
      (Font   : access Font_Type;
       Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : in out Integer;
-      Y      : in out Integer;
+      X      : in out Float;
+      Y      : in out Float;
       Char   : Wide_Wide_Character;
       Color  : Standard.Canvas.Color_Type) is abstract;
 
@@ -48,13 +48,13 @@ package Fonts is
    function CharacterWidth
      (Font : access Font_Type;
       Char : Wide_Wide_Character)
-      return Integer is abstract;
+      return Float is abstract;
 
    function Kerning
      (Font       : access Font_Type;
       FirstChar  : Wide_Wide_Character;
       SecondChar : Wide_Wide_Character)
-      return Integer is abstract;
+      return Float is abstract;
 
    function TextWidth
      (Font : access Font_Type'Class;
@@ -62,10 +62,10 @@ package Fonts is
       return Integer;
 
    procedure TextOut
-     (Font   : access Font_Type'Class;
+     (Font   : access Font_Type;
       Canvas : Standard.Canvas.Canvas_ClassAccess;
-      X      : Integer;
-      Y      : Integer;
+      X      : Float;
+      Y      : Float;
       Text   : Unbounded_String;
       Color  : Standard.Canvas.Color_Type);
 

@@ -26,7 +26,6 @@ package body GUI.Button is
       Caption : Unbounded_String) is
    begin
       Item.Caption:=Caption;
-      Button_ClassAccess(Item).ReportCaptionChange(Caption);
    end SetCaption;
    ---------------------------------------------------------------------------
 

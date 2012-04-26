@@ -59,12 +59,20 @@ private
          Scaler     : aliased FTC_Scaler_Type;
          BaseLine   : Integer;
          LineHeight : Integer;
+         Kerning    : Boolean;
       end record;
 
    overriding
    function Height
      (Font : access FreeTypeFont_Type)
       return Integer;
+
+   overriding
+   function Kerning
+     (Font       : access FreeTypeFont_Type;
+      FirstChar  : Wide_Wide_Character;
+      SecondChar : Wide_Wide_Character)
+      return Float;
 
    ---------------------------------------------------------------------------
 
