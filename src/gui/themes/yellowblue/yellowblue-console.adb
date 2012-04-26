@@ -29,6 +29,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Canvas;
 with Basics; use Basics;
 
+with GUIDefinitions; use GUIDefinitions;
+
 --with Ada.Text_IO; use Ada.Text_IO;
 
 package body YellowBlue.Console is

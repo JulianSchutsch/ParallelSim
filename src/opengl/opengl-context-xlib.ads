@@ -24,7 +24,6 @@
 package OpenGL.Context.Xlib is
 
    procedure Register;
-
    procedure UnRegister;
 
 end OpenGL.Context.Xlib;

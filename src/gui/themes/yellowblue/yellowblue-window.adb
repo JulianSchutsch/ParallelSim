@@ -23,6 +23,7 @@ with Fonts;
 with Canvas;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
+with GUIMouse; use GUIMouse;
 
 package body YellowBlue.Window is
 
@@ -289,7 +290,7 @@ package body YellowBlue.Window is
       end if;
 
       if Window.TitleCanvas/=null then
-         Window.Context.FreeCanvas(Window.TitleCanvas);
+         FreeCanvas(Window.TitleCanvas);
       end if;
 
       if Window.Font/=null then
@@ -297,11 +298,9 @@ package body YellowBlue.Window is
             TextWidth : constant Integer
               :=Window.Font.TextWidth(U("Hallo"));
          begin
-            Window.Context.NewCanvas
-              (Object => Object_ClassAccess(Window),
-               Height => TitleBarHeight,
-               Width  => TextWidth,
-               Canvas => Window.TitleCanvas);
+            Window.TitleCanvas:=Window.NewCanvas
+              (Height => TitleBarHeight,
+               Width  => TextWidth);
             Window.TitleCanvas.Clear
               (Color => 16#00000000#);
 
@@ -329,14 +328,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.TopLeftCorner/=null then
-         Window.Context.FreeCanvas(Window.TopLeftCorner);
+         FreeCanvas(Window.TopLeftCorner);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => TopBarHeight,
-         Width  => CornerSize,
-         Canvas => Window.TopLeftCorner);
+      Window.TopLeftCorner:=Window.NewCanvas
+        (Height => TopBarHeight,
+         Width  => CornerSize);
 
       Window.TopLeftCorner.Clear
         (Color => BackgroundColor);
@@ -394,14 +391,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.TopBar/=null then
-         Window.Context.FreeCanvas(Window.TopBar);
+         FreeCanvas(Window.TopBar);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => TopBarHeight,
-         Width  => 1,
-         Canvas => Window.TopBar);
+      Window.TopBar:=Window.NewCanvas
+        (Height => TopBarHeight,
+         Width  => 1);
 
       Window.TopBar.Clear
         (Color => BackgroundColor);
@@ -432,14 +427,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.TopRightCorner/=null then
-         Window.Context.FreeCanvas(Window.TopRightCorner);
+         FreeCanvas(Window.TopRightCorner);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => TopBarHeight,
-         Width  => CornerSize,
-         Canvas => Window.TopRightCorner);
+      Window.TopRightCorner:=Window.NewCanvas
+        (Height => TopBarHeight,
+         Width  => CornerSize);
 
       Window.TopRightCorner.Clear
         (Color => BackgroundColor);
@@ -497,14 +490,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.LeftBar/=null then
-         Window.Context.FreeCanvas(Window.LeftBar);
+         FreeCanvas(Window.LeftBar);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => 1,
-         Width  => BorderWidth,
-         Canvas => Window.LeftBar);
+      Window.LeftBar:=Window.NewCanvas
+        (Height => 1,
+         Width  => BorderWidth);
       Window.LeftBar.Clear
         (Color => BackgroundColor);
       Window.LeftBar.Image(0,0):=BorderLineColor;
@@ -523,14 +514,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.RightBar/=null then
-         Window.Context.FreeCanvas(Window.RightBar);
+         FreeCanvas(Window.RightBar);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => 1,
-         Width  => BorderWidth,
-         Canvas => Window.RightBar);
+      Window.RightBar:=Window.NewCanvas
+        (Height => 1,
+         Width  => BorderWidth);
       Window.RightBar.Clear
         (Color => BackgroundColor);
       Window.RightBar.Image(0,0):=BorderLineColor;
@@ -550,14 +539,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.BottomLeftCorner/=null then
-         Window.Context.FreeCanvas(Window.BottomLeftCorner);
+         FreeCanvas(Window.BottomLeftCorner);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => CornerSize,
-         Width  => CornerSize,
-         Canvas => Window.BottomLeftCorner);
+      Window.BottomLeftCorner:=Window.NewCanvas
+        (Height => CornerSize,
+         Width  => CornerSize);
       Window.BottomLeftCorner.Clear
         (Color => BackgroundColor);
       Window.BottomLeftCorner.VertLine
@@ -610,14 +597,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.BottomBar/=null then
-         Window.Context.FreeCanvas(Window.BottomBar);
+         FreeCanvas(Window.BottomBar);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => BorderWidth,
-         Width  => 1,
-         Canvas => Window.BottomBar);
+      Window.BottomBar:=Window.NewCanvas
+        (Height => BorderWidth,
+         Width  => 1);
       Window.BottomBar.Clear
         (Color => BackgroundColor);
 
@@ -639,14 +624,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.BottomRightCorner/=null then
-         Window.Context.FreeCanvas(Window.BottomRightCorner);
+         FreeCanvas(Window.BottomRightCorner);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => CornerSize,
-         Width  => CornerSize,
-         Canvas => Window.BottomRightCorner);
+      Window.BottomRightCorner:=Window.NewCanvas
+        (Height => CornerSize,
+         Width  => CornerSize);
       Window.BottomRightCorner.Clear
         (Color => BackgroundColor);
       Window.BottomRightCorner.VertLine
@@ -699,14 +682,12 @@ package body YellowBlue.Window is
       ------------------------------------------------------------------------
 
       if Window.ClientArea/=null then
-         Window.Context.FreeCanvas(Window.ClientArea);
+         FreeCanvas(Window.ClientArea);
       end if;
 
-      Window.Context.NewCanvas
-        (Object => Object_ClassAccess(Window),
-         Height => 1,
-         Width  => 1,
-         Canvas => Window.ClientArea);
+      Window.ClientArea:=Window.NewCanvas
+        (Height => 1,
+         Width  => 1);
       Window.ClientArea.Clear
         (Color => ClientColor);
       Window.ClientArea.SetBounds

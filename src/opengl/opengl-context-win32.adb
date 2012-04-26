@@ -37,6 +37,9 @@ with Basics; use Basics;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
+with GUIKeys; use GUIKeys;
+with GUIMouse; use GUIMouse;
+
 package body OpenGL.Context.Win32 is
 
    KeyTable : constant array(0..255) of Key_Enum:=
@@ -126,6 +129,10 @@ package body OpenGL.Context.Win32 is
          CSTR_Title     : Interfaces.C.Strings.chars_ptr
            := Interfaces.C.Strings.Null_Ptr;
       end record;
+
+   overriding
+   procedure Finalize
+     (Context : in out Context_Type);
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Context_Type,
@@ -493,9 +500,8 @@ package body OpenGL.Context.Win32 is
    end Process;
    ---------------------------------------------------------------------------
 
-   procedure FreeContext
-     (Context : Context_ClassAccess) is
-      Cont : Context_Access;
+   procedure Finalize
+     (Context : in out Context_Type) is
 
       BoolResult : BOOL_Type;
       pragma Unreferenced(BoolResult);
@@ -503,53 +509,50 @@ package body OpenGL.Context.Win32 is
       pragma Unreferenced(IntResult);
 
    begin
-      Cont := Context_Access(Context);
 
       -- Deinitialize basic window environment
-      if Cont.ContextInitialized then
-         GUI.Finalize
-           (Context => GUI.Context_Type(Cont.all));
+      if Context.ContextInitialized then
+         GUI.Context_Type(Context).Finalize;
       end if;
 
       -- Remove Context from the contexts list
-      if Cont.LastContext/=null then
-         Cont.LastContext.NextContext:=Cont.NextContext;
+      if Context.LastContext/=null then
+         Context.LastContext.NextContext:=Context.NextContext;
       else
-         Contexts:=Cont.NextContext;
+         Contexts:=Context.NextContext;
          if Contexts=null then
             ProcessLoop.Remove(Process'Access);
          end if;
 
       end if;
 
-      if Cont.NextContext/=null then
-         Cont.NextContext.LastContext:=Cont.LastContext;
+      if Context.NextContext/=null then
+         Context.NextContext.LastContext:=Context.LastContext;
       end if;
 
       -- Free Device Context
-      if Cont.DeviceContext/=0 then
+      if Context.DeviceContext/=0 then
          IntResult:=ReleaseDC
-           (hWnd => Cont.WindowHandle,
-            hDC => Cont.DeviceContext);
+           (hWnd => Context.WindowHandle,
+            hDC => Context.DeviceContext);
       end if;
 
       -- Destroy and free window
-      if Cont.WindowHandle/=0 then
+      if Context.WindowHandle/=0 then
          BoolResult:=DestroyWindow
-           (hWnd => Cont.WindowHandle);
+           (hWnd => Context.WindowHandle);
       end if;
 
       -- Remove Window class
       BoolResult:=UnregisterClass
-        (Cont.CSTR_ClassName,
+        (Context.CSTR_ClassName,
          GetModuleHandle(Interfaces.C.Strings.Null_Ptr));
 
       -- Free C String memory
-      Interfaces.C.Strings.Free(Cont.CSTR_ClassName);
-      Interfaces.C.Strings.Free(Cont.CSTR_Title);
+      Interfaces.C.Strings.Free(Context.CSTR_ClassName);
+      Interfaces.C.Strings.Free(Context.CSTR_Title);
 
-      Free(Cont);
-   end FreeContext;
+   end Finalize;
    ---------------------------------------------------------------------------
 
    function NewContext
@@ -730,8 +733,7 @@ package body OpenGL.Context.Win32 is
    ---------------------------------------------------------------------------
 
    Implementation : constant Implementation_Type:=
-     (NewContext  => NewContext'Access,
-      FreeContext => FreeContext'Access);
+     (NewContext  => NewContext'Access);
 
    Identifier : constant Unbounded_String:=To_Unbounded_String("OpenGL");
 

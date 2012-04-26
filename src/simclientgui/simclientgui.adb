@@ -73,7 +73,7 @@ package body SimClientGUI is
    procedure Finalize is
    begin
 
-      GUIImplementation.FreeContext
+      GUI.FreeContext
         (Context => GUIContext);
 
    end Finalize;

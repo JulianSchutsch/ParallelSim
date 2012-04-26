@@ -22,6 +22,7 @@ pragma Ada_2005;
 with Ada.Text_IO; use Ada.Text_IO;
 --with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Canvas;
+with GUIMouse; use GUIMouse;
 
 package body YellowBlue.VerticalScrollBar is
 
@@ -244,25 +245,21 @@ package body YellowBlue.VerticalScrollBar is
 
    begin
       if ScrollBar.BarTopBorderCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarTopBorderCanvas);
+         FreeCanvas(ScrollBar.BarTopBorderCanvas);
       end if;
-      ScrollBar.Context.NewCanvas
-        (Object => Object_ClassAccess(ScrollBar),
-         Height => 1,
-         Width  => BarWidth,
-         Canvas => ScrollBar.BarTopBorderCanvas);
+      ScrollBar.BarTopBorderCanvas:=ScrollBar.NewCanvas
+        (Height => 1,
+         Width  => BarWidth);
       ScrollBar.BarTopBorderCanvas.Clear
         (Color => BarFrameColor);
       ------------------------------------------------------------------------
 
       if ScrollBar.BarTopCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarTopCanvas);
+         FreeCanvas(ScrollBar.BarTopCanvas);
       end if;
-      ScrollBar.Context.NewCanvas
-        (Object => Object_ClassAccess(ScrollBar),
-         Height => 1,
-         Width  => BarWidth,
-         Canvas => Scrollbar.BarTopCanvas);
+      ScrollBar.BarTopCanvas:=ScrollBar.NewCanvas
+        (Height => 1,
+         Width  => BarWidth);
       ScrollBar.BarTopCanvas.Clear
         (Color => BarFaceColor);
       ScrollBar.BarTopCanvas.Image(0,0):=BarFrameColor;
@@ -270,13 +267,11 @@ package body YellowBlue.VerticalScrollBar is
       ------------------------------------------------------------------------
 
       if ScrollBar.BarMiddleCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarMiddleCanvas);
+         FreeCanvas(ScrollBar.BarMiddleCanvas);
       end if;
-      ScrollBar.Context.NewCanvas
-        (Object => Object_ClassAccess(ScrollBar),
-         Height => 5,
-         Width  => BarWidth,
-         Canvas => ScrollBar.BarMiddleCanvas);
+      Scrollbar.BarMiddleCanvas:=ScrollBar.NewCanvas
+        (Height => 5,
+         Width  => BarWidth);
       ScrollBar.BarMiddleCanvas.Clear
         (Color => BarFaceColor);
       ScrollBar.BarMiddleCanvas.VertLine
@@ -307,13 +302,11 @@ package body YellowBlue.VerticalScrollBar is
       ------------------------------------------------------------------------
 
       if ScrollBar.BarBottomCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarBottomCanvas);
+         FreeCanvas(ScrollBar.BarBottomCanvas);
       end if;
-      ScrollBar.Context.NewCanvas
-        (Object => Object_ClassAccess(ScrollBar),
-         Height => 1,
-         Width  => BarWidth,
-         Canvas => ScrollBar.BarBottomCanvas);
+      ScrollBar.BarBottomCanvas:=ScrollBar.NewCanvas
+        (Height => 1,
+         Width  => BarWidth);
       ScrollBar.BarBottomCanvas.Clear
         (Color => BarFaceColor);
       ScrollBar.BarBottomCanvas.Image(0,0):=BarFrameColor;
@@ -321,13 +314,11 @@ package body YellowBlue.VerticalScrollBar is
       ------------------------------------------------------------------------
 
       if ScrollBar.BarBottomBorderCanvas/=null then
-         ScrollBar.Context.FreeCanvas(Scrollbar.BarBottomBorderCanvas);
+         FreeCanvas(Scrollbar.BarBottomBorderCanvas);
       end if;
-      ScrollBar.Context.NewCanvas
-        (Object => Object_ClassAccess(ScrollBar),
-         Height => 1,
-         Width  => BarWidth,
-         Canvas => ScrollBar.BarBottomBorderCanvas);
+      ScrollBar.BarBottomBorderCanvas:=ScrollBar.NewCanvas
+        (Height => 1,
+         Width  => BarWidth);
       ScrollBar.BarBottomBorderCanvas.Clear
         (Color => BarFrameColor);
       ------------------------------------------------------------------------
@@ -338,19 +329,19 @@ package body YellowBlue.VerticalScrollBar is
      (ScrollBar : access ScrollBar_Type) is
    begin
       if ScrollBar.BarTopBorderCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarTopBorderCanvas);
+         FreeCanvas(ScrollBar.BarTopBorderCanvas);
       end if;
       if ScrollBar.BarTopCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarTopCanvas);
+         FreeCanvas(ScrollBar.BarTopCanvas);
       end if;
       if ScrollBar.BarMiddleCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarMiddleCanvas);
+         FreeCanvas(ScrollBar.BarMiddleCanvas);
       end if;
       if ScrollBar.BarBottomCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarBottomCanvas);
+         FreeCanvas(ScrollBar.BarBottomCanvas);
       end if;
       if ScrollBar.BarBottomBorderCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.BarBottomBorderCanvas);
+         FreeCanvas(ScrollBar.BarBottomBorderCanvas);
       end if;
    end;
    ---------------------------------------------------------------------------
@@ -448,14 +439,12 @@ package body YellowBlue.VerticalScrollBar is
       MiddleX := Float(ScrollBar.GetBounds.Width-1)/2.0;
 
       if ScrollBar.UpButtonCanvas/=null then
-         ScrollBar.Context.FreeCanvas(ScrollBar.UpButtonCanvas);
+         FreeCanvas(ScrollBar.UpButtonCanvas);
       end if;
 
-      ScrollBar.Context.NewCanvas
-        (Object => Object_ClassAccess(ScrollBar),
-         Height => Integer(ButtonHeight),
-         Width  => ScrollBar.GetBounds.Width,
-         Canvas => ScrollBar.UpButtonCanvas);
+      ScrollBar.UpButtonCanvas:=ScrollBar.NewCanvas
+        (Height => Integer(ButtonHeight),
+         Width  => ScrollBar.GetBounds.Width);
 
       ScrollBar.UpButtonCanvas.Clear
         (Color => ButtonBackgroundColor);
@@ -493,14 +482,12 @@ package body YellowBlue.VerticalScrollBar is
          Visible => True);
 
       if ScrollBar.DownButtonCanvas/=null then
-         ScrollBar.Context.Freecanvas(Scrollbar.DownButtonCanvas);
+         FreeCanvas(Scrollbar.DownButtonCanvas);
       end if;
 
-      ScrollBar.Context.NewCanvas
-        (Object => Object_ClassAccess(ScrollBar),
-         Height => Integer(ButtonHeight),
-         Width  => ScrollBar.GetBounds.Width,
-         Canvas => ScrollBar.DownButtonCanvas);
+      ScrollBar.DownButtonCanvas:=ScrollBar.NewCanvas
+        (Height => Integer(ButtonHeight),
+         Width  => ScrollBar.GetBounds.Width);
 
       ScrollBar.DownButtonCanvas.Clear
         (Color => ButtonBackgroundColor);
@@ -553,13 +540,11 @@ package body YellowBlue.VerticalScrollBar is
       DrawButtons(ScrollBar);
 
       if ScrollBar.SlideCanvas/=null then
-         ScrollBar.Context.Freecanvas(ScrollBar.SlideCanvas);
+         Freecanvas(ScrollBar.SlideCanvas);
       end if;
-      ScrollBar.Context.NewCanvas
-        (Object => Object_ClassAccess(ScrollBar),
-         Height => 1,
-         Width  => ScrollBar.GetBounds.Width,
-         Canvas => ScrollBar.SlideCanvas);
+      ScrollBar.SlideCanvas:=ScrollBar.NewCanvas
+        (Height => 1,
+         Width  => ScrollBar.GetBounds.Width);
       ScrollBar.SlideCanvas.Clear
         (Color => SlideFaceColor);
       ScrollBar.SlideCanvas.Image(0,0):=SlideFrameColor;

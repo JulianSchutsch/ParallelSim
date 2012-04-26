@@ -28,10 +28,19 @@ with GUI; use GUI;
 package OpenGL.Context is
 
 private
+
    type Context_Type is new GUI.Context_Type with
       record
          null;
       end record;
+
+   type Canvas_Type is new GUI.Canvas_Type with
+      record
+         TextureID     : aliased GLuint_Type;
+         Height        : Natural;
+         Width         : Natural;
+      end record;
+   type Canvas_Access is access all Canvas_Type;
 
    overriding
    procedure NewCanvas
@@ -42,9 +51,8 @@ private
       Canvas  : out Canvas_ClassAccess);
 
    overriding
-   procedure FreeCanvas
-     (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess);
+   procedure Finalize
+     (Canvas : access Canvas_Type);
 
    procedure Paint
      (Context : in out Context_Type);

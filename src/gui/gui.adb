@@ -25,12 +25,76 @@ with Ada.Text_IO; use Ada.Text_IO;
 package body GUI is
 
    procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Object_Type,
-      Name   => Object_Access);
+     (Object => Object_Type'Class,
+      Name   => Object_ClassAccess);
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Canvas_Type'Class,
       Name   => Canvas_ClassAccess);
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => Context_Type'Class,
+      Name   => Context_ClassAccess);
+
+   function NewCanvas
+     (Item   : access Object_Type;
+      Height : Integer;
+      Width  : Integer)
+      return Canvas_ClassAccess is
+
+      NewCanvas : Canvas_ClassAccess;
+
+   begin
+
+      Item.Context.NewCanvas
+        (Object => Object_ClassAccess(Item),
+         Height => Height,
+         Width  => Width,
+         Canvas => NewCanvas);
+
+      return NewCanvas;
+
+   end NewCanvas;
+   ---------------------------------------------------------------------------
+
+   procedure FreeContext
+     (Context : in out Context_ClassAccess) is
+   begin
+
+      if Context/=null then
+         Context.Finalize;
+         Free(Context);
+      end if;
+
+   end FreeContext;
+   ---------------------------------------------------------------------------
+
+   procedure FreeCanvas
+     (Canvas : in out Canvas_ClassAccess) is
+   begin
+
+      if Canvas/=null then
+         Canvas.Finalize;
+         Free(Canvas);
+      end if;
+
+   end FreeCanvas;
+   ---------------------------------------------------------------------------
+
+   function GetFirstCanvas
+     (Item : access Object_Type)
+      return Canvas_ClassAccess is
+   begin
+      return Item.Canvasse;
+   end GetFirstCanvas;
+   ---------------------------------------------------------------------------
+
+   function GetBounds
+     (Canvas : access Canvas_Type)
+      return Bounds_Type is
+   begin
+      return Canvas.Bounds;
+   end GetBounds;
    ---------------------------------------------------------------------------
 
    function GetLastTreeObject
@@ -55,7 +119,7 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    function GetNextCanvas
-     (Canvas : Canvas_ClassAccess)
+     (Canvas : access Canvas_Type)
       return Canvas_ClassAccess is
    begin
       return Canvas.Next;
@@ -725,12 +789,11 @@ package body GUI is
    end AddCanvasByContext;
    ---------------------------------------------------------------------------
 
-   procedure RemoveCanvasByContext
-     (Canvas : Canvas_ClassAccess) is
-
-      CanvasVal : Canvas_ClassAccess:=Canvas;
+   procedure Finalize
+     (Canvas : access Canvas_Type) is
 
    begin
+
       if Canvas.Next/=null then
          Canvas.Next.Last:=Canvas.Last;
       end if;
@@ -740,9 +803,7 @@ package body GUI is
          Canvas.Object.Canvasse:=Canvas.Next;
       end if;
 
-      Free(CanvasVal);
-
-   end RemoveCanvasByContext;
+   end Finalize;
    ---------------------------------------------------------------------------
 
    procedure Initialize
@@ -781,7 +842,7 @@ package body GUI is
    procedure Finalize
      (Item : access Object_Type) is
 
-      ItemVal : Object_Access;
+      ItemVal : Object_ClassAccess;
 
    begin
 
@@ -815,13 +876,13 @@ package body GUI is
 
          while Canvas/=null loop
             NextCanvas:=Canvas.Next;
-            Item.Context.FreeCanvas(Canvas);
+            Free(Canvas);
             Canvas:=NextCanvas;
          end loop;
       end;
 
       -- Remove Object from the tree
-      ItemVal:=Object_Access(Item);
+      ItemVal:=Object_ClassAccess(Item);
 
       if Item.Parent/=null then
          if Item.Next/=null then
@@ -843,17 +904,17 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    procedure Initialize
-     (Context : Context_ClassAccess) is
+     (Context : access Context_Type) is
    begin
       -- TODO: Use specialized objects
       Context.WindowArea          := new Object_Type;
       Context.ModalArea           := new Object_Type;
       Context.ContextArea         := new Object_Type;
-      Context.WindowArea.Context  := Context;
-      Context.ModalArea.Context   := Context;
-      Context.ContextArea.Context := Context;
+      Context.WindowArea.Context  := Context_ClassAccess(Context);
+      Context.ModalArea.Context   := Context_ClassAccess(Context);
+      Context.ContextArea.Context := Context_ClassAccess(Context);
       PropagateContextResize
-        (Context => Context,
+        (Context => Context_ClassAccess(Context),
          Height  => Context.Bounds.Height,
          Width   => Context.Bounds.Width);
    end Initialize;

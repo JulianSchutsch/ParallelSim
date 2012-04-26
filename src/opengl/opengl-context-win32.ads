@@ -26,7 +26,6 @@ pragma Ada_2005;
 package OpenGL.Context.Win32 is
 
    procedure Register;
-
    procedure UnRegister;
 
 end OpenGL.Context.Win32;

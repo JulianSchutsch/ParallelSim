@@ -56,17 +56,17 @@ package body YellowBlue.Button is
    begin
 
       if Item.Canvas/=null then
-         Item.Context.FreeCanvas(Item.Canvas);
+         Item.Canvas.Finalize;
       end if;
       if (Bounds.Height<=0)
         or (Bounds.Width<=0) then
          return;
       end if;
-      Item.Context.NewCanvas
-        (Object => Object_ClassAccess(Item),
-         Height => Bounds.Height,
-         Width  => Bounds.Width,
-         Canvas => Item.Canvas);
+
+      Item.Canvas:=Item.NewCanvas
+        (Height => Bounds.Height,
+         Width  => Bounds.Width);
+
       Item.Canvas.Clear(16#FF7F0000#);
       Item.Canvas.Rectangle
         (X => 0,

@@ -30,9 +30,7 @@ package body GUI.Console is
       Put(Item.all'Address);
       New_Line;
 
-      GUI.Initialize
-        (Item   => Object_Access(Item),
-         Parent => Parent);
+      GUI.Object_Access(Item).Initialize(Parent);
 
       Item.FocusStyle:=FocusStyleAccept;
 
@@ -43,7 +41,7 @@ package body GUI.Console is
      (Item : access Console_Type) is
    begin
 
-      Object_Access(Item).Finalize;
+      GUI.Object_Access(Item).Finalize;
 
    end Finalize;
    ---------------------------------------------------------------------------

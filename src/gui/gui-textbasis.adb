@@ -21,6 +21,7 @@ with Ada.Unchecked_Deallocation;
 with Canvas;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with GUIDefinitions; use GUIDefinitions;
 
 package body GUI.TextBasis is
 
@@ -87,7 +88,7 @@ package body GUI.TextBasis is
    begin
 
       if CanvasLine.Canvas/=null then
-         Item.Context.FreeCanvas(CanvasLine.Canvas);
+         FreeCanvas(CanvasLine.Canvas);
       end if;
 
       Free(CanvasLine);
@@ -923,7 +924,7 @@ package body GUI.TextBasis is
         (Item   => Object_Access(Item),
          Parent => Parent);
 
-      Item.FocusStyle:=GUI.FocusStyleAccept;
+      Item.FocusStyle:=FocusStyleAccept;
 
       Item.Context.NewCanvas
         (Object => Object_ClassAccess(Item),

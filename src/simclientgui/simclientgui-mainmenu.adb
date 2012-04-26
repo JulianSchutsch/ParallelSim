@@ -22,6 +22,7 @@ pragma Ada_2005;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 with GUI.Button;
+with GUI.Combobox;
 
 package body SimClientGUI.MainMenu is
 
@@ -35,6 +36,9 @@ package body SimClientGUI.MainMenu is
    MenuHeight   : constant := 3*(ButtonHeight+ButtonSpace)-ButtonSpace;
 
    Enabled : Boolean;
+
+   Combobox : GUI.Combobox.Combobox_Type;
+   pragma Unreferenced(Combobox);
 
    procedure ResizeWindowArea
      (CallBackObject : AnyObject_ClassAccess) is

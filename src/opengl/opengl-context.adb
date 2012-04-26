@@ -24,20 +24,13 @@ with Ada.Unchecked_Deallocation;
 with Canvas;
 with Basics; use Basics;
 with Boundscalc; use Boundscalc;
+with GUIDefinitions; use GUIDefinitions;
 
 package body OpenGL.Context is
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Canvas.Image_Type,
       Name   => Canvas.Image_Access);
-
-   type Canvas_Type is new GUI.Canvas_Type with
-      record
-         TextureID     : aliased GLuint_Type;
-         Height        : Natural;
-         Width         : Natural;
-      end record;
-   type Canvas_Access is access all Canvas_Type;
 
    procedure NewCanvas
      (Context : in out Context_Type;
@@ -104,26 +97,18 @@ package body OpenGL.Context is
    end NewCanvas;
    ---------------------------------------------------------------------------
 
-   procedure FreeCanvas
-     (Context : in out Context_Type;
-      Canvas  : in out Canvas_ClassAccess) is
-
-      pragma Unreferenced(Context);
-
+   procedure Finalize
+     (Canvas : access Canvas_Type) is
    begin
-
       glDeleteTextures
         (n        => 1,
-         textures => Canvas_Access(Canvas).TextureID'Access);
+         textures => Canvas.TextureID'Access);
 
-      Free(Canvas_Access(Canvas).Image);
+      Free(Canvas.Image);
 
-      GUI.RemoveCanvasByContext
-        (Canvas => Canvas);
+      GUI.Canvas_Access(Canvas).Finalize;
 
-      Canvas:=null;
-
-   end FreeCanvas;
+   end Finalize;
    ---------------------------------------------------------------------------
 
    procedure Paint
@@ -151,7 +136,7 @@ package body OpenGL.Context is
 
                   ObjectAbsBounds:=p.AbsBounds;
 
-                  CanvasCursor:=Canvas_Access(p.Canvasse);
+                  CanvasCursor:=Canvas_Access(p.GetFirstCanvas);
 
                   CanvasLoop:
                   while CanvasCursor/=null loop
@@ -181,8 +166,9 @@ package body OpenGL.Context is
 
                      NestBounds
                        (ParentAbsBounds => ObjectAbsBounds,
-                        RectBounds      => CanvasCursor.Bounds,
+                        RectBounds      => CanvasCursor.GetBounds,
                         ResultBounds    => CanvasAbsBounds);
+
                      if CanvasAbsBounds.AbsVisible then
 
                         declare
@@ -227,7 +213,8 @@ package body OpenGL.Context is
 
                      end if;
 
-                     CanvasCursor:=Canvas_Access(GetNextCanvas(Canvas_ClassAccess(CanvasCursor)));
+                     CanvasCursor:=Canvas_Access
+                       (GUI.Canvas_ClassAccess(CanvasCursor).GetNextCanvas);
 
                   end loop CanvasLoop;
                   ------------------------------------------------------------

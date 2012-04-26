@@ -34,7 +34,7 @@ package Canvas is
 
    type Image_Access is access all Image_Type;
 
-   type Canvas_Type is tagged
+   type Canvas_Type is abstract tagged limited
       record
          Image         : Image_Access := null;
          Modified      : Boolean      := True;
