@@ -12,6 +12,8 @@ with Ada.Unchecked_Conversion;
 with Basics; use Basics;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Config;
+with GUIMouse; use GUIMouse;
+with GUIKeys; use GUIKeys;
 
 package body OpenGL.Context.Xlib is
 
@@ -93,6 +95,11 @@ package body OpenGL.Context.Xlib is
          WMHints             : XWMHints_Access       := null;
          MapNotified         : Boolean               := False;
       end record;
+
+   overriding
+   procedure Finalize
+     (Context : in out Context_Type);
+
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Context_Type,
@@ -299,45 +306,40 @@ package body OpenGL.Context.Xlib is
    end Process;
    ---------------------------------------------------------------------------
 
-   procedure FreeContext
-     (Context : Context_ClassAccess) is
+   procedure Finalize
+     (Context : in out Context_Type) is
 
       use type glX.GLXContext_Access;
       use type Interfaces.C.int;
 
-      Cont : Context_Access;
-
    begin
-      Cont:=Context_Access(Context);
-
       -- Deinitialize basic window environment
-      if Cont.ContextInitialized then
-         GUI.Finalize
-           (Context => GUI.Context_Type(Cont.all));
+      if Context.ContextInitialized then
+         GUI.Context_Type(Context).Finalize;
       end if;
 
-      if Cont.InputContext/=null then
-         XDestroyIC(Cont.InputContext);
+      if Context.InputContext/=null then
+         XDestroyIC(Context.InputContext);
       end if;
 
-      if Cont.InputIM/=null then
-         XCloseIM(Cont.InputIM);
+      if Context.InputIM/=null then
+         XCloseIM(Context.InputIM);
       end if;
 
-      if Cont.WMHints/=null then
+      if Context.WMHints/=null then
          XFree
-           (Cont.WMHints.all'Address);
+           (Context.WMHints.all'Address);
       end if;
 
-      if Cont.Visual/=null then
+      if Context.Visual/=null then
          XFree
-           (Cont.Visual.all'Address);
+           (Context.Visual.all'Address);
       end if;
 
-      if Cont.GLXContext/=null then
+      if Context.GLXContext/=null then
 
          if glX.glXMakeCurrent
-           (dpy      => Cont.Display,
+           (dpy      => Context.Display,
             drawable => 0,
             context  => Null)=0 then
             raise FailedToDestroyContext
@@ -345,38 +347,36 @@ package body OpenGL.Context.Xlib is
          end if;
 
          glX.glXDestroyContext
-           (dpy => Cont.Display,
-            ctx => Cont.GLXContext);
+           (dpy => Context.Display,
+            ctx => Context.GLXContext);
 
       end if;
 
-      if Cont.Window/=0 then
+      if Context.Window/=0 then
          XDestroyWindow
-           (display => Cont.Display,
-            window  => Cont.Window);
+           (display => Context.Display,
+            window  => Context.Window);
       end if;
 
-      if Cont.Display/=null then
+      if Context.Display/=null then
          XCloseDisplay
-           (display => Cont.Display);
+           (display => Context.Display);
       end if;
       -- Remove Context from the contexts list
-      if Cont.LastContext/=null then
-         Cont.LastContext.NextContext:=Cont.NextContext;
+      if Context.LastContext/=null then
+         Context.LastContext.NextContext:=Context.NextContext;
       else
-         Contexts:=Cont.NextContext;
+         Contexts:=Context.NextContext;
          if Contexts=null then
             ProcessLoop.Remove(Process'Access);
          end if;
       end if;
 
-      if Cont.NextContext/=null then
-         Cont.NextContext.LastContext:=Cont.LastContext;
+      if Context.NextContext/=null then
+         Context.NextContext.LastContext:=Context.LastContext;
       end if;
 
-      Free(Cont);
-
-   end FreeContext;
+   end Finalize;
    ---------------------------------------------------------------------------
 
    function NewContext
@@ -675,8 +675,7 @@ package body OpenGL.Context.Xlib is
    ---------------------------------------------------------------------------
 
    Implementation : constant Implementation_Type:=
-     (NewContext  => NewContext'Access,
-      FreeContext => FreeContext'Access);
+     (NewContext  => NewContext'Access);
    Identifier     : constant Unbounded_String:=To_Unbounded_String("OpenGL");
 
    procedure Register is
