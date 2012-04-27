@@ -69,7 +69,6 @@ package body Fonts.Freetype is
         and Wide_Wide_Character'Pos(FirstChar)/=0 then
 
          Result:=FTC_Manager_LookUpSize(Manager,Font.Scaler'Access,FontSize'Access);
-         Put(FontSize.face.charmap);
 
          FirstGlyph:=FTC_CMapCache_Lookup
            (cache      => CMapCache,
@@ -229,22 +228,11 @@ package body Fonts.Freetype is
          face_index   => Font.Index,
          aface        => aface);
       if Result/=0 then
+         -- TODO : Exception creation?
          Put("FAILED LOADING FONT");
          Put(Integer(Result));
          New_Line;
       end if;
-      Put("Num Glyphs");
-      Put(Integer(aface.all.num_glyphs));
-      New_Line;
-      Put("Num Charmaps");
-      Put(Integer(aface.all.num_charmaps));
-      New_Line;
-      Put("Ascender");
-      Put(Integer(aface.all.ascender));
-      New_Line;
-      Put("Height");
-      Put(Integer(aface.all.height));
-      New_Line;
       Interfaces.C.Strings.Free(CFileName);
 
       return Result;

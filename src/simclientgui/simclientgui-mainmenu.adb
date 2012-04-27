@@ -23,6 +23,8 @@ with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 with GUI.Button;
 with GUI.Combobox;
+with GUI.ListBox;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body SimClientGUI.MainMenu is
 
@@ -37,8 +39,8 @@ package body SimClientGUI.MainMenu is
 
    Enabled : Boolean;
 
-   Combobox : GUI.Combobox.Combobox_Type;
-   pragma Unreferenced(Combobox);
+   Combobox : GUI.Combobox.Combobox_ClassAccess:=null;
+   ListBox  : GUI.ListBox.ListBox_ClassAccess:=null;
 
    procedure ResizeWindowArea
      (CallBackObject : AnyObject_ClassAccess) is
@@ -83,6 +85,25 @@ package body SimClientGUI.MainMenu is
       ButtonJoinGame.SetCaption(U("Join Game"));
       ButtonExit       := ThemeImplementation.NewButton(GUIContext.WindowArea);
       ButtonExit.SetCaption(U("Exit"));
+      Combobox:=ThemeImplementation.NewCombobox(GUIContext.WindowArea);
+      Combobox.SetBounds
+        (0,0,25,200,True);
+      Combobox.AddEntry
+        (String => U("Entry 1"),
+         Color  => 16#FFFFFFFF#);
+      Combobox.AddEntry
+        (String => U("Entry 2"),
+         Color  => 16#FFFFFFFF#);
+      Combobox.SetIndex(1);
+      ListBox:=ThemeImplementation.NewListBox(GUIContext.WindowArea);
+      ListBox.SetBounds
+        (40,0,100,200,True);
+      ListBox.AddEntry
+        (String => U("Line 1"),
+         Color  => 16#FFFFFFFF#);
+      ListBox.AddEntry
+        (String => U("Line 2"),
+         Color  => 16#FFFFFFFF#);
       ResizeWindowArea(null);
       GUIContext.WindowArea.OnResize:=ResizeWindowArea'Access;
       Enabled := True;

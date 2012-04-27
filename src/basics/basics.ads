@@ -26,6 +26,7 @@
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Strings.Unbounded.Hash;
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Vectors;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
@@ -38,12 +39,10 @@ package Basics is
    type AnyObject_Type is tagged null record;
    type AnyObject_ClassAccess is access all AnyObject_Type'Class;
 
-   function StringSumHash(id: Unbounded_String) return Ada.Containers.Hash_Type;
-
    package StringStringMap is new Ada.Containers.Hashed_maps
      (Key_Type => Unbounded_String,
       Element_Type => Unbounded_String,
-      Hash => StringSumHash,
+      Hash => Ada.Strings.Unbounded.Hash,
       Equivalent_Keys => "=");
 
    package StringVector is new Ada.Containers.Vectors

@@ -747,7 +747,7 @@ package body GUI.TextBasis is
       Item.EditLine := SelectLine(Item,LineNumber);
 
       if Item.EditLine=null then
-         Item.EditLine:=Item.NewLine(To_Unbounded_String(""),16#FFFFFFFF#);
+         Item.EditLine:=NewLine(Item,To_Unbounded_String(""),16#FFFFFFFF#);
       end if;
 
       Item.EditPos:=1+Item.EditLine.Insert

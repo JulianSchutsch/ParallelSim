@@ -18,33 +18,18 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   25.Mar 2012 Julian Schutsch
+--   26.Apr 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with GUI.Window;
-with GUI.ScrollBar;
-with GUI.Console;
-with GUI.Button;
-with GUI.Combobox;
-with GUI.ListBox;
+with GUI;
+with GUI.Combobox; use GUI.Combobox;
 
-package GUI.Themes is
+package YellowBlue.Combobox is
 
-   type Implementation_Type is
-      record
-         NewWindow              : GUI.Window.Window_Constructor       := null;
-         NewVerticalScrollBar   : GUI.ScrollBar.ScrollBar_Constructor := null;
-         VerticalScrollBarWidth : Integer;
-         NewConsole             : GUI.Console.Console_Constructor     := null;
-         NewButton              : GUI.Button.Button_Constructor       := null;
-         NewCombobox            : GUI.Combobox.Combobox_Constructor   := null;
-         NewListBox             : GUI.ListBox.ListBox_Constructor     := null;
-      end record;
+   function NewCombobox
+     (Parent : GUI.Object_ClassAccess)
+      return GUI.Combobox.Combobox_ClassAccess;
 
-   package Implementations is new Config.Implementations
-     (Implementation_Type => Implementation_Type,
-      IdentifierKey       => To_Unbounded_String("Theme"));
-
-end GUI.Themes;
+end YellowBlue.Combobox;

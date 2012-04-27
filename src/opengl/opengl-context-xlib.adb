@@ -100,7 +100,6 @@ package body OpenGL.Context.Xlib is
    procedure Finalize
      (Context : in out Context_Type);
 
-
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Context_Type,
       Name   => Context_Access);

@@ -110,9 +110,6 @@ package body Fonts is
          XPosition:=XPosition+Font_ClassAccess(Font).Kerning
            (FirstChar  => PreviousCharacter,
             SecondChar => ThisCharacter);
-         Put("Pos");
-         Put(Float'Image(XPosition));
-         New_Line;
 
          Font_ClassAccess(Font).CharacterOut
            (Canvas      => Canvas,

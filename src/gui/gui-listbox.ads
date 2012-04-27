@@ -18,33 +18,39 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   25.Mar 2012 Julian Schutsch
+--   27.Apr 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with GUI.Window;
-with GUI.ScrollBar;
-with GUI.Console;
-with GUI.Button;
-with GUI.Combobox;
-with GUI.ListBox;
+package GUI.ListBox is
 
-package GUI.Themes is
+   type ListBox_Type is new GUI.Object_Type with private;
+   type ListBox_Access is access all ListBox_Type;
+   type ListBox_ClassAccess is access all ListBox_Type'Class;
 
-   type Implementation_Type is
+   overriding
+   procedure Finalize
+     (Item : access ListBox_Type);
+
+   procedure AddEntry
+     (Item   : access ListBox_Type;
+      String : Unbounded_String;
+      Color  : Canvas.Color_Type) is null;
+
+   procedure ClearEntries
+     (Item : access ListBox_Type) is null;
+
+   type ListBox_Constructor is
+     access function
+       (Parent : GUI.Object_ClassAccess)
+        return ListBox_ClassAccess;
+
+private
+
+   type ListBox_Type is new GUI.Object_Type with
       record
-         NewWindow              : GUI.Window.Window_Constructor       := null;
-         NewVerticalScrollBar   : GUI.ScrollBar.ScrollBar_Constructor := null;
-         VerticalScrollBarWidth : Integer;
-         NewConsole             : GUI.Console.Console_Constructor     := null;
-         NewButton              : GUI.Button.Button_Constructor       := null;
-         NewCombobox            : GUI.Combobox.Combobox_Constructor   := null;
-         NewListBox             : GUI.ListBox.ListBox_Constructor     := null;
+         null;
       end record;
 
-   package Implementations is new Config.Implementations
-     (Implementation_Type => Implementation_Type,
-      IdentifierKey       => To_Unbounded_String("Theme"));
-
-end GUI.Themes;
+end GUI.ListBox;

@@ -44,6 +44,23 @@ package body YellowBlue.Button is
    overriding
    procedure Resize
      (Item : access Button_Type);
+
+   overriding
+   procedure Finalize
+     (Item : access Button_Type);
+   ---------------------------------------------------------------------------
+
+   procedure Finalize
+     (Item : access Button_Type) is
+
+      use type Fonts.Font_ClassAccess;
+
+   begin
+      if Item.Font/=null then
+         Fonts.Release(Item.Font);
+      end if;
+      GUI.Button.Button_Access(Item).Finalize;
+   end;
    ---------------------------------------------------------------------------
 
    procedure DrawCanvas

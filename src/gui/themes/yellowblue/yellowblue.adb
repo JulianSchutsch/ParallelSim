@@ -28,6 +28,8 @@ with YellowBlue.Window; use YellowBlue.Window;
 with YellowBlue.VerticalScrollBar; use YellowBlue.VerticalScrollBar;
 with YellowBlue.Console; use YellowBlue.Console;
 with YellowBlue.Button; use YellowBlue.Button;
+with YellowBlue.Combobox; use YellowBlue.Combobox;
+with YellowBlue.ListBox; use YellowBlue.ListBox;
 
 package body YellowBlue is
 
@@ -36,7 +38,9 @@ package body YellowBlue is
       NewVerticalScrollBar   => NewVerticalScrollBar'Access,
       VerticalScrollBarWidth => VerticalScrollBarWidth,
       NewConsole             => NewConsole'Access,
-      NewButton              => NewButton'Access);
+      NewButton              => NewButton'Access,
+      NewCombobox            => NewCombobox'Access,
+      NewListBox             => NewListBox'Access);
 
    Identifier : constant Unbounded_String:=U("YellowBlue");
 

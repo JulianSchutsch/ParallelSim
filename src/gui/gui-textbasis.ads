@@ -82,12 +82,6 @@ package GUI.TextBasis is
       String : Unbounded_String;
       Color  : Canvas.Color_Type);
 
-   function NewLine
-     (Item : access TextBasis_Type;
-      String : Unbounded_String;
-      Color : Canvas.Color_Type)
-      return Line_Access;
-
    procedure InsertBefore
      (Item       : access TextBasis_Type;
       LineNumber : Natural;

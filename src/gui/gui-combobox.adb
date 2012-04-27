@@ -22,31 +22,94 @@ pragma Ada_2005;
 package body GUI.Combobox is
 
    procedure AddEntry
-     (Item  : access Combobox_Type;
-      Text  : Unbounded_String;
-      Color : Canvas.Color_Type) is
-
-      NewEntry : ComboboxEntry_Access;
-
+     (Item   : access Combobox_Type;
+      String : Unbounded_String;
+      Color  : Canvas.Color_Type) is
    begin
-
-      NewEntry:=new ComboboxEntry_Type;
-      NewEntry.Last:=Item.LastEntry;
-      if Item.LastEntry/=null then
-         Item.LastEntry.Next:=NewEntry;
-      else
-         Item.FirstEntry:=NewEntry;
-      end if;
-
+      Item.Choices.Append
+        ((String => String,
+          Color  => Color));
    end AddEntry;
    ---------------------------------------------------------------------------
 
-   procedure RemoveEntry
-     (Item     : access Combobox_Type;
-      Position : ComboboxEntry_Cursor) is
+   procedure SetIndex
+     (Item  : access Combobox_Type;
+      Index : Integer) is
    begin
-      null;
-   end RemoveEntry;
+      if Index not in -1..Integer(Item.Choices.Length) then
+         raise IndexOutOfRange;
+      end if;
+      Item.Index:=Index;
+   end SetIndex;
+   ---------------------------------------------------------------------------
+
+   function GetIndex
+     (Item : access Combobox_Type)
+      return Integer is
+   begin
+      return Item.Index;
+   end GetIndex;
+   ---------------------------------------------------------------------------
+
+   function GetSelectedEntryString
+     (Item : access Combobox_Type)
+      return Unbounded_String is
+
+      Cursor : StringAndColorList_Pack.Cursor;
+
+   begin
+
+      if Item.Index/=-1 then
+         Cursor:=Item.Choices.First;
+         for I in 1..Item.Index loop
+            Cursor:=StringAndColorList_Pack.Next(Cursor);
+         end loop;
+         return StringAndColorList_Pack.Element(Cursor).String;
+      else
+         return U("");
+      end if;
+
+   end GetSelectedEntryString;
+   ---------------------------------------------------------------------------
+
+   procedure GetSelectedEntry
+     (Item   : access Combobox_Type;
+      String : out Unbounded_String;
+      Color  : out Canvas.Color_Type) is
+
+      Cursor : StringAndColorList_Pack.Cursor;
+
+   begin
+
+      if Item.Index/=-1 then
+         Cursor:=Item.Choices.First;
+         for I in 1..Item.Index loop
+            Cursor:=StringAndColorList_Pack.Next(Cursor);
+         end loop;
+         String := StringAndColorList_Pack.Element(Cursor).String;
+         Color  := StringAndColorList_Pack.Element(Cursor).Color;
+      else
+         String := U("");
+         Color  := 0;
+      end if;
+
+   end GetSelectedEntry;
+   ---------------------------------------------------------------------------
+
+   procedure Finalize
+     (Item : access Combobox_Type) is
+   begin
+      GUI.Object_Access(Item).Finalize;
+   end Finalize;
+   ---------------------------------------------------------------------------
+
+   procedure Initialize
+     (Item   : access Combobox_Type;
+      Parent : Object_ClassAccess) is
+   begin
+      GUI.Object_Access(Item).Initialize(Parent);
+      Item.Index:=-1;
+   end Initialize;
    ---------------------------------------------------------------------------
 
 end GUI.Combobox;

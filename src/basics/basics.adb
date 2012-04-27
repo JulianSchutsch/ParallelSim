@@ -151,20 +151,6 @@ package body Basics is
    end UTF8ToUCS4;
    ---------------------------------------------------------------------------
 
-   function StringSumHash
-     (id: Unbounded_String)
-      return Ada.Containers.Hash_Type is
-
-      Sum : Ada.Containers.Hash_Type:=0;
-
-   begin
-      for i in 1..Length(id) loop
-         Sum := Sum+Character'Pos(Element(id,i));
-      end loop;
-      return Sum;
-   end;
-   ---------------------------------------------------------------------------
-
    procedure Put
      (Item : StringStringMap.Map) is
 
