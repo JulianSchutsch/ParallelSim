@@ -33,12 +33,15 @@ with GUI;
 with GUI.Button;
 with GUI.Themes;
 with GUI.UseImplementations;
+
 with YellowBlue;
+
 with Config;
-with Fonts.Freetype;
-with Basics; use Basics;
-with BitmapFonts;
 with ProcessLoop;
+with Basics; use Basics;
+
+with Fonts.Freetype;
+with BitmapFonts;
 
 procedure Button is
 
@@ -91,6 +94,7 @@ begin
    Context:=GUIImplementation.NewContext
      (Configuration => Configuration,
       Node          => U(""));
+
    -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
