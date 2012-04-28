@@ -1,0 +1,11 @@
+V "GNAT Lib v2010"
+P ZX
+R nnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnnn
+
+U bitmapfonts%s		bitmapfonts.ads		633611fb NE OO PK
+
+D bitmapfonts.ads	20120428164118 633611fb
+D system.ads		20100603062800 0e6ea6c5
+X 1 bitmapfonts.ads
+1K9*BitmapFonts 2l5 2e16
+
