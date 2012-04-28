@@ -54,7 +54,9 @@ package Implementations is
      (ImplementationBSDSockets,
       ImplementationMPICH2,
       ImplementationWGL,
-      ImplementationXlib);
+      ImplementationXlib,
+      ImplementationFreeType,
+      ImplementationBitmapFonts);
 
    Default : array(Implementation_Enum) of Boolean:=(others=>False);
 
@@ -63,10 +65,12 @@ package Implementations is
    type InitializeProc_Access is access procedure;
 
    ImplementationInitialize : array(Implementation_Enum) of InitializeProc_Access:=
-     (ImplementationBSDSockets => null,
-      ImplementationMPICH2     => MPICH2_Initialize'Access,
-      ImplementationWGL        => null,
-      ImplementationXlib       => null);
+     (ImplementationBSDSockets  => null,
+      ImplementationMPICH2      => MPICH2_Initialize'Access,
+      ImplementationWGL         => null,
+      ImplementationXlib        => null,
+      ImplementationFreeType    => null,
+      ImplementationBitmapFonts => null);
 
    -- This package is used to store the Implementations selected for each
    -- module.
@@ -98,6 +102,12 @@ package Implementations is
          Module => ModuleGUI),
       ImplementationXlib =>
         (Name   => U("xlib"),
+         Module => ModuleGUI),
+      ImplementationFreeType =>
+        (Name   => U("freetype"),
+         Module => ModuleGUI),
+      ImplementationBitmapFonts =>
+        (Name   => U("bitmapfonts"),
          Module => ModuleGUI));
 
    -- Packages for each module
@@ -109,11 +119,18 @@ package Implementations is
      (0 => U("OpenGL.Context.Win32"));
    ImplementationListXlib : aliased StringArray_Type:=
      (0 => U("OpenGL.Context.Xlib"));
+   ImplementationListFreeType : aliased StringArray_Type:=
+     (0 => U("Fonts.FreeType"));
+   ImplementationListBitmapFonts : aliased StringArray_Type:=
+     (0 => U("BitmapFonts"));
+
    ImplementationPackages : array(Implementation_Enum) of StringArray_Access:=
-     (ImplementationBSDSockets => ImplementationListBSDSockets'Access,
-      ImplementationMPICH2     => ImplementationListMPICH2'Access,
-      ImplementationWGL        => ImplementationListWGL'Access,
-      ImplementationXlib       => ImplementationListXLib'Access);
+     (ImplementationBSDSockets  => ImplementationListBSDSockets'Access,
+      ImplementationMPICH2      => ImplementationListMPICH2'Access,
+      ImplementationWGL         => ImplementationListWGL'Access,
+      ImplementationXlib        => ImplementationListXLib'Access,
+      ImplementationFreeType    => ImplementationListFreeType'Access,
+      ImplementationBitmapFonts => ImplementationListBitmapFonts'Access);
 
    Compatible : array(Implementation_Enum,Plattform_Enum) of Boolean:=
      (ImplementationBSDSockets =>
@@ -132,7 +149,15 @@ package Implementations is
 
       ImplementationXlib =>
         (PlattformLinux     => True,
-         Others             => False));
+         Others             => False),
+
+      ImplementationFreeType =>
+        (PlattformLinux     => True,
+         PlattformWindowsNT => True,
+         others             => False),
+
+      ImplementationBitmapFonts =>
+        (others => True));
 
    -- For automatic source generation to find the filename and name for
    -- a module.

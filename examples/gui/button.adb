@@ -40,9 +40,6 @@ with Config;
 with ProcessLoop;
 with Basics; use Basics;
 
-with Fonts.Freetype;
-with BitmapFonts;
-
 procedure Button is
 
    GUIImplementation : GUI.Implementation_Type;
@@ -78,10 +75,6 @@ begin
 
    -- This is the default theme, now added to GUI.Themes.Implementations
    YellowBlue.Register;
-
-   -- Two font engines
-   Fonts.Freetype.Register;
-   BitmapFonts.Register;
 
    -- Now select any available GUI implementation
    GUIImplementation := GUI.Implementations.FindAny;
@@ -121,8 +114,6 @@ begin
    GUI.FreeContext(Context);
 
    -- Unregister all which has been registered
-   BitmapFonts.Unregister;
-   Fonts.Freetype.Unregister;
    YellowBlue.UnRegister;
    GUI.UseImplementations.Unregister;
 
