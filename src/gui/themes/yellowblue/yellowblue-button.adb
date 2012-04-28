@@ -206,6 +206,8 @@ package body YellowBlue.Button is
            Item.OnClick/=null then
             Item.OnClick(Item.CallBackObject);
          end if;
+         Item.Pressed:=False;
+         Item.PressedWithin:=False;
          DrawCanvas(Item);
       end if;
 

@@ -278,11 +278,12 @@ package body YellowBlue.Window is
       end if;
 
       if Window.Font/=null then
+
          declare
-            Caption   : Unbounded_String:=Window.GetCaption;
-            TextWidth : constant Integer
-              :=Window.Font.TextWidth(Caption);
+            Caption   : Unbounded_String := Window.GetCaption;
+            TextWidth : constant Integer := Window.Font.TextWidth(Caption);
          begin
+
             Window.TitleCanvas:=Window.NewCanvas
               (Height => TitleBarHeight,
                Width  => TextWidth);

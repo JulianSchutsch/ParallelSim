@@ -42,7 +42,6 @@ begin
 
    GUI.UseImplementations.Register;
    YellowBlue.Register;
-   Fonts.Freetype.Initialize;
 
    Configuration.Insert(U("GUI.GUIImplementation") , U("OpenGL"));
    Configuration.Insert(U("GUI.Theme")             , U("YellowBlue"));
@@ -56,7 +55,6 @@ begin
 
    SimClientGUI.Finalize;
 
-   Fonts.Freetype.Finalize;
    YellowBlue.UnRegister;
    GUI.UseImplementations.Unregister;
 
