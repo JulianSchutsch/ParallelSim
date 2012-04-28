@@ -35,8 +35,8 @@ package body OpenGL.Context is
    procedure NewCanvas
      (Context : in out Context_Type;
       Object  : Object_ClassAccess;
-      Height  : Positive;
-      Width   : Positive;
+      Height  : Integer;
+      Width   : Integer;
       Canvas  : out Canvas_ClassAccess) is
       pragma Unreferenced(Context);
 
@@ -46,11 +46,16 @@ package body OpenGL.Context is
       NewCanv        := new Canvas_Type;
       NewCanv.Height := Height;
       NewCanv.Width  := Width;
-      NewCanv.ContentHeight := RoundUpPowerOf2(Height);
-      NewCanv.ContentWidth  := RoundUpPowerOf2(Width);
-      NewCanv.Image  := new Standard.Canvas.Image_Type
-        (0..NewCanv.ContentHeight-1,
-         0..NewCanv.ContentWidth-1);
+      Canvas:=Canvas_ClassAccess(NewCanv);
+
+      if (Height<=0)
+        or (Width<=0) then
+         return;
+      end if;
+
+      NewCanv.Initialize
+        (Height => Height,
+         Width  => Width);
 
       glGentextures
         (n => 1,
@@ -92,7 +97,7 @@ package body OpenGL.Context is
         (Object => Object,
          Canvas => Canvas_ClassAccess(NewCanv));
 
-      Canvas:=Canvas_ClassAccess(NewCanv);
+      NewCanv.Initialized:=True;
 
    end NewCanvas;
    ---------------------------------------------------------------------------
@@ -100,11 +105,16 @@ package body OpenGL.Context is
    procedure Finalize
      (Canvas : access Canvas_Type) is
    begin
-      glDeleteTextures
-        (n        => 1,
-         textures => Canvas.TextureID'Access);
 
-      Free(Canvas.Image);
+      if Canvas.Initialized then
+
+         glDeleteTextures
+           (n        => 1,
+            textures => Canvas.TextureID'Access);
+
+         GUI.Canvas_Access(Canvas).Finalize;
+
+      end if;
 
       GUI.Canvas_Access(Canvas).Finalize;
 
@@ -116,6 +126,8 @@ package body OpenGL.Context is
 
       procedure ProcessTree
         (Object : Object_ClassAccess) is
+
+         use type Canvas.Image_Access;
 
          p : Object_ClassAccess;
 
@@ -145,7 +157,8 @@ package body OpenGL.Context is
                        (target  => GL_TEXTURE_2D,
                         texture => CanvasCursor.TextureID);
 
-                     if CanvasCursor.Modified then
+                     if CanvasCursor.Modified
+                       and CanvasCursor.Image/=null then
 
                         CanvasCursor.Modified:=False;
 

@@ -72,6 +72,14 @@ package GUI.Window is
    procedure StopChange
      (Window : access Window_Type);
 
+   procedure SetCaption
+     (Window  : access Window_Type;
+      Caption : Unbounded_String);
+
+   function GetCaption
+     (Window : access Window_Type)
+      return Unbounded_String;
+
 private
 
    type Window_Type is new Object_Type with
@@ -81,6 +89,7 @@ private
          RefHeight : Integer;
          RefWidth  : Integer;
          Mode      : WindowChangeMode_Enum:=WindowChangeModeNothing;
+         Caption   : Unbounded_String;
       end record;
 
 end GUI.Window;

@@ -30,7 +30,7 @@
 pragma Ada_2005;
 
 with GUI;
-with GUI.Button;
+with GUI.Window;
 with GUI.Themes;
 with GUI.UseImplementations;
 
@@ -40,24 +40,17 @@ with Config;
 with ProcessLoop;
 with Basics; use Basics;
 
-procedure Button is
+procedure Window is
 
    GUIImplementation : GUI.Implementation_Type;
    Context           : GUI.Context_ClassAccess;
-   Button            : GUI.Button.Button_ClassAccess;
+   Window            : GUI.Window.Window_ClassAccess;
    Theme             : GUI.Themes.Implementation_Type;
    Configuration     : Config.Config_Type;
 
    Terminated        : Boolean:=False;
    pragma Warnings(Off,Terminated); -- Terminated is never changed
                                     -- from GNATs perspective
-
-   procedure Click
-     (CallBackObject : AnyObject_ClassAccess) is
-   begin
-      Terminated:=True;
-   end Click;
-   ---------------------------------------------------------------------------
 
    procedure ContextClose
      (CallBackObject : AnyObject_ClassAccess) is
@@ -91,18 +84,17 @@ begin
    -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
-   -- The Context.WindowArea is now the parent object of a new button
-   Button:=Theme.NewButton(Context.WindowArea);
+   -- The Context.WindowArea is now the parent object of a new window
+   Window:=Theme.NewWindow(Context.WindowArea);
 
-   -- Set a rectangle for the button, make it visible
-   Button.SetBounds
-     (Top     => 10,
-      Left    => 10,
-      Height  => 30,
-      Width   => 100,
+   -- Set a rectangle for the window, make it visible
+   Window.SetBounds
+     (Top     => 20,
+      Left    => 20,
+      Height  => 200,
+      Width   => 320,
       Visible => True);
-   Button.SetCaption(U("Close"));
-   Button.OnClick:=Click'Unrestricted_Access;
+   Window.SetCaption(U("Window"));
 
    -- Waiting until either Context.OnClose or Button.OnClick is triggered
    -- Since both callback procedures set the Terminated flag.
@@ -117,4 +109,4 @@ begin
    YellowBlue.UnRegister;
    GUI.UseImplementations.Unregister;
 
-end Button;
+end Window;

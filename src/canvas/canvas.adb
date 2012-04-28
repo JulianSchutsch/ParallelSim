@@ -403,6 +403,9 @@ package body Canvas is
      (Canvas : in out Canvas_Type;
       Color  : Color_Type) is
    begin
+      if Canvas.Image=null then
+         return;
+      end if;
       for y in Canvas.Image'Range(1) loop
          for x in Canvas.Image'Range(2) loop
             Canvas.Image(y,x):=Color;

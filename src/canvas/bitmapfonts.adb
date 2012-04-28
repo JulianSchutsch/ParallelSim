@@ -70,6 +70,8 @@ package body BitmapFonts is
       Char   : Wide_Wide_Character;
       Color  : Standard.Canvas.Color_Type) is
 
+      use type Standard.Canvas.Image_Access;
+
       CharPos : Integer:=Wide_Wide_Character'Pos(Char)+Font.Chars'First;
       Glyph   : CharImage_Access;
 
@@ -86,7 +88,8 @@ package body BitmapFonts is
       Gray          : Integer;
 
    begin
-      if CharPos not in Font.Chars'Range then
+      if CharPos not in Font.Chars'Range
+        or Canvas.Image=null then
          return;
       end if;
 

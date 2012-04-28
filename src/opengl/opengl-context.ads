@@ -39,6 +39,7 @@ private
          TextureID     : aliased GLuint_Type;
          Height        : Natural;
          Width         : Natural;
+         Initialized   : Boolean:=False;
       end record;
    type Canvas_Access is access all Canvas_Type;
 
@@ -46,8 +47,8 @@ private
    procedure NewCanvas
      (Context : in out Context_Type;
       Object  : Object_ClassAccess;
-      Height  : Positive;
-      Width   : Positive;
+      Height  : Integer;
+      Width   : Integer;
       Canvas  : out Canvas_ClassAccess);
 
    overriding

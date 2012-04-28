@@ -250,8 +250,8 @@ package GUI is
    procedure NewCanvas
      (Context : in out Context_Type;
       Object  : Object_ClassAccess;
-      Height  : Positive;
-      Width   : Positive;
+      Height  : Integer;
+      Width   : Integer;
       Canvas  : out Canvas_ClassAccess) is abstract;
 
    procedure ContextMouseDown

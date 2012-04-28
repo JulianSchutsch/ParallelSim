@@ -35,6 +35,7 @@ package body GUI is
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Context_Type'Class,
       Name   => Context_ClassAccess);
+   ---------------------------------------------------------------------------
 
    function NewCanvas
      (Item   : access Object_Type;
@@ -261,7 +262,8 @@ package body GUI is
 
       while Cursor/=null loop
 
-         if (Cursor.FocusStyle=FocusStyleContainer) then
+         if (Cursor.FocusStyle=FocusStyleContainer)
+           and (Cursor/=Object) then
 
             Cursor.FocusObject:=Object;
 
@@ -699,6 +701,10 @@ package body GUI is
 
    begin
 
+      if Canvas.Object=null then
+         return;
+      end if;
+
       Canvas.Bounds:=
         (Top     => Top,
          Left    => Left,
@@ -722,6 +728,10 @@ package body GUI is
       Bottom : Boolean) is
 
    begin
+
+      if Canvas.Object=null then
+         return;
+      end if;
 
       Canvas.Anchors.Top    := Top;
       Canvas.Anchors.Left   := Left;
@@ -793,6 +803,12 @@ package body GUI is
      (Canvas : access Canvas_Type) is
 
    begin
+
+      -- This case may happen if some asks for a "dummy" canvas with
+      -- zero or negative dimensions
+      if Canvas.Object=null then
+         return;
+      end if;
 
       if Canvas.Next/=null then
          Canvas.Next.Last:=Canvas.Last;

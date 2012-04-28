@@ -21,6 +21,22 @@ pragma Ada_2005;
 
 package body GUI.Window is
 
+   procedure SetCaption
+     (Window  : access Window_Type;
+      Caption : Unbounded_String) is
+   begin
+      Window.Caption:=Caption;
+   end SetCaption;
+   ---------------------------------------------------------------------------
+
+   function GetCaption
+     (Window : access Window_Type)
+      return Unbounded_String is
+   begin
+      return Window.Caption;
+   end GetCaption;
+   ---------------------------------------------------------------------------
+
    procedure Focus
      (Item : access Window_Type) is
    begin

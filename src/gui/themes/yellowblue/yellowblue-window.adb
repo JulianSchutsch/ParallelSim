@@ -24,6 +24,7 @@ with Canvas;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 with GUIMouse; use GUIMouse;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package body YellowBlue.Window is
 
@@ -94,6 +95,11 @@ package body YellowBlue.Window is
    overriding
    procedure Defocus
      (Item : access Window_Type);
+
+   overriding
+   procedure SetCaption
+     (Window  : access Window_Type;
+      Caption : Unbounded_String);
    ---------------------------------------------------------------------------
 
    procedure Finalize
@@ -261,11 +267,56 @@ package body YellowBlue.Window is
          Refy => Y);
    end MouseMove;
    ---------------------------------------------------------------------------
-
-   procedure DrawCanvasse
+   procedure DrawTitleCanvas
      (Window : access Window_Type) is
 
       use type Fonts.Font_ClassAccess;
+
+   begin
+      if Window.TitleCanvas/=null then
+         FreeCanvas(Window.TitleCanvas);
+      end if;
+
+      if Window.Font/=null then
+         declare
+            Caption   : Unbounded_String:=Window.GetCaption;
+            TextWidth : constant Integer
+              :=Window.Font.TextWidth(Caption);
+         begin
+            Window.TitleCanvas:=Window.NewCanvas
+              (Height => TitleBarHeight,
+               Width  => TextWidth);
+            Window.TitleCanvas.Clear
+              (Color => 16#00000000#);
+
+            Window.Font.TextOut
+              (Canvas => Canvas.Canvas_ClassAccess(Window.TitleCanvas),
+               X => 0.0,
+               Y => 0.0,
+               Text => Caption,
+               Color => 16#FFFFFFFF#);
+
+            Window.TitleCanvas.SetBounds
+              (Top     => BorderWidth+1,
+               Left    => BorderWidth+2,
+               Height  => TitleBarHeight,
+               Width   => TextWidth,
+               Visible => True);
+
+            Window.TitleCanvas.SetAnchors
+              (Top    => False,
+               Left   => False,
+               Right  => False,
+               Bottom => False);
+
+         end;
+      end if;
+
+   end;
+   ---------------------------------------------------------------------------
+
+   procedure DrawCanvasse
+     (Window : access Window_Type) is
 
       TitleBarColor       : Canvas.Color_Type;
       BorderLineColor     : Canvas.Color_Type;
@@ -289,43 +340,7 @@ package body YellowBlue.Window is
          ClientColor         := NormalClientColor;
       end if;
 
-      if Window.TitleCanvas/=null then
-         FreeCanvas(Window.TitleCanvas);
-      end if;
-
-      if Window.Font/=null then
-         declare
-            TextWidth : constant Integer
-              :=Window.Font.TextWidth(U("Hallo"));
-         begin
-            Window.TitleCanvas:=Window.NewCanvas
-              (Height => TitleBarHeight,
-               Width  => TextWidth);
-            Window.TitleCanvas.Clear
-              (Color => 16#00000000#);
-
-            Window.Font.TextOut
-              (Canvas => Canvas.Canvas_ClassAccess(Window.TitleCanvas),
-               X => 0.0,
-               Y => 0.0,
-               Text => U("Hallo"),
-               Color => 16#FFFFFFFF#);
-
-            Window.TitleCanvas.SetBounds
-              (Top     => BorderWidth+1,
-               Left    => BorderWidth+2,
-               Height  => TitleBarHeight,
-               Width   => TextWidth,
-               Visible => True);
-
-            Window.TitleCanvas.SetAnchors
-              (Top    => False,
-               Left   => False,
-               Right  => False,
-               Bottom => False);
-         end;
-      end if;
-      ------------------------------------------------------------------------
+      DrawTitleCanvas(Window);
 
       if Window.TopLeftCorner/=null then
          FreeCanvas(Window.TopLeftCorner);
@@ -705,6 +720,15 @@ package body YellowBlue.Window is
    end DrawCanvasse;
    ---------------------------------------------------------------------------
 
+   procedure SetCaption
+     (Window  : access Window_Type;
+      Caption : Unbounded_String) is
+   begin
+      GUI.Window.Window_Access(Window).SetCaption(Caption);
+      DrawTitleCanvas(Window);
+   end SetCaption;
+   ---------------------------------------------------------------------------
+
    procedure Focus
      (Item : access Window_Type) is
    begin
@@ -734,7 +758,7 @@ package body YellowBlue.Window is
          Parent => Parent);
 
       NewWindow.Font:=Fonts.Lookup
-        (Name       => U("./Vera.ttf"),
+        (Name       => U("Vera"),
          Size       => 18,
          Attributes => Fonts.NoAttributes);
       ------------------------------------------------------------------------
