@@ -73,6 +73,8 @@ procedure BMPFontGenerator is
    begin
       Put_Line(File,"-- This file was created automatically by bmpfontgenerator.");
       Put_Line(File,"");
+      Put_Line(File,"with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;");
+      Put_Line(File,"");
       Put_Line(File,"package BitmapFonts.Data is");
       Put_Line(File,"");
       Put_Line(File,"   type Gray_Type is range 0..255;");
@@ -92,6 +94,7 @@ procedure BMPFontGenerator is
       Put_Line(File,"      record");
       Put_Line(File,"         Size  : Integer;");
       Put_Line(File,"         Chars : CharArray_Access;");
+      Put_Line(File,"         Name  : Unbounded_String;");
       Put_Line(File,"      end record;");
       Put_Line(File,"   type FontArray_Type is array(Integer range <>) of Font_Type;");
       Put_Line(File,"");
@@ -151,7 +154,7 @@ procedure BMPFontGenerator is
          Canv.Initialize
            (Height => CharHeight,
             Width  => CharWidth);
-         Canv.Clear(0);
+         Canv.Clear(16#FF000000#);
 
          declare
             X : Float:=0.0;
@@ -245,9 +248,9 @@ begin
    CurrentSize:=18;
    WriteFont;
 
-   Put_Line(File," Fonts : FontArray_Type:=(");
-   Put_Line(File,"  (Size => 12, Chars => Chars_Vera_12'Access),");
-   Put_Line(File,"  (Size => 18, Chars => Chars_Vera_18'Access));");
+   Put_Line(File," ConstFonts : FontArray_Type:=(");
+   Put_Line(File,"  (Size => 12, Chars => Chars_Vera_12'Access, Name => To_Unbounded_String(""Vera"")),");
+   Put_Line(File,"  (Size => 18, Chars => Chars_Vera_18'Access, Name => To_Unbounded_String(""Vera"")));");
 
    WriteFooter;
 

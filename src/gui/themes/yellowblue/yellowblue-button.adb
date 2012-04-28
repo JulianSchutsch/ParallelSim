@@ -26,13 +26,16 @@ with Fonts;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 with Canvas;
+with GUIMouse; use GUIMouse;
 
 package body YellowBlue.Button is
 
    type Button_Type is new GUI.Button.Button_Type with
       record
-         Font   : Fonts.Font_ClassAccess;
-         Canvas : Canvas_ClassAccess;
+         Font          : Fonts.Font_ClassAccess:=null;
+         Canvas        : Canvas_ClassAccess:=null;
+         Pressed       : Boolean:=False;
+         PressedWithin : Boolean:=False;
       end record;
    type Button_Access is access Button_Type;
 
@@ -48,6 +51,27 @@ package body YellowBlue.Button is
    overriding
    procedure Finalize
      (Item : access Button_Type);
+
+   overriding
+   procedure MouseMove
+     (Item : access Button_Type;
+      X    : Integer;
+      Y    : Integer);
+
+   overriding
+   procedure MouseUp
+     (Item   : access Button_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer);
+
+   overriding
+   function MouseDown
+     (Item   : access Button_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean;
    ---------------------------------------------------------------------------
 
    procedure Finalize
@@ -84,7 +108,12 @@ package body YellowBlue.Button is
         (Height => Bounds.Height,
          Width  => Bounds.Width);
 
-      Item.Canvas.Clear(16#FF7F0000#);
+      if Item.PressedWithin then
+         Item.Canvas.Clear(16#FFFF0000#);
+      else
+         Item.Canvas.Clear(16#FF7F0000#);
+      end if;
+
       Item.Canvas.Rectangle
         (X => 0,
          Y => 0,
@@ -118,6 +147,71 @@ package body YellowBlue.Button is
    end DrawCanvas;
    ---------------------------------------------------------------------------
 
+   function MouseDown
+     (Item   : access Button_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean is
+
+      Bounds : Bounds_Type:=Item.GetBounds;
+
+   begin
+      if Button/=LeftButton then
+         return True;
+      end if;
+
+      Item.PressedWithin := X in 0..Bounds.Width-1
+        and Y in 0..Bounds.Height-1;
+      Item.Pressed       := True;
+      DrawCanvas(Item);
+
+      return True;
+
+   end MouseDown;
+   ---------------------------------------------------------------------------
+
+   procedure MouseMove
+     (Item : access Button_Type;
+      X    : Integer;
+      Y    : Integer) is
+      NewPressedWithin : Boolean;
+
+      Bounds : Bounds_Type:=Item.GetBounds;
+
+   begin
+
+      if Item.Pressed then
+         NewPressedWithin := X in 0..Bounds.Width-1
+           and Y in 0..Bounds.Height-1;
+         if NewPressedWithin/=Item.PressedWithin then
+            Item.PressedWithin:=NewPressedWithin;
+            DrawCanvas(Item);
+         end if;
+      end if;
+
+   end MouseMove;
+   ---------------------------------------------------------------------------
+
+   procedure MouseUp
+     (Item   : access Button_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer) is
+   begin
+
+      if Button=LeftButton and
+        Item.Pressed then
+         if Item.PressedWithin and
+           Item.OnClick/=null then
+            Item.OnClick(Item.CallBackObject);
+         end if;
+         DrawCanvas(Item);
+      end if;
+
+   end MouseUp;
+   ---------------------------------------------------------------------------
+
    procedure SetCaption
      (Item    : access Button_Type;
       Caption : Unbounded_String) is
@@ -144,7 +238,7 @@ package body YellowBlue.Button is
       NewButton:=new Button_Type;
       Object_Access(NewButton).Initialize(Parent);
       NewButton.Font:=Fonts.Lookup
-        (Name       => U("./Vera.ttf"),
+        (Name       => U("Vera"),
          Size       => 25,
          Attributes => Fonts.NoAttributes);
       return Button_ClassAccess(NewButton);

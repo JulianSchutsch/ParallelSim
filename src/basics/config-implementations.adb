@@ -123,6 +123,21 @@ package body Config.Implementations is
    end Find;
    ---------------------------------------------------------------------------
 
+   function FindAny
+     return Implementation_Type is
+
+      use type Ada.Containers.Count_Type;
+
+   begin
+
+      if List.Length=0 then
+         raise ImplementationNotFound;
+      end if;
+      return List_Pack.Element(List.First).Implementation;
+
+   end FindAny;
+   ---------------------------------------------------------------------------
+
    function Find
      (Configuration : Config_Type;
       Node          : Unbounded_String)

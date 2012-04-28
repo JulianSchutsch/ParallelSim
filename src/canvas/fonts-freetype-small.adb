@@ -103,7 +103,7 @@ package body Fonts.FreeType.Small is
       -- Advance = Glyph.advance.x div 1024 div 64
       -- Top = lbaseline-Bitmap.Top
       -- Left = Bitmap.Left
-      X1 := Integer(Float'Rounding(X))+Integer(SBit.left/64);
+      X1 := Integer(Float'Rounding(X)+float(SBit.left)/64.0);
       Y1 := Integer(Float'Rounding(Y))+Font.BaseLine-Integer(Sbit.top);
       X2 := X1+Width-1;
       Y2 := Y1+Height-1;
@@ -150,6 +150,7 @@ package body Fonts.FreeType.Small is
 
       X:=X+Float(SBit.xadvance);
       Y:=Y+Float(Sbit.yadvance);
+
    end GlyphOut;
    ---------------------------------------------------------------------------
 

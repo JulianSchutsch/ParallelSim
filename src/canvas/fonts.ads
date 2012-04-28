@@ -97,11 +97,12 @@ package Fonts is
        (Font : Font_ClassAccess);
 
    procedure Register
-     (Load   : Load_Access;
+     (Name   : Unbounded_String;
+      Load   : Load_Access;
       Unload : Unload_Access);
 
-   procedure UnRegister
-     (Load : Load_Access);
+   procedure Unregister
+     (Name   : Unbounded_String);
 
 private
 

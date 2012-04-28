@@ -65,6 +65,9 @@ package Config.Implementations is
      (ImplementationName : Unbounded_String)
       return Implementation_Type;
 
+   function FindAny
+     return Implementation_Type;
+
    procedure Debug;
 
 end Config.Implementations;

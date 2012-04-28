@@ -34,14 +34,22 @@ package Canvas is
 
    type Image_Access is access all Image_Type;
 
-   type Canvas_Type is abstract tagged limited
+   type Canvas_Type is tagged limited
       record
          Image         : Image_Access := null;
          Modified      : Boolean      := True;
-         ContentHeight : Positive;
-         ContentWidth  : Positive;
+         ContentHeight : Integer;
+         ContentWidth  : Integer;
       end record;
    type Canvas_ClassAccess is access all Canvas_Type'Class;
+
+   procedure Initialize
+     (Canvas : access Canvas_Type;
+      Height : Integer;
+      Width  : Integer);
+
+   procedure Finalize
+     (Canvas : access Canvas_Type);
 
    procedure GetPixel
      (Canvas : in out Canvas_Type;

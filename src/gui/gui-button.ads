@@ -25,8 +25,13 @@ pragma Ada_2005;
 
 package GUI.Button is
 
+   type OnClick_Access is
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess);
+
    type Button_Public is abstract new Object_Type with
       record
+         OnClick : OnClick_Access:=null;
          -- Read only
          Caption : Unbounded_String;
       end record;

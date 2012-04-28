@@ -1,7 +1,5 @@
 with "../../gpr/common";
-with "../../gpr/distributedsystems";
 with "../../gpr/gui";
-with "../../gpr/network";
 
 project Button is
 
@@ -11,26 +9,26 @@ project Button is
 
    package Compiler is
       for Default_Switches ("ada") use
+
          Common.CompilerSwitches
-        &DistributedSystems.CompilerSwitches
-        &GUI.CompilerSwitches
-		&Network.CompilerSwitches;
+        &GUI.CompilerSwitches;
+
    end Compiler;
 
    package Binder is
       for Default_Switches ("ada") use
+
          Common.BinderSwitches
-        &DistributedSystems.BinderSwitches
-        &GUI.BinderSwitches
-		&Network.BinderSwitches;
+        &GUI.BinderSwitches;
+
    end Binder;
 
    package Linker is
       for Default_Switches ("ada") use
+
          Common.LinkerSwitches
-        &DistributedSystems.LinkerSwitches
-        &GUI.LinkerSwitches
-        &Network.LinkerSwitches;
+        &GUI.LinkerSwitches;
+
    end Linker;
 
    for Object_Dir use Common.ObjectDirectory;

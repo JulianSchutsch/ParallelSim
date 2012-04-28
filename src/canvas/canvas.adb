@@ -20,8 +20,45 @@
 pragma Ada_2005;
 
 with Basics; use Basics;
+with Ada.Unchecked_Deallocation;
 
 package body Canvas is
+
+   procedure Initialize
+     (Canvas : access Canvas_Type;
+      Height : Integer;
+      Width  : Integer) is
+   begin
+
+      if (Height>0) and (Width>0) then
+         Canvas.Image:=new Image_Type
+           (0..Height-1,
+            0..Width-1);
+      end if;
+
+      Canvas.ContentHeight := Height;
+      Canvas.ContentWidth  := Width;
+
+   end Initialize;
+   ---------------------------------------------------------------------------
+
+   procedure Finalize
+     (Canvas : access Canvas_Type) is
+
+      procedure Free is new Ada.Unchecked_Deallocation
+        (Object => Image_Type,
+         Name   => Image_Access);
+
+   begin
+
+      if Canvas.Image/=null then
+         Free(Canvas.Image);
+         Canvas.ContentHeight := 0;
+         Canvas.ContentWidth  := 0;
+      end if;
+
+   end Finalize;
+   ---------------------------------------------------------------------------
 
    procedure Rectangle
      (Canvas : in out Canvas_Type;

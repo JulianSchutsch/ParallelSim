@@ -240,7 +240,9 @@ package body Fonts.Freetype is
    end Requester;
    ---------------------------------------------------------------------------
 
-   procedure Initialize is
+   ImplementationName : constant Unbounded_String:=U("FreeType");
+
+   procedure Register is
 
       Error : FT_Error_Type;
 
@@ -260,7 +262,7 @@ package body Fonts.Freetype is
       if not
         ((VersionMajor>2)
          or ((VersionMajor=2) and (VersionMinor>2))) then
-         Finalize;
+         Unregister;
          raise FailedFontImplementationInitialization
            with "Require higher version of FreeType, at least 2.3, found "
              &FT_Int_Type'Image(VersionMajor)&"."
@@ -278,7 +280,7 @@ package body Fonts.Freetype is
          req_data  => System.Null_Address,
          amanager  => Manager'Access);
       if Error/=0 then
-         Finalize;
+         Unregister;
          raise FailedFontImplementationInitialization
            with "Failed call to FTC_Manager_New";
       end if;
@@ -287,7 +289,7 @@ package body Fonts.Freetype is
         (manager => Manager,
          acache  => SBitCache'Access);
       if Error/=0 then
-         Finalize;
+         Unregister;
          raise FailedFontImplementationInitialization
            with "Failed call to FTC_SBitCache_New";
       end if;
@@ -296,7 +298,7 @@ package body Fonts.Freetype is
         (manager => Manager,
          acache  => ImageCache'Access);
       if Error/=0 then
-         Finalize;
+         Unregister;
          raise FailedFontImplementationInitialization
            with "Failed call to FTC_ImageCache_New";
       end if;
@@ -305,24 +307,25 @@ package body Fonts.Freetype is
         (manager => Manager,
          acache  => CMapCache'Access);
       if Error/=0 then
-         Finalize;
+         Unregister;
          raise FailedFontImplementationInitialization
            with "Failed call to FTC_CMapCache_New";
       end if;
 
       Fonts.Register
-        (Load   => Load'Access,
+        (Name   => ImplementationName,
+         Load   => Load'Access,
          Unload => Unload'Access);
 
       Initialized:=True;
-   end Initialize;
+   end Register;
    ---------------------------------------------------------------------------
 
-   procedure Finalize is
+   procedure Unregister is
    begin
 
       if Initialized then
-         Fonts.UnRegister(Load => Load'Access);
+         Fonts.Unregister(ImplementationName);
       end if;
 
       if Node/=null then
@@ -339,7 +342,7 @@ package body Fonts.Freetype is
          Library:=null;
       end if;
 
-   end Finalize;
+   end Unregister;
    ---------------------------------------------------------------------------
 
 end Fonts.Freetype;

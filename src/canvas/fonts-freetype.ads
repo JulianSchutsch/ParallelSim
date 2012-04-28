@@ -30,9 +30,8 @@ package Fonts.Freetype is
    type FreeTypeFont_Type is abstract new Fonts.Font_Type with private;
    type FreeTypeFont_Access is access all FreeTypeFont_Type;
 
-   procedure Initialize;
-
-   procedure Finalize;
+   procedure Register;
+   procedure Unregister;
 
 private
 

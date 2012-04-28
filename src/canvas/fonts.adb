@@ -40,6 +40,7 @@ package body Fonts is
 
    type FontImplementation_Type is
       record
+         Name   : Unbounded_String;
          Load   : Load_Access;
          Unload : Unload_Access;
          Next   : FontImplementation_Access;
@@ -126,14 +127,17 @@ package body Fonts is
    ---------------------------------------------------------------------------
 
    procedure Register
-     (Load   : Load_Access;
+     (Name   : Unbounded_String;
+      Load   : Load_Access;
       Unload : Unload_Access) is
 
       FontImplementation : FontImplementation_Access;
 
    begin
 
+      -- TODO : Check if no other implementation with this name is loaded
       FontImplementation:=new FontImplementation_Type;
+      FontImplementation.Name   := Name;
       FontImplementation.Load   := Load;
       FontImplementation.Unload := Unload;
       FontImplementation.Next   := FontImplementations;
@@ -145,8 +149,8 @@ package body Fonts is
    end Register;
    ---------------------------------------------------------------------------
 
-   procedure UnRegister
-     (Load : Load_Access) is
+   procedure Unregister
+     (Name : Unbounded_String) is
 
       Cursor : FontImplementation_Access;
 
@@ -155,7 +159,7 @@ package body Fonts is
       Cursor:=FontImplementations;
       while Cursor/=null loop
 
-         if Cursor.Load=Load then
+         if Cursor.Name=Name then
 
             if Cursor.Last/=null then
                Cursor.Last.Next:=Cursor.Next;
@@ -177,6 +181,7 @@ package body Fonts is
       end loop;
 
    end UnRegister;
+   ---------------------------------------------------------------------------
 
    function Lookup
      (Name       : Unbounded_String;

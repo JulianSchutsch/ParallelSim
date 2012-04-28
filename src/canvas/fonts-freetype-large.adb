@@ -87,7 +87,7 @@ package body Fonts.FreeType.Large is
       -- Advance = Glyph.advance.x div 1024 div 64
       -- Top = lbaseline-Bitmap.Top
       -- Left = Bitmap.Left
-      X1 := Integer(Float'Rounding(X))+Integer(Bitmap.left/64);
+      X1 := Integer(Float'Rounding(X)+float(Bitmap.left)/64.0);
       Y1 := Integer(Float'Rounding(Y))+Font.BaseLine-Integer(Bitmap.top);
       X2 := X1+Width-1;
       Y2 := Y1+Height-1;
@@ -134,6 +134,7 @@ package body Fonts.FreeType.Large is
 
       X:=X+Float(Glyph.advance.x)/(64.0*1024.0);
       Y:=Y+FLoat(Glyph.advance.y)/(64.0*1024.0);
+
    end GlyphOut;
    ---------------------------------------------------------------------------
 
