@@ -21,6 +21,12 @@
 --   28.Mar 2012 Julian Schutsch
 --     - Original version
 
+-- Demo
+--   Demonstration for setting up a GUI context and a button and
+--   reacting to two basic events:
+--     * Closing of the context
+--     * Click on a button
+
 pragma Ada_2005;
 
 with GUI;
@@ -41,8 +47,10 @@ procedure Button is
    Button            : GUI.Button.Button_ClassAccess;
    Theme             : GUI.Themes.Implementation_Type;
    Configuration     : Config.Config_Type;
+
    Terminated        : Boolean:=False;
-   pragma Warnings(Off,Terminated);
+   pragma Warnings(Off,Terminated); -- Terminated is never changed
+                                    -- from GNATs perspective
 
    procedure Click
      (CallBackObject : AnyObject_ClassAccess) is
@@ -60,20 +68,36 @@ procedure Button is
 
 begin
 
+   -- GUI.UseImplementations.Register adds all supported implementations
+   -- on this plattform to GUI.Implementations.
+   -- The GUI.UseImplementations package was created by /buildcfg/configprog
    GUI.UseImplementations.Register;
+
+   -- This is the default theme, now added to GUI.Themes.Implementations
    YellowBlue.Register;
+
+   -- Two font engines
    Fonts.Freetype.Register;
    BitmapFonts.Register;
 
+   -- Now select any available GUI implementation
    GUIImplementation := GUI.Implementations.FindAny;
+
+   -- And the only theme we added to GUI.Themes.Implementations
    Theme             := GUI.Themes.Implementations.FindAny;
 
+   -- Often when creating a new context (main window), one may wish
+   -- to specify further data in Configuration.
    Context:=GUIImplementation.NewContext
      (Configuration => Configuration,
       Node          => U(""));
+   -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
+   -- The Context.WindowArea is now the parent object of a new button
    Button:=Theme.NewButton(Context.WindowArea);
+
+   -- Set a rectangle for the button, make it visible
    Button.SetBounds
      (Top     => 10,
       Left    => 10,
@@ -83,10 +107,16 @@ begin
    Button.SetCaption(U("Close"));
    Button.OnClick:=Click'Unrestricted_Access;
 
+   -- Waiting until either Context.OnClose or Button.OnClick is triggered
+   -- Since both callback procedures set the Terminated flag.
    while not Terminated loop
       ProcessLoop.Process;
    end loop;
 
+   -- All objects placed in the context are deleted also
+   GUI.FreeContext(Context);
+
+   -- Unregister all which has been registered
    BitmapFonts.Unregister;
    Fonts.Freetype.Unregister;
    YellowBlue.UnRegister;
