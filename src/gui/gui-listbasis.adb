@@ -29,6 +29,15 @@ package body GUI.ListBasis is
      (Object => ListBasisCanvas_Type,
       Name   => ListBasisCanvas_Access);
 
+   function VisibleLineCount
+     (Item : access ListBasis_Type)
+      return Integer is
+
+   begin
+      return Item.GetBounds.Height/Item.Font.Height;
+   end VisibleLineCount;
+   ---------------------------------------------------------------------------
+
    procedure ClearCanvasse
      (Item : access ListBasis_Type) is
 
@@ -59,8 +68,11 @@ package body GUI.ListBasis is
       NewCanvas      : ListBasisCanvas_Access;
       StringAndColor : StringAndColor_Type;
       yPosition      : Integer;
-      FontHeight : Integer;
-      TextWidth  : Integer;
+      FontHeight     : Integer;
+      TextWidth      : Integer;
+      CanvasWidth    : Integer;
+      LineNumber     : Integer;
+      ObjectWidth    : Integer:=Item.GetBounds.Width;
 
    begin
       ClearCanvasse(Item);
@@ -79,21 +91,39 @@ package body GUI.ListBasis is
       yPosition:=0;
       FontHeight := Item.Font.Height;
 
-      Put("DrawLoop");
-      New_Line;
+      LineNumber:=Item.TopIndex;
+
       while Entr/=StringAndColorList_Pack.No_Element loop
 
-         StringAndColor:=StringAndCOlorList_Pack.Element(Entr);
+         Put("Line");
+         Put(LineNumber);
+         Put(Item.SelectedIndex);
+         New_Line;
+         StringAndColor:=StringAndColorList_Pack.Element(Entr);
+
          NewCanvas:=new ListBasisCanvas_Type;
          TextWidth:=Item.Font.TextWidth(StringAndColor.String);
-         Put("Draw");
-         Put(yPosition);
-         Put(FontHeight);
+
+         if LineNumber/=Item.SelectedIndex then
+            CanvasWidth:=Integer'Min(TextWidth,ObjectWidth);
+         else
+            CanvasWidth := ObjectWidth;
+         end if;
+         Put(ObjectWidth);
+         Put(CanvasWidth);
          Put(TextWidth);
          New_Line;
+
          NewCanvas.Canvas:=Item.NewCanvas
            (Height => FontHeight,
-            Width  => TextWidth);
+            Width  => CanvasWidth);
+
+         if LineNumber/=Item.SelectedIndex then
+            NewCanvas.Canvas.Clear(16#FF00FF00#);
+         else
+            NewCanvas.Canvas.Clear(16#FFFF0000#);
+         end if;
+
          Item.Font.TextOut
            (Canvas => Canvas.Canvas_ClassAccess(NewCanvas.Canvas),
             X      => 0.0,
@@ -106,6 +136,10 @@ package body GUI.ListBasis is
             Height  => FontHeight,
             Width   => TextWidth,
             Visible => True);
+         Put(NewCanvas.Canvas.GetBounds);
+         Put("ContentWidth");
+         Put(NewCanvas.Canvas.ContentWidth);
+         New_Line;
 
          NewCanvas.Last:=PreviousCanvas;
          if PreviousCanvas/=null then
@@ -114,11 +148,13 @@ package body GUI.ListBasis is
             Item.CanvasLines:=NewCanvas;
          end if;
 
-         Entr:=StringAndColorList_Pack.Next(Entr);
          yPosition:=yPosition+FontHeight;
          if YPosition>=Item.GetBounds.Height then
             exit;
          end if;
+
+         Entr       := StringAndColorList_Pack.Next(Entr);
+         LineNumber := LineNumber+1;
 
       end loop;
 

@@ -37,8 +37,6 @@ private
    type Canvas_Type is new GUI.Canvas_Type with
       record
          TextureID     : aliased GLuint_Type;
-         Height        : Natural;
-         Width         : Natural;
          Initialized   : Boolean:=False;
       end record;
    type Canvas_Access is access all Canvas_Type;

@@ -42,6 +42,16 @@ package body SimClientGUI.MainMenu is
    Combobox : GUI.Combobox.Combobox_ClassAccess:=null;
    ListBox  : GUI.ListBox.ListBox_ClassAccess:=null;
 
+   procedure ButtonExitClick
+     (CallBackObject : AnyObject_ClassAccess) is
+
+      pragma Unreferenced(CallBackObject);
+
+   begin
+      Terminated:=True;
+   end ButtonExitClick;
+   ---------------------------------------------------------------------------
+
    procedure ResizeWindowArea
      (CallBackObject : AnyObject_ClassAccess) is
 
@@ -85,6 +95,7 @@ package body SimClientGUI.MainMenu is
       ButtonJoinGame.SetCaption(U("Join Game"));
       ButtonExit       := ThemeImplementation.NewButton(GUIContext.WindowArea);
       ButtonExit.SetCaption(U("Exit"));
+      ButtonExit.OnClick:=ButtonExitClick'Access;
       Combobox:=ThemeImplementation.NewCombobox(GUIContext.WindowArea);
       Combobox.SetBounds
         (0,0,25,200,True);

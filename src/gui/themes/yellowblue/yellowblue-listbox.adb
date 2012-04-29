@@ -27,13 +27,16 @@ with Fonts;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body YellowBlue.ListBox is
 
    type ListBox_Type is new GUI.ListBox.ListBox_Type with
       record
-         ListBasis         : GUI.ListBasis.ListBasis_Access:=null;
-         VerticalScrollbar : GUI.ScrollBar.ScrollBar_ClassAccess:=null;
+         ListBasis         : GUI.ListBasis.ListBasis_Access      := null;
+         VerticalScrollbar : GUI.ScrollBar.ScrollBar_ClassAccess := null;
+         EntryCount        : Integer:=0;
       end record;
    type ListBox_Access is access ListBox_Type;
 
@@ -46,6 +49,34 @@ package body YellowBlue.ListBox is
    overriding
    procedure ClearEntries
      (Item : access ListBox_Type);
+   ---------------------------------------------------------------------------
+
+   procedure UpdateScrollBar
+     (Item : access ListBox_Type) is
+
+      ReqScroll : Integer;
+      Position  : Integer;
+
+   begin
+      ReqScroll:=Item.EntryCount-Item.ListBasis.VisibleLineCount;
+      if ReqScroll<0 then
+         ReqScroll:=0;
+      end if;
+
+      Position:=Item.VerticalScrollbar.GetPosition;
+      if Position>ReqScroll then
+         Position:=ReqScroll;
+      end if;
+
+      Put("ReqScroll");
+      Put(ReqScroll);
+
+      Item.VerticalScrollbar.SetRange
+        (Min      => 0,
+         Max      => ReqScroll,
+         Position => Position);
+
+   end UpdateScrollBar;
    ---------------------------------------------------------------------------
 
    procedure ClearEntries
@@ -61,6 +92,8 @@ package body YellowBlue.ListBox is
       Color  : Canvas.Color_Type) is
    begin
       Item.ListBasis.AddEntry(String,Color);
+      Item.EntryCount:=Item.EntryCount+1;
+      UpdateScrollBar(Item);
    end AddEntry;
    ---------------------------------------------------------------------------
 
@@ -95,13 +128,17 @@ package body YellowBlue.ListBox is
          Bottom => True);
       NewListBox.ListBasis.SetFont
         (Fonts.Lookup
-        (Name       => U("./Vera.ttf"),
+        (Name       => U("Vera"),
          Size       => 25,
          Attributes => Fonts.NoAttributes));
 
       NewListBox.VerticalScrollbar
         :=YellowBlue.VerticalScrollBar.NewVerticalScrollBar
           (GUI.Object_ClassAccess(NewListBox));
+      NewListBox.VerticalScrollbar.SetRange
+        (Min      => 0,
+         Max      => 0,
+         Position => 0);
       NewListBox.VerticalScrollbar.SetBounds
         (Top     => 0,
          Left    => Bounds.Width-YellowBlue.VerticalScrollBar.VerticalScrollbarWidth,

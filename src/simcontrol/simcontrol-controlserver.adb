@@ -17,8 +17,8 @@ package body SimControl.ControlServer is
    type ServerChannelCallBack_Type is
      new Network.Streams.ChannelCallBack_Type with
       record
-         LogChannel    : Logging.Channel_ClassAccess;
-         Channel       : Network.Streams.Channel_ClassAccess;
+         LogChannel    : Logging.Channel_ClassAccess         := null;
+         Channel       : Network.Streams.Channel_ClassAccess := null;
          ReceiveStatus : ReceiveStatus_Enum;
       end record;
 
@@ -45,9 +45,9 @@ package body SimControl.ControlServer is
 
    ServerCallBack       : aliased ServerCallBack_Type;
    StreamImplementation : Network.Streams.Implementation_Type;
-   Server               : Network.Streams.Server_ClassAccess;
-   LogContext           : Logging.Context_ClassAccess;
-   LogMainChannel       : Logging.Channel_ClassAccess;
+   Server               : Network.Streams.Server_ClassAccess := null;
+   LogContext           : Logging.Context_ClassAccess        := null;
+   LogMainChannel       : Logging.Channel_ClassAccess        := null;
    LogImplementation    : Logging.Implementation_Type;
 
    procedure OnReceive

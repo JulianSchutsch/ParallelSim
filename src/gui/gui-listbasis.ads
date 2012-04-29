@@ -52,6 +52,10 @@ package GUI.ListBasis is
      (Item : access ListBasis_Type;
       Font : Fonts.Font_ClassAccess);
 
+   function VisibleLineCount
+     (Item : access ListBasis_Type)
+      return Integer;
+
 private
 
    type ListBasisCanvas_Type;

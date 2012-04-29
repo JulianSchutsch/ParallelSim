@@ -82,6 +82,7 @@ package body YellowBlue.Console is
       use type GUI.TextBasis.TextBasis_ClassAccess;
 
       Console : constant Console_Access:=Console_Access(CallbackObject);
+
    begin
       if Console.TextBasis=null then
          return;

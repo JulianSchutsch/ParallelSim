@@ -25,6 +25,8 @@ with Canvas;
 with Basics; use Basics;
 with Boundscalc; use Boundscalc;
 with GUIDefinitions; use GUIDefinitions;
+with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body OpenGL.Context is
 
@@ -44,8 +46,6 @@ package body OpenGL.Context is
    begin
 
       NewCanv        := new Canvas_Type;
-      NewCanv.Height := Height;
-      NewCanv.Width  := Width;
       Canvas:=Canvas_ClassAccess(NewCanv);
 
       if (Height<=0)
@@ -74,11 +74,11 @@ package body OpenGL.Context is
       glTexParameteri
         (target => GL_TEXTURE_2D,
          pname  => GL_TEXTURE_WRAP_S,
-         param  => GL_CLAMP);
+         param  => GL_REPEAT);
       glTexParameteri
         (target => GL_TEXTURE_2D,
          pname  => GL_TEXTURE_WRAP_T,
-         param  => GL_CLAMP);
+         param  => GL_REPEAT);
 
       glTexImage2D
         (target => GL_TEXTURE_2D,
@@ -204,6 +204,12 @@ package body OpenGL.Context is
                              /GLfloat_Type(CanvasCursor.ContentHeight);
 
                         begin
+                        if CanvasAbsBounds.AbsWidth>0 then
+                           Put("ContentWidth");
+                              Put(CanvasCursor.ContentWidth);
+                              Put(GLFloat_Type'Image(Texx2));
+                              New_Line;
+                        end if;
                            glBegin(GL_QUADS);
                            glTexCoord2f(Texx1,Texy1);
                            glVertex2f

@@ -74,6 +74,7 @@ package OpenGL is
 
    GL_NEAREST : constant GLint_Type:=16#2600#;
    GL_CLAMP   : constant GLint_Type:=16#2900#;
+   GL_REPEAT  : constant GLint_Type:=16#2901#;
 
    procedure glFinish;
    pragma Import(StdCall,glFinish,"glFinish");
