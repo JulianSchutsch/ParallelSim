@@ -109,13 +109,13 @@ package BoundsCalc is
 
    type AbsBounds_Type is
       record
-         AbsTop     : Integer;
-         AbsLeft    : Integer;
-         AbsHeight  : Integer;
-         AbsWidth   : Integer;
-         AbsSubTop  : Integer;
-         AbsSubLeft : Integer;
-         AbsVisible : Boolean;
+         AbsTop     : Integer:=0;
+         AbsLeft    : Integer:=0;
+         AbsHeight  : Integer:=0;
+         AbsWidth   : Integer:=0;
+         AbsSubTop  : Integer:=0;
+         AbsSubLeft : Integer:=0;
+         AbsVisible : Boolean:=False;
       end record;
 
    type Anchors_Type is

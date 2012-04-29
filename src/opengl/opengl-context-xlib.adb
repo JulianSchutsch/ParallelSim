@@ -13,7 +13,6 @@ with Basics; use Basics;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Config;
 with GUIMouse; use GUIMouse;
-with GUIKeys; use GUIKeys;
 
 package body OpenGL.Context.Xlib is
 
