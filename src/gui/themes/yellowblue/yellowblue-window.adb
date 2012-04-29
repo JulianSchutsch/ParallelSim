@@ -280,7 +280,7 @@ package body YellowBlue.Window is
       if Window.Font/=null then
 
          declare
-            Caption   : Unbounded_String := Window.GetCaption;
+            Caption   : constant Unbounded_String := Window.GetCaption;
             TextWidth : constant Integer := Window.Font.TextWidth(Caption);
          begin
 

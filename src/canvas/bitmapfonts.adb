@@ -72,7 +72,7 @@ package body BitmapFonts is
 
       use type Standard.Canvas.Image_Access;
 
-      CharPos : Integer:=Wide_Wide_Character'Pos(Char)+Font.Chars'First;
+      CharPos : constant Integer:=Wide_Wide_Character'Pos(Char)+Font.Chars'First;
       Glyph   : CharImage_Access;
 
       X1 : Integer;
@@ -84,7 +84,6 @@ package body BitmapFonts is
       Height        : Integer;
       SourceOriginX : Integer:=0;
       SourceOriginY : Integer:=0;
-      SourceAdd     : Integer:=0;
       Gray          : Integer;
 
    begin
@@ -160,7 +159,7 @@ package body BitmapFonts is
      (Font : access Font_Type;
       Char : Wide_Wide_Character)
       return Float is
-      CharPos : Integer:=Wide_Wide_Character'Pos(Char)+Font.Chars'First;
+      CharPos : constant Integer:=Wide_Wide_Character'Pos(Char)+Font.Chars'First;
    begin
       if CharPos in Font.Chars'Range then
          return float(Font.Chars(CharPos).Image'Length(2));
@@ -175,6 +174,11 @@ package body BitmapFonts is
       FirstChar  : Wide_Wide_Character;
       SecondChar : Wide_Wide_Character)
       return Float is
+
+      pragma Unreferenced(Font);
+      pragma Unreferenced(FirstChar);
+      pragma Unreferenced(SecondChar);
+
    begin
       return 0.0;
    end Kerning;

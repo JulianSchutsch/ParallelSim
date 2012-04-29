@@ -20,8 +20,8 @@
 pragma Ada_2005;
 
 with Interfaces.C;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 
 package body Fonts.FreeType.Small is
 

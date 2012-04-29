@@ -58,7 +58,7 @@ package body Fonts.Freetype is
 
       KerningVector : aliased FT_Vector_Type;
       Result        : FT_Error_Type;
---      pragma Unreferenced(Result);
+      pragma Unreferenced(Result);
       FirstGlyph  : FT_UInt_Type;
       SecondGlyph : FT_UInt_Type;
       FontSize    : aliased FT_Size_Access;

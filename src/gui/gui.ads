@@ -58,7 +58,6 @@ with Canvas;
 with GUIDefinitions; use GUIDefinitions;
 with GUIKeys; use GUIKeys;
 with GUIMouse; use GUIMouse;
-with Ada.Unchecked_Deallocation;
 
 package GUI is
 

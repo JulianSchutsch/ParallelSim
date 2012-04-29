@@ -21,7 +21,6 @@ with Ada.Unchecked_Deallocation;
 with Canvas;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with GUIDefinitions; use GUIDefinitions;
 
 package body GUI.TextBasis is
 

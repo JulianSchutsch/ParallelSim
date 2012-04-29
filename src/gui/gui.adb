@@ -19,8 +19,8 @@
 
 pragma Ada_2005;
 
-with Ada.Unchecked_Deallocation;
 with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Unchecked_Deallocation;
 
 package body GUI is
 

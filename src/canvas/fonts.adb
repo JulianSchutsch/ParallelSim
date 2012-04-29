@@ -22,7 +22,7 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body Fonts is
@@ -61,7 +61,7 @@ package body Fonts is
       return Integer is
 
       PreviousCharacter : Wide_Wide_Character:=Wide_Wide_Character'Val(0);
-      ThisCharacter : Wide_Wide_Character;
+      ThisCharacter     : Wide_Wide_Character;
       UCS4  : constant Unbounded_Wide_Wide_String:=UTF8ToUCS4(Text);
       Width : Float:=0.0;
 
@@ -75,6 +75,7 @@ package body Fonts is
             SecondChar => ThisCharacter);
 
          Width:=Width+Font.CharacterWidth(ThisCharacter);
+         PreviousCharacter:=ThisCharacter;
 
       end loop;
 

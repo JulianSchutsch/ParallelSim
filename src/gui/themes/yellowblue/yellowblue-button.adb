@@ -20,8 +20,8 @@
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Fonts;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
@@ -92,7 +92,7 @@ package body YellowBlue.Button is
 
       use type Fonts.Font_ClassAccess;
 
-      Bounds : Bounds_Type:=Item.GetBounds;
+      Bounds : constant Bounds_Type:=Item.GetBounds;
 
    begin
 
@@ -131,8 +131,8 @@ package body YellowBlue.Button is
       if Item.Font/=null then
 
          declare
-            Width  : Integer:=Item.Font.TextWidth(Item.Caption);
-            Height : Integer:=Item.Font.Height;
+            Width  : constant Integer:=Item.Font.TextWidth(Item.Caption);
+            Height : constant Integer:=Item.Font.Height;
          begin
             Item.Font.TextOut
               (Canvas => Canvas.Canvas_ClassAccess(Item.Canvas),
@@ -154,7 +154,7 @@ package body YellowBlue.Button is
       Y      : Integer)
       return Boolean is
 
-      Bounds : Bounds_Type:=Item.GetBounds;
+      Bounds : constant Bounds_Type:=Item.GetBounds;
 
    begin
       if Button/=LeftButton then
@@ -177,7 +177,7 @@ package body YellowBlue.Button is
       Y    : Integer) is
       NewPressedWithin : Boolean;
 
-      Bounds : Bounds_Type:=Item.GetBounds;
+      Bounds : constant Bounds_Type:=Item.GetBounds;
 
    begin
 
@@ -198,6 +198,8 @@ package body YellowBlue.Button is
       Button : MouseButton_Enum;
       X      : Integer;
       Y      : Integer) is
+      pragma Unreferenced(X);
+      pragma Unreferenced(Y);
    begin
 
       if Button=LeftButton and

@@ -53,6 +53,7 @@ package body GUI.ListBasis is
          Free(Cursor);
          Cursor:=NextCursor;
       end loop;
+      Item.CanvasLines:=null;
 
    end ClearCanvasse;
    ---------------------------------------------------------------------------
@@ -75,6 +76,7 @@ package body GUI.ListBasis is
       ObjectWidth    : constant Integer:=Item.GetBounds.Width;
 
    begin
+
       ClearCanvasse(Item);
       if Item.Font=null then
          return;

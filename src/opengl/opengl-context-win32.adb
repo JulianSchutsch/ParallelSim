@@ -19,7 +19,6 @@
 
 pragma Ada_2005;
 
-with Ada.Unchecked_Deallocation;
 with Ada.Unchecked_Conversion;
 with OpenGL; use OpenGL;
 with Win32; use Win32;
@@ -133,10 +132,6 @@ package body OpenGL.Context.Win32 is
    overriding
    procedure Finalize
      (Context : in out Context_Type);
-
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Context_Type,
-      Name   => Context_Access);
 
    Contexts : Context_Access:=null;
 
