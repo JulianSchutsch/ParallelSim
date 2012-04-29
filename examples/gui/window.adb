@@ -22,10 +22,9 @@
 --     - Original version
 
 -- Demo
---   Demonstration for setting up a GUI context and a button and
---   reacting to two basic events:
+--   Demonstration for setting up a GUI context and a window and
+--   reacting to events:
 --     * Closing of the context
---     * Click on a button
 
 pragma Ada_2005;
 
