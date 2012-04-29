@@ -20,19 +20,13 @@
 pragma Ada_2005;
 
 with System;
-with Ada.Unchecked_Deallocation;
 with Canvas;
-with Basics; use Basics;
 with Boundscalc; use Boundscalc;
 with GUIDefinitions; use GUIDefinitions;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--Swith Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body OpenGL.Context is
-
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Canvas.Image_Type,
-      Name   => Canvas.Image_Access);
 
    procedure NewCanvas
      (Context : in out Context_Type;
@@ -74,11 +68,11 @@ package body OpenGL.Context is
       glTexParameteri
         (target => GL_TEXTURE_2D,
          pname  => GL_TEXTURE_WRAP_S,
-         param  => GL_REPEAT);
+         param  => GL_CLAMP);
       glTexParameteri
         (target => GL_TEXTURE_2D,
          pname  => GL_TEXTURE_WRAP_T,
-         param  => GL_REPEAT);
+         param  => GL_CLAMP);
 
       glTexImage2D
         (target => GL_TEXTURE_2D,
@@ -133,6 +127,7 @@ package body OpenGL.Context is
 
          ObjectAbsBounds : AbsBounds_Type;
          CanvasAbsBounds : AbsBounds_Type;
+         CanvasBounds    : Bounds_Type;
          CanvasCursor    : Canvas_Access;
 
       begin
@@ -177,9 +172,10 @@ package body OpenGL.Context is
 
                      end if;
 
+                     CanvasBounds:=CanvasCursor.GetBounds;
                      NestBounds
                        (ParentAbsBounds => ObjectAbsBounds,
-                        RectBounds      => CanvasCursor.GetBounds,
+                        RectBounds      => CanvasBounds,
                         ResultBounds    => CanvasAbsBounds);
 
                      if CanvasAbsBounds.AbsVisible then
@@ -187,29 +183,23 @@ package body OpenGL.Context is
                         declare
                            Texx1 : constant GLfloat_Type
                              :=GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
-                             /GLfloat_Type(CanvasCursor.ContentWidth);
+                             /GLfloat_Type(CanvasBounds.Width);
 
                            Texx2 : constant GLfloat_Type
                              :=(GLfloat_Type(CanvasAbsBounds.AbsSubLeft)
                                 +GLfloat_Type(CanvasAbsBounds.AbsWidth))
-                             /GLfloat_Type(CanvasCursor.ContentWidth);
+                             /GLfloat_Type(CanvasBounds.Width);
 
                            Texy1 : constant GLfloat_Type
                              :=GLfloat_Type(CanvasAbsBounds.AbsSubTop)
-                             /GLfloat_Type(CanvasCursor.ContentHeight);
+                             /GLfloat_Type(CanvasBounds.Height);
 
                            Texy2 : constant GLfloat_Type
                              :=(GLfloat_Type(CanvasAbsBounds.AbsSubTop)
                                 +GLfloat_Type(CanvasAbsBounds.AbsHeight))
-                             /GLfloat_Type(CanvasCursor.ContentHeight);
+                             /GLfloat_Type(CanvasBounds.Height);
 
                         begin
-                        if CanvasAbsBounds.AbsWidth>0 then
-                           Put("ContentWidth");
-                              Put(CanvasCursor.ContentWidth);
-                              Put(GLFloat_Type'Image(Texx2));
-                              New_Line;
-                        end if;
                            glBegin(GL_QUADS);
                            glTexCoord2f(Texx1,Texy1);
                            glVertex2f

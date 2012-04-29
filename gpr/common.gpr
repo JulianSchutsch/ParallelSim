@@ -34,7 +34,7 @@ abstract project Common is
    ObjectDirectory:=Dir & "../build";
    ExecDirectory:=".";
 
-   Compiler_Switches:=
+   CompilerSwitches:=
      ("-gnato", -- Overflow checking
       "-gnatn", -- Inlining
       "-g",     -- Generate Debugging information

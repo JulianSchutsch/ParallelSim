@@ -27,18 +27,25 @@ with Fonts;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body YellowBlue.ListBox is
+
+   FrameColor  : constant Canvas.Color_Type:=16#FFFFFF00#;
+   FrameWidth  : constant Integer:=1;
+   BorderWidth : constant Integer:=2;
 
    type ListBox_Type is new GUI.ListBox.ListBox_Type with
       record
          ListBasis         : GUI.ListBasis.ListBasis_Access      := null;
          VerticalScrollbar : GUI.ScrollBar.ScrollBar_ClassAccess := null;
-         EntryCount        : Integer:=0;
+         EntryCount        : Natural:=0;
+         LeftFrame         : GUI.Canvas_ClassAccess:=null;
+         TopFrame          : GUI.Canvas_ClassAccess:=null;
+         BottomFrame       : GUI.Canvas_ClassAccess:=null;
       end record;
-   type ListBox_Access is access ListBox_Type;
+   type ListBox_Access is access all ListBox_Type;
 
    overriding
    procedure AddEntry
@@ -47,8 +54,30 @@ package body YellowBlue.ListBox is
       Color  : Canvas.Color_Type);
 
    overriding
+   procedure DeleteEntry
+     (Item  : access ListBox_Type;
+      Index : Integer);
+
+   overriding
    procedure ClearEntries
      (Item : access ListBox_Type);
+
+   overriding
+   procedure Resize
+     (Item : access ListBox_Type);
+
+   overriding
+   function GetIndex
+     (Item : access ListBox_Type)
+      return Integer;
+   ---------------------------------------------------------------------------
+
+   function GetIndex
+     (Item : access ListBox_Type)
+      return Integer is
+   begin
+      return Item.ListBasis.GetIndex;
+   end GetIndex;
    ---------------------------------------------------------------------------
 
    procedure UpdateScrollBar
@@ -68,15 +97,22 @@ package body YellowBlue.ListBox is
          Position:=ReqScroll;
       end if;
 
-      Put("ReqScroll");
-      Put(ReqScroll);
-
       Item.VerticalScrollbar.SetRange
         (Min      => 0,
          Max      => ReqScroll,
          Position => Position);
 
    end UpdateScrollBar;
+   ---------------------------------------------------------------------------
+
+   procedure ScrollPositionChange
+     (CallBackObject : AnyObject_ClassAccess) is
+
+      Item : constant ListBox_Access:=ListBox_Access(CallBackObject);
+
+   begin
+      Item.ListBasis.SetTopIndex(Item.VerticalScrollbar.GetPosition);
+   end ScrollPositionChange;
    ---------------------------------------------------------------------------
 
    procedure ClearEntries
@@ -97,6 +133,22 @@ package body YellowBlue.ListBox is
    end AddEntry;
    ---------------------------------------------------------------------------
 
+   procedure DeleteEntry
+     (Item  : access ListBox_Type;
+      Index : Integer) is
+   begin
+      Item.ListBasis.DeleteEntry(Index);
+      Item.EntryCount:=Item.EntryCount-1;
+      UpdateScrollBar(Item);
+   end DeleteEntry;
+   ---------------------------------------------------------------------------
+
+   procedure Resize
+     (Item : access ListBox_Type) is
+   begin
+      UpdateScrollBar(Item);
+   end Resize;
+   ---------------------------------------------------------------------------
 
    function NewListBox
      (Parent : GUI.Object_ClassAccess)
@@ -113,13 +165,12 @@ package body YellowBlue.ListBox is
       NewListBox.ListBasis
         :=new GUI.ListBasis.ListBasis_Type;
 
-      GUI.ListBasis.ListBasis_Access(NewListBox.ListBasis)
-        .Initialize(GUI.Object_ClassAccess(NewListBox));
+      NewListBox.ListBasis.Initialize(GUI.Object_ClassAccess(NewListBox));
       NewListBox.ListBasis.SetBounds
-        (Top     => 0,
-         Left    => 0,
-         Height  => Bounds.Height,
-         Width   => Bounds.Width-YellowBlue.VerticalScrollBar.VerticalScrollbarWidth,
+        (Top     => BorderWidth,
+         Left    => BorderWidth,
+         Height  => Bounds.Height-2*BorderWidth,
+         Width   => Bounds.Width-YellowBlue.VerticalScrollBar.VerticalScrollbarWidth-BorderWidth,
          Visible => True);
       NewListBox.ListBasis.SetAnchors
         (Top    => True,
@@ -131,6 +182,54 @@ package body YellowBlue.ListBox is
         (Name       => U("Vera"),
          Size       => 25,
          Attributes => Fonts.NoAttributes));
+
+      NewListBox.LeftFrame:=NewListBox.NewCanvas
+        (Height => 1,
+         Width  => 1);
+      NewListBox.LeftFrame.Clear(FrameColor);
+      NewListBox.LeftFrame.SetBounds
+        (Top     => 0,
+         Left    => 0,
+         Height  => Bounds.Height,
+         Width   => FrameWidth,
+         Visible => True);
+      NewListBox.LeftFrame.SetAnchors
+        (Top    => True,
+         Left   => True,
+         Right  => False,
+         Bottom => True);
+
+      NewListBox.TopFrame:=NewListBox.NewCanvas
+        (Height => 1,
+         Width  => 1);
+      NewListBox.TopFrame.Clear(FrameColor);
+      NewListBox.TopFrame.SetBounds
+        (Top     => 0,
+         Left    => FrameWidth,
+         Height  => FrameWidth,
+         Width   => Bounds.Width-FrameWidth,
+         Visible => True);
+      NewListBox.TopFrame.SetAnchors
+        (Top    => True,
+         Left   => True,
+         Right  => True,
+         Bottom => False);
+
+      NewListBox.BottomFrame:=NewListBox.NewCanvas
+        (Height => 1,
+         Width  => 1);
+      NewListBox.BottomFrame.Clear(FrameColor);
+      NewListBox.BottomFrame.SetBounds
+        (Top     => Bounds.Height-FrameWidth,
+         Left    => FrameWidth,
+         Height  => FrameWidth,
+         Width   => Bounds.Width-FrameWidth,
+         Visible => True);
+      NewListBox.BottomFrame.SetAnchors
+        (Top    => False,
+         Left   => True,
+         Right  => True,
+         Bottom => True);
 
       NewListBox.VerticalScrollbar
         :=YellowBlue.VerticalScrollBar.NewVerticalScrollBar
@@ -150,6 +249,8 @@ package body YellowBlue.ListBox is
          Left   => False,
          Right  => True,
          Bottom => True);
+      NewListBox.VerticalScrollbar.CallBackObject:=AnyObject_ClassAccess(NewListBox);
+      NewListBox.VerticalScrollbar.OnPositionChange:=ScrollPositionChange'Access;
 
       return GUI.ListBox.ListBox_ClassAccess(NewListBox);
 

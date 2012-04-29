@@ -115,6 +115,18 @@ package body SimClientGUI.MainMenu is
       ListBox.AddEntry
         (String => U("Line 2"),
          Color  => 16#FFFFFFFF#);
+      ListBox.AddEntry
+        (String => U("Line 3"),
+         Color  => 16#FFFFFFFF#);
+      ListBox.AddEntry
+        (String => U("Line 4"),
+         Color  => 16#FFFFFFFF#);
+      ListBox.AddEntry
+        (String => U("Line 5"),
+         Color  => 16#FFFFFFFF#);
+      ListBox.AddEntry
+        (String => U("Line 6"),
+         Color  => 16#FFFFFFFF#);
       ResizeWindowArea(null);
       GUIContext.WindowArea.OnResize:=ResizeWindowArea'Access;
       Enabled := True;

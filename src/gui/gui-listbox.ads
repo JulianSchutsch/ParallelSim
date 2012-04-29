@@ -25,7 +25,7 @@ pragma Ada_2005;
 
 package GUI.ListBox is
 
-   type ListBox_Type is new GUI.Object_Type with private;
+   type ListBox_Type is abstract new GUI.Object_Type with private;
    type ListBox_Access is access all ListBox_Type;
    type ListBox_ClassAccess is access all ListBox_Type'Class;
 
@@ -36,10 +36,18 @@ package GUI.ListBox is
    procedure AddEntry
      (Item   : access ListBox_Type;
       String : Unbounded_String;
-      Color  : Canvas.Color_Type) is null;
+      Color  : Canvas.Color_Type) is abstract;
+
+   procedure DeleteEntry
+     (Item  : access ListBox_Type;
+      Index : Integer) is abstract;
 
    procedure ClearEntries
-     (Item : access ListBox_Type) is null;
+     (Item : access ListBox_Type) is abstract;
+
+   function GetIndex
+     (Item : access ListBox_Type)
+      return Integer is abstract;
 
    type ListBox_Constructor is
      access function
@@ -48,7 +56,7 @@ package GUI.ListBox is
 
 private
 
-   type ListBox_Type is new GUI.Object_Type with
+   type ListBox_Type is abstract new GUI.Object_Type with
       record
          null;
       end record;

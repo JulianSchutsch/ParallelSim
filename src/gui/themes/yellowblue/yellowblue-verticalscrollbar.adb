@@ -19,7 +19,7 @@
 
 pragma Ada_2005;
 
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 --with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Canvas;
 with GUIMouse; use GUIMouse;
@@ -170,7 +170,6 @@ package body YellowBlue.VerticalScrollBar is
             if Item.GetPosition<Item.GetMax then
                Item.SetPosition(Item.GetPosition+1);
             end if;
-            new_Line;
       end case;
 
       Item.MouseMode:=MouseModeNull;

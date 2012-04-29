@@ -20,8 +20,8 @@
 pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body GUI.ListBasis is
 
@@ -72,7 +72,7 @@ package body GUI.ListBasis is
       TextWidth      : Integer;
       CanvasWidth    : Integer;
       LineNumber     : Integer;
-      ObjectWidth    : Integer:=Item.GetBounds.Width;
+      ObjectWidth    : constant Integer:=Item.GetBounds.Width;
 
    begin
       ClearCanvasse(Item);
@@ -95,13 +95,10 @@ package body GUI.ListBasis is
 
       while Entr/=StringAndColorList_Pack.No_Element loop
 
-         Put("Line");
-         Put(LineNumber);
-         Put(Item.SelectedIndex);
-         New_Line;
          StringAndColor:=StringAndColorList_Pack.Element(Entr);
 
          NewCanvas:=new ListBasisCanvas_Type;
+         NewCanvas.LineNumber:=LineNumber;
          TextWidth:=Item.Font.TextWidth(StringAndColor.String);
 
          if LineNumber/=Item.SelectedIndex then
@@ -109,17 +106,13 @@ package body GUI.ListBasis is
          else
             CanvasWidth := ObjectWidth;
          end if;
-         Put(ObjectWidth);
-         Put(CanvasWidth);
-         Put(TextWidth);
-         New_Line;
 
          NewCanvas.Canvas:=Item.NewCanvas
            (Height => FontHeight,
             Width  => CanvasWidth);
 
          if LineNumber/=Item.SelectedIndex then
-            NewCanvas.Canvas.Clear(16#FF00FF00#);
+            NewCanvas.Canvas.Clear(0);
          else
             NewCanvas.Canvas.Clear(16#FFFF0000#);
          end if;
@@ -134,12 +127,8 @@ package body GUI.ListBasis is
            (Top     => yPosition,
             Left    => 0,
             Height  => FontHeight,
-            Width   => TextWidth,
+            Width   => CanvasWidth,
             Visible => True);
-         Put(NewCanvas.Canvas.GetBounds);
-         Put("ContentWidth");
-         Put(NewCanvas.Canvas.ContentWidth);
-         New_Line;
 
          NewCanvas.Last:=PreviousCanvas;
          if PreviousCanvas/=null then
@@ -147,6 +136,8 @@ package body GUI.ListBasis is
          else
             Item.CanvasLines:=NewCanvas;
          end if;
+
+         PreviousCanvas:=NewCanvas;
 
          yPosition:=yPosition+FontHeight;
          if YPosition>=Item.GetBounds.Height then
@@ -159,6 +150,95 @@ package body GUI.ListBasis is
       end loop;
 
    end DrawCanvasse;
+   ---------------------------------------------------------------------------
+
+   procedure SetTopIndex
+     (Item     : access ListBasis_Type;
+      TopIndex : Integer) is
+   begin
+
+      if (TopIndex<0)
+        or (TopIndex>=Integer(Item.Entries.Length)) then
+         raise IndexOutOfRange;
+      end if;
+
+      if Item.TopIndex/=TopIndex then
+         Item.TopIndex:=TopIndex;
+         DrawCanvasse(Item);
+      end if;
+   end SetTopIndex;
+   ---------------------------------------------------------------------------
+
+   procedure SetIndex
+     (Item  : access ListBasis_Type;
+      Index : Integer) is
+   begin
+
+      if (Index<-1)
+        or (Index>=Integer(Item.Entries.Length)) then
+         raise IndexOutOfRange;
+      end if;
+
+      if Item.SelectedIndex/=Index then
+         Item.SelectedIndex:=Index;
+         DrawCanvasse(Item);
+      end if;
+
+   end SetIndex;
+   ---------------------------------------------------------------------------
+
+   function GetIndex
+     (Item : access ListBasis_Type)
+      return Integer is
+   begin
+      return Item.SelectedIndex;
+   end GetIndex;
+   ---------------------------------------------------------------------------
+
+   function MouseDown
+     (Item   : access ListBasis_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean is
+
+      pragma Unreferenced(X);
+
+      NewSelected : Integer;
+
+   begin
+      if Button=LeftButton then
+         NewSelected:=Y/Item.Font.Height+Item.TopIndex;
+         if NewSelected<0 then
+            NewSelected:=0;
+         end if;
+         if NewSelected>=Integer(Item.Entries.Length) then
+            NewSelected:=Integer(Item.Entries.Length)-1;
+         end if;
+         Item.Pressed:=True;
+         Item.SetIndex(NewSelected);
+      end if;
+      return True;
+   end MouseDown;
+   ---------------------------------------------------------------------------
+
+   procedure MouseMove
+     (Item   : access ListBasis_Type;
+      X      : Integer;
+      Y      : Integer) is
+   begin
+      null;
+   end MouseMove;
+   ---------------------------------------------------------------------------
+
+   procedure MouseUp
+     (Item   : access ListBasis_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer) is
+   begin
+      null;
+   end MouseUp;
    ---------------------------------------------------------------------------
 
    procedure Finalize
@@ -188,6 +268,28 @@ package body GUI.ListBasis is
       Item.Font:=Font;
       DrawCanvasse(Item);
    end SetFont;
+   ---------------------------------------------------------------------------
+
+   procedure DeleteEntry
+     (Item  : access ListBasis_Type;
+      Index : Integer) is
+
+      Cursor : StringAndColorList_Pack.Cursor;
+
+   begin
+      if Index<0
+        or Index>=Integer(Item.Entries.Length) then
+         raise IndexOutOfRange;
+      end if;
+      Cursor:=ElementAtIndex(Item.Entries,Index);
+      Item.Entries.Delete(Cursor);
+      if Item.SelectedIndex=Index then
+         Item.SelectedIndex:=-1;
+      elsif Item.SelectedIndex>Index then
+         Item.SelectedIndex:=Item.SelectedIndex-1;
+      end if;
+      DrawCanvasse(Item);
+   end DeleteEntry;
    ---------------------------------------------------------------------------
 
    procedure AddEntry

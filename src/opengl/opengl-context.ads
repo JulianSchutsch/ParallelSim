@@ -20,6 +20,9 @@
 -- Revision History
 --   18.Mar 2012 Julian Schutsch
 --     - Original version
+--   29.Apr 2012 Julian Schutsch
+--     - Correction : Texture coordinates are based on Canvas.Bounds,
+--                    not on Canvas.ContentHeight or Width
 
 pragma Ada_2005;
 

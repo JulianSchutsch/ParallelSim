@@ -29,6 +29,9 @@ with Fonts;
 
 package GUI.ListBasis is
 
+   IndexOutOfRange    : Exception;
+   TopIndexOutOfRange : Exception;
+
    type ListBasis_Type is new Object_Type with private;
    type ListBasis_Access is access all ListBasis_Type;
 
@@ -40,10 +43,35 @@ package GUI.ListBasis is
    procedure Resize
      (Item : access ListBasis_Type);
 
+   overriding
+   function MouseDown
+     (Item   : access ListBasis_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean;
+
+   overriding
+   procedure MouseMove
+     (Item   : access ListBasis_Type;
+      X      : Integer;
+      Y      : Integer);
+
+   overriding
+   procedure MouseUp
+     (Item   : access ListBasis_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer);
+
    procedure AddEntry
      (Item   : access ListBasis_Type;
       String : Unbounded_String;
       Color  : Canvas.Color_Type);
+
+   procedure DeleteEntry
+     (Item  : access ListBasis_Type;
+      Index : Integer);
 
    procedure ClearEntries
      (Item : access ListBasis_Type);
@@ -56,22 +84,36 @@ package GUI.ListBasis is
      (Item : access ListBasis_Type)
       return Integer;
 
+   procedure SetIndex
+     (Item  : access ListBasis_Type;
+      Index : Integer);
+
+   function GetIndex
+     (Item : access ListBasis_Type)
+      return Integer;
+
+   procedure SetTopIndex
+     (Item     : access ListBasis_Type;
+      TopIndex : Integer);
+
 private
 
    type ListBasisCanvas_Type;
    type ListBasisCanvas_Access is access ListBasisCanvas_Type;
    type ListBasisCanvas_Type is
       record
-         Canvas : GUI.Canvas_ClassAccess := null;
-         Next   : ListBasisCanvas_Access := null;
-         Last   : ListBasisCanvas_Access := null;
+         Canvas     : GUI.Canvas_ClassAccess := null;
+         LineNumber : Integer;
+         Next       : ListBasisCanvas_Access := null;
+         Last       : ListBasisCanvas_Access := null;
       end record;
 
    type ListBasis_Type is new Object_Type with
       record
          Entries       : StringAndColorList_Pack.List;
          TopIndex      : Integer:=0;
-         SelectedIndex : Integer:=0;
+         SelectedIndex : Integer:=-1;
+         Pressed       : Boolean;
          Font          : Fonts.Font_ClassAccess := null;
          CanvasLines   : ListBasisCanvas_Access := null;
       end record;

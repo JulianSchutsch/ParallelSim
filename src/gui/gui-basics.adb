@@ -17,29 +17,26 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
--- Revision History
---   29.Apr 2012 Julian Schutsch
---     - Original version
-
 pragma Ada_2005;
 
-with Ada.Containers.Doubly_Linked_Lists;
-
-package GUI.Basics is
-
-   type StringAndColor_Type is
-      record
-         String : Unbounded_String;
-         Color  : Canvas.Color_Type;
-      end record;
-
-   package StringAndColorList_Pack is new Ada.Containers.Doubly_Linked_Lists
-     (Element_Type => StringAndColor_Type,
-      "="          => "=");
+package body GUI.Basics is
 
    function ElementAtIndex
      (List : StringAndColorList_Pack.List;
       Index : Integer)
-      return StringAndColorList_Pack.Cursor;
+      return StringAndColorList_Pack.Cursor is
+
+      Cursor : StringAndColorList_Pack.Cursor;
+
+   begin
+
+      Cursor:=List.First;
+      for i in 1..Index loop
+         Cursor:=StringAndColorList_Pack.Next(Cursor);
+      end loop;
+      return Cursor;
+
+   end ElementAtIndex;
+   ---------------------------------------------------------------------------
 
 end GUI.Basics;

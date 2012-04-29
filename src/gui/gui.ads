@@ -45,6 +45,9 @@
 --   As a parent any of the three root objects or any other object can be
 --   chosen.
 
+-- TODO: issue : there is a set of empty canvases not added anywhere
+--               they should be freed. Add special handling for empty canvases
+
 pragma Ada_2005;
 
 with BoundsCalc; use BoundsCalc;
@@ -228,6 +231,10 @@ package GUI is
    function GetFirstCanvas
      (Item : access Object_Type)
       return Canvas_ClassAccess;
+
+   function GetCanvasCount
+     (Item : access Object_Type)
+      return Integer;
    ---------------------------------------------------------------------------
 
    type OnCloseContext_Access is

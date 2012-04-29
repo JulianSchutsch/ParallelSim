@@ -37,6 +37,23 @@ package body GUI is
       Name   => Context_ClassAccess);
    ---------------------------------------------------------------------------
 
+   function GetCanvasCount
+     (Item : access Object_Type)
+      return Integer is
+
+      Cursor : Canvas_ClassAccess;
+      Count  : Integer:=0;
+
+   begin
+      Cursor:=Item.Canvasse;
+      while Cursor/=null loop
+         Count  := Count+1;
+         Cursor := Cursor.Next;
+      end loop;
+      return Count;
+   end GetCanvasCount;
+   ---------------------------------------------------------------------------
+
    function NewCanvas
      (Item   : access Object_Type;
       Height : Integer;

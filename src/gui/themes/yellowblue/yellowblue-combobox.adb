@@ -75,7 +75,7 @@ package body YellowBlue.Combobox is
 
       use type Fonts.Font_ClassAccess;
 
-      Bounds : Bounds_Type:=Combobox.GetBounds;
+      Bounds : constant Bounds_Type:=Combobox.GetBounds;
 
    begin
 
