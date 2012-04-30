@@ -22,35 +22,28 @@
 --     - Original version
 
 -- Demo
---   Demonstration for setting up a GUI context and a listbox using two
---   buttons to add or remove content from it.
+--   Demonstration for a combobox.
 
 pragma Ada_2005;
 
 with GUI;
+with GUI.Combobox;
 with GUI.Themes;
-with GUI.ListBox;
-with GUI.Button;
 with GUI.UseImplementations;
 
 with YellowBlue;
 
 with Config;
-with BoundsCalc; use BoundsCalc;
 with ProcessLoop;
 with Basics; use Basics;
 
-procedure Listbox is
+procedure Combobox is
 
    GUIImplementation : GUI.Implementation_Type;
    Context           : GUI.Context_ClassAccess;
+   Combobox          : GUI.Combobox.Combobox_ClassAccess;
    Theme             : GUI.Themes.Implementation_Type;
    Configuration     : Config.Config_Type;
-   ListBox           : GUI.ListBox.ListBox_ClassAccess;
-   AddButton         : GUI.Button.Button_ClassAccess;
-   DeleteButton      : GUI.Button.Button_ClassAccess;
-
-   AddCounter        : Integer:=0;
 
    Terminated        : Boolean:=False;
    pragma Warnings(Off,Terminated); -- Terminated is never changed
@@ -62,32 +55,6 @@ procedure Listbox is
    begin
       Terminated:=True;
    end ContextClose;
-   ---------------------------------------------------------------------------
-
-   procedure AddClick
-     (CallBackObject : AnyObject_ClassAccess) is
-      pragma Unreferenced(CallBackObject);
-   begin
-
-      AddCounter:=AddCounter+1;
-
-      ListBox.AddEntry
-        (String => U("Entry Added :"&Integer'Image(AddCounter)),
-         Color  => 16#FFFFFFFF#);
-
-   end AddClick;
-   ---------------------------------------------------------------------------
-
-   procedure DeleteClick
-     (CallBackObject : AnyObject_ClassAccess) is
-      pragma Unreferenced(CallBackObject);
-   begin
-
-      if ListBox.GetIndex>=0 then
-         ListBox.DeleteEntry(ListBox.GetIndex);
-      end if;
-
-   end DeleteClick;
    ---------------------------------------------------------------------------
 
 begin
@@ -115,58 +82,40 @@ begin
    -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
-   declare
-      -- Obtain current main window dimensions
-      WindowBounds : constant Bounds_Type:=Context.WindowArea.GetBounds;
-   begin
-      -- Create a new listbox with WindowArea as parent
-      ListBox:=Theme.NewListBox(Context.WindowArea);
+   -- The Context.WindowArea is now the parent object of a new window
+   Combobox:=Theme.NewCombobox(Context.WindowArea);
 
-      -- The Listbox should fill almost the entire window, but leave some
-      -- space for buttons
-      ListBox.SetBounds
-        (Top     => 0,
-         Left    => 0,
-         Height  => WindowBounds.Height,
-         Width   => WindowBounds.Width-120,
-         Visible => True);
-      ListBox.SetAnchors
-        (Top => True,
-         Left => True,
-         Right => True,
-         Bottom => True);
-
-      AddButton:=Theme.NewButton(Context.WindowArea);
-      AddButton.SetBounds
-        (Top     => 10,
-         Left    => WindowBounds.Width-110,
-         Height  => 30,
-         Width   => 100,
-         Visible => True);
-      AddButton.SetAnchors
-        (Top    => True,
-         Left   => False,
-         Right  => True,
-         Bottom => False);
-      AddButton.SetCaption(U("Add"));
-      AddButton.OnClick:=AddClick'Unrestricted_Access;
-
-      DeleteButton:=Theme.NewButton(Context.WindowArea);
-      DeleteButton.SetBounds
-        (Top     => 50,
-         Left    => WindowBounds.Width-110,
-         Height  => 30,
-         Width   => 100,
-         Visible => True);
-      DeleteButton.SetAnchors
-        (Top    => True,
-         Left   => False,
-         Right  => True,
-         Bottom => False);
-      DeleteButton.SetCaption(U("Delete"));
-      DeleteButton.OnClick:=DeleteClick'Unrestricted_Access;
-   end;
-
+   -- Set a rectangle for the window, make it visible
+   Combobox.SetBounds
+     (Top     => 20,
+      Left    => 20,
+      Height  => 30,
+      Width   => Context.WindowArea.GetBounds.Width-40,
+      Visible => True);
+   Combobox.SetAnchors
+     (Top => True,
+      Left => True,
+      Right => True,
+      Bottom => False);
+   Combobox.AddEntry
+     (String => U("First Entry"),
+      Color  => 16#FFFFFFFF#);
+   Combobox.AddEntry
+     (String => U("Second Entry"),
+      Color  => 16#FFFFFFFF#);
+   Combobox.AddEntry
+     (String => U("Third Entry"),
+      Color  => 16#FFFFFFFF#);
+   Combobox.AddEntry
+     (String => U("Fourth Entry"),
+      Color  => 16#FFFFFFFF#);
+   Combobox.AddEntry
+     (String => U("Fifth Entry"),
+      Color  => 16#FFFFFFFF#);
+   Combobox.AddEntry
+     (String => U("Sixth Entry"),
+      Color  => 16#FFFFFFFF#);
+   Combobox.SetIndex(0);
 
    -- Waiting until either Context.OnClose or Button.OnClick is triggered
    -- Since both callback procedures set the Terminated flag.
@@ -181,4 +130,4 @@ begin
    YellowBlue.UnRegister;
    GUI.UseImplementations.Unregister;
 
-end Listbox;
+end Combobox;

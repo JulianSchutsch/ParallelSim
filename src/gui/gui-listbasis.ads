@@ -32,11 +32,20 @@ package GUI.ListBasis is
    IndexOutOfRange    : Exception;
    TopIndexOutOfRange : Exception;
 
-   type ListBasis_Type is new Object_Type with private;
+   type OnSelect_Access is
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess);
+
+   type ListBasis_Public is new Object_Type with
+      record
+         OnSelect   : OnSelect_Access:=null;
+         OnReselect : OnSelect_Access:=null;
+      end record;
+   type ListBasis_Type is new ListBasis_Public with private;
    type ListBasis_Access is access all ListBasis_Type;
 
    overriding
-   procedure Finalize
+   procedure Free
      (Item : access ListBasis_Type);
 
    overriding
@@ -96,6 +105,11 @@ package GUI.ListBasis is
      (Item     : access ListBasis_Type;
       TopIndex : Integer);
 
+   function PrecalculateListBasisHeight
+     (Item       : access ListBasis_Type;
+      EntryCount : Integer)
+      return Integer;
+
 private
 
    type ListBasisCanvas_Type;
@@ -108,7 +122,7 @@ private
          Last       : ListBasisCanvas_Access := null;
       end record;
 
-   type ListBasis_Type is new Object_Type with
+   type ListBasis_Type is new ListBasis_Public with
       record
          Entries       : StringAndColorList_Pack.List;
          TopIndex      : Integer:=0;

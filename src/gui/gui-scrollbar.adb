@@ -122,15 +122,14 @@ package body GUI.ScrollBar is
    end Initialize;
    ---------------------------------------------------------------------------
 
-   overriding
-   procedure Finalize
+   procedure Free
      (Item : access ScrollBar_Type) is
    begin
 
-      GUI.Finalize
+      GUI.Free
         (Item => Object_Access(Item));
 
-   end Finalize;
+   end Free;
    ---------------------------------------------------------------------------
 
 end GUI.ScrollBar;

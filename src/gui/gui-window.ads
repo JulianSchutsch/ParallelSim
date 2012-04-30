@@ -51,7 +51,7 @@ package GUI.Window is
       Parent  : Object_ClassAccess);
 
    overriding
-   procedure Finalize
+   procedure Free
      (Item : access Window_Type);
 
    overriding

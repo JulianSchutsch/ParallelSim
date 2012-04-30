@@ -937,7 +937,7 @@ package body GUI.TextBasis is
    end Initialize;
    ---------------------------------------------------------------------------
 
-   procedure Finalize
+   procedure Free
      (Item : access TextBasis_Type) is
 
       use type Fonts.Font_ClassAccess;
@@ -950,10 +950,9 @@ package body GUI.TextBasis is
          Fonts.Release(Item.Font);
       end if;
 
-      GUI.Finalize
-        (Item => Object_Access(Item));
+      GUI.Object_Access(Item).Free;
 
-   end Finalize;
+   end Free;
    ---------------------------------------------------------------------------
 
 end GUI.TextBasis;

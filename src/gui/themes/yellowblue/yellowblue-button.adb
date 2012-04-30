@@ -49,7 +49,7 @@ package body YellowBlue.Button is
      (Item : access Button_Type);
 
    overriding
-   procedure Finalize
+   procedure Free
      (Item : access Button_Type);
 
    overriding
@@ -74,7 +74,7 @@ package body YellowBlue.Button is
       return Boolean;
    ---------------------------------------------------------------------------
 
-   procedure Finalize
+   procedure Free
      (Item : access Button_Type) is
 
       use type Fonts.Font_ClassAccess;
@@ -83,8 +83,8 @@ package body YellowBlue.Button is
       if Item.Font/=null then
          Fonts.Release(Item.Font);
       end if;
-      GUI.Button.Button_Access(Item).Finalize;
-   end;
+      GUI.Button.Button_Access(Item).Free;
+   end Free;
    ---------------------------------------------------------------------------
 
    procedure DrawCanvas

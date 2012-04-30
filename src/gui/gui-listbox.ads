@@ -25,12 +25,22 @@ pragma Ada_2005;
 
 package GUI.ListBox is
 
-   type ListBox_Type is abstract new GUI.Object_Type with private;
+   type OnSelect_Access is
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess);
+
+   type ListBox_Public is abstract new GUI.Object_Type with
+      record
+         OnSelect   : OnSelect_Access:=null;
+         OnReselect : OnSelect_Access:=null;
+      end record;
+
+   type ListBox_Type is abstract new ListBox_Public with private;
    type ListBox_Access is access all ListBox_Type;
    type ListBox_ClassAccess is access all ListBox_Type'Class;
 
    overriding
-   procedure Finalize
+   procedure Free
      (Item : access ListBox_Type);
 
    procedure AddEntry
@@ -45,9 +55,18 @@ package GUI.ListBox is
    procedure ClearEntries
      (Item : access ListBox_Type) is abstract;
 
+   function PrecalculateListBoxHeight
+     (Item       : access ListBox_Type;
+      EntryCount : Integer)
+      return Integer is abstract;
+
    function GetIndex
      (Item : access ListBox_Type)
       return Integer is abstract;
+
+   procedure SetIndex
+     (Item  : access ListBox_Type;
+      Index : Integer) is abstract;
 
    type ListBox_Constructor is
      access function
@@ -56,7 +75,7 @@ package GUI.ListBox is
 
 private
 
-   type ListBox_Type is abstract new GUI.Object_Type with
+   type ListBox_Type is abstract new ListBox_Public with
       record
          null;
       end record;

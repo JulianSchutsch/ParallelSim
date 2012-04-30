@@ -44,7 +44,7 @@ package GUI.Console is
         return Console_ClassAccess;
 
    overriding
-   procedure Finalize
+   procedure Free
      (Item : access Console_Type);
 
    procedure WriteLine

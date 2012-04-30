@@ -62,7 +62,7 @@ package GUI.TextBasis is
       Parent : Object_ClassAccess);
 
    overriding
-   procedure Finalize
+   procedure Free
      (Item : access TextBasis_Type);
 
    overriding

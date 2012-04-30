@@ -37,13 +37,13 @@ package body GUI.Console is
    end Initialize;
    ---------------------------------------------------------------------------
 
-   procedure Finalize
+   procedure Free
      (Item : access Console_Type) is
    begin
 
-      GUI.Object_Access(Item).Finalize;
+      GUI.Object_Access(Item).Free;
 
-   end Finalize;
+   end Free;
    ---------------------------------------------------------------------------
 
 end GUI.Console;

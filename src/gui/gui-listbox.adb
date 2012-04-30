@@ -21,11 +21,11 @@ pragma Ada_2005;
 
 package body GUI.ListBox is
 
-   procedure Finalize
+   procedure Free
      (Item : access ListBox_Type) is
    begin
-      GUI.Object_Access(Item).Finalize;
-   end Finalize;
+      GUI.Object_Access(Item).Free;
+   end Free;
    ---------------------------------------------------------------------------
 
 end GUI.ListBox;

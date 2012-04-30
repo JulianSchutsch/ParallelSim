@@ -158,14 +158,14 @@ package body GUI.Window is
    end Initialize;
    ---------------------------------------------------------------------------
 
-   procedure Finalize
+   procedure Free
      (Item : access Window_Type) is
    begin
 
-      GUI.Finalize
+      GUI.Free
         (Item => Object_Access(Item));
 
-   end Finalize;
+   end Free;
    ---------------------------------------------------------------------------
 
 end GUI.Window;

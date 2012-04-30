@@ -85,7 +85,7 @@ package body YellowBlue.Window is
       Y    : Integer);
 
    overriding
-   procedure Finalize
+   procedure Free
      (Item : access Window_Type);
 
    overriding
@@ -102,15 +102,15 @@ package body YellowBlue.Window is
       Caption : Unbounded_String);
    ---------------------------------------------------------------------------
 
-   procedure Finalize
+   procedure Free
      (Item : access Window_Type) is
    begin
 
       Fonts.Release(Item.Font);
-      GUI.Window.Finalize
+      GUI.Window.Free
         (Item => GUI.Window.Window_Access(Item));
 
-   end Finalize;
+   end Free;
    ---------------------------------------------------------------------------
 
    function MouseDown

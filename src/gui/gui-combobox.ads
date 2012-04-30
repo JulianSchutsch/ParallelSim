@@ -36,11 +36,11 @@ package GUI.Combobox is
    IndexOutOfRange : Exception;
 
    type Combobox_Type is new Object_Type with private;
-   type Combobox_access is access all Combobox_Type;
+   type Combobox_Access is access all Combobox_Type;
    type Combobox_ClassAccess is access all Combobox_Type'Class;
 
    overriding
-   procedure Finalize
+   procedure Free
      (Item : access Combobox_Type);
 
    overriding
@@ -69,6 +69,14 @@ package GUI.Combobox is
      (Item   : access Combobox_Type;
       String : out Unbounded_String;
       Color  : out Canvas.Color_Type);
+
+   function GetEntries
+     (Item : access Combobox_Type)
+      return GUI.Basics.StringAndColorList_Pack.List;
+
+   function GetEntryCount
+     (Item : access ComboBox_Type)
+      return Integer;
    ---------------------------------------------------------------------------
 
    type Combobox_Constructor is

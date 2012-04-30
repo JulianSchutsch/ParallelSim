@@ -18,8 +18,25 @@
 -------------------------------------------------------------------------------
 
 pragma Ada_2005;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body GUI.Combobox is
+
+   function GetEntryCount
+     (Item : access ComboBox_Type)
+      return Integer is
+   begin
+      return Integer(Item.Choices.Length);
+   end GetEntryCount;
+   ---------------------------------------------------------------------------
+
+   function GetEntries
+     (Item : access Combobox_Type)
+      return GUI.Basics.StringAndColorList_Pack.List is
+   begin
+      return Item.Choices;
+   end GetEntries;
+   ---------------------------------------------------------------------------
 
    procedure AddEntry
      (Item   : access Combobox_Type;
@@ -39,6 +56,8 @@ package body GUI.Combobox is
       if Index not in -1..Integer(Item.Choices.Length) then
          raise IndexOutOfRange;
       end if;
+      Put("SetIndex");
+      New_Line;
       Item.Index:=Index;
    end SetIndex;
    ---------------------------------------------------------------------------
@@ -96,11 +115,11 @@ package body GUI.Combobox is
    end GetSelectedEntry;
    ---------------------------------------------------------------------------
 
-   procedure Finalize
+   procedure Free
      (Item : access Combobox_Type) is
    begin
-      GUI.Object_Access(Item).Finalize;
-   end Finalize;
+      GUI.Object_Access(Item).Free;
+   end Free;
    ---------------------------------------------------------------------------
 
    procedure Initialize

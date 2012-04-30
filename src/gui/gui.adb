@@ -24,7 +24,7 @@ with Ada.Unchecked_Deallocation;
 
 package body GUI is
 
-   procedure Free is new Ada.Unchecked_Deallocation
+   procedure FreeObject is new Ada.Unchecked_Deallocation
      (Object => Object_Type'Class,
       Name   => Object_ClassAccess);
 
@@ -35,6 +35,96 @@ package body GUI is
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => Context_Type'Class,
       Name   => Context_ClassAccess);
+   ---------------------------------------------------------------------------
+
+   procedure AddASync
+     (Item   : access Object_Type;
+      Method : OnASync_Access) is
+   begin
+      Item.Context.Priv.ASyncCalls.Append
+        (New_Item =>
+           (Method => Method,
+            Object => Object_ClassAccess(Item)));
+   end AddASync;
+   ---------------------------------------------------------------------------
+
+   procedure CallAsyncs
+     (Context : Context_ClassAccess) is
+
+      use type AsyncList_Pack.Cursor;
+
+      Cursor : ASyncList_Pack.Cursor;
+      Method : ASync_Type;
+
+   begin
+
+      Cursor:=Context.Priv.ASyncCalls.First;
+      while Cursor/=ASyncList_Pack.No_Element loop
+         Method:=ASyncList_Pack.Element(Cursor);
+         Method.Method(Method.Object);
+         Cursor:=ASyncList_Pack.Next(Cursor);
+      end loop;
+      Context.Priv.ASyncCalls.Clear;
+
+   end CallAsyncs;
+   ---------------------------------------------------------------------------
+
+   type ContextArea_Type is new Object_Type with
+      record
+         null;
+      end record;
+
+   overriding
+   function MouseDown
+     (Item   : access ContextArea_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean;
+   ---------------------------------------------------------------------------
+
+   function MouseDown
+     (Item : access ContextArea_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean is
+
+      pragma Unreferenced(Button);
+      pragma Unreferenced(X);
+      pragma Unreferenced(Y);
+
+   begin
+      Put("Context touched...");
+      New_Line;
+      -- Check if Context Mode is active
+      if Item.FirstChild/=null then
+         if Item.Context.OnContextAreaClick/=null then
+            Item.Context.OnContextAreaClick(Item.CallBackObject);
+            Item.Context.OnContextAreaClick:=null;
+         end if;
+         return True;
+      end if;
+      return False;
+   end MouseDown;
+   ---------------------------------------------------------------------------
+
+   procedure SetContextAreaClick
+     (Item           : access Object_Type;
+      CallBack       : OnContextAreaClick_Access;
+      CallBackObject : AnyObject_ClassAccess) is
+   begin
+      Item.Context.OnContextAreaClick         := CallBack;
+      Item.Context.ContextArea.CallBackObject := CallBackObject;
+   end SetContextAreaClick;
+   ---------------------------------------------------------------------------
+
+   function GetContextArea
+     (Item : access Object_Type)
+      return Object_ClassAccess is
+   begin
+      return Item.Context.ContextArea;
+   end GetContextArea;
    ---------------------------------------------------------------------------
 
    function GetCanvasCount
@@ -204,6 +294,8 @@ package body GUI is
          end if;
       end if;
 
+      CallAsyncs(Context);
+
    end ContextCharacterInput;
    ---------------------------------------------------------------------------
 
@@ -219,6 +311,8 @@ package body GUI is
          end if;
       end if;
 
+      CallAsyncs(Context);
+
    end ContextKeyDown;
    ---------------------------------------------------------------------------
 
@@ -233,6 +327,8 @@ package body GUI is
             New_Line;
          end if;
       end if;
+
+      CallAsyncs(Context);
 
    end ContextKeyUp;
    ---------------------------------------------------------------------------
@@ -461,6 +557,7 @@ package body GUI is
       ------------------------------------------------------------------------
 
    begin
+      Put_Line("MouseDown");
 
       if Context.Priv.MouseButtonsPressed=NoMouseButtons then
 
@@ -511,6 +608,9 @@ package body GUI is
 
       Context.Priv.MouseButtonsPressed(MouseButton):=True;
 
+      CallAsyncs(Context);
+      Put_Line("MouseDown//");
+
    end ContextMouseDown;
    ---------------------------------------------------------------------------
 
@@ -521,6 +621,8 @@ package body GUI is
       AbsY        : Integer) is
 
    begin
+
+      Put_Line("MouseUp");
 
       if Context.Priv.MouseSelection/=null then
 
@@ -540,6 +642,9 @@ package body GUI is
          Context.Priv.MouseSelection:=null;
       end if;
 
+      CallAsyncs(Context);
+      Put_Line("MouseUp//");
+
    end ContextMouseUp;
    ---------------------------------------------------------------------------
 
@@ -548,6 +653,8 @@ package body GUI is
       AbsX    : Integer;
       AbsY    : Integer) is
    begin
+
+      Put_Line("MouseMove");
 
       if Context.Priv.MouseSelection/=null then
 
@@ -562,7 +669,18 @@ package body GUI is
 
       end if;
 
+      CallAsyncs(Context);
+      Put_Line("MouseMove//");
+
    end ContextMouseMove;
+   ---------------------------------------------------------------------------
+
+   function GetAbsBounds
+     (Object : access Object_Type)
+      return AbsBounds_Type is
+   begin
+      return Object.AbsBounds;
+   end GetAbsBounds;
    ---------------------------------------------------------------------------
 
    procedure ResizeTree
@@ -872,10 +990,10 @@ package body GUI is
    end Initialize;
    ---------------------------------------------------------------------------
 
-   procedure Finalize
+   procedure Free
      (Item : access Object_Type) is
 
-      ItemVal : Object_ClassAccess;
+      ItemVal : Object_ClassAccess:=Object_ClassAccess(Item);
 
    begin
 
@@ -883,6 +1001,9 @@ package body GUI is
       -- be left which MUST be removed too
       if Item.Context.Priv.FocusObject=Object_ClassAccess(Item) then
          ClearFocusTree(Object_ClassAccess(Item));
+      end if;
+      if Item.Context.Priv.MouseSelection=ItemVal then
+         Item.Context.Priv.MouseSelection:=null;
       end if;
 
       -- Finalize all Childs
@@ -895,7 +1016,7 @@ package body GUI is
 
          while Object/=null loop
             NextObject:=Object.Next;
-            Object.Finalize;
+            Object.Free;
             Object:=NextObject;
          end loop;
       end;
@@ -915,7 +1036,6 @@ package body GUI is
       end;
 
       -- Remove Object from the tree
-      ItemVal:=Object_ClassAccess(Item);
 
       if Item.Parent/=null then
          if Item.Next/=null then
@@ -931,9 +1051,9 @@ package body GUI is
          end if;
       end if;
 
-      Free(ItemVal);
+      FreeObject(ItemVal);
 
-   end Finalize;
+   end Free;
    ---------------------------------------------------------------------------
 
    procedure Initialize
@@ -942,7 +1062,7 @@ package body GUI is
       -- TODO: Use specialized objects
       Context.WindowArea          := new Object_Type;
       Context.ModalArea           := new Object_Type;
-      Context.ContextArea         := new Object_Type;
+      Context.ContextArea         := new ContextArea_Type;
       Context.WindowArea.Context  := Context_ClassAccess(Context);
       Context.ModalArea.Context   := Context_ClassAccess(Context);
       Context.ContextArea.Context := Context_ClassAccess(Context);
@@ -958,9 +1078,9 @@ package body GUI is
    begin
       Put("Finit");
       New_Line;
-      Context.WindowArea.Finalize;
-      Context.ModalArea.Finalize;
-      Context.ContextArea.Finalize;
+      Context.WindowArea.Free;
+      Context.ModalArea.Free;
+      Context.ContextArea.Free;
    end;
    ---------------------------------------------------------------------------
 

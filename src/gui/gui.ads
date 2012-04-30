@@ -58,6 +58,7 @@ with Canvas;
 with GUIDefinitions; use GUIDefinitions;
 with GUIKeys; use GUIKeys;
 with GUIMouse; use GUIMouse;
+with Ada.Containers.Doubly_Linked_Lists;
 
 package GUI is
 
@@ -69,6 +70,14 @@ package GUI is
    type OnResize_Access is
      access procedure
        (CallbackObject : AnyObject_ClassAccess);
+
+   type OnCloseContext_Access is
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess);
+
+   type OnContextAreaClick_Access is
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess);
 
    type Context_Type;
    type Context_ClassAccess is access all Context_Type'Class;
@@ -127,6 +136,10 @@ package GUI is
    type Object_Access is access all Object_Type;
    type Object_ClassAccess is access all Object_Type'Class;
 
+   type OnASync_Access is
+     access procedure
+       (Item : Object_ClassAccess);
+
    procedure Initialize
      (Item   : access Object_Type;
       Parent : Object_ClassAccess);
@@ -143,7 +156,7 @@ package GUI is
    procedure Defocus
      (Item : access Object_Type) is null;
 
-   procedure Finalize
+   procedure Free
      (Item : access Object_Type);
 
    function CharacterInput
@@ -191,6 +204,10 @@ package GUI is
      (Object : access Object_Type)
       return Bounds_Type;
 
+   function GetAbsBounds
+     (Object : access Object_Type)
+      return AbsBounds_Type;
+
    function GetPrevBounds
      (Object : access Object_Type)
       return Bounds_Type;
@@ -234,20 +251,31 @@ package GUI is
    function GetCanvasCount
      (Item : access Object_Type)
       return Integer;
-   ---------------------------------------------------------------------------
 
-   type OnCloseContext_Access is
-     access procedure (CallBackObject : AnyObject_ClassAccess);
+   function GetContextArea
+     (Item : access Object_Type)
+      return Object_ClassAccess;
+
+   procedure SetContextAreaClick
+     (Item           : access Object_Type;
+      CallBack       : OnContextAreaClick_Access;
+      CallBackObject : AnyObject_ClassAccess);
+
+   procedure AddASync
+     (Item   : access Object_Type;
+      Method : OnASync_Access);
+   ---------------------------------------------------------------------------
 
    type Context_Private is private;
 
    type Context_Type is abstract tagged limited
       record
-         CallBackObject      : AnyObject_ClassAccess := null;
-         OnClose             : OnCloseContext_Access := null;
-         WindowArea          : Object_ClassAccess    := null;
-         ModalArea           : Object_ClassAccess    := null;
-         ContextArea         : Object_ClassAccess    := null;
+         CallBackObject     : AnyObject_ClassAccess     := null;
+         OnClose            : OnCloseContext_Access     := null;
+         OnContextAreaClick : OnContextAreaClick_Access := null;
+         WindowArea         : Object_ClassAccess        := null;
+         ModalArea          : Object_ClassAccess        := null;
+         ContextArea        : Object_ClassAccess        := null;
          -- Read only
          Bounds         : Bounds_Type;
          Priv           : Context_Private;
@@ -330,11 +358,22 @@ package GUI is
 
 private
 
+   type ASync_Type is
+      record
+         Method : OnAsync_Access:=null;
+         Object : Object_ClassAccess:=null;
+      end record;
+
+   package ASyncList_Pack is new Ada.Containers.Doubly_Linked_Lists
+     (Element_Type => ASync_Type,
+      "=" => "=");
+
    type Context_Private is
       record
          MouseButtonsPressed : MouseButton_Array  := NoMouseButtons;
          MouseSelection      : Object_ClassAccess := null;
          FocusObject         : Object_ClassAccess := null;
+         ASyncCalls          : ASyncList_Pack.List;
       end record;
 
    type Object_Type is new Object_Public with

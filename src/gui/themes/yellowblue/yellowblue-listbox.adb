@@ -48,6 +48,12 @@ package body YellowBlue.ListBox is
    type ListBox_Access is access all ListBox_Type;
 
    overriding
+   function PrecalculateListBoxHeight
+     (Item       : access ListBox_Type;
+      EntryCount : Integer)
+      return Integer;
+
+   overriding
    procedure AddEntry
      (Item   : access ListBox_Type;
       String : Unbounded_String;
@@ -70,6 +76,20 @@ package body YellowBlue.ListBox is
    function GetIndex
      (Item : access ListBox_Type)
       return Integer;
+
+   overriding
+   procedure SetIndex
+     (Item  : access ListBox_Type;
+      Index : Integer);
+   ---------------------------------------------------------------------------
+
+   function PrecalculateListBoxHeight
+     (Item       : access ListBox_Type;
+      EntryCount : Integer)
+      return Integer is
+   begin
+      return Item.ListBasis.PrecalculateListBasisHeight(EntryCount)+2*BorderWidth;
+   end PrecalculateListBoxHeight;
    ---------------------------------------------------------------------------
 
    function GetIndex
@@ -78,6 +98,47 @@ package body YellowBlue.ListBox is
    begin
       return Item.ListBasis.GetIndex;
    end GetIndex;
+   ---------------------------------------------------------------------------
+
+   procedure SetIndex
+     (Item : access ListBox_Type;
+      Index : Integer) is
+      use type GUI.ListBox.OnSelect_Access;
+   begin
+      Item.ListBasis.SetIndex(Index);
+   end SetIndex;
+   ---------------------------------------------------------------------------
+
+   procedure ListBasisSelect
+     (CallBackObject : AnyObject_ClassAccess) is
+
+      use type GUI.ListBox.OnSelect_Access;
+
+      Item : constant ListBox_Access:=ListBox_Access(CallBackObject);
+
+   begin
+
+      if Item.OnSelect/=null then
+         Item.OnSelect(Item.CallBackObject);
+      end if;
+
+   end ListBasisSelect;
+   ---------------------------------------------------------------------------
+
+   procedure ListBasisReselect
+     (CallBackOBject : AnyObject_ClassAccess) is
+
+      use type GUI.ListBox.OnSelect_Access;
+
+      Item : constant ListBox_Access:=ListBox_Access(CallBackObject);
+
+   begin
+
+      if Item.OnReselect/=null then
+         Item.OnReselect(Item.CallBackObject);
+      end if;
+
+   end ListBasisReselect;
    ---------------------------------------------------------------------------
 
    procedure UpdateScrollBar
@@ -114,6 +175,7 @@ package body YellowBlue.ListBox is
       Item.ListBasis.SetTopIndex(Item.VerticalScrollbar.GetPosition);
    end ScrollPositionChange;
    ---------------------------------------------------------------------------
+
 
    procedure ClearEntries
      (Item : access ListBox_Type) is
@@ -182,6 +244,9 @@ package body YellowBlue.ListBox is
         (Name       => U("Vera"),
          Size       => 25,
          Attributes => Fonts.NoAttributes));
+      NewListBox.ListBasis.CallBackObject:=AnyObject_ClassAccess(NewListBox);
+      NewListBox.ListBasis.OnSelect:=ListBasisSelect'Access;
+      NewListBox.ListBasis.OnReselect:=ListBasisReselect'Access;
 
       NewListBox.LeftFrame:=NewListBox.NewCanvas
         (Height => 1,

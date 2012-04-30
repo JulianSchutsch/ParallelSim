@@ -20,7 +20,7 @@
 pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
---with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 --with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body GUI.ListBasis is
@@ -37,6 +37,14 @@ package body GUI.ListBasis is
       return Item.GetBounds.Height/Item.Font.Height;
    end VisibleLineCount;
    ---------------------------------------------------------------------------
+
+   function PrecalculateListBasisHeight
+     (Item       : access ListBasis_Type;
+      EntryCount : Integer)
+      return Integer is
+   begin
+      return EntryCount*Item.Font.Height;
+   end PrecalculateListBasisHeight;
 
    procedure ClearCanvasse
      (Item : access ListBasis_Type) is
@@ -176,6 +184,8 @@ package body GUI.ListBasis is
       Index : Integer) is
    begin
 
+      Put("ListBasis.SetIndex");
+      New_Line;
       if (Index<-1)
         or (Index>=Integer(Item.Entries.Length)) then
          raise IndexOutOfRange;
@@ -183,8 +193,16 @@ package body GUI.ListBasis is
 
       if Item.SelectedIndex/=Index then
          Item.SelectedIndex:=Index;
+         if Item.OnSelect/=null then
+            Item.OnSelect(Item.CallBackObject);
+         end if;
          DrawCanvasse(Item);
+      else
+         if Item.OnReselect/=null then
+            Item.OnReselect(Item.CallBackObject);
+         end if;
       end if;
+      Put("ListBasis.SetIndex.//");
 
    end SetIndex;
    ---------------------------------------------------------------------------
@@ -243,17 +261,21 @@ package body GUI.ListBasis is
    end MouseUp;
    ---------------------------------------------------------------------------
 
-   procedure Finalize
+   procedure Free
      (Item : access ListBasis_Type) is
    begin
-      GUI.Object_Access(Item).Finalize;
-   end Finalize;
+
+      GUI.Object_Access(Item).Free;
+
+   end Free;
    ---------------------------------------------------------------------------
 
    procedure Resize
      (Item : access ListBasis_Type) is
    begin
+
       DrawCanvasse(Item);
+
    end Resize;
    ---------------------------------------------------------------------------
 
