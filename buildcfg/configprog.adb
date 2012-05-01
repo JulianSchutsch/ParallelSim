@@ -141,6 +141,9 @@ procedure ConfigProg is
       for i in 1..Ada.Command_Line.Argument_Count loop
 
          Argument:=To_Unbounded_String(Ada.Command_Line.Argument(i));
+         Put("Argument:");
+         Put(To_String(Argument));
+         New_Line;
          if Element(Argument,1)='\' then
             RemoveImplementation(Unbounded_Slice(Argument,2,Length(Argument)));
          else
