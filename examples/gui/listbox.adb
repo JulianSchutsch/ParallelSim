@@ -168,8 +168,7 @@ begin
    end;
 
 
-   -- Waiting until either Context.OnClose or Button.OnClick is triggered
-   -- Since both callback procedures set the Terminated flag.
+   -- Waiting until either Context.OnClose is triggered
    while not Terminated loop
       ProcessLoop.Process;
    end loop;

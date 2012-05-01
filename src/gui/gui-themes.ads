@@ -29,18 +29,20 @@ with GUI.Console;
 with GUI.Button;
 with GUI.Combobox;
 with GUI.ListBox;
+with GUI.TabControl;
 
 package GUI.Themes is
 
    type Implementation_Type is
       record
-         NewWindow              : GUI.Window.Window_Constructor       := null;
-         NewVerticalScrollBar   : GUI.ScrollBar.ScrollBar_Constructor := null;
+         NewWindow              : GUI.Window.Window_Constructor         := null;
+         NewVerticalScrollBar   : GUI.ScrollBar.ScrollBar_Constructor   := null;
          VerticalScrollBarWidth : Integer;
-         NewConsole             : GUI.Console.Console_Constructor     := null;
-         NewButton              : GUI.Button.Button_Constructor       := null;
-         NewCombobox            : GUI.Combobox.Combobox_Constructor   := null;
-         NewListBox             : GUI.ListBox.ListBox_Constructor     := null;
+         NewConsole             : GUI.Console.Console_Constructor       := null;
+         NewButton              : GUI.Button.Button_Constructor         := null;
+         NewCombobox            : GUI.Combobox.Combobox_Constructor     := null;
+         NewListBox             : GUI.ListBox.ListBox_Constructor       := null;
+         NewTabControl          : GUI.TabControl.TabControl_Constructor := null;
       end record;
 
    package Implementations is new Config.Implementations

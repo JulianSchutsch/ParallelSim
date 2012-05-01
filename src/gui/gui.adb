@@ -95,8 +95,6 @@ package body GUI is
       pragma Unreferenced(Y);
 
    begin
-      Put("Context touched...");
-      New_Line;
       -- Check if Context Mode is active
       if Item.FirstChild/=null then
          if Item.Context.OnContextAreaClick/=null then
@@ -557,7 +555,6 @@ package body GUI is
       ------------------------------------------------------------------------
 
    begin
-      Put_Line("MouseDown");
 
       if Context.Priv.MouseButtonsPressed=NoMouseButtons then
 
@@ -609,7 +606,6 @@ package body GUI is
       Context.Priv.MouseButtonsPressed(MouseButton):=True;
 
       CallAsyncs(Context);
-      Put_Line("MouseDown//");
 
    end ContextMouseDown;
    ---------------------------------------------------------------------------
@@ -621,8 +617,6 @@ package body GUI is
       AbsY        : Integer) is
 
    begin
-
-      Put_Line("MouseUp");
 
       if Context.Priv.MouseSelection/=null then
 
@@ -643,7 +637,6 @@ package body GUI is
       end if;
 
       CallAsyncs(Context);
-      Put_Line("MouseUp//");
 
    end ContextMouseUp;
    ---------------------------------------------------------------------------
@@ -653,8 +646,6 @@ package body GUI is
       AbsX    : Integer;
       AbsY    : Integer) is
    begin
-
-      Put_Line("MouseMove");
 
       if Context.Priv.MouseSelection/=null then
 
@@ -670,7 +661,6 @@ package body GUI is
       end if;
 
       CallAsyncs(Context);
-      Put_Line("MouseMove//");
 
    end ContextMouseMove;
    ---------------------------------------------------------------------------
@@ -1076,8 +1066,6 @@ package body GUI is
    procedure Finalize
      (Context : in out Context_Type) is
    begin
-      Put("Finit");
-      New_Line;
       Context.WindowArea.Free;
       Context.ModalArea.Free;
       Context.ContextArea.Free;

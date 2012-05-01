@@ -111,12 +111,12 @@ package body BitmapFonts is
          SourceOriginX:=Glyph'First(2);
          SourceOriginY:=Glyph'First(1);
          if X1<0 then
-            SourceOriginX:=-X1;
+            SourceOriginX:=SourceOriginX-X1;
             X1:=0;
          end if;
 
          if Y1<0 then
-            SourceOriginY:=-Y1;
+            SourceOriginY:=SourceOriginY-Y1;
             Y1:=0;
          end if;
 

@@ -97,7 +97,7 @@ package body YellowBlue.Button is
    begin
 
       if Item.Canvas/=null then
-         Item.Canvas.Finalize;
+         FreeCanvas(Item.Canvas);
       end if;
       if (Bounds.Height<=0)
         or (Bounds.Width<=0) then
@@ -240,7 +240,7 @@ package body YellowBlue.Button is
 
    begin
       NewButton:=new Button_Type;
-      Object_Access(NewButton).Initialize(Parent);
+      GUI.Button.Button_Access(NewButton).Initialize(Parent);
       NewButton.Font:=Fonts.Lookup
         (Name       => U("Vera"),
          Size       => 25,

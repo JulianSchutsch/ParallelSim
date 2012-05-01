@@ -22,15 +22,14 @@
 --     - Original version
 
 -- Demo
---   Demonstration for setting up a GUI context and a window and
---   reacting to events:
---     * Closing of the context
+--   Demonstration for a tabs-control.
 
 pragma Ada_2005;
 
 with GUI;
-with GUI.Window;
 with GUI.Themes;
+with GUI.Button;
+with GUI.TabControl;
 with GUI.UseImplementations;
 
 with YellowBlue;
@@ -39,13 +38,17 @@ with Config;
 with ProcessLoop;
 with Basics; use Basics;
 
-procedure Window is
+with ExceptionOutput;
+
+procedure Tabs is
 
    GUIImplementation : GUI.Implementation_Type;
    Context           : GUI.Context_ClassAccess;
-   Window            : GUI.Window.Window_ClassAccess;
    Theme             : GUI.Themes.Implementation_Type;
    Configuration     : Config.Config_Type;
+   TabControl        : GUI.TabControl.TabControl_ClassAccess;
+   Tabs              : array(1..10) of GUI.TabControl.Tab_ClassAccess;
+   TempButton        : GUI.Button.Button_ClassAccess;
 
    Terminated        : Boolean:=False;
    pragma Warnings(Off,Terminated); -- Terminated is never changed
@@ -53,6 +56,7 @@ procedure Window is
 
    procedure ContextClose
      (CallBackObject : AnyObject_ClassAccess) is
+      pragma Unreferenced(CallBackObject);
    begin
       Terminated:=True;
    end ContextClose;
@@ -83,19 +87,34 @@ begin
    -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
-   -- The Context.WindowArea is now the parent object of a new window
-   Window:=Theme.NewWindow(Context.WindowArea);
+   -- Create a tab-control in the window area
+   TabControl:=Theme.NewTabControl(Context.WindowArea);
 
-   -- Set a rectangle for the window, make it visible
-   Window.SetBounds
-     (Top     => 20,
-      Left    => 20,
-      Height  => 200,
-      Width   => 320,
+   for i in Tabs'Range loop
+      Tabs(i):=TabControl.NewTab(U("Tab Nr."&Integer'Image(i)));
+      TempButton:=Theme.NewButton(GUI.Object_ClassAccess(Tabs(i)));
+      TempButton.SetBounds
+        (Top     => 10,
+         Left    => 10,
+         Height  => 30,
+         Width   => 200,
+         Visible => True);
+      TempButton.SetCaption(U("Button in Tab Nr."&Integer'Image(i)));
+   end loop;
+
+   TabControl.SetBounds
+     (Top     => 10,
+      Left    => 10,
+      Height  => Context.WindowArea.GetBounds.Height-20,
+      Width   => Context.WindowArea.GetBounds.Width-20,
       Visible => True);
-   Window.SetCaption(U("Window"));
+   TabControl.SetAnchors
+     (Top     => True,
+      Left    => True,
+      Right   => True,
+      Bottom  => True);
 
-   -- Waiting until Cotext.OnClose is triggered
+   -- Waiting until either Context.OnClose is triggered
    while not Terminated loop
       ProcessLoop.Process;
    end loop;
@@ -107,4 +126,8 @@ begin
    YellowBlue.UnRegister;
    GUI.UseImplementations.Unregister;
 
-end Window;
+exception
+   when E:Others =>
+      ExceptionOutput.Put(E);
+
+end Tabs;
