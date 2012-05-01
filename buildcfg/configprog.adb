@@ -144,7 +144,7 @@ procedure ConfigProg is
          Put("Argument:");
          Put(To_String(Argument));
          New_Line;
-         if Element(Argument,1)='\' then
+         if Element(Argument,1)='!' then
             RemoveImplementation(Unbounded_Slice(Argument,2,Length(Argument)));
          else
             if Argument/="default" then
@@ -434,6 +434,8 @@ begin
       New_Line;
       Put_Line("Specifying ""all"" selects all compatible implementations for a plattform.");
       Put_Line("Implementations are checked for compatibility with the current plattform.");
+      Put_Line("To exclude an implementation, prefix it with '!' .");
+      Put_Line("All parameters are processed in the order they are given.");
       return;
    end if;
    Plattform.Initialize;
