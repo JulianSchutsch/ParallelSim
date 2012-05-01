@@ -3,7 +3,7 @@
 .PHONY: configprog
 
 client: configprog
-	./configprog default \mpi
+	./configprog default \mpich2
 
 server: configprog
 	./configprog default

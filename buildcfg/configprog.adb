@@ -93,6 +93,31 @@ procedure ConfigProg is
    end AddImplementation;
    ---------------------------------------------------------------------------
 
+   procedure RemoveImplementation
+     (Name : Unbounded_String) is
+
+      use type ImplementationList_Pack.Cursor;
+
+      Module         : Module_Enum;
+      Implementation : Implementation_Enum;
+      Cursor         : ImplementationList_Pack.Cursor;
+
+   begin
+      FindImplementation
+        (Name => Name,
+         Module => Module,
+         Implementation => Implementation);
+
+      if ImplementationsActive(Implementation) then
+         ImplementationsActive(Implementation):=False;
+         Cursor:=Modules(Module).Find(Implementation);
+         if Cursor/=ImplementationList_Pack.No_Element then
+            Modules(Module).Delete(Cursor);
+         end if;
+      end if;
+
+   end RemoveImplementation;
+
    procedure AddDefaultImplementations is
    begin
 
@@ -116,10 +141,14 @@ procedure ConfigProg is
       for i in 1..Ada.Command_Line.Argument_Count loop
 
          Argument:=To_Unbounded_String(Ada.Command_Line.Argument(i));
-         if Argument/="default" then
-            AddImplementation(Argument);
+         if Element(Argument,1)='\' then
+            RemoveImplementation(Unbounded_Slice(Argument,2,Length(Argument)));
          else
-            AddDefaultImplementations;
+            if Argument/="default" then
+               AddImplementation(Argument);
+            else
+               AddDefaultImplementations;
+            end if;
          end if;
 
       end loop;
