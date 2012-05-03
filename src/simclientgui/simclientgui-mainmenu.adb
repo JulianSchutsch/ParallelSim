@@ -22,9 +22,9 @@ pragma Ada_2005;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 with GUI.Button;
-with GUI.Combobox;
-with GUI.ListBox;
 with Ada.Text_IO; use Ada.Text_IO;
+
+with SimClientGUI.CreateMenu;
 
 package body SimClientGUI.MainMenu is
 
@@ -37,10 +37,16 @@ package body SimClientGUI.MainMenu is
    ButtonSpace  : constant := 10;
    MenuHeight   : constant := 3*(ButtonHeight+ButtonSpace)-ButtonSpace;
 
-   Enabled : Boolean;
+   Enabled : Boolean:=False;
 
-   Combobox : GUI.Combobox.Combobox_ClassAccess:=null;
-   ListBox  : GUI.ListBox.ListBox_ClassAccess:=null;
+   procedure ASyncExit
+     (Item : GUI.Object_ClassAccess) is
+      pragma Unreferenced(Item);
+   begin
+      Disable;
+      Terminated:=True;
+   end ASyncExit;
+   ---------------------------------------------------------------------------
 
    procedure ButtonExitClick
      (CallBackObject : AnyObject_ClassAccess) is
@@ -48,8 +54,27 @@ package body SimClientGUI.MainMenu is
       pragma Unreferenced(CallBackObject);
 
    begin
-      Terminated:=True;
+      ButtonExit.AddASync(ASyncExit'Access);
    end ButtonExitClick;
+   ---------------------------------------------------------------------------
+
+   procedure ASyncGameCreate
+     (Item : GUI.Object_ClassAccess) is
+      pragma Unreferenced(Item);
+   begin
+      Disable;
+      SimClientGUI.CreateMenu.Enable;
+   end ASyncGameCreate;
+   ---------------------------------------------------------------------------
+
+   procedure ButtonCreateGameClick
+     (CallBackObject : AnyObject_ClassAccess) is
+
+      pragma Unreferenced(CallBackObject);
+
+   begin
+      ButtonCreateGame.AddASync(ASyncGameCreate'Access);
+   end ButtonCreateGameClick;
    ---------------------------------------------------------------------------
 
    procedure ResizeWindowArea
@@ -57,10 +82,10 @@ package body SimClientGUI.MainMenu is
 
       pragma Unreferenced(CallBackObject);
 
-      WindowBounds : Bounds_Type:=GUIContext.WindowArea.GetBounds;
+      WindowBounds : constant Bounds_Type:=GUIContext.WindowArea.GetBounds;
 
-      Top    : Integer := (WindowBounds.Height-MenuHeight)/2-1;
-      Left   : Integer := (WindowBounds.Width-200)/2-1;
+      Top    : constant Integer := (WindowBounds.Height-MenuHeight)/2-1;
+      Left   : constant Integer := (WindowBounds.Width-200)/2-1;
 
    begin
       ButtonCreateGame.SetBounds
@@ -91,42 +116,15 @@ package body SimClientGUI.MainMenu is
       end if;
       ButtonCreateGame := ThemeImplementation.NewButton(GUIContext.WindowArea);
       ButtonCreateGame.SetCaption(U("Create Game"));
+      ButtonCreateGame.OnClick:=ButtonCreateGameClick'Access;
+
       ButtonJoinGame   := ThemeImplementation.NewButton(GUIContext.WindowArea);
       ButtonJoinGame.SetCaption(U("Join Game"));
+
       ButtonExit       := ThemeImplementation.NewButton(GUIContext.WindowArea);
       ButtonExit.SetCaption(U("Exit"));
       ButtonExit.OnClick:=ButtonExitClick'Access;
-      Combobox:=ThemeImplementation.NewCombobox(GUIContext.WindowArea);
-      Combobox.SetBounds
-        (0,0,25,200,True);
-      Combobox.AddEntry
-        (String => U("Entry 1"),
-         Color  => 16#FFFFFFFF#);
-      Combobox.AddEntry
-        (String => U("Entry 2"),
-         Color  => 16#FFFFFFFF#);
-      Combobox.SetIndex(1);
-      ListBox:=ThemeImplementation.NewListBox(GUIContext.WindowArea);
-      ListBox.SetBounds
-        (40,0,100,200,True);
-      ListBox.AddEntry
-        (String => U("Line 1"),
-         Color  => 16#FFFFFFFF#);
-      ListBox.AddEntry
-        (String => U("Line 2"),
-         Color  => 16#FFFFFFFF#);
-      ListBox.AddEntry
-        (String => U("Line 3"),
-         Color  => 16#FFFFFFFF#);
-      ListBox.AddEntry
-        (String => U("Line 4"),
-         Color  => 16#FFFFFFFF#);
-      ListBox.AddEntry
-        (String => U("Line 5"),
-         Color  => 16#FFFFFFFF#);
-      ListBox.AddEntry
-        (String => U("Line 6"),
-         Color  => 16#FFFFFFFF#);
+
       ResizeWindowArea(null);
       GUIContext.WindowArea.OnResize:=ResizeWindowArea'Access;
       Enabled := True;
@@ -138,7 +136,11 @@ package body SimClientGUI.MainMenu is
          raise RedisabledGUIModule with "MainMenu";
       end if;
       GUIContext.WindowArea.OnResize:=null;
+      ButtonCreateGame.Free;
+      ButtonJoinGame.Free;
+      ButtonExit.Free;
       Enabled:=False;
+      New_Line;
    end Disable;
 
 end SimClientGUI.MainMenu;

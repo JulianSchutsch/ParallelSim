@@ -32,6 +32,7 @@ with YellowBlue.Combobox; use YellowBlue.Combobox;
 with YellowBlue.ListBox; use YellowBlue.ListBox;
 with YellowBlue.TabControl; use YellowBlue.TabControl;
 with YellowBlue.CheckBox; use YellowBlue.CheckBox;
+with YellowBlue.RadioButton; use YellowBlue.RadioButton;
 
 package body YellowBlue is
 
@@ -44,7 +45,8 @@ package body YellowBlue is
       NewCombobox            => NewCombobox'Access,
       NewListBox             => NewListBox'Access,
       NewTabControl          => NewTabControl'Access,
-      NewCheckBox            => NewCheckBox'Access);
+      NewCheckBox            => NewCheckBox'Access,
+      NewRadioButton         => NewRadioButton'Access);
 
    Identifier : constant Unbounded_String:=U("YellowBlue");
 

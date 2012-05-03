@@ -18,47 +18,40 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   24.Apr 2012 Julian Schutsch
+--   3.Mai 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with Config;
-with Basics; use Basics;
+package GUI.RadioButton is
 
-with ExceptionOutput;
+   type RadioButton_Type is abstract new GUI.Object_Type with private;
+   type RadioButton_Access is access all RadioButton_Type;
+   type RadioButton_ClassAccess is access all RadioButton_Type'Class;
+   type RadioButton_Constructor is
+     access function
+       (Parent : GUI.Object_ClassAccess)
+        return RadioButton_ClassAccess;
 
-with GUI.UseImplementations;
-with YellowBlue;
+   procedure SetCaption
+     (Item    : access RadioButton_Type;
+      Caption : Unbounded_String) is abstract;
 
-with SimClientGUI;
+   procedure SetChecked
+     (Item : access RadioButton_Type);
 
-procedure Client is
+   procedure ClearChecked
+     (Item : access RadioButton_Type) is abstract;
 
-   Configuration  : Config.Config_Type;
+   procedure Link
+     (Item : access RadioButton_Type;
+      RadioButton : RadioButton_ClassAccess);
 
-begin
+private
+   type RadioButton_Type is abstract new GUI.Object_Type with
+      record
+         NextInGroup : RadioButton_ClassAccess:=null;
+         LastInGroup : RadioButton_ClassAccess:=null;
+      end record;
 
-   GUI.UseImplementations.Register;
-   YellowBlue.Register;
-
-   Configuration.Insert(U("GUI.GUIImplementation") , U("OpenGL"));
-   Configuration.Insert(U("GUI.Theme")             , U("YellowBlue"));
-
-   SimClientGUI.Initialize
-     (Configuration => Configuration);
-
-   loop
-      exit when SimClientGUI.Process;
-   end loop;
-
-   SimClientGUI.Finalize;
-
-   YellowBlue.UnRegister;
-   GUI.UseImplementations.Unregister;
-
-exception
-   when E:others =>
-      ExceptionOutput.Put(E);
-
-end Client;
+end GUI.RadioButton;

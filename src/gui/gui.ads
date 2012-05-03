@@ -360,8 +360,8 @@ private
 
    type ASync_Type is
       record
-         Method : OnAsync_Access:=null;
-         Object : Object_ClassAccess:=null;
+         Method : OnAsync_Access     := null;
+         Object : Object_ClassAccess := null;
       end record;
 
    package ASyncList_Pack is new Ada.Containers.Doubly_Linked_Lists

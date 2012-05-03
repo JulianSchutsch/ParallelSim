@@ -60,6 +60,70 @@ package body Canvas is
    end Finalize;
    ---------------------------------------------------------------------------
 
+   procedure Circle
+     (Canvas : in out Canvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Radius : Integer;
+      Color  : Color_Type) is
+
+      use FloatNumeric;
+
+      Value : Integer;
+
+   begin
+      for i in 0..Radius loop
+         Value:=Integer(Float'Rounding(Sqrt(Float(Radius*Radius)-Float(i*i))));
+         Canvas.SetPixel(X+i,Y+Value,Color);
+         Canvas.SetPixel(X-i,Y+Value,Color);
+         Canvas.SetPixel(X+i,Y-Value,Color);
+         Canvas.SetPixel(X-i,Y-Value,Color);
+         Canvas.SetPixel(X+Value,X+i,Color);
+         Canvas.SetPixel(X-Value,X+i,Color);
+         Canvas.SetPixel(X+Value,X-i,Color);
+         Canvas.SetPixel(X-Value,X-i,Color);
+      end loop;
+   end Circle;
+   ---------------------------------------------------------------------------
+
+   procedure FilledCircle
+     (Canvas : in out Canvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Radius : Integer;
+      Color  : Color_Type) is
+
+      use FloatNumeric;
+
+      Value : Integer;
+
+   begin
+      for i in 0..Radius loop
+         Value:=Integer(Float'Rounding(Sqrt(Float(Radius*Radius)-Float(i*i))));
+         Canvas.VertLine
+           (X      => X-i,
+            Y      => Y-Value,
+            Height => 2*Value+1,
+            Color  => Color);
+         Canvas.VertLine
+           (X      => X+i,
+            Y      => Y-Value,
+            Height => 2*Value+1,
+            Color  => Color);
+         Canvas.HorzLine
+           (X      => X-Value,
+            Y      => Y-i,
+            Width  => 2*Value+1,
+            Color  => Color);
+         Canvas.HorzLine
+           (X      => X-Value,
+            Y      => Y+i,
+            Width  => 2*Value+1,
+            Color  => Color);
+      end loop;
+   end FilledCircle;
+   ---------------------------------------------------------------------------
+
    procedure Rectangle
      (Canvas : in out Canvas_Type;
       X      : Integer;
@@ -101,9 +165,9 @@ package body Canvas is
       Y      : Integer;
       Color  : out Color_Type) is
    begin
-      if (X in Canvas.Image'Range(1))
-        and (Y in Canvas.Image'Range(2)) then
-         Color:=Canvas.Image(X,Y);
+      if (X in Canvas.Image'Range(2))
+        and (Y in Canvas.Image'Range(1)) then
+         Color:=Canvas.Image(Y,X);
       else
          Color:=0;
       end if;
@@ -117,9 +181,9 @@ package body Canvas is
       Color  : Color_Type) is
    begin
 
-      if (X in Canvas.Image'Range(1))
-        and (Y in Canvas.Image'Range(2)) then
-         Canvas.Image(X,Y):=Color;
+      if (X in Canvas.Image'Range(2))
+        and (Y in Canvas.Image'Range(1)) then
+         Canvas.Image(Y,X):=Color;
       end if;
 
    end SetPixel;

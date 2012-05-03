@@ -22,12 +22,9 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Basics; use Basics;
 with ProcessLoop;
-with GUI.Window;
-with GUI.Console;
-with Ada.Text_IO; use Ada.Text_IO;
-with BoundsCalc;
-with Fonts;
 with SimClientGUI.MainMenu;
+
+--with Ada.Text_IO; use Ada.Text_IO;
 
 package body SimClientGUI is
 

@@ -18,47 +18,18 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   24.Apr 2012 Julian Schutsch
+--   3.Mai 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with Config;
-with Basics; use Basics;
+with GUI;
+with GUI.RadioButton;
 
-with ExceptionOutput;
+package YellowBlue.RadioButton is
 
-with GUI.UseImplementations;
-with YellowBlue;
+   function NewRadioButton
+     (Parent : GUI.Object_ClassAccess)
+      return GUI.RadioButton.RadioButton_ClassAccess;
 
-with SimClientGUI;
-
-procedure Client is
-
-   Configuration  : Config.Config_Type;
-
-begin
-
-   GUI.UseImplementations.Register;
-   YellowBlue.Register;
-
-   Configuration.Insert(U("GUI.GUIImplementation") , U("OpenGL"));
-   Configuration.Insert(U("GUI.Theme")             , U("YellowBlue"));
-
-   SimClientGUI.Initialize
-     (Configuration => Configuration);
-
-   loop
-      exit when SimClientGUI.Process;
-   end loop;
-
-   SimClientGUI.Finalize;
-
-   YellowBlue.UnRegister;
-   GUI.UseImplementations.Unregister;
-
-exception
-   when E:others =>
-      ExceptionOutput.Put(E);
-
-end Client;
+end YellowBlue.RadioButton;

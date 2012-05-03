@@ -99,13 +99,6 @@ package body YellowBlue.TabControl is
       return Boolean;
    ---------------------------------------------------------------------------
 
-   procedure Free
-     (Item : access TabControl_Type) is
-   begin
-      GUI.TabControl.TabControl_Access(Item).Free;
-   end Free;
-   ---------------------------------------------------------------------------
-
    procedure DrawCanvas
      (Tab : access Tab_Type) is
 
@@ -170,7 +163,10 @@ package body YellowBlue.TabControl is
 
    begin
 
-      NewFramePatches:=new PatchArray_Type(1..Count);
+      if Count/=0 then
+         NewFramePatches:=new PatchArray_Type(1..Count);
+      end if;
+
       if (Item.FramePatches/=null) then
          CountMin:=Integer'Min(Count,Item.FramePatches'Last);
          for i in 1..CountMin loop
@@ -182,6 +178,10 @@ package body YellowBlue.TabControl is
          Free(Item.FramePatches);
       else
          CountMin:=0;
+      end if;
+
+      if Count=0 then
+         return;
       end if;
 
       for i in CountMin+1..NewFramePatches'Last loop
@@ -212,6 +212,7 @@ package body YellowBlue.TabControl is
       declare
          CurrentX : Integer:=0;
          CurrentY : Integer:=0;
+         AnyTabOnline : Boolean:=False;
       begin
          -- Count Lines, hide invisible tab areas
          Cursor:=Item.Tabs.First;
@@ -219,10 +220,14 @@ package body YellowBlue.TabControl is
 
             Tab:=TabList_Pack.Element(Cursor);
 
-            if CurrentX+Tab.Width>=Bounds.Width then
+            if CurrentX+Tab.Width>=Bounds.Width
+              and AnyTabOnline then
                CurrentX  := 0;
                CurrentY  := CurrentY+Item.TabHeight;
                LineCount := LineCount+1;
+               AnyTabOnline:=False;
+            else
+               AnyTabOnline:=True;
             end if;
 
             Tab.X:=CurrentX;
@@ -322,14 +327,14 @@ package body YellowBlue.TabControl is
                PatchPos:=PatchPos+1;
             end if;
 
-            PreviousX:=Tab.X;
-            PreviousWidth:=Tab.Width;
+            PreviousX     := Tab.X;
+            PreviousWidth := Tab.Width;
 
             Cursor:=TabList_Pack.Next(Cursor);
 
          end loop;
 
-         if PreviousX/=0 then
+         if LineCount/=0 then
             Item.FramePatches(PatchPos).SetBounds
               (Top     => PreviousY+Item.TabHeight,
                Left    => PreviousX+PreviousWidth-1,
@@ -381,6 +386,14 @@ package body YellowBlue.TabControl is
       end loop;
 
    end ActivateTabAt;
+   ---------------------------------------------------------------------------
+
+   procedure Free
+     (Item : access TabControl_Type) is
+   begin
+      SetFramePatchCount(Item,0);
+      GUI.TabControl.TabControl_Access(Item).Free;
+   end Free;
    ---------------------------------------------------------------------------
 
    function Mousedown

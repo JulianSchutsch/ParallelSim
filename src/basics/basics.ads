@@ -30,6 +30,7 @@ with Ada.Strings.Unbounded.Hash;
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Vectors;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
+with Ada.Numerics.Generic_Elementary_Functions;
 with System;
 
 package Basics is
@@ -92,5 +93,8 @@ package Basics is
    function U
      (Source : String)
       return Unbounded_String renames To_Unbounded_String;
+
+   package FloatNumeric is new Ada.Numerics.Generic_Elementary_Functions
+        (Float_Type => Float);
 
 end Basics;

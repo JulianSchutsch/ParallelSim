@@ -23,7 +23,7 @@ with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
 --with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 
 package body Fonts is
 
@@ -103,7 +103,6 @@ package body Fonts is
 
       XPosition := X;
       YPosition := Y;
-      New_Line;
 
       for i in 1..Length(UCS4) loop
 

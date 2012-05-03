@@ -105,6 +105,20 @@ package Canvas is
       Width  : Integer;
       Color  : Color_Type);
 
+   procedure Circle
+     (Canvas : in out Canvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Radius : Integer;
+      Color  : Color_Type);
+
+   procedure FilledCircle
+     (Canvas : in out Canvas_Type;
+      X      : Integer;
+      Y      : Integer;
+      Radius : Integer;
+      Color  : Color_Type);
+
    function MultiplyAlpha
      (Color : Color_Type;
       Alpha : Float)      -- Value must be in 0..1
