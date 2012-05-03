@@ -22,14 +22,12 @@
 --     - Original version
 
 -- Demo
---   Demonstration for setting up a GUI context and a window and
---   reacting to events:
---     * Closing of the context
+--   Demonstration for a checkbox
 
 pragma Ada_2005;
 
 with GUI;
-with GUI.Window;
+with GUI.Checkbox;
 with GUI.Themes;
 with GUI.UseImplementations;
 
@@ -39,13 +37,13 @@ with Config;
 with ProcessLoop;
 with Basics; use Basics;
 
-procedure Window is
+procedure Checkbox is
 
    GUIImplementation : GUI.Implementation_Type;
    Context           : GUI.Context_ClassAccess;
-   Window            : GUI.Window.Window_ClassAccess;
    Theme             : GUI.Themes.Implementation_Type;
    Configuration     : Config.Config_Type;
+   Checkbox          : GUI.Checkbox.Checkbox_ClassAccess;
 
    Terminated        : Boolean:=False;
    pragma Warnings(Off,Terminated); -- Terminated is never changed
@@ -84,17 +82,14 @@ begin
    -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
-   -- The Context.WindowArea is now the parent object of a new window
-   Window:=Theme.NewWindow(Context.WindowArea);
-
-   -- Set a rectangle for the window, make it visible
-   Window.SetBounds
-     (Top     => 20,
-      Left    => 20,
-      Height  => 200,
-      Width   => 320,
+   CheckBox:=Theme.NewCheckbox(Context.WindowArea);
+   CheckBox.SetCaption(U("MyCheckbox"));
+   CheckBox.SetBounds
+     (Top     => 10,
+      Left    => 10,
+      Height  => 30,
+      Width   => 200,
       Visible => True);
-   Window.SetCaption(U("Window"));
 
    -- Waiting until Cotext.OnClose is triggered
    while not Terminated loop
@@ -108,4 +103,4 @@ begin
    YellowBlue.UnRegister;
    GUI.UseImplementations.Unregister;
 
-end Window;
+end Checkbox;

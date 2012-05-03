@@ -107,6 +107,12 @@ package BoundsCalc is
          Visible : Boolean:=False;
       end record;
 
+   function TestInsideBounds
+     (Bounds : Bounds_Type;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean;
+
    type AbsBounds_Type is
       record
          AbsTop     : Integer:=0;

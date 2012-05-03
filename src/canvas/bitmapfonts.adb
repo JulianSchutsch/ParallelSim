@@ -23,8 +23,8 @@ with BitmapFonts.Data; use BitmapFonts.Data;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Fonts;
 with Basics; use Basics;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body BitmapFonts is
 
@@ -215,12 +215,6 @@ package body BitmapFonts is
 
       NewFont:=new Font_Type;
       NewFont.Chars:=ConstFonts(BestEntry).Chars;
-      Put("Font Initialized...pass on");
-      New_Line;
-      Put("Range");
-      Put(NewFont.Chars'First);
-      Put(NewFont.Chars'Last);
-      New_Line;
       return Fonts.Font_ClassAccess(NewFont);
 
    end Load;

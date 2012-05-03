@@ -24,6 +24,23 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body BoundsCalc is
 
+   function TestInsideBounds
+     (Bounds : Bounds_Type;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean is
+   begin
+
+      return
+        Bounds.Visible
+        and (Y>=Bounds.Top)
+        and (Y<Bounds.Top+Bounds.Height)
+        and (X>=Bounds.Left)
+        and (X<Bounds.Left+Bounds.Width);
+
+   end TestInsideBounds;
+   ---------------------------------------------------------------------------
+
    function TestInsideAbsBounds
      (AbsBounds : AbsBounds_Type;
       AbsX      : Integer;

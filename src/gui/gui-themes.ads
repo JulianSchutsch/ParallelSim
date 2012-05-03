@@ -30,6 +30,7 @@ with GUI.Button;
 with GUI.Combobox;
 with GUI.ListBox;
 with GUI.TabControl;
+with GUI.CheckBox;
 
 package GUI.Themes is
 
@@ -43,6 +44,7 @@ package GUI.Themes is
          NewCombobox            : GUI.Combobox.Combobox_Constructor     := null;
          NewListBox             : GUI.ListBox.ListBox_Constructor       := null;
          NewTabControl          : GUI.TabControl.TabControl_Constructor := null;
+         NewCheckbox            : GUI.Checkbox.CheckBox_Constructor     := null;
       end record;
 
    package Implementations is new Config.Implementations
