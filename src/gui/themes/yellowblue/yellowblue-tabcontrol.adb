@@ -225,10 +225,9 @@ package body YellowBlue.TabControl is
                CurrentX  := 0;
                CurrentY  := CurrentY+Item.TabHeight;
                LineCount := LineCount+1;
-               AnyTabOnline:=False;
-            else
-               AnyTabOnline:=True;
             end if;
+
+            AnyTabOnline:=True;
 
             Tab.X:=CurrentX;
             Tab.Y:=CurrentY;
