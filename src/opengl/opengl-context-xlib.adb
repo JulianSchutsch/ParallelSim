@@ -2,7 +2,6 @@ pragma Ada_2005;
 
 with Xlib; use Xlib;
 with OpenGL; use OpenGL;
-with Ada.Unchecked_Deallocation;
 with ProcessLoop;
 with Interfaces.C.Strings;
 with glX;
@@ -13,6 +12,7 @@ with Basics; use Basics;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Config;
 with GUIMouse; use GUIMouse;
+with GUIKeys; use GUIKeys;
 
 package body OpenGL.Context.Xlib is
 
@@ -98,11 +98,8 @@ package body OpenGL.Context.Xlib is
    overriding
    procedure Finalize
      (Context : in out Context_Type);
-
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Context_Type,
-      Name   => Context_Access);
    ---------------------------------------------------------------------------
+
    Contexts : Context_Access:=null;
 
    procedure Process
@@ -155,7 +152,7 @@ package body OpenGL.Context.Xlib is
 
                Put("ClientMessage");
                Put(Integer(event.ClientMessage.l(0)));
-               Put(Integer(Integer(Context.DeleteWindowAtom)));
+               Put(Integer(Context.DeleteWindowAtom));
                New_Line;
 
                if Event.ClientMessage.l(0)
@@ -233,12 +230,60 @@ package body OpenGL.Context.Xlib is
                      AdaBuffer(1..Integer(NumberOfChars)):=Interfaces.C.Strings.Value
                        (Item   => Buffer,
                         Length => Interfaces.C.size_t(NumberOfChars));
-                     ContextCharacterInput
-                       (Context => Context_ClassAccess(Context),
-                        Chars   => U(AdaBuffer(1..Integer(NumberOfChars))));
+                     if NumberOfChars=1 then
+                        case AdaBuffer(1) is
+                           when Character'Val(8) =>
+                              ContextKeyDown
+                                (Context => Context_ClassAccess(Context),
+                                 Key     => KeyBackspace);
+                           when Character'Val(13) =>
+                              ContextKeyDown
+                                (Context => Context_ClassAccess(Context),
+                                 Key     => KeyReturn);
+                           when Character'Val(127) =>
+                              ContextKeyDown
+                                (Context => Context_ClassAccess(Context),
+                                 Key     => KeyDelete);
+                           when others =>
+                              Put("Char");
+                              Put(Character'Pos(AdaBuffer(1)));
+                              New_Line;
+                              ContextCharacterInput
+                                (Context => Context_ClassAccess(Context),
+                                 Chars   => U(AdaBuffer(1..Integer(NumberOfChars))));
+                        end case;
+                     else
+                        ContextCharacterInput
+                          (Context => Context_ClassAccess(Context),
+                           Chars   => U(AdaBuffer(1..Integer(NumberOfChars))));
+                     end if;
+
                   end if;
 
-               end;
+                  if (Status=XLookupKeySym) then
+                     case KeySym is
+                        when 65363 =>
+                           ContextKeyDown
+                             (Context => Context_ClassAccess(Context),
+                              Key     => KeyRight);
+                        when 65361 =>
+                           ContextKeyDown
+                             (Context => Context_ClassAccess(Context),
+                              Key     => KeyLeft);
+                        when 65362 =>
+                           ContextKeyDown
+                             (Context => Context_ClassAccess(Context),
+                              Key     => KeyUp);
+                        when 65364 =>
+                           ContextKeyDown
+                             (Context => Context_ClassAccess(Context),
+                              Key     => KeyDown);
+                        when others =>
+                           null;
+                     end case;
+                  end if;
+
+               end; -- Of Keyboard processing
 
             when KeyRelease =>
                null;

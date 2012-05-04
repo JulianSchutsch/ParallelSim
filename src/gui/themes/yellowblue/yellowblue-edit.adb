@@ -110,7 +110,6 @@ package body YellowBlue.Edit is
          Height  => Item.Font.Height,
          Width   => 1,
          Visible => True);
-      Put(Item.CursorCanvas.GetBounds);
 
    end DrawCanvases;
    ---------------------------------------------------------------------------
