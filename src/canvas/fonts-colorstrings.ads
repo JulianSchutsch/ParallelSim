@@ -19,6 +19,8 @@
 --   1.Apr 2012 Julian Schutsch
 --     - Original version
 
+-- Hint : All Strings here are 1 based. 0 is used for "previous to first".
+
 pragma Ada_2005;
 
 with Canvas;
@@ -43,6 +45,12 @@ package Fonts.ColorStrings is
          Font               : Font_ClassAccess:=null;
          Content            : ColorstringArray_Access:=null;
       end record;
+
+   procedure RenderWrapped
+     (ColorString     : in out Colorstring_Type;
+      Canvas          : Standard.Canvas.Canvas_ClassAccess;
+      X               : Integer;
+      Y               : Integer);
 
    procedure Render
      (ColorString     : in out Colorstring_Type;
@@ -117,6 +125,11 @@ package Fonts.ColorStrings is
    function Length
      (ColorString : access ColorString_Type)
       return Integer;
+
+   function GetAccumulatedWidth
+     (ColorString : access ColorString_Type;
+      Position    : Integer)
+      return Float;
 
 private
    type ColorStringElement_Type is

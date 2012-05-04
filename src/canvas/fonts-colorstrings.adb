@@ -37,6 +37,19 @@ package body Fonts.ColorStrings is
    end Length;
    ---------------------------------------------------------------------------
 
+   function GetAccumulatedWidth
+     (ColorString : access ColorString_Type;
+      Position    : Integer)
+      return Float is
+   begin
+      if Position=0 then
+         return 0.0;
+      end if;
+      -- TODO: The AccumWidth should actually be a float but isn't yet
+      return float(ColorString.Content(Position).AccumWidth);
+   end GetAccumulatedWidth;
+   ---------------------------------------------------------------------------
+
    function GetStringSlice
      (ColorString : access ColorString_Type;
       Start       : Integer;
@@ -178,7 +191,7 @@ package body Fonts.ColorStrings is
    end GetWrappedLine;
    ---------------------------------------------------------------------------
 
-   procedure Render
+   procedure RenderWrapped
      (ColorString     : in out Colorstring_Type;
       Canvas          : Standard.Canvas.Canvas_ClassAccess;
       X               : Integer;
@@ -199,6 +212,39 @@ package body Fonts.ColorStrings is
 
       for i in ColorString.CurrentPosition
         ..ColorString.Content(ColorString.CurrentPosition).NextLine-1 loop
+
+         ColorString.Font.CharacterOut
+           (Canvas => Canvas,
+            X      => Float(XPosition),
+            Y      => Float(YPosition),
+            Char   => ColorString.Content(i).Char,
+            Color  => ColorString.Content(i).Color);
+
+      end loop;
+
+   end RenderWrapped;
+   ---------------------------------------------------------------------------
+
+   procedure Render
+     (ColorString     : in out Colorstring_Type;
+      Canvas          : Standard.Canvas.Canvas_ClassAccess;
+      X               : Integer;
+      Y               : Integer) is
+
+      XPosition : Integer:=X;
+      YPosition : Integer:=Y;
+
+   begin
+
+      if ColorString.Font=null then
+         raise FontNotAssigned;
+      end if;
+
+      if ColorString.Content=null then
+         return;
+      end if;
+
+      for i in ColorString.Content'Range loop
 
          ColorString.Font.CharacterOut
            (Canvas => Canvas,

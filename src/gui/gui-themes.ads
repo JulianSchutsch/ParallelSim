@@ -32,6 +32,7 @@ with GUI.ListBox;
 with GUI.TabControl;
 with GUI.CheckBox;
 with GUI.RadioButton;
+with GUI.Edit;
 
 package GUI.Themes is
 
@@ -47,6 +48,7 @@ package GUI.Themes is
          NewTabControl          : GUI.TabControl.TabControl_Constructor   := null;
          NewCheckbox            : GUI.Checkbox.CheckBox_Constructor       := null;
          NewRadioButton         : GUI.RadioButton.RadioButton_Constructor := null;
+         NewEdit                : GUI.Edit.Edit_Constructor               := null;
       end record;
 
    package Implementations is new Config.Implementations

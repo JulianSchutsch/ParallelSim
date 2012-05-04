@@ -269,7 +269,7 @@ package body GUI.TextBasis is
       CanvasLine.Canvas.Clear
         (Color => 0);-- 16#FFFFFFFF#);
 
-      CanvasLine.Line.Render
+      CanvasLine.Line.RenderWrapped
         (Canvas => Canvas.Canvas_ClassAccess(CanvasLine.Canvas),
          X      => 0,
          Y      => 0);

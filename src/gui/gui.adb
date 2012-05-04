@@ -397,6 +397,8 @@ package body GUI is
 
    begin
 
+      Put("Attempt to Set Focus");
+      New_Line;
       Cursor:=Object_ClassAccess(Item);
 
       while (Cursor/=null) loop
