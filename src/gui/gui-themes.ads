@@ -34,6 +34,7 @@ with GUI.CheckBox;
 with GUI.RadioButton;
 with GUI.Edit;
 with GUI.GroupBox;
+with GUI.Label;
 
 package GUI.Themes is
 
@@ -51,6 +52,7 @@ package GUI.Themes is
          NewRadioButton         : GUI.RadioButton.RadioButton_Constructor := null;
          NewEdit                : GUI.Edit.Edit_Constructor               := null;
          NewGroupBox            : GUI.GroupBox.GroupBox_Constructor       := null;
+         NewLabel               : GUI.Label.Label_Constructor             := null;
       end record;
 
    package Implementations is new Config.Implementations

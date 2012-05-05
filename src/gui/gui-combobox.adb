@@ -18,7 +18,7 @@
 -------------------------------------------------------------------------------
 
 pragma Ada_2005;
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 
 package body GUI.Combobox is
 
@@ -56,9 +56,12 @@ package body GUI.Combobox is
       if Index not in -1..Integer(Item.Choices.Length) then
          raise IndexOutOfRange;
       end if;
-      Put("SetIndex");
-      New_Line;
-      Item.Index:=Index;
+      if Index/=Item.Index then
+         Item.Index:=Index;
+         if Item.OnSelect/=null then
+            Item.OnSelect(Item.CallBackObject);
+         end if;
+      end if;
    end SetIndex;
    ---------------------------------------------------------------------------
 

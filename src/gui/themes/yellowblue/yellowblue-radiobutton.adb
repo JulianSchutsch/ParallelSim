@@ -121,6 +121,7 @@ package body YellowBlue.RadioButton is
          Item.CaptionCanvas:=Item.NewCanvas
            (Height => TextHeight,
             Width  => TextWidth);
+         Item.CaptionCanvas.Clear(0);
          Item.Font.TextOut
            (Canvas => Canvas.Canvas_ClassAccess(Item.CaptionCanvas),
             X      => 0.0,

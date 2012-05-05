@@ -946,6 +946,8 @@ package body GUI is
          Canvas.Object.Canvasse:=Canvas.Next;
       end if;
 
+      Standard.Canvas.Canvas_Access(Canvas).Finalize;
+
    end Finalize;
    ---------------------------------------------------------------------------
 
@@ -991,6 +993,9 @@ package body GUI is
 
       -- TODO: This is not enough, there can be referenced through containers
       -- be left which MUST be removed too
+      Put("Free Object:");
+      Put(Item.all'Address);
+      New_Line;
       if Item.Context.Priv.FocusObject=Object_ClassAccess(Item) then
          ClearFocusTree(Object_ClassAccess(Item));
       end if;
@@ -1013,7 +1018,7 @@ package body GUI is
          end loop;
       end;
 
-      -- Free all Canvasse
+      -- Free all Canvases
       declare
          Canvas     : Canvas_ClassAccess;
          NextCanvas : Canvas_ClassAccess;
@@ -1022,7 +1027,7 @@ package body GUI is
 
          while Canvas/=null loop
             NextCanvas:=Canvas.Next;
-            Free(Canvas);
+            FreeCanvas(Canvas);
             Canvas:=NextCanvas;
          end loop;
       end;

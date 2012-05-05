@@ -33,4 +33,8 @@ package GUI.Edit is
        (Parent : Object_ClassAccess)
         return Edit_ClassAccess;
 
+   procedure SetText
+     (Item : access Edit_Type;
+      Text : Unbounded_String) is abstract;
+
 end GUI.Edit;

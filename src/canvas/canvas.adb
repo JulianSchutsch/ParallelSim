@@ -165,8 +165,9 @@ package body Canvas is
       Y      : Integer;
       Color  : out Color_Type) is
    begin
-      if (X in Canvas.Image'Range(2))
-        and (Y in Canvas.Image'Range(1)) then
+      if Canvas.Image/=null and then
+        ((X in Canvas.Image'Range(2))
+        and (Y in Canvas.Image'Range(1))) then
          Color:=Canvas.Image(Y,X);
       else
          Color:=0;
@@ -181,8 +182,9 @@ package body Canvas is
       Color  : Color_Type) is
    begin
 
-      if (X in Canvas.Image'Range(2))
-        and (Y in Canvas.Image'Range(1)) then
+      if Canvas.Image/=null and then
+        ((X in Canvas.Image'Range(2))
+        and (Y in Canvas.Image'Range(1))) then
          Canvas.Image(Y,X):=Color;
       end if;
 
@@ -214,7 +216,7 @@ package body Canvas is
       Intery   : Float;
       XPXL2    : Integer;
       YPXL2    : Integer;
-      Order    : Boolean:=True;
+      Order    : Boolean:=False;
 
       procedure SPixel
         (X     : Integer;
@@ -264,7 +266,7 @@ package body Canvas is
          Swap(XPos1,YPos1);
          Swap(XPos2,YPos2);
          Swap(DeltaX,DeltaY);
-         Order:=False;
+         Order:=True;
       end if;
       if XPos2<XPos1 then
          Swap(XPos1,XPos2);
@@ -436,7 +438,8 @@ package body Canvas is
       DrawY      : Integer;
 
    begin
-      if (X<0)
+      if (Canvas.Image=null)
+        or (X<0)
         or (X>=Canvas.ContentWidth) then
          return;
       end if;

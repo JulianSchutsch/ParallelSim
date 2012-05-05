@@ -53,6 +53,17 @@ package body YellowBlue.GroupBox is
      (Item    : access GroupBox_Type;
       Caption : Unbounded_String);
 
+   overriding
+   procedure Free
+     (Item : access GroupBox_Type);
+   ---------------------------------------------------------------------------
+
+   procedure Free
+     (Item : access GroupBox_Type) is
+   begin
+      Fonts.Release(Item.Font);
+      GUI.GroupBox.GroupBox_Access(Item).Free;
+   end Free;
    ---------------------------------------------------------------------------
 
    procedure SetAllBounds

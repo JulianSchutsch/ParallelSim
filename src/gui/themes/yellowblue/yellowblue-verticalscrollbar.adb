@@ -35,7 +35,7 @@ package body YellowBlue.VerticalScrollBar is
    SlideTop               : constant Integer
      := Integer(ButtonHeight)+BarButtonDistance;
 
-   ButtonBackgroundColor  : constant Canvas.Color_Type:=16#00000000#;
+   ButtonBackgroundColor  : constant Canvas.Color_Type:=16#FF0000FF#;
    ButtonTriangleColor    : constant Canvas.Color_Type:=16#FFFFFF00#;
    ButtonRectangleColor   : constant Canvas.Color_Type:=16#FFFFFF00#;
 

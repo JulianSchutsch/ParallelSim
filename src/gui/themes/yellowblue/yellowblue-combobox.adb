@@ -79,6 +79,7 @@ package body YellowBlue.Combobox is
       use type Fonts.Font_ClassAccess;
 
    begin
+
       if Item.Font/=null then
          Fonts.Release(Item.Font);
       end if;
@@ -323,8 +324,6 @@ package body YellowBlue.Combobox is
      (Item  : access Combobox_Type;
       Index : Integer) is
    begin
-      Put("Set Index of Combobox");
-      New_Line;
       GUI.Combobox.Combobox_Access(Item).SetIndex(Index);
       DrawCanvas(Item);
    end SetIndex;

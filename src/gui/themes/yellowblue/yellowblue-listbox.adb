@@ -35,6 +35,7 @@ package body YellowBlue.ListBox is
    FrameColor  : constant Canvas.Color_Type:=16#FFFFFF00#;
    FrameWidth  : constant Integer:=1;
    BorderWidth : constant Integer:=2;
+   FillColor   : constant Canvas.Color_Type:=16#FF0000FF#;
 
    type ListBox_Type is new GUI.ListBox.ListBox_Type with
       record
@@ -44,6 +45,7 @@ package body YellowBlue.ListBox is
          LeftFrame         : GUI.Canvas_ClassAccess:=null;
          TopFrame          : GUI.Canvas_ClassAccess:=null;
          BottomFrame       : GUI.Canvas_ClassAccess:=null;
+         FillCanvas        : GUI.Canvas_ClassAccess:=null;
       end record;
    type ListBox_Access is access all ListBox_Type;
 
@@ -316,6 +318,22 @@ package body YellowBlue.ListBox is
          Bottom => True);
       NewListBox.VerticalScrollbar.CallBackObject:=AnyObject_ClassAccess(NewListBox);
       NewListBox.VerticalScrollbar.OnPositionChange:=ScrollPositionChange'Access;
+
+      NewListBox.FillCanvas:=NewListBox.NewCanvas
+        (Height => 1,
+         Width  => 1);
+      NewListBox.FillCanvas.Clear(FillColor);
+      NewListBox.FillCanvas.SetBounds
+        (Top     => 0,
+         Left    => 0,
+         Height  => Bounds.Height,
+         Width   => Bounds.Width-YellowBlue.VerticalScrollBar.VerticalScrollBarWidth,
+         Visible => True);
+      NewListBox.FillCanvas.SetAnchors
+        (Top    => True,
+         Left   => True,
+         Right  => True,
+         Bottom => True);
 
       return GUI.ListBox.ListBox_ClassAccess(NewListBox);
 

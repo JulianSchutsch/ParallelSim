@@ -29,7 +29,7 @@ with GUIMouse; use GUIMouse;
 with GUIKeys; use GUIKeys;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 
 package body YellowBlue.Edit is
 
@@ -74,6 +74,15 @@ package body YellowBlue.Edit is
       X      : Integer;
       Y      : Integer)
       return Boolean;
+
+   overriding
+   procedure SetText
+     (Item : access Edit_Type;
+      Text : Unbounded_String);
+
+   overriding
+   procedure Free
+     (Item : access Edit_Type);
    ---------------------------------------------------------------------------
 
    procedure DrawCanvases
@@ -112,6 +121,15 @@ package body YellowBlue.Edit is
          Visible => True);
 
    end DrawCanvases;
+   ---------------------------------------------------------------------------
+
+   procedure Free
+     (Item : access Edit_Type) is
+   begin
+      Item.Text.Clear;
+      Fonts.Release(Item.Font);
+      GUI.Edit.Edit_Access(Item).Free;
+   end Free;
    ---------------------------------------------------------------------------
 
    function MouseDown
@@ -190,7 +208,6 @@ package body YellowBlue.Edit is
       Chars : Unbounded_String)
       return Boolean is
    begin
-      Put("Token");
       Item.CursorPosition:=Item.CursorPosition
         +Item.Text.Insert
         (Position => Item.CursorPosition,
@@ -209,6 +226,20 @@ package body YellowBlue.Edit is
    end Resize;
    ---------------------------------------------------------------------------
 
+   procedure SetText
+     (Item : access Edit_Type;
+      Text : Unbounded_String) is
+   begin
+      Item.Text.Initialize
+        (String => Text,
+         Color  => TextColor,
+         Font   => Item.Font);
+      Item.CursorPosition:=1;
+      MakeCursorVisible(Item);
+      DrawCanvases(Item);
+   end SetText;
+   ---------------------------------------------------------------------------
+
    function NewEdit
      (Parent : GUI.Object_ClassAccess)
       return GUI.Edit.Edit_ClassAccess is
@@ -224,7 +255,7 @@ package body YellowBlue.Edit is
          Size       => 18,
          Attributes => Fonts.NoAttributes);
       NewEdit.Text.Initialize
-        (String => U("Test"),
+        (String => U(""),
          Color  => TextColor,
          Font   => NewEdit.Font);
       NewEdit.CursorCanvas:=NewEdit.NewCanvas

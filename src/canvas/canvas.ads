@@ -41,6 +41,7 @@ package Canvas is
          ContentHeight : Integer;
          ContentWidth  : Integer;
       end record;
+   type Canvas_Access is access all Canvas_Type;
    type Canvas_ClassAccess is access all Canvas_Type'Class;
 
    procedure Initialize

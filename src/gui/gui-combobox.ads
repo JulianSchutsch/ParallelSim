@@ -31,47 +31,56 @@ with Canvas;
 
 with GUI.Basics; use GUI.Basics;
 
-package GUI.Combobox is
+package GUI.ComboBox is
 
    IndexOutOfRange : Exception;
 
-   type Combobox_Type is new Object_Type with private;
-   type Combobox_Access is access all Combobox_Type;
-   type Combobox_ClassAccess is access all Combobox_Type'Class;
+   type OnSelect_Access is
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess);
+
+   type ComboBox_Public is new Object_Type with
+      record
+         OnSelect : OnSelect_Access:=null;
+      end record;
+
+   type ComboBox_Type is new ComboBox_Public with private;
+   type ComboBox_Access is access all Combobox_Type;
+   type ComboBox_ClassAccess is access all Combobox_Type'Class;
 
    overriding
    procedure Free
-     (Item : access Combobox_Type);
+     (Item : access ComboBox_Type);
 
    overriding
    procedure Initialize
-     (Item   : access Combobox_Type;
+     (Item   : access ComboBox_Type;
       Parent : Object_ClassAccess);
 
    procedure SetIndex
-     (Item  : access Combobox_Type;
+     (Item  : access ComboBox_Type;
       Index : Integer);
 
    function GetIndex
-     (Item : access Combobox_Type)
+     (Item : access ComboBox_Type)
       return Integer;
 
    procedure AddEntry
-     (Item   : access Combobox_Type;
+     (Item   : access ComboBox_Type;
       String : Unbounded_String;
       Color  : Canvas.Color_Type);
 
    function GetSelectedEntryString
-     (Item : access Combobox_Type)
+     (Item : access ComboBox_Type)
       return Unbounded_String;
 
    procedure GetSelectedEntry
-     (Item   : access Combobox_Type;
+     (Item   : access ComboBox_Type;
       String : out Unbounded_String;
       Color  : out Canvas.Color_Type);
 
    function GetEntries
-     (Item : access Combobox_Type)
+     (Item : access ComboBox_Type)
       return GUI.Basics.StringAndColorList_Pack.List;
 
    function GetEntryCount
@@ -79,17 +88,17 @@ package GUI.Combobox is
       return Integer;
    ---------------------------------------------------------------------------
 
-   type Combobox_Constructor is
+   type ComboBox_Constructor is
      access function
        (Parent : GUI.Object_ClassAccess)
         return Combobox_ClassAccess;
 
 private
 
-   type Combobox_Type is new Object_Type with
+   type ComboBox_Type is new ComboBox_Public with
       record
          Choices : GUI.Basics.StringAndColorList_Pack.List;
          Index   : Integer;
       end record;
 
-end GUI.Combobox;
+end GUI.ComboBox;

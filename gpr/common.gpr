@@ -28,7 +28,8 @@ abstract project Common is
       Dir & "../src/simclientgui",
       Dir & "../src/logging",
       Dir & "../src/xlib",
-      Dir & "../src/win32");
+      Dir & "../src/win32",
+      Dir & "../src/simconfig");
 
    CompilerSwitches:=();
    ObjectDirectory:=Dir & "../build";

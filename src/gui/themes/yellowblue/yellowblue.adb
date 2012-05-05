@@ -35,6 +35,7 @@ with YellowBlue.CheckBox; use YellowBlue.CheckBox;
 with YellowBlue.RadioButton; use YellowBlue.RadioButton;
 with YellowBlue.Edit; use YellowBlue.Edit;
 with YellowBlue.GroupBox; use YellowBlue.GroupBox;
+with YellowBlue.Label; use YellowBlue.Label;
 
 package body YellowBlue is
 
@@ -50,7 +51,8 @@ package body YellowBlue is
       NewCheckBox            => NewCheckBox'Access,
       NewRadioButton         => NewRadioButton'Access,
       NewEdit                => NewEdit'Access,
-      NewGroupBox            => NewGroupBox'Access);
+      NewGroupBox            => NewGroupBox'Access,
+      NewLabel               => NewLabel'Access);
 
    Identifier : constant Unbounded_String:=U("YellowBlue");
 
