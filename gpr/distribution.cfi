@@ -1,0 +1,7 @@
+element choice
+  node "DistributedSystem"
+  description "Distribution System:"
+  set
+    key "mpi"
+    description "Message Passing Interface(MPICH2)"
+  end set
