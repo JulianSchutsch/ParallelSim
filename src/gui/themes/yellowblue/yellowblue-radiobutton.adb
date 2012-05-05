@@ -107,13 +107,17 @@ package body YellowBlue.RadioButton is
 
       use type Fonts.Font_ClassAccess;
 
-      TextHeight : constant Integer:=Item.Font.Height;
-      TextWidth  : constant Integer:=Item.Font.TextWidth(Item.Caption);
+      TextHeight : Integer;
+      TextWidth  : Integer;
 
    begin
 
       GUI.FreeCanvas(Item.CaptionCanvas);
       if Item.Font/=null then
+
+         TextHeight := Item.Font.Height;
+         TextWidth  := Item.Font.TextWidth(Item.Caption);
+
          Item.CaptionCanvas:=Item.NewCanvas
            (Height => TextHeight,
             Width  => TextWidth);
@@ -123,6 +127,7 @@ package body YellowBlue.RadioButton is
             Y      => 0.0,
             Text   => Item.Caption,
             Color  => TextColor);
+
       end if;
 
    end DrawCaptionCanvas;
