@@ -62,6 +62,6 @@ package Config is
       FileName : String);
 
    procedure Debug
-     (Item : in out Config_Type);
+     (Item : in Config_Type);
 
 end Config;

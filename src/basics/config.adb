@@ -27,7 +27,7 @@ with Ada.Strings.Unbounded;use Ada.Strings.Unbounded;
 package body Config is
 
    procedure Debug
-     (Item : in out Config_Type) is
+     (Item : in Config_Type) is
 
       use type StringStringMap.Cursor;
 

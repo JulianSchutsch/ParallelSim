@@ -245,7 +245,7 @@ package body SimConfig.Visual is
                when ConfigElemChoice =>
                   Configuration.Insert
                     (Key => ElementsArray(i).Option.Node,
-                     New_Item => ElementsArray(i).ComboBox.GetSelectedEntryString);
+                     New_Item => ElementsArray(i).Option.Set(ElementsArray(i).ComboBox.GetIndex+ElementsArray(i).Option.Set'First).Key);
                when ConfigElemConstantString =>
                   Configuration.Insert
                     (Key => ElementsArray(i).Option.Node,

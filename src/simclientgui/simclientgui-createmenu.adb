@@ -120,6 +120,12 @@ package body SimClientGUI.CreateMenu is
       for i in ModuleTabs'Range loop
          ModuleTabs(i).ElementsPage.GetConfig(Configuration);
       end loop;
+      Configuration.Insert
+        (Key      => U("Node.Count"),
+         New_Item => NodeCountEdit.GetText);
+      Configuration.Insert
+        (Key      => U("Front.Count"),
+         New_Item => FrontCountEdit.GetText);
       Disable;
       SimClientGUI.CreateProcess.Enable(Configuration);
    end ASyncCreate;

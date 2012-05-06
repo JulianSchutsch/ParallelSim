@@ -1,4 +1,4 @@
-nelement choice
+element choice
   node "Front.Network.Implementation"
   description "Network Implementation:"
   set
@@ -27,7 +27,8 @@ nelement choice
            default "127.0.0.1"
            element string
            node "Front.Network.RemotePort"
-           default "10000"
+           description "Remote Port:"
+           default "10001"
          end options
          key "IPv6"
          description "IPv6"
@@ -46,7 +47,8 @@ nelement choice
            default "::1"
            element string
            node "Front.Network.RemotePort"
-           default "10000"
+           description "Remote Port:"
+           default "10001"
          end options
        end set
     end options

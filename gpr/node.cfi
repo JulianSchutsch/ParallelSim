@@ -27,6 +27,7 @@ element choice
            default "127.0.0.1"
            element string
            node "Node.Network.RemotePort"
+           description "Remote Port:"
            default "10000"
          end options
          key "IPv6"
@@ -46,6 +47,7 @@ element choice
            default "::1"
            element string
            node "Node.Network.RemotePort"
+           description "Remote Port:"
            default "10000"
          end options
        end set
