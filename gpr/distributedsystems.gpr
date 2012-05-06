@@ -10,7 +10,8 @@ abstract project DistributedSystems is
       when "On" =>
 	     LinkerSwitches:=LinkerSwitches
 		   &("-L"&Config.MPICH2LIB)
-		   &("-lmpi");
+		   &("-lmpich")
+                   &("-L/usr/lib/mpich2/lib"); -- Fedora hack
       when "Off" =>
    end case;
 
