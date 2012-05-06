@@ -115,7 +115,7 @@ package Xlib is
          background_pixmap    : Pixmap_Type       := 0;
          background_pixel     : Interfaces.C.long := 0;
          border_pixmap        : Pixmap_Type       := 0;
-         border_pixel         : Interfaces.C.long := 0;
+         border_pixel         : Interfaces.C.unsigned_long := 0;
          bit_gravity          : Interfaces.C.int  := 0;
          win_gravity          : Interfaces.C.int  := 0;
          backing_store        : Interfaces.C.int  := 0;

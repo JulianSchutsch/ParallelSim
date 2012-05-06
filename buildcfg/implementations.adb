@@ -73,7 +73,7 @@ package body Implementations is
 
       if not Exists(To_String(BasePath)&"mpiconstants.c") then
          raise ImplementationInitializeFailed
-           with "mpiconstant.c not found, maybe execution path is not in /autosrc";
+           with "mpiconstant.c not found, maybe execution path is not in ./buildcfg";
       end if;
 
       begin
@@ -89,7 +89,7 @@ package body Implementations is
          Name => To_String(BasePath)&"mpiconstants.h");
       case Detected is
          when PlattformLinux =>
-            Put_Line(File,"#include ""mpich2/mpi.h""");
+            Put_Line(File,"#include ""mpi.h""");
             AdditionalConfigLines.Append(U("   MPICH2LIB:=""."";"));
 
          when PlattformWindowsNT =>
@@ -129,7 +129,8 @@ package body Implementations is
          end if;
          Arguments:=GNAT.OS_Lib.Argument_String_To_List
            (To_String(BasePath)&"mpiconstants.c -o "
-            &To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix));
+            &To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix)
+            &" -I/usr/include/mpich2 -I/usr/include/mpich2-i386");
          GNAT.OS_Lib.Spawn
            (Program_Name => ExecPath.all,
             Args         => Arguments.all,
