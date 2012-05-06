@@ -24,6 +24,7 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Strings; use Ada.Strings;
 with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
 with Ada.Containers.Doubly_Linked_Lists;
+with Ada.Unchecked_Deallocation;
 with Expressions;
 with Node;
 with Basics; use Basics;
@@ -104,7 +105,37 @@ package body SimConfig is
    end DebugConfigArray;
    ---------------------------------------------------------------------------
 
-   function LoadConfig
+   procedure FreeSetArray
+     (ConfigSetArray : in out ConfigSetArray_Access) is
+      procedure Free is new Ada.Unchecked_Deallocation
+        (Object => ConfigSetArray_Type,
+         Name   => ConfigSetArray_Access);
+   begin
+      for i in ConfigSetArray'Range loop
+         if ConfigSetArray(i).Options/=null then
+            FreeConfigArray(ConfigSetArray(i).Options);
+         end if;
+      end loop;
+      Free(ConfigSetArray);
+   end FreeSetArray;
+   ---------------------------------------------------------------------------
+
+   procedure FreeConfigArray
+     (ConfigArray : in out ConfigArray_Access) is
+      procedure Free is new Ada.Unchecked_Deallocation
+        (Object => ConfigArray_Type,
+         Name   => ConfigArray_Access);
+   begin
+      for i in ConfigArray'Range loop
+         if ConfigArray(i).Set/=null then
+            FreeSetArray(ConfigArray(i).Set);
+         end if;
+      end loop;
+      Free(ConfigArray);
+   end FreeConfigArray;
+   ---------------------------------------------------------------------------
+
+   function LoadConfigArray
      (FileName : Unbounded_String)
       return ConfigArray_Access is
 
@@ -294,7 +325,7 @@ package body SimConfig is
       Close(File);
       Put_Line("//LOAD OPTIONS::::::::::::::::::::::");
       return Config;
-   end LoadConfig;
+   end LoadConfigArray;
    ---------------------------------------------------------------------------
 
 end SimConfig;

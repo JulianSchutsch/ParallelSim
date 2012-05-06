@@ -37,4 +37,8 @@ package GUI.Edit is
      (Item : access Edit_Type;
       Text : Unbounded_String) is abstract;
 
+   function GetText
+     (Item : access Edit_Type)
+      return Unbounded_String is abstract;
+
 end GUI.Edit;

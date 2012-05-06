@@ -29,6 +29,7 @@ with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 
 with SimClientGUI.MainMenu;
+with SimClientGUI.CreateProcess;
 with SimConfig;
 with SimConfig.Visual;
 
@@ -66,7 +67,7 @@ package body SimClientGUI.CreateMenu is
    Enabled            : Boolean:=False;
    GeneralTab         : GUI.TabControl.Tab_ClassAccess;
    ButtonReturn       : GUI.Button.Button_ClassAccess;
-   ButtonLaunch       : GUI.Button.Button_ClassAccess;
+   ButtonCreate       : GUI.Button.Button_ClassAccess;
    GameTypeGroup      : GUI.GroupBox.GroupBox_ClassAccess;
    NodesGroup         : GUI.GroupBox.GroupBox_ClassAccess;
    ModuleTabs         : ModuleTabArray_Access:=null;
@@ -111,6 +112,27 @@ package body SimClientGUI.CreateMenu is
    end ButtonReturnClick;
    ---------------------------------------------------------------------------
 
+   procedure ASyncCreate
+     (Item : GUI.Object_ClassAccess) is
+      pragma Unreferenced(Item);
+      Configuration : Config.Config_Type;
+   begin
+      for i in ModuleTabs'Range loop
+         ModuleTabs(i).ElementsPage.GetConfig(Configuration);
+      end loop;
+      Disable;
+      SimClientGUI.CreateProcess.Enable(Configuration);
+   end ASyncCreate;
+   ---------------------------------------------------------------------------
+
+   procedure ButtonCreateClick
+     (CallBackObject : AnyObject_ClassAccess) is
+      pragma Unreferenced(CallBackObject);
+   begin
+      ButtonCreate.AddAsync(ASyncCreate'Access);
+   end ButtonCreateClick;
+   ---------------------------------------------------------------------------
+
    procedure GeneralTabResize
      (CallBackObject : AnyObject_ClassAccess) is
 
@@ -141,14 +163,21 @@ package body SimClientGUI.CreateMenu is
         (Object => ModuleTabArray_Type,
          Name   => ModuleTabArray_Access);
    begin
+      Put_Line("ClearGameTabs");
       if ModuleTabs=null then
          return;
       end if;
       for i in ModuleTabs'Range loop
+         Put_Line("Free Page");
+         SimConfig.FreeConfigArray(ModuleTabs(i).ConfigArray);
          ModuleTabs(i).ElementsPage.Free;
+         Put_Line("Free Tab");
          ModuleTabs(i).Tab.Free;
+         Put_Line("Loop");
       end loop;
+      Put("Free moduleTabs");
       Free(ModuleTabs);
+      Put_Line("ClearGameTabs//");
    end ClearGameTabs;
    ------------------------------------------------------------------------
 
@@ -161,7 +190,7 @@ package body SimClientGUI.CreateMenu is
       ClearGameTabs;
       ModuleTabs:=new ModuleTabArray_Type(Modules'Range);
       for i in ModuleTabs'Range loop
-         ModuleTabs(i).ConfigArray:=SimConfig.LoadConfig
+         ModuleTabs(i).ConfigArray:=SimConfig.LoadConfigArray
            (Modules(i).FileName);
          SimConfig.DebugConfigArray(ModuleTabs(i).ConfigArray);
          ModuleTabs(i).Tab:=Tabs.NewTab(Modules(i).Description);
@@ -297,19 +326,20 @@ package body SimClientGUI.CreateMenu is
       ButtonReturn.SetCaption(U("Return to Menu"));
       ButtonReturn.OnClick:=ButtonReturnClick'Access;
 
-      ButtonLaunch:=ThemeImplementation.NewButton(GUIContext.WindowArea);
-      ButtonLaunch.SetBounds
+      ButtonCreate:=ThemeImplementation.NewButton(GUIContext.WindowArea);
+      ButtonCreate.SetBounds
         (Top     => WindowBounds.Height-30,
          Left    => WindowBounds.Width-150,
          Height  => 30,
          Width   => 150,
          Visible => True);
-      ButtonLaunch.SetAnchors
+      ButtonCreate.SetAnchors
         (Top    => False,
          Left   => False,
          Right  => True,
          Bottom => True);
-      ButtonLaunch.SetCaption(U("Launch Game"));
+      ButtonCreate.SetCaption(U("Create Game"));
+      ButtonCreate.OnClick:=ButtonCreateClick'Access;
 
       -- TODO: Could be unnecessary if the above .SetChecked does that
       Put_Line("Select Game Type*********************************");
@@ -332,7 +362,7 @@ package body SimClientGUI.CreateMenu is
       Put_Line("Rest******************************");
       Tabs.Free;
       ButtonReturn.Free;
-      ButtonLaunch.Free;
+      ButtonCreate.Free;
       GUIContext.WindowArea.OnResize:=null;
       Enabled:=False;
       Put_Line("Done DISABLE*************");

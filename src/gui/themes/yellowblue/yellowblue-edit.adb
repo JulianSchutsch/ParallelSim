@@ -81,6 +81,11 @@ package body YellowBlue.Edit is
       Text : Unbounded_String);
 
    overriding
+   function GetText
+     (Item : access Edit_Type)
+      return Unbounded_String;
+
+   overriding
    procedure Free
      (Item : access Edit_Type);
    ---------------------------------------------------------------------------
@@ -238,6 +243,14 @@ package body YellowBlue.Edit is
       MakeCursorVisible(Item);
       DrawCanvases(Item);
    end SetText;
+   ---------------------------------------------------------------------------
+
+   function GetText
+     (Item : access Edit_Type)
+      return Unbounded_String is
+   begin
+      return Item.Text.GetString;
+   end GetText;
    ---------------------------------------------------------------------------
 
    function NewEdit

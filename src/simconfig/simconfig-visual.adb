@@ -106,27 +106,23 @@ package body SimConfig.Visual is
       if Elements=null then
          return;
       end if;
-      Put("DOE");
       for i in Elements'Range loop
-         Put("Delete Component");
+         Put_Line("Delete Component");
          if Elements(i).Label/=null then
             Elements(i).Label.Free;
          end if;
-         Put("A");
          if Elements(i).Edit/=null then
             Elements(i).Edit.Free;
          end if;
-         Put("B");
          if Elements(i).Combobox/=null then
             Elements(i).Combobox.Free;
          end if;
-         Put("Delete Sub Array");
+         Put_Line("Delete Sub Array");
          if Elements(i).Elements/=null then
             DeleteOptionElements(Elements(i).Elements);
          end if;
       end loop;
       Free(Elements);
-      Put("//");
    end DeleteOptionElements;
    ---------------------------------------------------------------------------
 
@@ -227,18 +223,52 @@ package body SimConfig.Visual is
    end CreateElementsPage;
    ---------------------------------------------------------------------------
 
+   procedure GetConfig
+     (Item          : access ElementsPage_Type;
+      Configuration : in out Config.Config_Type) is
+
+      procedure Process
+        (ElementsArray : ElementArray_Access) is
+      begin
+
+         if ElementsArray=null then
+            return;
+         end if;
+
+         for i in ElementsArray'Range loop
+
+            case ElementsArray(i).Option.TType is
+               when ConfigElemString =>
+                  Configuration.Insert
+                    (Key => ElementsArray(i).Option.Node,
+                     New_Item => ElementsArray(i).Edit.GetText);
+               when ConfigElemChoice =>
+                  Configuration.Insert
+                    (Key => ElementsArray(i).Option.Node,
+                     New_Item => ElementsArray(i).ComboBox.GetSelectedEntryString);
+               when ConfigElemConstantString =>
+                  Configuration.Insert
+                    (Key => ElementsArray(i).Option.Node,
+                     New_Item => ElementsArray(i).Option.Default);
+            end case;
+            Process(ElementsArray(i).Elements);
+
+         end loop;
+
+      end Process;
+      ------------------------------------------------------------------------
+
+   begin
+      Process(Item.Elements);
+   end GetConfig;
+   ---------------------------------------------------------------------------
+
    procedure Free
      (Item : access ElementsPage_Type) is
 
-      procedure FreeMemory is new Ada.Unchecked_Deallocation
-        (Object => ElementsPage_Type,
-         Name   => ElementsPage_Access);
-
-      ItemVal : ElementsPage_Access:=ElementsPage_Access(Item);
-
    begin
       DeleteOptionElements(Item.Elements);
-      FreeMemory(ItemVal);
+      GUI.Object_Access(Item).Free;
    end Free;
    ---------------------------------------------------------------------------
 

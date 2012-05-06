@@ -29,6 +29,7 @@ with GUI.ComboBox;
 with GUI.Edit;
 with GUI.Themes;
 with Basics; use Basics;
+with Config;
 
 package SimConfig.Visual is
 
@@ -57,6 +58,11 @@ package SimConfig.Visual is
    overriding
    procedure Free
      (Item : access ElementsPage_Type);
+
+   procedure GetConfig
+     (Item          : access ElementsPage_Type;
+      Configuration : in out Config.Config_Type);
+   ---------------------------------------------------------------------------
 
    function CreateElementsPage
      (Parent    : GUI.Object_ClassAccess;

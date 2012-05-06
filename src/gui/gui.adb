@@ -1004,7 +1004,6 @@ package body GUI is
       end if;
 
       -- Finalize all Childs
-
       declare
          Object     : Object_ClassAccess;
          NextObject : Object_ClassAccess;
@@ -1033,7 +1032,6 @@ package body GUI is
       end;
 
       -- Remove Object from the tree
-
       if Item.Parent/=null then
          if Item.Next/=null then
             Item.Next.Last:=Item.Last;

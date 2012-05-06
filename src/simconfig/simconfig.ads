@@ -71,9 +71,12 @@ package SimConfig is
 
    type ConfigArray_Type is array(Integer range <>) of aliased ConfigElem_Type;
 
-   function LoadConfig
+   function LoadConfigArray
      (FileName : Unbounded_String)
       return ConfigArray_Access;
+
+   procedure FreeConfigArray
+     (ConfigArray : in out ConfigArray_Access);
 
    procedure DebugConfigArray
      (ConfigArray : ConfigArray_Access);
