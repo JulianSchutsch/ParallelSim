@@ -6,7 +6,7 @@ with "network";
 project Ps is
 
    for Exec_Dir use Common.ExecDirectory;
-   for Main use ("client.adb","region.adb","front.adb");
+   for Main use ("client.adb","node.adb","front.adb");
    for Languages use Common.Languagesused;
 
    package Compiler is
