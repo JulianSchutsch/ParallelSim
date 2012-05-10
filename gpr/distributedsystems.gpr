@@ -20,7 +20,7 @@ abstract project DistributedSystems is
                   &("-lmpi");
             when "Linux" =>
                LinkerSwitches:=LinkerSwitches
-                  &("-lmpich2");
+                  &("-lmpich");
          end case;
       when "Off" =>
    end case;
