@@ -82,7 +82,7 @@ package body SimClientGUI.MainMenu is
 
       pragma Unreferenced(CallBackObject);
 
-      WindowBounds : constant Bounds_Type:=GUIContext.WindowArea.GetBounds;
+      WindowBounds : constant Bounds_Type:=GUIContext.BasisArea.GetBounds;
 
       Top    : constant Integer := (WindowBounds.Height-MenuHeight)/2-1;
       Left   : constant Integer := (WindowBounds.Width-200)/2-1;
@@ -114,19 +114,19 @@ package body SimClientGUI.MainMenu is
       if Enabled then
          raise ReenabledGUIModule with "MainMenu";
       end if;
-      ButtonCreateGame := ThemeImplementation.NewButton(GUIContext.WindowArea);
+      ButtonCreateGame := ThemeImplementation.NewButton(GUIContext.BasisArea);
       ButtonCreateGame.SetCaption(U("Create Game"));
       ButtonCreateGame.OnClick:=ButtonCreateGameClick'Access;
 
-      ButtonJoinGame   := ThemeImplementation.NewButton(GUIContext.WindowArea);
+      ButtonJoinGame   := ThemeImplementation.NewButton(GUIContext.BasisArea);
       ButtonJoinGame.SetCaption(U("Join Game"));
 
-      ButtonExit       := ThemeImplementation.NewButton(GUIContext.WindowArea);
+      ButtonExit       := ThemeImplementation.NewButton(GUIContext.BasisArea);
       ButtonExit.SetCaption(U("Exit"));
       ButtonExit.OnClick:=ButtonExitClick'Access;
 
       ResizeWindowArea(null);
-      GUIContext.WindowArea.OnResize:=ResizeWindowArea'Access;
+      GUIContext.BasisArea.OnResize:=ResizeWindowArea'Access;
       Enabled := True;
    end Enable;
 
@@ -135,7 +135,7 @@ package body SimClientGUI.MainMenu is
       if not Enabled then
          raise RedisabledGUIModule with "MainMenu";
       end if;
-      GUIContext.WindowArea.OnResize:=null;
+      GUIContext.BasisArea.OnResize:=null;
       ButtonCreateGame.Free;
       ButtonJoinGame.Free;
       ButtonExit.Free;

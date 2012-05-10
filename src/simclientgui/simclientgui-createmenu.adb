@@ -84,7 +84,7 @@ package body SimClientGUI.CreateMenu is
    procedure WindowAreaResize
      (CallBackObject : AnyObject_ClassAccess) is
       pragma Unreferenced(CallBackObject);
-      WindowBounds : constant Bounds_Type:=GUIContext.WindowArea.GetBounds;
+      WindowBounds : constant Bounds_Type:=GUIContext.BasisArea.GetBounds;
    begin
       Tabs.SetBounds
         (Top     => 0,
@@ -221,7 +221,7 @@ package body SimClientGUI.CreateMenu is
    ---------------------------------------------------------------------------
 
    procedure Enable is
-      WindowBounds : constant Bounds_Type:=GUIContext.WindowArea.GetBounds;
+      WindowBounds : constant Bounds_Type:=GUIContext.BasisArea.GetBounds;
 
       procedure CreateGeneralTab is
       begin
@@ -312,12 +312,12 @@ package body SimClientGUI.CreateMenu is
       if Enabled then
          raise ReenabledGUIModule with "CreateMenu";
       end if;
-      Tabs:=ThemeImplementation.NewTabControl(GUIContext.WindowArea);
+      Tabs:=ThemeImplementation.NewTabControl(GUIContext.BasisArea);
       Put_Line("General Tab Create*******");
       CreateGeneralTab;
-      GUIContext.WindowArea.OnResize:=WindowAreaResize'Access;
+      GUIContext.BasisArea.OnResize:=WindowAreaResize'Access;
 
-      ButtonReturn:=ThemeImplementation.NewButton(GUIContext.WindowArea);
+      ButtonReturn:=ThemeImplementation.NewButton(GUIContext.BasisArea);
       ButtonReturn.SetBounds
         (Top     => WindowBounds.Height-30,
          Left    => 0,
@@ -332,7 +332,7 @@ package body SimClientGUI.CreateMenu is
       ButtonReturn.SetCaption(U("Return to Menu"));
       ButtonReturn.OnClick:=ButtonReturnClick'Access;
 
-      ButtonCreate:=ThemeImplementation.NewButton(GUIContext.WindowArea);
+      ButtonCreate:=ThemeImplementation.NewButton(GUIContext.BasisArea);
       ButtonCreate.SetBounds
         (Top     => WindowBounds.Height-30,
          Left    => WindowBounds.Width-150,
@@ -369,7 +369,7 @@ package body SimClientGUI.CreateMenu is
       Tabs.Free;
       ButtonReturn.Free;
       ButtonCreate.Free;
-      GUIContext.WindowArea.OnResize:=null;
+      GUIContext.BasisArea.OnResize:=null;
       Enabled:=False;
       Put_Line("Done DISABLE*************");
    end Disable;

@@ -117,10 +117,10 @@ begin
 
    declare
       -- Obtain current main window dimensions
-      WindowBounds : constant Bounds_Type:=Context.WindowArea.GetBounds;
+      WindowBounds : constant Bounds_Type:=Context.BasisArea.GetBounds;
    begin
       -- Create a new listbox with WindowArea as parent
-      ListBox:=Theme.NewListBox(Context.WindowArea);
+      ListBox:=Theme.NewListBox(Context.BasisArea);
 
       -- The Listbox should fill almost the entire window, but leave some
       -- space for buttons
@@ -136,7 +136,7 @@ begin
          Right => True,
          Bottom => True);
 
-      AddButton:=Theme.NewButton(Context.WindowArea);
+      AddButton:=Theme.NewButton(Context.BasisArea);
       AddButton.SetBounds
         (Top     => 10,
          Left    => WindowBounds.Width-110,
@@ -151,7 +151,7 @@ begin
       AddButton.SetCaption(U("Add"));
       AddButton.OnClick:=AddClick'Unrestricted_Access;
 
-      DeleteButton:=Theme.NewButton(Context.WindowArea);
+      DeleteButton:=Theme.NewButton(Context.BasisArea);
       DeleteButton.SetBounds
         (Top     => 50,
          Left    => WindowBounds.Width-110,

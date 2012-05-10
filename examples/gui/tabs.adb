@@ -88,7 +88,7 @@ begin
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
    -- Create a tab-control in the window area
-   TabControl:=Theme.NewTabControl(Context.WindowArea);
+   TabControl:=Theme.NewTabControl(Context.BasisArea);
 
    for i in Tabs'Range loop
       Tabs(i):=TabControl.NewTab(U("Tab Nr."&Integer'Image(i)));
@@ -105,8 +105,8 @@ begin
    TabControl.SetBounds
      (Top     => 10,
       Left    => 10,
-      Height  => Context.WindowArea.GetBounds.Height-20,
-      Width   => Context.WindowArea.GetBounds.Width-20,
+      Height  => Context.BasisArea.GetBounds.Height-20,
+      Width   => Context.BasisArea.GetBounds.Width-20,
       Visible => True);
    TabControl.SetAnchors
      (Top     => True,

@@ -277,6 +277,7 @@ package GUI is
          CallBackObject     : AnyObject_ClassAccess     := null;
          OnClose            : OnCloseContext_Access     := null;
          OnContextAreaClick : OnContextAreaClick_Access := null;
+         BasisArea          : Object_ClassAccess        := null;
          WindowArea         : Object_ClassAccess        := null;
          ModalArea          : Object_ClassAccess        := null;
          ContextArea        : Object_ClassAccess        := null;

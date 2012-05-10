@@ -594,7 +594,9 @@ package body GUI is
          begin
             if not SubMouseDown(Context.ContextArea) then
                if not SubMouseDown(Context.ModalArea) then
-                  Result:=SubMouseDown(Context.WindowArea);
+                  if not SubMouseDown(Context.WindowArea) then
+                     Result:=SubMouseDown(Context.BasisArea);
+                  end if;
                end if;
             end if;
          end;
@@ -791,8 +793,8 @@ package body GUI is
          Width   => Width,
          Visible => True);
 
-      if Context.WindowArea/=null then
-         Context.WindowArea.SetBounds
+      if Context.BasisArea/=null then
+         Context.BasisArea.SetBounds
            (Top     => Context.Bounds.Top,
             Left    => Context.Bounds.Left,
             Height  => Context.Bounds.Height,
@@ -1089,9 +1091,11 @@ package body GUI is
      (Context : access Context_Type) is
    begin
       -- TODO: Use specialized objects
+      Context.BasisArea           := new Object_Type;
       Context.WindowArea          := new Object_Type;
       Context.ModalArea           := new ModalArea_Type;
       Context.ContextArea         := new ContextArea_Type;
+      Context.BasisArea.Context   := Context_ClassAccess(Context);
       Context.WindowArea.Context  := Context_ClassAccess(Context);
       Context.ModalArea.Context   := Context_ClassAccess(Context);
       Context.ContextArea.Context := Context_ClassAccess(Context);
@@ -1105,6 +1109,7 @@ package body GUI is
    procedure Finalize
      (Context : in out Context_Type) is
    begin
+      Context.BasisArea.Free;
       Context.WindowArea.Free;
       Context.ModalArea.Free;
       Context.ContextArea.Free;

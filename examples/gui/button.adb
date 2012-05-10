@@ -54,6 +54,7 @@ procedure Button is
 
    procedure Click
      (CallBackObject : AnyObject_ClassAccess) is
+      pragma Unreferenced(CallBackObject);
    begin
       Terminated:=True;
    end Click;
@@ -61,6 +62,7 @@ procedure Button is
 
    procedure ContextClose
      (CallBackObject : AnyObject_ClassAccess) is
+      pragma Unreferenced(CallBackObject);
    begin
       Terminated:=True;
    end ContextClose;
@@ -92,7 +94,7 @@ begin
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
    -- The Context.WindowArea is now the parent object of a new button
-   Button:=Theme.NewButton(Context.WindowArea);
+   Button:=Theme.NewButton(Context.BasisArea);
 
    -- Set a rectangle for the button, make it visible
    Button.SetBounds

@@ -85,7 +85,7 @@ begin
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
    -- The Context.WindowArea is now the parent object of a new window
-   Window:=Theme.NewWindow(Context.WindowArea);
+   Window:=Theme.NewWindow(Context.BasisArea);
 
    -- Set a rectangle for the window, make it visible
    Window.SetBounds

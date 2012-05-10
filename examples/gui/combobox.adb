@@ -83,14 +83,14 @@ begin
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
    -- The Context.WindowArea is now the parent object of a new window
-   Combobox:=Theme.NewCombobox(Context.WindowArea);
+   Combobox:=Theme.NewCombobox(Context.BasisArea);
 
    -- Set a rectangle for the window, make it visible
    Combobox.SetBounds
      (Top     => 20,
       Left    => 20,
       Height  => 30,
-      Width   => Context.WindowArea.GetBounds.Width-40,
+      Width   => Context.BasisArea.GetBounds.Width-40,
       Visible => True);
    Combobox.SetAnchors
      (Top => True,

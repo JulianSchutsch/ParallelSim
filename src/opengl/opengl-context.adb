@@ -284,7 +284,7 @@ package body OpenGL.Context is
          ref  => 0.1);
       glEnable(GL_BLEND);
 
-      ProcessTree(Context.WindowArea);
+      ProcessTree(Context.BasisArea);
       ProcessTree(Context.ModalArea);
       ProcessTree(Context.ContextArea);
       Standard.OpenGL.AssertError;

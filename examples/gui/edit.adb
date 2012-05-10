@@ -82,7 +82,7 @@ begin
    -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
-   Edit:=Theme.NewEdit(Context.WindowArea);
+   Edit:=Theme.NewEdit(Context.BasisArea);
    Edit.SetBounds
      (Top     => 10,
       Left    => 10,

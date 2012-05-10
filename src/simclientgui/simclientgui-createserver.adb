@@ -56,7 +56,7 @@ package body SimClientGUI.CreateServer is
       pragma Unreferenced(CallBackObject);
       use type GUI.GroupBox.GroupBox_ClassAccess;
 
-      Bounds : constant Bounds_Type:=GUIContext.WindowArea.GetBounds;
+      Bounds : constant Bounds_Type:=GUIContext.BasisArea.GetBounds;
 
    begin
       ExecOutputGroup.SetBounds
@@ -117,7 +117,7 @@ package body SimClientGUI.CreateServer is
    procedure CreateServerSuccess is
    begin
       ExecOutput.WriteLine(U("Success..."),16#FFFFFFFF#);
-      GUIContext.WindowArea.AddASync(CreateServerSuccessASync'Access);
+      GUIContext.BasisArea.AddASync(CreateServerSuccessASync'Access);
    end CreateServerSuccess;
    ---------------------------------------------------------------------------
 
@@ -181,7 +181,7 @@ package body SimClientGUI.CreateServer is
          return;
       end if;
       SupplementConfigGroup:=ThemeImplementation.NewGroupBox
-        (GUIContext.WindowArea);
+        (GUIContext.BasisArea);
       SupplementConfigGroup.SetCaption(U("Supplement Configuration"));
       SupplementConfigArray:=SimConfig.CreateConfigArrayFromConfiguration(SupplementConfig);
       SupplementElementsPage:=SimConfig.Visual.CreateElementsPage
@@ -242,9 +242,9 @@ package body SimClientGUI.CreateServer is
 
       Put_Line(".Buttons Create");
       declare
-         Bounds : constant Bounds_Type:=GUIContext.WindowArea.GetBounds;
+         Bounds : constant Bounds_Type:=GUIContext.BasisArea.GetBounds;
       begin
-         ButtonAbort:=ThemeImplementation.NewButton(GUIContext.WindowArea);
+         ButtonAbort:=ThemeImplementation.NewButton(GUIContext.BasisArea);
          ButtonAbort.SetBounds
            (Top     => Bounds.Height-30,
             Left    => 0,
@@ -258,7 +258,7 @@ package body SimClientGUI.CreateServer is
             Bottom => True);
          ButtonAbort.SetCaption(U("Abort"));
          ButtonAbort.OnClick:=ButtonAbortClick'Access;
-         ButtonRetry:=ThemeImplementation.NewButton(GUIContext.WindowArea);
+         ButtonRetry:=ThemeImplementation.NewButton(GUIContext.BasisArea);
          ButtonRetry.SetBounds
            (Top     => Bounds.Height-30,
             Left    => Bounds.Width-150,
@@ -282,7 +282,7 @@ package body SimClientGUI.CreateServer is
      (SupplementConfig : Config.Config_Type) is
    begin
       Standard.SimClientGUI.CreateServer.SupplementConfig:=SupplementConfig;
-      GUIContext.WindowArea.AddASync(CreateServerFailureASync'Access);
+      GUIContext.BasisArea.AddASync(CreateServerFailureASync'Access);
    end CreateServerFailure;
    ---------------------------------------------------------------------------
 
@@ -294,7 +294,7 @@ package body SimClientGUI.CreateServer is
          raise ReenabledGUIModule with "CreateProcess";
       end if;
       Standard.SimClientGUI.CreateServer.Configuration:=Configuration;
-      ExecOutputGroup:=ThemeImplementation.NewGroupBox(GUIContext.WindowArea);
+      ExecOutputGroup:=ThemeImplementation.NewGroupBox(GUIContext.BasisArea);
       ExecOutput:=ThemeImplementation.NewConsole(GUI.Object_ClassAccess(ExecOutputGroup));
       ExecOutput.SetBounds
         (Top     => 5,
@@ -309,7 +309,7 @@ package body SimClientGUI.CreateServer is
          Bottom => True);
       ExecOutputGroup.SetCaption(U("Distributed System startup output..."));
 
-      GUIContext.WindowArea.OnResize:=Resize'Access;
+      GUIContext.BasisArea.OnResize:=Resize'Access;
       Resize(null);
 
       SimClient.CreateServer.OnMessage:=CreateServerMessage'Access;
@@ -341,7 +341,7 @@ package body SimClientGUI.CreateServer is
       SimClient.CreateServer.OnSuccess:=null;
       SimClient.CreateServer.OnFailure:=null;
 
-      GUIContext.WindowArea.OnResize:=null;
+      GUIContext.BasisArea.OnResize:=null;
       Enabled:=False;
       Put_Line("Disable//");
    end Disable;

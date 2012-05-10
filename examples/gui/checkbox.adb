@@ -82,7 +82,7 @@ begin
    -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
-   CheckBox:=Theme.NewCheckbox(Context.WindowArea);
+   CheckBox:=Theme.NewCheckbox(Context.BasisArea);
    CheckBox.SetCaption(U("MyCheckbox"));
    CheckBox.SetBounds
      (Top     => 10,

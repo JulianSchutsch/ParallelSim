@@ -84,7 +84,7 @@ begin
    -- Called when the main window's close button is clicked
    Context.OnClose:=ContextClose'Unrestricted_Access;
 
-   RadioButton1:=Theme.NewRadioButton(Context.WindowArea);
+   RadioButton1:=Theme.NewRadioButton(Context.BasisArea);
    RadioButton1.SetBounds
      (Top     => 10,
       Left    => 10,
@@ -93,7 +93,7 @@ begin
       Visible => True);
    RadioButton1.SetCaption(U("Radio 1"));
 
-   RadioButton2:=Theme.NewRadioButton(Context.WindowArea);
+   RadioButton2:=Theme.NewRadioButton(Context.BasisArea);
    RadioButton2.SetBounds
      (Top     => 45,
       Left    => 10,
@@ -103,7 +103,7 @@ begin
    RadioButton2.SetCaption(U("Radio 2"));
    RadioButton2.Link(RadioButton1);
 
-   RadioButton3:=Theme.NewRadioButton(Context.WindowArea);
+   RadioButton3:=Theme.NewRadioButton(Context.BasisArea);
    RadioButton3.SetBounds
      (Top     => 80,
       Left    => 10,
