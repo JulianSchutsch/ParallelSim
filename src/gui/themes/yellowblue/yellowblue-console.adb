@@ -23,15 +23,13 @@ with GUI.TextBasis;
 with GUI.ScrollBar;
 with YellowBlue.VerticalScrollBar;
 with Fonts;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Canvas;
 with Basics; use Basics;
 
 with GUIDefinitions; use GUIDefinitions;
-
---with Ada.Text_IO; use Ada.Text_IO;
 
 package body YellowBlue.Console is
 
@@ -53,6 +51,11 @@ package body YellowBlue.Console is
    procedure SetFont
      (Item : access Console_Type;
       Font : Fonts.Font_ClassAccess);
+
+   overriding
+   procedure Resize
+     (Item : access Console_Type);
+   ---------------------------------------------------------------------------
 
    procedure SetFont
      (Item   : access Console_Type;
@@ -109,10 +112,8 @@ package body YellowBlue.Console is
       if Console.VerticalScrollBar=null then
          return;
       end if;
-      Put("Scan");
-
-      ScrollRange:=Console.TextBasis.WrappedLineCount-Console.TextBasis.VisibleLineCount;
-      ScrollPosition:=Console.TextBasis.GetWrappedLineIndex;
+      ScrollRange    := Console.TextBasis.WrappedLineCount-Console.TextBasis.VisibleLineCount;
+      ScrollPosition := Console.TextBasis.GetWrappedLineIndex;
       if ScrollRange<0 then
          ScrollRange:=0;
       end if;
@@ -123,19 +124,21 @@ package body YellowBlue.Console is
          ScrollPosition:=0;
       end if;
 
-      Put("LineSEL");
-      Put(Console.TextBasis.GetWrappedLineIndex);
-      Put(ScrollRange);
-      Put(ScrollPosition);
-      New_Line;
       Console.VerticalScrollBar.SetRange
         (Min      => 0,
          Max      => ScrollRange,
          Position => ScrollPosition);
-      Put("////");
-      New_Line;
 
    end VisualChange;
+   ---------------------------------------------------------------------------
+
+   procedure Resize
+     (Item : access Console_Type) is
+   begin
+      if Item.CallBackObject/=null then
+         VisualChange(Item.CallBackObject);
+      end if;
+   end Resize;
    ---------------------------------------------------------------------------
 
    procedure InputEnter
@@ -165,7 +168,7 @@ package body YellowBlue.Console is
 
    begin
 
-      NewConsole          := new Console_Type;
+      NewConsole := new Console_Type;
 
       GUI.Console.Initialize
         (Item   => GUI.Console.Console_Access(NewConsole),
@@ -177,14 +180,19 @@ package body YellowBlue.Console is
         (Item   => GUI.TextBasis.TextBasis_Access(NewConsole.TextBasis),
          Parent => Object_ClassAccess(NewConsole));
 
+      NewConsole.SetFont
+        (Fonts.Lookup
+           (Name       => U("Vera"),
+            Size       => 18,
+            Attributes => Fonts.NoAttributes));
+
       NewConsole.TextBasis.EnableInput(0,To_Unbounded_String(">"));
       NewConsole.TextBasis.CallBackObject := AnyObject_ClassAccess(NewConsole);
       NewConsole.TextBasis.OnVisualChange := VisualChange'Access;
       NewConsole.TextBasis.OnInputEnter   := InputEnter'Access;
 
       NewConsole.VerticalScrollBar
-        :=YellowBlue.VerticalScrollBar.NewVerticalScrollBar
-          (Parent => Object_ClassAccess(NewConsole));
+        :=YellowBlue.VerticalScrollBar.NewVerticalScrollBar(Object_ClassAccess(NewConsole));
       NewConsole.VerticalScrollBar.CallBackObject:=AnyObject_ClassAccess(NewConsole);
       NewConsole.VerticalScrollBar.OnPositionChange:=ScrollPositionChange'Access;
 

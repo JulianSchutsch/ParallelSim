@@ -29,6 +29,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Strings.Unbounded.Hash;
 with Ada.Containers.Hashed_Maps;
 with Ada.Containers.Vectors;
+with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Ada.Numerics.Generic_Elementary_Functions;
 with System;
@@ -40,7 +41,11 @@ package Basics is
    type AnyObject_Type is tagged null record;
    type AnyObject_ClassAccess is access all AnyObject_Type'Class;
 
-   package StringStringMap is new Ada.Containers.Hashed_maps
+   package StringList_Pack is new Ada.Containers.Doubly_Linked_Lists
+     (Element_Type => Unbounded_String,
+      "="          => "=");
+
+   package StringStringMap_Pack is new Ada.Containers.Hashed_maps
      (Key_Type => Unbounded_String,
       Element_Type => Unbounded_String,
       Hash => Ada.Strings.Unbounded.Hash,
@@ -54,13 +59,13 @@ package Basics is
    type StringArray is array (Positive range <>) of Unbounded_String;
 
    procedure Put
-     (Item : StringStringMap.Map);
+     (Item : StringStringMap_Pack.Map);
 
    procedure Put
      (Address : System.Address);
 
    function ConcatElements
-     (Item      : StringStringMap.Map;
+     (Item      : StringStringMap_Pack.Map;
       Separator : Unbounded_String)
       return Unbounded_String;
 

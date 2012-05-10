@@ -38,13 +38,13 @@ package body YellowBlue.Window is
    NormalBackgroundColor     : constant Canvas.Color_Type := 16#7F7F7F7F#;
    NormalBorderLineColor     : constant Canvas.Color_Type := 16#FF000000#;
    NormalBorderEdgeLineColor : constant Canvas.Color_Type := 16#FFFFFFFF#;
-   NormalClientColor         : constant Canvas.Color_Type := 16#7F00007F#;
+   NormalClientColor         : constant Canvas.Color_Type := 16#EF00007F#;
    NormalTitleBarColor       : constant Canvas.Color_Type := 16#7F00007F#;
 
    FocussedBackgroundColor     : constant Canvas.Color_Type := 16#FF7F7F7F#;
    FocussedBorderLineColor     : constant Canvas.Color_Type := 16#FFFFFFFF#;
    FocussedBorderEdgeLineColor : constant Canvas.Color_Type := 16#FF00FF00#;
-   FocussedClientColor         : constant Canvas.Color_Type := 16#7F007F00#;
+   FocussedClientColor         : constant Canvas.Color_Type := 16#EF007F00#;
    FocussedTitleBarColor       : constant Canvas.Color_Type := 16#7F007F00#;
 
    type Window_Type is new GUI.Window.Window_Type with
@@ -305,8 +305,8 @@ package body YellowBlue.Window is
                Visible => True);
 
             Window.TitleCanvas.SetAnchors
-              (Top    => False,
-               Left   => False,
+              (Top    => True,
+               Left   => True,
                Right  => False,
                Bottom => False);
 

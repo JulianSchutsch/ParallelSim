@@ -29,6 +29,7 @@ with Basics; use Basics;
 with ExceptionOutput;
 
 with GUI.UseImplementations;
+with DistributedSystems.UseImplementations;
 with YellowBlue;
 
 with SimClientGUI;
@@ -40,6 +41,7 @@ procedure Client is
 begin
 
    GUI.UseImplementations.Register;
+   DistributedSystems.UseImplementations.Register;
    YellowBlue.Register;
 
    Configuration.Insert(U("GUI.GUIImplementation") , U("OpenGL"));
@@ -55,6 +57,7 @@ begin
    SimClientGUI.Finalize;
 
    YellowBlue.UnRegister;
+   DistributedSystems.UseImplementations.Unregister;
    GUI.UseImplementations.Unregister;
 
 exception

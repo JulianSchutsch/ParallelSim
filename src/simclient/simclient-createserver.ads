@@ -24,14 +24,31 @@
 pragma Ada_2005;
 
 with Config;
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package SimClient.CreateServer is
 
-   procedure Start
-     (Configuration : Config.Config_Type) is
-   begin
-      null;
-   end Start;
-   ---------------------------------------------------------------------------
+   type OnMessage_Access  is
+     access procedure
+       (Message : Unbounded_String);
+
+   type OnSuccess_Access is
+     access procedure;
+
+   type OnFailure_Access is
+     access procedure
+       (SupplementConfig : Config.Config_Type);
+
+   OnMessage : OnMessage_Access:=null;
+   OnSuccess : OnSuccess_Access:=null;
+   OnFailure : OnFailure_Access:=null;
+
+   InvalidReinitialize : Exception;
+
+   procedure Retry
+     (SupplementConfig : Config.Config_Type);
+   procedure Initialize
+     (Configuration : Config.Config_Type);
+   procedure Finalize;
 
 end SimClient.CreateServer;

@@ -17,34 +17,21 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
--- Revision History
---   24.Apr 2012 Julian Schutsch
---     - Original version
-
 pragma Ada_2005;
 
-with Config;
-with GUI;
-with GUI.Themes;
+package body SimClientGUI.ConnectToServer is
 
-package SimClientGUI is
+   procedure Enable
+     (Configuration : Config.Config_Type) is
+   begin
+      null;
+   end Enable;
+   ---------------------------------------------------------------------------
 
-   ReenabledGUIModule  : Exception;
-   RedisabledGUIModule : Exception;
+   procedure Disable is
+   begin
+      null;
+   end Disable;
+   ---------------------------------------------------------------------------
 
-   procedure Initialize
-     (Configuration : Config.Config_Type);
-
-   procedure Finalize;
-
-   function Process
-     return Boolean;
-
-private
-
-   GUIImplementation   : GUI.Implementation_Type;
-   ThemeImplementation : GUI.Themes.Implementation_Type;
-   GUIContext          : GUI.Context_ClassAccess:=null;
-   Terminated          : Boolean:=false;
-
-end SimClientGUI;
+end SimClientGUI.ConnectToServer;

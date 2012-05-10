@@ -69,6 +69,34 @@ package body GUI is
    end CallAsyncs;
    ---------------------------------------------------------------------------
 
+   type ModalArea_Type is new Object_Type with
+      record
+         null;
+      end record;
+
+   overriding
+   function MouseDown
+     (Item   : access ModalArea_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean;
+   ---------------------------------------------------------------------------
+
+   function MouseDown
+     (Item   : access ModalArea_Type;
+      Button : MouseButton_Enum;
+      X      : Integer;
+      Y      : Integer)
+      return Boolean is
+      pragma Unreferenced(Button);
+      pragma Unreferenced(X);
+      pragma Unreferenced(Y);
+   begin
+      return Item.FirstChild/=null;
+   end MouseDown;
+   ---------------------------------------------------------------------------
+
    type ContextArea_Type is new Object_Type with
       record
          null;
@@ -340,6 +368,10 @@ package body GUI is
 
       Cursor:=Object.Context.Priv.FocusObject;
 
+      if Cursor/=null then
+         Put_Line("ClearFocusTree");
+      end if;
+
       while Cursor/=null loop
 
          if (Cursor.FocusStyle=FocusStyleContainer) and
@@ -355,6 +387,8 @@ package body GUI is
          Cursor:=Cursor.Parent;
 
       end loop;
+
+      Object.Context.Priv.FocusObject:=null;
 
    end ClearFocusTree;
    ---------------------------------------------------------------------------
@@ -397,8 +431,6 @@ package body GUI is
 
    begin
 
-      Put("Attempt to Set Focus");
-      New_Line;
       Cursor:=Object_ClassAccess(Item);
 
       while (Cursor/=null) loop
@@ -411,15 +443,11 @@ package body GUI is
                Cursor:=Cursor.Parent;
 
             when FocusStyleAccept =>
-               Put("Accept..therefore set");
-               New_Line;
                SetFocusTree(Cursor);
                return;
 
             when FocusStyleContainer =>
 
-               Put("Container Reflection");
-               New_Line;
                if Cursor.FocusObject/=null then
                   Cursor:=Cursor.FocusObject;
                else
@@ -428,8 +456,6 @@ package body GUI is
                end if;
 
             when FocusStyleRedirect =>
-               Put("Redirect");
-               New_Line;
                if Cursor.FocusObject=null then
                   raise FocusRedirectionToNull;
                end if;
@@ -574,9 +600,6 @@ package body GUI is
          end;
 
          if Context.Priv.MouseSelection/=null then
-            Put("Set Focus");
-            Put(Context.Priv.MouseSelection.all'Address);
-            New_Line;
             Context.Priv.MouseSelection.SetFocus;
          end if;
 
@@ -894,6 +917,20 @@ package body GUI is
    end SetBounds;
    ---------------------------------------------------------------------------
 
+   function GetClientBounds
+     (Object : access Object_Type)
+      return Bounds_Type is
+
+      Obj : Object_ClassAccess:=Object_ClassAccess(Object);
+
+   begin
+      while Obj.Client/=null loop
+         Obj:=Obj.Client;
+      end loop;
+      return Obj.Bounds;
+   end GetClientBounds;
+   ---------------------------------------------------------------------------
+
    function GetPrevBounds
      (Object : access Object_Type)
       return Bounds_Type is
@@ -993,9 +1030,6 @@ package body GUI is
 
       -- TODO: This is not enough, there can be referenced through containers
       -- be left which MUST be removed too
-      Put("Free Object:");
-      Put(Item.all'Address);
-      New_Line;
       if Item.Context.Priv.FocusObject=Object_ClassAccess(Item) then
          ClearFocusTree(Object_ClassAccess(Item));
       end if;
@@ -1056,7 +1090,7 @@ package body GUI is
    begin
       -- TODO: Use specialized objects
       Context.WindowArea          := new Object_Type;
-      Context.ModalArea           := new Object_Type;
+      Context.ModalArea           := new ModalArea_Type;
       Context.ContextArea         := new ContextArea_Type;
       Context.WindowArea.Context  := Context_ClassAccess(Context);
       Context.ModalArea.Context   := Context_ClassAccess(Context);

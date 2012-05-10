@@ -17,14 +17,12 @@
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
 -------------------------------------------------------------------------------
 
-pragma Ada_2005;
-
-package body SimClientGUI.CreateProcess is
+package body SimClientGUI.Logging is
 
    procedure Enable
      (Configuration : Config.Config_Type) is
    begin
-      Configuration.Debug;
+      null;
    end Enable;
    ---------------------------------------------------------------------------
 
@@ -32,6 +30,5 @@ package body SimClientGUI.CreateProcess is
    begin
       null;
    end Disable;
-   ---------------------------------------------------------------------------
 
-end SimClientGUI.CreateProcess;
+end SimClientGUI.Logging;

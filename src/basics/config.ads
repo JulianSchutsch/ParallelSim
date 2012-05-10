@@ -50,7 +50,7 @@ package Config is
 
    InvalidName : Exception;
 
-   type Config_Type is new StringStringMap.Map with null record;
+   type Config_Type is new StringStringMap_Pack.Map with null record;
    type Config_Access is access Config_Type;
 
    procedure SaveToFile

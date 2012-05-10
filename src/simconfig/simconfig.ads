@@ -24,6 +24,7 @@
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Config;
 
 package SimConfig is
 
@@ -70,6 +71,10 @@ package SimConfig is
    type ConfigElem_Access is access all ConfigElem_Type;
 
    type ConfigArray_Type is array(Integer range <>) of aliased ConfigElem_Type;
+
+   function CreateConfigArrayFromConfiguration
+     (Configuration : Config.Config_Type)
+      return ConfigArray_Access;
 
    function LoadConfigArray
      (FileName : Unbounded_String)

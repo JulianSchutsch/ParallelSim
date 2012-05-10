@@ -18,33 +18,15 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   24.Apr 2012 Julian Schutsch
+--   10.Mai 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with Config;
-with GUI;
-with GUI.Themes;
+package SimClientGUI.Logging is
 
-package SimClientGUI is
-
-   ReenabledGUIModule  : Exception;
-   RedisabledGUIModule : Exception;
-
-   procedure Initialize
+   procedure Enable
      (Configuration : Config.Config_Type);
+   procedure Disable;
 
-   procedure Finalize;
-
-   function Process
-     return Boolean;
-
-private
-
-   GUIImplementation   : GUI.Implementation_Type;
-   ThemeImplementation : GUI.Themes.Implementation_Type;
-   GUIContext          : GUI.Context_ClassAccess:=null;
-   Terminated          : Boolean:=false;
-
-end SimClientGUI;
+end SimClientGUI.Logging;

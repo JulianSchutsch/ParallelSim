@@ -70,7 +70,7 @@ package Network.Streams is
 
    type Channel_Type is abstract new Network.Packets.Packet_Type with
       record
-         PeerAddress     : StringStringMap.Map;
+         PeerAddress     : StringStringMap_Pack.Map;
          CallBack        : ChannelCallBack_ClassAccess:=null;
       end record;
 

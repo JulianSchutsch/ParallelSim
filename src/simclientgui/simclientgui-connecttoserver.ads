@@ -18,17 +18,17 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   6.Mai 2012 Julian Schutsch
+--   10.Mai 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
 with Config;
 
-package SimClientGUI.CreateProcess is
+package SimClientGUI.ConnectToServer is
 
    procedure Enable
      (Configuration : Config.Config_Type);
    procedure Disable;
 
-end SimClientGUI.CreateProcess;
+end SimClientGUI.ConnectToServer;

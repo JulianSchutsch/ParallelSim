@@ -20,7 +20,6 @@
 pragma Ada_2005;
 
 with ProcessLoop;
-with Ada.Strings;
 with Config;
 with Network.Streams;
 with Ada.Calendar;

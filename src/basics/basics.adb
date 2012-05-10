@@ -152,42 +152,42 @@ package body Basics is
    ---------------------------------------------------------------------------
 
    procedure Put
-     (Item : StringStringMap.Map) is
+     (Item : StringStringMap_Pack.Map) is
 
-      use type StringStringMap.Cursor;
+      use type StringStringMap_Pack.Cursor;
 
-      Cursor : StringStringMap.Cursor;
+      Cursor : StringStringMap_Pack.Cursor;
 
    begin
       Cursor:=Item.First;
-      while Cursor/=StringStringMap.No_Element loop
-         Put(StringStringMap.Key(Cursor));
+      while Cursor/=StringStringMap_Pack.No_Element loop
+         Put(StringStringMap_Pack.Key(Cursor));
          Put(" : ");
-         Put(StringStringMap.Element(Cursor));
+         Put(StringStringMap_Pack.Element(Cursor));
          New_Line;
-         Cursor:=StringStringMap.Next(Cursor);
+         Cursor:=StringStringMap_Pack.Next(Cursor);
       end loop;
    end;
    ---------------------------------------------------------------------------
 
    function ConcatElements
-     (Item      : StringStringMap.Map;
+     (Item      : StringStringMap_Pack.Map;
       Separator : Unbounded_String)
       return Unbounded_String is
 
-      use type StringStringMap.Cursor;
+      use type StringStringMap_Pack.Cursor;
 
-      Cursor    : StringStringMap.Cursor;
+      Cursor    : StringStringMap_Pack.Cursor;
       NewString : Unbounded_String;
 
    begin
       Cursor:=Item.First;
-      while Cursor/=StringStringMap.No_Element loop
+      while Cursor/=StringStringMap_Pack.No_Element loop
          if NewString/="" then
             NewString:=NewString & Separator;
          end if;
-         NewString:=NewString & StringStringMap.Element(Cursor);
-         Cursor:=StringStringMap.Next(Cursor);
+         NewString:=NewString & StringStringMap_Pack.Element(Cursor);
+         Cursor:=StringStringMap_Pack.Next(Cursor);
       end loop;
       return NewString;
    end ConcatElements;

@@ -19,8 +19,8 @@ pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
 with Canvas;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body GUI.TextBasis is
 
@@ -72,8 +72,8 @@ package body GUI.TextBasis is
 
       Line:=Item.FirstLine;
       while Line/=null loop
-         Count:=Count+Line.WrappedLineCount;
-         Line:=Line.Next;
+         Count := Count+Line.WrappedLineCount;
+         Line  := Line.Next;
       end loop;
 
       return Count;
@@ -471,9 +471,6 @@ package body GUI.TextBasis is
       Index      : Integer) is
    begin
       --TODO: Make it faster (different call)
-      Put("Goto");
-      Put(Index);
-      New_Line;
       TextBasis.WrappedLineIndex:=Index;
 
       UpdateCanvasLines(TextBasis);
@@ -492,14 +489,14 @@ package body GUI.TextBasis is
 
    begin
 
-      if TextBasis.LineHeight<=0 then
+      if (Line=null)
+        or TextBasis.LineHeight<=0 then
          return;
       end if;
 
       VisLines := VisibleLineCount(TextBasis);
       WrappedLine:=Line.GetWrappedLine(Position)
         +GetFirstWrappedLine(TextBasis,Line);
-      New_Line;
 
       if WrappedLine<TextBasis.WrappedLineIndex then
          SetWrappedLineIndex(TextBasis,WrappedLine);
@@ -525,9 +522,6 @@ package body GUI.TextBasis is
       Line              : Line_Access;
       KeepCursorVisible : Boolean) is
    begin
-
-      Put("ContentChange");
-      New_Line;
 
       Line.GreedyWrapping
         (Width => TextBasis.Bounds.Width);
@@ -891,14 +885,10 @@ package body GUI.TextBasis is
       Chars : Unbounded_String)
       return Boolean is
    begin
+
       if Item.EditLine=null then
-         Put("Not in Edit mode");
-         New_Line;
          return False;
       end if;
-      Put("Character For Textview:");
-      Put(To_String(Chars));
-      New_Line;
       Item.EditPos:=Item.EditPos+Item.EditLine.Insert
         (Position => Item.EditPos,
          String   => Chars,

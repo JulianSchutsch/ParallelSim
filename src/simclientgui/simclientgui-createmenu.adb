@@ -29,7 +29,7 @@ with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 
 with SimClientGUI.MainMenu;
-with SimClientGUI.CreateProcess;
+with SimClientGUI.CreateServer;
 with SimConfig;
 with SimConfig.Visual;
 
@@ -127,7 +127,7 @@ package body SimClientGUI.CreateMenu is
         (Key      => U("Front.Count"),
          New_Item => FrontCountEdit.GetText);
       Disable;
-      SimClientGUI.CreateProcess.Enable(Configuration);
+      SimClientGUI.CreateServer.Enable(Configuration);
    end ASyncCreate;
    ---------------------------------------------------------------------------
 

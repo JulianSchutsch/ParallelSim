@@ -135,6 +135,28 @@ package body SimConfig is
    end FreeConfigArray;
    ---------------------------------------------------------------------------
 
+   function CreateConfigArrayFromConfiguration
+     (Configuration : Config.Config_Type)
+      return ConfigArray_Access is
+
+      Config : ConfigArray_Access;
+      Cursor : StringStringMap_Pack.Cursor;
+
+   begin
+      Config:=new ConfigArray_Type
+        (1..Integer(Configuration.Length));
+      Cursor:=Configuration.First;
+      for i in Config'Range loop
+         Config(i).TType       := ConfigElemString;
+         Config(i).Node        := StringStringMap_Pack.Key(Cursor);
+         Config(i).Description := Config(i).Node;
+         Config(i).Default     := StringStringMap_Pack.Element(Cursor);
+         Cursor:=StringStringMap_Pack.Next(Cursor);
+      end loop;
+      return Config;
+   end CreateConfigArrayFromConfiguration;
+   ---------------------------------------------------------------------------
+
    function LoadConfigArray
      (FileName : Unbounded_String)
       return ConfigArray_Access is

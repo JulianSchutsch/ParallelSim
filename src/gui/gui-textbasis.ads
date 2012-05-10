@@ -141,7 +141,7 @@ private
    type CanvasLine_Type is
       record
          WrappedLine : Natural;
-         Line        : Line_Access;
+         Line        : Line_Access        := null;
          Canvas      : Canvas_ClassAccess := null;
          Next        : CanvasLine_Access  := null;
          Last        : CanvasLine_Access  := null;
@@ -149,10 +149,10 @@ private
 
    type TextBasis_Type is new TextBasis_Public with
       record
-         FirstLine              : Line_Access:=null;
-         LastLine               : Line_Access:=null;
-         CanvasLines            : CanvasLine_Access:=null;
-         Font                   : Fonts.Font_ClassAccess:=null;
+         FirstLine              : Line_Access            := null;
+         LastLine               : Line_Access            := null;
+         CanvasLines            : CanvasLine_Access      := null;
+         Font                   : Fonts.Font_ClassAccess := null;
          SpaceCharWidth         : Integer;
          LineHeight             : Integer;
          WrappedLineIndex       : Natural := 0;

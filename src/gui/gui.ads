@@ -204,6 +204,10 @@ package GUI is
      (Object : access Object_Type)
       return Bounds_Type;
 
+   function GetClientBounds
+     (Object : access Object_Type)
+      return Bounds_Type;
+
    function GetAbsBounds
      (Object : access Object_Type)
       return AbsBounds_Type;

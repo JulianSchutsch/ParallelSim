@@ -25,6 +25,7 @@ pragma Ada_2005;
 
 with Config.Implementations;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+--with Basics; use Basics;
 
 package DistributedSystems is
 
@@ -57,16 +58,43 @@ package DistributedSystems is
 
    type ExecutableArray_Type is array (Integer range <>) of Executable_Type;
 
-   type SpawnNodes_Access is
+   type OnMessage_Access is
+     access procedure
+       (Message : Unbounded_String);
+
+   type Spawn_Type is tagged
+      record
+         OnMessage : OnMessage_Access:=null;
+      end record;
+
+   type Spawn_Access is access all Spawn_Type;
+   type Spawn_ClassAccess is access all Spawn_Type'Class;
+
+   -- Execution of all the nodes selected when creating the Spawn Object
+   -- (by Executables parameter)
+   -- The SupplementConfig can be empty if Execute is called first.
+   -- In case of failure, the SupplementConfig may contain a list
+   -- of necessary options+default values which may enable Execute to
+   -- proceed.
+   procedure Execute
+     (Item             : access Spawn_Type;
+      SupplementConfig : in out Config.Config_Type;
+      Success          : out Boolean);
+
+   procedure Free
+     (Item : access Spawn_Type);
+
+   type CreateSpawnObject_Access is
      access procedure
        (Configuration : Config.Config_Type;
-        Executables   : ExecutableArray_Type);
+        Executables   : ExecutableArray_Type;
+        SpawnObject   : out Spawn_ClassAccess);
 
    type Implementation_Type is
       record
-         InitializeNode : InitializeNode_Access := null;
-         FinalizeNode   : FinalizeNode_Access   := null;
-         SpawnNodes     : SpawnNodes_Access     := null;
+         InitializeNode    : InitializeNode_Access    := null;
+         FinalizeNode      : FinalizeNode_Access      := null;
+         CreateSpawnObject : CreateSpawnObject_Access := null;
       end record;
 
    package Implementations is new Config.Implementations

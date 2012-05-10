@@ -34,7 +34,7 @@ package Expressions is
 
    function Process
      (String    : Unbounded_String;
-      Variables : StringStringMap.Map)
+      Variables : StringStringMap_Pack.Map)
       return Unbounded_String;
 
 end Expressions;

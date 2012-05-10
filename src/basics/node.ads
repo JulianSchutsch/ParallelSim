@@ -32,6 +32,6 @@ with Basics; use Basics;
 
 package Node is
 
-   Variables : StringStringMap.Map;
+   Variables : StringStringMap_Pack.Map;
 
 end Node;

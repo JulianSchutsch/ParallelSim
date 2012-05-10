@@ -29,24 +29,24 @@ package body Config is
    procedure Debug
      (Item : in Config_Type) is
 
-      use type StringStringMap.Cursor;
+      use type StringStringMap_Pack.Cursor;
 
-      Cursor    : StringStringMap.Cursor;
+      Cursor    : StringStringMap_Pack.Cursor;
 
    begin
       Put("Configuration(Debug):");
       New_Line;
 
       Cursor:=Item.First;
-      while Cursor/=StringStringMap.No_Element loop
+      while Cursor/=StringStringMap_Pack.No_Element loop
 
          Put("  ");
-         Put(StringStringMap.Key(Cursor));
+         Put(StringStringMap_Pack.Key(Cursor));
          Put(" : ");
-         Put(StringStringMap.Element(Cursor));
+         Put(StringStringMap_Pack.Element(Cursor));
          New_Line;
 
-         Cursor:=StringStringMap.Next(Cursor);
+         Cursor:=StringStringMap_Pack.Next(Cursor);
 
       end loop;
 
@@ -57,10 +57,10 @@ package body Config is
      (Item     : in Config_Type;
       FileName : String) is
 
-      use type StringStringMap.Cursor;
+      use type StringStringMap_Pack.Cursor;
 
       File   : Ada.Text_IO.File_Type;
-      Cursor : StringStringMap.Cursor;
+      Cursor : StringStringMap_Pack.Cursor;
       Key    : Unbounded_String;
       Value  : Unbounded_String;
 
@@ -71,10 +71,10 @@ package body Config is
 
       Cursor:=Item.First;
 
-      while Cursor/=StringStringMap.No_Element loop
+      while Cursor/=StringStringMap_Pack.No_Element loop
 
-         Key   := StringStringMap.Key(Cursor);
-         Value := StringStringMap.Element(Cursor);
+         Key   := StringStringMap_Pack.Key(Cursor);
+         Value := StringStringMap_Pack.Element(Cursor);
 
          if Key="" then
             raise InvalidName;
@@ -88,7 +88,7 @@ package body Config is
            (File => File,
             Item => Value);
 
-         Cursor:=StringStringMap.Next(Cursor);
+         Cursor:=StringStringMap_Pack.Next(Cursor);
       end loop;
       -- Indicate end of map
       Ada.Text_IO.Put_Line

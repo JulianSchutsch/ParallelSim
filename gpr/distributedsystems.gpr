@@ -10,8 +10,18 @@ abstract project DistributedSystems is
       when "On" =>
 	     LinkerSwitches:=LinkerSwitches
 		   &("-L"&Config.MPICH2LIB)
-		   &("-lmpich")
                    &("-L/usr/lib/mpich2/lib"); -- Fedora hack
+         case Config.Detected is
+            when "Unknown" =>
+               LinkerSwitches:=LinkerSwitches
+                  &("-lmpi");
+            when "WindowsNT" =>
+               LinkerSwitches:=LinkerSwitches
+                  &("-lmpi");
+            when "Linux" =>
+               LinkerSwitches:=LinkerSwitches
+                  &("-lmpich2");
+         end case;
       when "Off" =>
    end case;
 
