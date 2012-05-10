@@ -33,9 +33,7 @@ with GUI;
 with GUI.Button;
 with GUI.Themes;
 with GUI.UseImplementations;
-
 with YellowBlue;
-
 with Config;
 with ProcessLoop;
 with Basics; use Basics;
