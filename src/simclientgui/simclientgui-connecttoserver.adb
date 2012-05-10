@@ -19,12 +19,15 @@
 
 pragma Ada_2005;
 
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body SimClientGUI.ConnectToServer is
 
    procedure Enable
      (Configuration : Config.Config_Type) is
+      pragma Unreferenced(Configuration);
    begin
-      null;
+      Put_Line("SimClientGUI.ConnectToServer.Enable");
    end Enable;
    ---------------------------------------------------------------------------
 
