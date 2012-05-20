@@ -121,7 +121,7 @@ package body OpenGL.Context.Xlib is
 
    Contexts : Context_Access:=null;
 
-   procedure Process
+   procedure ProcessContext
      (Context : Context_Access) is
 
       use type Interfaces.C.int;
@@ -343,19 +343,25 @@ package body OpenGL.Context.Xlib is
 
       Paint;
 
-   end Process;
+   end ProcessContext;
    ---------------------------------------------------------------------------
 
-   procedure Process is
+   procedure Process
+     (CallBackObject : AnyObject_ClassAccess) is
+      pragma Unreferenced(CallBackObject);
+
       Context     : Context_Access;
       NextContext : Context_Access;
+
    begin
+
       Context:=Contexts;
       ContextLoop:
+
       while Context/=null loop
 
          NextContext:=Context.NextContext;
-         Process(Context);
+         ProcessContext(Context);
          if Context.DestroyedSignalSend
            and Context.OnClose/=null then
             Context.OnClose(Context.CallBackObject);
@@ -430,7 +436,7 @@ package body OpenGL.Context.Xlib is
       else
          Contexts:=Context.NextContext;
          if Contexts=null then
-            ProcessLoop.Remove(Process'Access);
+            ProcessLoop.Remove(Process'Access,null);
          end if;
       end if;
 
@@ -462,7 +468,7 @@ package body OpenGL.Context.Xlib is
       if Contexts/=null then
          Contexts.LastContext:=Context;
       else
-         ProcessLoop.Add(Process'Access);
+         ProcessLoop.Add(Process'Access,null);
       end if;
 
       Contexts:=Context;
@@ -651,7 +657,7 @@ package body OpenGL.Context.Xlib is
       New_Line;
       -- TODO: Build a timeout in here
       while not Context.MapNotified loop
-         Process;
+         Process(null);
       end loop;
       Put("Done");
       New_Line;
