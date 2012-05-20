@@ -33,8 +33,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Config; use Config;
 with Basics; use Basics;
 
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 with GUIKeys; use GUIKeys;
 with GUIMouse; use GUIMouse;
@@ -112,9 +112,9 @@ package body OpenGL.Context.Win32 is
    type Context_Access is access all Context_Type;
    type Context_Type is new OpenGL.Context.Context_Type with
       record
-         WindowHandle        : HWND_Type         := 0;
-         DeviceContext       : HDC_Type          := 0;
-         RenderContext       : HGLRC_Type        := 0;
+         WindowHandle        : HWND_Type         := NULLHANDLE;
+         DeviceContext       : HDC_Type          := NULLHANDLE;
+         RenderContext       : HGLRC_Type        := NULLHANDLE;
          NextContext         : Context_Access    := null;
          LastContext         : Context_Access    := null;
          DestroySignalSend   : Boolean           := False;
@@ -143,7 +143,7 @@ package body OpenGL.Context.Win32 is
 
    begin
 
-      if Context.RenderContext=0 then
+      if Context.RenderContext=NULLHANDLE then
          return;
       end if;
 
@@ -390,9 +390,6 @@ package body OpenGL.Context.Win32 is
             return 1;
 
          when WM_KEYDOWN =>
-            Put("KeyDown");
-            Put(Integer(wParam));
-            New_Line;
             if wParam<=255 then
                GUI.ContextKeyDown
                  (Context => Context_ClassAccess(Context),
@@ -450,9 +447,11 @@ package body OpenGL.Context.Win32 is
    -- and forwards them to the window proc responsible.
    -- It is implemented in a non blocking way using PeekMessage instead of
    -- GetMessage.
-   procedure Process is
-      lMsg : aliased MSG_Type;
+   procedure Process
+     (Object : AnyObject_ClassAccess) is
+      pragma Unreferenced(Object);
 
+      lMsg        : aliased MSG_Type;
       Context     : Context_Access;
       NextContext : Context_Access;
 
@@ -516,7 +515,7 @@ package body OpenGL.Context.Win32 is
       else
          Contexts:=Context.NextContext;
          if Contexts=null then
-            ProcessLoop.Remove(Process'Access);
+            ProcessLoop.Remove(Process'Access,null);
          end if;
 
       end if;
@@ -526,14 +525,14 @@ package body OpenGL.Context.Win32 is
       end if;
 
       -- Free Device Context
-      if Context.DeviceContext/=0 then
+      if Context.DeviceContext/=NULLHANDLE then
          IntResult:=ReleaseDC
            (hWnd => Context.WindowHandle,
             hDC => Context.DeviceContext);
       end if;
 
       -- Destroy and free window
-      if Context.WindowHandle/=0 then
+      if Context.WindowHandle/=NULLHANDLE then
          BoolResult:=DestroyWindow
            (hWnd => Context.WindowHandle);
       end if;
@@ -580,7 +579,7 @@ package body OpenGL.Context.Win32 is
       if Contexts/=null then
          Contexts.LastContext:=Context;
       else
-         ProcessLoop.Add(Process'Access);
+         ProcessLoop.Add(Process'Access,null);
       end if;
       Contexts:=Context;
 
@@ -606,10 +605,10 @@ package body OpenGL.Context.Win32 is
       WndClass.lpszClassName := Context.CSTR_ClassName;
       WndClass.cbWndExtra    := System.Address'Size/8;
       WndClass.hIcon         := LoadIcon
-        (hInstance  => 0,
+        (hInstance  => NULLHANDLE,
          lpIconName => MAKEINTRESOURCE(IDI_APPLICATION));
       WndClass.hCursor       := LoadCursor
-        (hInstance    => 0,
+        (hInstance    => NULLHANDLE,
          lpCursorName => MAKEINTRESOURCE(IDC_ARROW));
 
       if RegisterClass
@@ -639,12 +638,12 @@ package body OpenGL.Context.Win32 is
            y            => 100,
            nwidth       => 1024,
            nheight      => 768,
-           hWndParent   => 0,
-           hMenu        => 0,
+           hWndParent   => NULLHANDLE,
+           hMenu        => NULLHANDLE,
            hInstance    => HInstance,
            lpParam      => Context.all'Address);
 
-      if Context.WindowHandle=0 then
+      if Context.WindowHandle=NULLHANDLE then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
            with "Failed call to CreateWindowEx exited with "
@@ -653,7 +652,7 @@ package body OpenGL.Context.Win32 is
 
       -- Obtain a device context for the window
       Context.DeviceContext := GetDC(Context.WindowHandle);
-      if Context.DeviceContext=0 then
+      if Context.DeviceContext=NULLHANDLE then
          FreeContext(Context_ClassAccess(Context));
          raise FailedToCreateContext
            with "Failed call to GetDC exited with "

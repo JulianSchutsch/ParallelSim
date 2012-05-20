@@ -32,6 +32,7 @@ package SimConfig is
    MissingOptionsEnd   : Exception;
    MissingSetEnd       : Exception;
    IntegerExpected     : Exception;
+   InvalidElementType  : Exception;
 
    type GameType_Enum is
      (GameTypeSinglePlayer,
@@ -44,6 +45,7 @@ package SimConfig is
    type ConfigElem_Enum is
      (ConfigElemString,
       ConfigElemChoice,
+      ConfigElemCheck,
       ConfigElemConstantString);
 
    type ConfigElem_Type;

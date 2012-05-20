@@ -24,13 +24,12 @@
 pragma Ada_2005;
 
 with Config;
-with Basics; use Basics;
 
 package Logging.Server is
 
    type LogEvent_Access is
      access procedure
-       (Source  : StringStringMap.Map;
+       (Source  : StringStringMap_Pack.Map;
         Level   : Level_Enum;
         Module  : Unbounded_String;
         Channel : Unbounded_String;

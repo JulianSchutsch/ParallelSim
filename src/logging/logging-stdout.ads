@@ -29,5 +29,6 @@ pragma Ada_2005;
 package Logging.StdOut is
 
    procedure Register;
+   procedure Unregister;
 
 end Logging.StdOut;

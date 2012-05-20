@@ -19,8 +19,6 @@
 
 pragma Ada_2005;
 
-with Ada.Unchecked_Conversion;
-
 package body Win32 is
 
    function MAKEINTRESOURCE

@@ -16,7 +16,7 @@ abstract project Common is
       Dir & "../src/basics/littleendian", -- Currently no plattform supported has different endianess
       Dir & "../src/network",
       Dir & "../src/simcontrol",
-      Dir & "../src/simregion",
+      Dir & "../src/simnode",
       Dir & "../src/protocols",
       Dir & "../src/simclient",
       Dir & "../src/gui",

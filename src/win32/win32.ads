@@ -27,36 +27,42 @@ with Interfaces;
 with Interfaces.C;
 with Interfaces.C.Strings;
 with System;
+with Ada.Unchecked_Conversion;
 
 package Win32 is
 
-   pragma Elaborate_Body;
-
    type UINT_Type is new Interfaces.Unsigned_32;
    type DWORD_Type is new Interfaces.Unsigned_32;
-   type HANDLE_Type is new Interfaces.C.ptrdiff_t;
+   type HANDLE_Type is new System.Address;
+   type HANDLE_Access is access HANDLE_Type;
    type UINT_PTR_Type is new Interfaces.C.ptrdiff_t;
    subtype LONG_PTR_Type is System.Address;
    type LONG_Type is new Interfaces.C.ptrdiff_t;
-   type HWND_Type is new HANDLE_Type;
-   type WPARAM_Type is new HWND_Type;
+   subtype ULONG_PTR_Type is System.Address;
+   subtype HWND_Type is HANDLE_Type;
+   type WPARAM_Type is new Interfaces.C.ptrdiff_t;
    subtype LPARAM_Type is LONG_PTR_Type;
-   type HINSTANCE_Type is new HANDLE_Type;
-   type HICON_Type is new HANDLE_Type;
+   subtype HINSTANCE_Type is HANDLE_Type;
+   subtype HICON_Type is HANDLE_Type;
    subtype HCURSOR_Type is HICON_Type;
-   type HBRUSH_Type is new HANDLE_Type;
+   subtype HBRUSH_Type is HANDLE_Type;
    subtype LPCTSTR_Type is Interfaces.C.Strings.chars_ptr;
    type WORD_Type is new Interfaces.Unsigned_16;
    type ATOM_Type is new WORD_Type;
-   type HMENU_Type is new HANDLE_TYPE;
+   subtype HMENU_Type is HANDLE_TYPE;
    type LRESULT_Type is new LONG_Type;
-   type HDC_Type is new HANDLE_Type;
+   subtype HDC_Type is HANDLE_Type;
    type BOOL_Type is new Interfaces.C.int;
    type BYTE_Type is new Interfaces.Unsigned_8;
-   type HGLRC_Type is new HANDLE_Type;
+   subtype HGLRC_Type is HANDLE_Type;
 
-   TRUE  : constant BOOL_Type:=1;
-   FALSE : constant BOOL_Type:=0;
+   function HANDLEToInteger is new Ada.Unchecked_Conversion
+     (Source => HANDLE_Type,
+      Target => Interfaces.C.ptrdiff_t);
+
+   NULLHANDLE : constant HANDLE_Type:=HANDLE_Type(System.Null_Address);
+   TRUE       : constant BOOL_Type:=1;
+   FALSE      : constant BOOL_Type:=0;
 
    function MAKEINTRESOURCE
      (wInteger : WORD_Type)
@@ -86,25 +92,25 @@ package Win32 is
    WS_EX_APPWINDOW     : constant DWORD_Type:=16#40000#;
    WS_EX_CLIENTEDGE    : constant DWORD_Type:=512;
 
-   WM_MOUSELEAVE    : constant:=16#2A3#;
-   WM_PAINT         : constant:=15;
-   WM_CREATE        : constant:=1;
-   WM_SIZE          : constant:=5;
-   WM_SIZING        : constant:=532;
-   WM_LBUTTONDBLCLK : constant:=515;
-   WM_RBUTTONDBLCLK : constant:=518;
-   WM_LBUTTONDOWN   : constant:=513;
-   WM_LBUTTONUP     : constant:=514;
-   WM_RBUTTONDOWN   : constant:=516;
-   WM_RBUTTONUP     : constant:=517;
-   WM_MOUSEMOVE     : constant:=512;
-   WM_DESTROY       : constant:=2;
-   WM_ERASEBKGND    : constant:=20;
-   WM_KEYDOWN       : constant:=256;
-   WM_KEYUP         : constant:=257;
-   WM_CHAR          : constant:=258;
-   WM_TIMER         : constant:=275;
-   WM_QUIT          : constant:=18;
+   WM_MOUSELEAVE    : constant := 16#2A3#;
+   WM_PAINT         : constant := 15;
+   WM_CREATE        : constant := 1;
+   WM_SIZE          : constant := 5;
+   WM_SIZING        : constant := 532;
+   WM_LBUTTONDBLCLK : constant := 515;
+   WM_RBUTTONDBLCLK : constant := 518;
+   WM_LBUTTONDOWN   : constant := 513;
+   WM_LBUTTONUP     : constant := 514;
+   WM_RBUTTONDOWN   : constant := 516;
+   WM_RBUTTONUP     : constant := 517;
+   WM_MOUSEMOVE     : constant := 512;
+   WM_DESTROY       : constant := 2;
+   WM_ERASEBKGND    : constant := 20;
+   WM_KEYDOWN       : constant := 256;
+   WM_KEYUP         : constant := 257;
+   WM_CHAR          : constant := 258;
+   WM_TIMER         : constant := 275;
+   WM_QUIT          : constant := 18;
 
    SW_SHOW : constant := 5;
 
@@ -117,14 +123,16 @@ package Win32 is
    PFD_TYPE_RGBA      : constant:=0;
    PFD_MAIN_PLANE     : constant:=0;
 
-   IDI_WINLOGO : constant:=32517;
-   IDI_ASTERISK : constant:=32516;
+   IDI_WINLOGO     : constant:=32517;
+   IDI_ASTERISK    : constant:=32516;
    IDI_APPLICATION : constant:=32512;
-   IDI_ERROR : constant:=32513;
+   IDI_ERROR       : constant:=32513;
    IDI_EXCLAMATION : constant:=32515;
-   IDC_ARROW   : constant:=32512;
+   IDC_ARROW       : constant:=32512;
 
    SW_SHOWNOACTIVATE : constant:=8;
+
+   STILL_ACTIVE : constant DWORD_Type:=259;
 
    type WNDPROC_Access is
      access function
@@ -141,10 +149,10 @@ package Win32 is
          lpfnWndProc   : WNDPROC_Access   := null;
          cbClsExtra    : Interfaces.C.int := 0;
          cbWndExtra    : Interfaces.C.int := 0;
-         hInstance     : HINSTANCE_Type   := 0;
-         hIcon         : HICON_Type       := 0;
-         hCursor       : HCURSOR_Type     := 0;
-         hbrBackground : HBRUSH_Type      := 0;
+         hInstance     : HINSTANCE_Type   := Win32.NULLHANDLE;
+         hIcon         : HICON_Type       := Win32.NULLHANDLE;
+         hCursor       : HCURSOR_Type     := Win32.NULLHANDLE;
+         hbrBackground : HBRUSH_Type      := Win32.NULLHANDLE;
          lpszMenuName  : LPCTSTR_Type     := Interfaces.C.Strings.Null_Ptr;
          lpszClassName : LPCTSTR_Type     := Interfaces.C.Strings.Null_Ptr;
       end record;
@@ -153,9 +161,9 @@ package Win32 is
    type CREATESTRUCT_Type is
       record
          lpCreateParams : System.Address:=System.Null_Address;
-         hInstance      : HINSTANCE_Type:=0;
-         hMenu          : HMENU_Type:=0;
-         hwndParent     : HWND_Type:=0;
+         hInstance      : HINSTANCE_Type:=Win32.NULLHANDLE;
+         hMenu          : HMENU_Type:=Win32.NULLHANDLE;
+         hwndParent     : HWND_Type:=Win32.NULLHANDLE;
          cy             : Interfaces.C.int:=0;
          cx             : Interfaces.C.int:=0;
          y              : Interfaces.C.int:=0;
@@ -184,6 +192,37 @@ package Win32 is
          pt      : POINT_Type;
       end record;
    pragma Convention(C,MSG_Type);
+
+   HANDLE_FLAG_INHERIT            : constant DWORD_Type:=1;
+   HANDLE_FLAG_PROTECT_FROM_CLOSE : constant DWORD_Type:=2;
+
+   type COMMTIMEOUTS_Type is
+      record
+         ReadIntervalTimeout         : DWORD_Type:=DWORD_Type'Last;
+         ReadTotalTimeoutMultiplier  : DWORD_Type:=0;
+         ReadTotalTimeoutConstant    : DWORD_Type:=0;
+         WriteTotalTimeoutMultiplier : DWORD_Type:=0;
+         WriteTotalTimeoutConstant   : DWORD_Type:=0;
+      end record;
+   pragma Convention(C,COMMTIMEOUTS_Type);
+
+   type SECURITY_ATTRIBUTES_Type is
+      record
+         nLength              : DWORD_Type;
+         lpSecurityDescriptor : System.Address:=System.Null_Address;
+         bInheritHandle       : BOOL_Type;
+      end record;
+   pragma Convention(C,SECURITY_ATTRIBUTES_Type);
+   type SECURITY_ATTRIBUTES_Access is access SECURITY_ATTRIBUTES_Type;
+
+   type OVERLAPPED_Type is
+      record
+         Internal     : ULONG_PTR_Type := System.Null_Address;
+         InternalHigh : ULONG_PTR_Type := System.Null_Address;
+         Pointer      : System.Address := System.Null_Address;
+         hEvent       : HANDLE_Type    := NULLHANDLE;
+      end record;
+   pragma Convention(C,OVERLAPPED_Type);
 
    type PIXELFORMATDESCRIPTOR_Type is
       record
@@ -216,47 +255,41 @@ package Win32 is
       end record;
    pragma Convention(C,PIXELFORMATDESCRIPTOR_Type);
 
-   type SecurityAttributes is
+   type STARTUPINFO_Type is
       record
-         nLength              : Interfaces.Unsigned_32;
-         lpSecurityDescriptor : System.Address;
-         bInheritedHandle     : Boolean;
+         cb              : Interfaces.Unsigned_32;
+         lpReserved      : Interfaces.C.Strings.chars_ptr := Interfaces.C.Strings.Null_Ptr;
+         lpDesktop       : Interfaces.C.Strings.chars_ptr := Interfaces.C.Strings.Null_Ptr;
+         lpTitle         : Interfaces.C.Strings.chars_ptr := Interfaces.C.Strings.Null_Ptr;
+         dwX             : Interfaces.Unsigned_32 := 0;
+         dwY             : Interfaces.Unsigned_32 := 0;
+         dwXSize         : Interfaces.Unsigned_32 := 0;
+         dwYSize         : Interfaces.Unsigned_32 := 0;
+         dwXCountChars   : Interfaces.Unsigned_32 := 0;
+         dwYCountChars   : Interfaces.Unsigned_32 := 0;
+         dwFillAttribute : Interfaces.Unsigned_32 := 0;
+         dwFlags         : Interfaces.Unsigned_32 := 0;
+         wShowWindow     : Interfaces.Unsigned_16 := 0;
+         cbReserved2     : Interfaces.Unsigned_16 := 0;
+         hStdInput       : HANDLE_Type            := NULLHANDLE;
+         hStdOutput      : HANDLE_Type            := NULLHANDLE;
+         hStderr         : HANDLE_Type            := NULLHANDLE;
       end record;
-   pragma Convention(C,SecurityAttributes);
+   pragma Convention(C,STARTUPINFO_Type);
 
-   type StartupInfo is
+   type PROCESS_INFORMATION_Type is
       record
-         cb : Interfaces.Unsigned_32;
-         lpReserved      : Interfaces.C.Strings.chars_ptr:=Interfaces.C.Strings.Null_Ptr;
-         lpDesktop       : Interfaces.C.Strings.chars_ptr:=Interfaces.C.Strings.Null_Ptr;
-         lpTitle         : Interfaces.C.Strings.chars_ptr:=Interfaces.C.Strings.Null_Ptr;
-         dwX             : Interfaces.Unsigned_32:=0;
-         dwY             : Interfaces.Unsigned_32:=0;
-         dwXSize         : Interfaces.Unsigned_32:=0;
-         dwYSize         : Interfaces.Unsigned_32:=0;
-         dwXCountChars   : Interfaces.Unsigned_32:=0;
-         dwYCountChars   : Interfaces.Unsigned_32:=0;
-         dwFillAttribute : Interfaces.Unsigned_32:=0;
-         dwFlags         : Interfaces.Unsigned_32:=0;
-         wShowWindow     : Interfaces.Unsigned_16:=0;
-         cbReserved2     : Interfaces.Unsigned_16:=0;
-         hStdInput       : Interfaces.C.ptrdiff_t:=0;
-         hStdOutput      : Interfaces.C.ptrdiff_t:=0;
-         hStderr         : Interfaces.C.ptrdiff_t:=0;
+         hProcess    : HANDLE_Type := NULLHANDLE;
+         hThread     : HANDLE_Type := NULLHANDLE;
+         dwProcessID : Interfaces.Unsigned_32 := 0;
+         dwThreadID  : Interfaces.Unsigned_32 := 0;
       end record;
-   pragma Convention(C,StartupInfo);
-
-   type ProcessInformation is
-      record
-         hProcess    : Interfaces.C.ptrdiff_t:=0;
-         hThread     : Interfaces.C.ptrdiff_t:=0;
-         dwProcessID : Interfaces.Unsigned_32:=0;
-         dwThreadID  : Interfaces.Unsigned_32:=0;
-      end record;
-   pragma Convention(C,ProcessInformation);
+   pragma Convention(C,PROCESS_INFORMATION_Type);
 
    function GetLastError
      return DWORD_TYPE;
    pragma Import(StdCall,GetLastError,"GetLastError");
+
+   STARTF_USESTDHANDLES : constant:=16#100#;
 
 end Win32;

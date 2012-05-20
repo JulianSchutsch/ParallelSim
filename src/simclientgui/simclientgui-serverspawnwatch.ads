@@ -18,20 +18,14 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   18.Apr 2012 Julian Schutsch
+--   20.Mai 2012 Julian Schutsch
 --     - Original version
-
--- Reasons for implementation
---   In distributed processing often each node/process requires its own values,
---   which need to be available to all modules without knowledge of the
---   details.
 
 pragma Ada_2005;
 
-with Basics; use Basics;
+package SimClientGUI.ServerSpawnWatch is
 
-package Node is
+   procedure Enable;
+   procedure Disable;
 
-   Variables : StringStringMap_Pack.Map;
-
-end Node;
+end SimClientGUI.ServerSpawnWatch;

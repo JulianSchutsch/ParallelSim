@@ -21,7 +21,7 @@ pragma Ada_2005;
 
 with DistributedSystems;
 with Basics; use Basics;
---with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body SimClient.CreateServer is
 
@@ -53,7 +53,9 @@ package body SimClient.CreateServer is
    procedure ExecuteMessage
      (Message : Unbounded_String) is
    begin
+      Put("Executemessage");
       if OnMessage/=null then
+         Put_Line("ExecuteMessage deliver");
          OnMessage(Message);
       end if;
    end ExecuteMessage;
@@ -70,8 +72,9 @@ package body SimClient.CreateServer is
    procedure Initialize
      (Configuration  : Config.Config_Type) is
       Implementation : DistributedSystems.Implementation_Type;
-      Executables    : DistributedSystems.ExecutableArray_Type(1..2);
+      Executables    : DistributedSystems.ExecutableArray_Type(1..1);
    begin
+      Put_Line("SimClient.CreateServer.initialize");
       if Spawn/=null then
          raise InvalidReinitialize;
       end if;
@@ -79,10 +82,10 @@ package body SimClient.CreateServer is
       Implementation:=DistributedSystems.Implementations.Find
         (Configuration => Configuration,
          Node          => U("Distribution"));
-      Executables(1).Executable:=U("front");
+--      Executables(1).Executable:=U("front");
+--      Executables(1).Amount:=1;
+      Executables(1).Executable:=U("node");
       Executables(1).Amount:=1;
-      Executables(2).Executable:=U("region");
-      Executables(2).Amount:=1;
       Implementation.CreateSpawnObject(Configuration,Executables,Spawn);
       Spawn.OnMessage:=ExecuteMessage'Access;
       Execute;
@@ -91,6 +94,7 @@ package body SimClient.CreateServer is
 
    procedure Finalize is
    begin
+      Put_Line("SimClient.CreateServer.finalize");
       if Spawn/=null then
          Spawn.Free;
          Spawn:=null;

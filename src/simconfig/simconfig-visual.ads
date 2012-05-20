@@ -27,11 +27,14 @@ with GUI;
 with GUI.Label;
 with GUI.ComboBox;
 with GUI.Edit;
+with GUI.CheckBox;
 with GUI.Themes;
 with Basics; use Basics;
 with Config;
 
 package SimConfig.Visual is
+
+   InvalidDefaultIndexForCheck : Exception;
 
    type ElementsPage_Type;
    type ElementsPage_Access is access all ElementsPage_Type;
@@ -42,6 +45,7 @@ package SimConfig.Visual is
          Label        : GUI.Label.Label_ClassAccess       := null;
          ComboBox     : GUI.ComboBox.ComboBox_ClassAccess := null;
          Edit         : GUI.Edit.Edit_ClassAccess         := null;
+         CheckBox     : GUI.CheckBox.CheckBox_ClassAccess := null;
          Option       : SimConfig.ConfigElem_Access       := null;
          Elements     : ElementArray_Access               := null;
          ElementsPage : ElementsPage_Access               := null;

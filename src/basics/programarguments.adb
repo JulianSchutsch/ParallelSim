@@ -27,7 +27,7 @@ package body ProgramArguments is
 
    procedure Debug is
 
-      use type StringStringMap.Cursor;
+      use type StringStringMap_Pack.Cursor;
       use type StringVector.Cursor;
 
    begin

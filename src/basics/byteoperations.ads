@@ -32,6 +32,7 @@ package ByteOperations is
    type Byte_Type is mod 2**8;
    type Byte_Access is access all Byte_Type;
    type ByteArray_Type is array(Integer range <>) of Byte_Type;
+   pragma Convention(C,ByteArray_Type);
 
    type ByteArray_Access is access all ByteArray_Type;
 

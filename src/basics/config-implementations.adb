@@ -117,6 +117,8 @@ package body Config.Implementations is
          Cursor :=List_Pack.Next(Cursor);
       end loop;
 
+      Put_Line("Available Implementations:");
+      Debug;
       raise ImplementationNotFound
         with To_String(ImplementationName);
 

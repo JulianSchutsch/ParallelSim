@@ -26,7 +26,7 @@ with Ada.Strings.Unbounded.Text_IO; use Ada.Strings.Unbounded.Text_IO;
 with Ada.Containers.Doubly_Linked_Lists;
 with Ada.Unchecked_Deallocation;
 with Expressions;
-with Node;
+with NodeInfo;
 with Basics; use Basics;
 
 package body SimConfig is
@@ -79,6 +79,8 @@ package body SimConfig is
                   Put_Line("String");
                when ConfigElemChoice =>
                   Put_Line("Choice");
+               when ConfigElemCheck =>
+                  Put_Line("Check");
                when ConfigElemConstantString =>
                   Put_Line("Constant String");
             end case;
@@ -231,13 +233,13 @@ package body SimConfig is
                if ProcElement then
                   List.Append(CurrentElement);
                end if;
-               CurrentElement.Key:=Expressions.Process(Param,Node.Variables);
+               CurrentElement.Key:=Expressions.Process(Param,NodeInfo.Variables);
                CurrentElement.Description:=U("");
                CurrentElement.Options:=null;
                ProcElement:=True;
             elsif Command="description" then
                Put_Line("Set Description");
-               CurrentElement.Description:=Expressions.Process(Param,Node.Variables);
+               CurrentElement.Description:=Expressions.Process(Param,NodeInfo.Variables);
             elsif Command="options" then
                LoadOptions(CurrentElement.Options);
                if (Command/="end")
@@ -245,8 +247,6 @@ package body SimConfig is
                   raise MissingOptionsEnd;
                end if;
             else
-               Put("LEAVE LOAD SET");
-               New_Line;
                exit;
             end if;
 
@@ -294,16 +294,22 @@ package body SimConfig is
                   CurrentElement.TType:=ConfigElemString;
                elsif Param="choice" then
                   CurrentElement.TType:=ConfigElemChoice;
+               elsif Param="check" then
+                  CurrentElement.TType:=ConfigElemCheck;
+               elsif Param="constantstring" then
+                  CurrentElement.TType:=ConfigElemConstantString;
+               else
+                  raise InvalidElementType;
                end if;
             elsif Command="node" then
-               CurrentElement.Node:=Expressions.Process(Param,Node.Variables);
+               CurrentElement.Node:=Expressions.Process(Param,NodeInfo.Variables);
             elsif Command="description" then
-               CurrentElement.Description:=Expressions.Process(Param,Node.Variables);
+               CurrentElement.Description:=Expressions.Process(Param,NodeInfo.Variables);
             elsif Command="default" then
-               CurrentElement.Default:=Expressions.Process(Param,Node.Variables);
+               CurrentElement.Default:=Expressions.Process(Param,NodeInfo.Variables);
             elsif Command="defaultindex" then
                if not TryStringToInteger
-                 (Expressions.Process(Param,Node.Variables),
+                 (Expressions.Process(Param,NodeInfo.Variables),
                   CurrentElement.DefaultIndex'Access) then
                   raise IntegerExpected;
                end if;
@@ -337,15 +343,12 @@ package body SimConfig is
       ------------------------------------------------------------------------
 
    begin
-      Put_Line("LOAD OPTIONS::::::::::::::::::::::::");
-      Put_Line(FileName);
       Open
         (File => File,
          Mode => In_File,
          Name => To_String(FileName));
       LoadOptions(Config);
       Close(File);
-      Put_Line("//LOAD OPTIONS::::::::::::::::::::::");
       return Config;
    end LoadConfigArray;
    ---------------------------------------------------------------------------

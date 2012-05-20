@@ -25,6 +25,8 @@ pragma Ada_2005;
 
 package SimClientGUI.Logging is
 
+   InvalidOption : Exception;
+
    procedure Enable
      (Configuration : Config.Config_Type);
    procedure Disable;

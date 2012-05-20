@@ -27,9 +27,10 @@ package body ProcessLoop is
 
    type ProcEntry is
       record
-         Proc : ProcAccess;
-         Next : ProcEntryAccess;
-         Last : ProcEntryAccess:=null;
+         Object : AnyObject_ClassAccess;
+         Proc   : ProcAccess;
+         Next   : ProcEntryAccess;
+         Last   : ProcEntryAccess:=null;
       end record;
 
    procedure Free is new Ada.Unchecked_Deallocation
@@ -42,19 +43,21 @@ package body ProcessLoop is
       Entr : ProcEntryAccess:=Procs;
    begin
       while Entr/=null loop
-         Entr.Proc.all;
+         Entr.Proc(Entr.Object);
          Entr:=Entr.Next;
       end loop;
    end Process;
    ---------------------------------------------------------------------------
 
    procedure Add
-     (Proc : ProcAccess) is
+     (Proc   : ProcAccess;
+      Object : AnyObject_ClassAccess) is
       NewEntry : ProcEntryAccess;
    begin
-      NewEntry      := new ProcEntry;
-      NewEntry.Proc := Proc;
-      NewEntry.Next := Procs;
+      NewEntry        := new ProcEntry;
+      NewEntry.Object := Object;
+      NewEntry.Proc   := Proc;
+      NewEntry.Next   := Procs;
 
       if Procs/=null then
          Procs.Last:=NewEntry;
@@ -64,11 +67,13 @@ package body ProcessLoop is
    ---------------------------------------------------------------------------
 
    procedure Remove
-     (Proc : ProcAccess) is
+     (Proc   : ProcAccess;
+      Object : AnyObject_ClassAccess) is
       Entr : ProcEntryAccess:=Procs;
    begin
       while Entr/=null loop
-         if Entr.Proc=Proc then
+         if Entr.Proc=Proc
+         and Entr.Object=Object then
             if Entr.Next/=null then
                Entr.Next.Last:=Entr.Last;
             end if;

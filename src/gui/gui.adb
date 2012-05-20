@@ -801,6 +801,14 @@ package body GUI is
             Width   => Context.Bounds.Width,
             Visible => Context.Bounds.Visible);
       end if;
+      if Context.WindowArea/=null then
+         Context.WindowArea.SetBounds
+           (Top     => Context.Bounds.Top,
+            Left    => Context.Bounds.Left,
+            Height  => Context.Bounds.Height,
+            Width   => Context.Bounds.Width,
+            Visible => Context.Bounds.Visible);
+      end if;
       if Context.ModalArea/=null then
          Context.ModalArea.SetBounds
            (Top     => Context.Bounds.Top,

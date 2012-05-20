@@ -263,7 +263,7 @@ package body Logging.Server is
 
       Server:=StreamImplementation.NewServer
         (Configuration => Configuration,
-         Node          => U("Logging.Server.Network"));
+         Node          => U("Logging.Network"));
 
       Server.CallBack:=ServerCallBack'Access;
 

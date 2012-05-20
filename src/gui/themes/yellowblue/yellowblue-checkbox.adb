@@ -67,6 +67,24 @@ package body YellowBlue.CheckBox is
       X      : Integer;
       Y      : Integer)
       return Boolean;
+
+   overriding
+   function IsChecked
+     (Item : access CheckBox_Type)
+      return Boolean;
+
+   overriding
+   procedure SetChecked
+     (Item    : access CheckBox_Type;
+      Checked : Boolean);
+   ---------------------------------------------------------------------------
+
+   function IsChecked
+     (Item : access CheckBox_Type)
+      return Boolean is
+   begin
+      return Item.Checked;
+   end IsChecked;
    ---------------------------------------------------------------------------
 
    procedure DrawCheckCanvas
@@ -127,6 +145,18 @@ package body YellowBlue.CheckBox is
       end if;
 
    end DrawCaptionCanvas;
+   ---------------------------------------------------------------------------
+
+   procedure SetChecked
+     (Item    : access CheckBox_Type;
+      Checked : Boolean) is
+   begin
+      if Item.Checked/=Checked then
+         Item.Checked:=Checked;
+         DrawCheckCanvas(Item);
+         Item.Resize;
+      end if;
+   end SetChecked;
    ---------------------------------------------------------------------------
 
    function MouseDown

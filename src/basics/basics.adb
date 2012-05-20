@@ -30,6 +30,27 @@ package body Basics is
 
    use type Ada.Containers.Hash_Type;
 
+   procedure AddCharacter
+     (Item : in out CharacterBuffer_Type;
+      Char : Character) is
+   begin
+      if Item.Position<Item.Buffer'Last then
+         Item.Buffer(Item.Position):=Char;
+         Item.Position:=Item.Position+1;
+      end if;
+   end AddCharacter;
+   ---------------------------------------------------------------------------
+
+   procedure ReadString
+     (Item : in out CharacterBuffer_Type;
+      Str  : out Unbounded_String) is
+
+   begin
+      Str           := U(Item.Buffer(1..Item.Position-1));
+      Item.Position := 1;
+   end ReadString;
+   ---------------------------------------------------------------------------
+
    function TryStringToInteger
      (String : Unbounded_String;
       Value  : access Integer)

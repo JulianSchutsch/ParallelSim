@@ -179,13 +179,20 @@ package body Logging.StdOut is
    Implementation : constant Implementation_Type:=
      (NewContext  => NewContext'Access,
       FreeContext => FreeContext'Access);
+   Identifier : constant Unbounded_String:=U("StdOut");
 
    procedure Register is
    begin
       Implementations.Register
-        (Identifier     => To_Unbounded_String("StdOut"),
+        (Identifier     => Identifier,
          Implementation => Implementation);
    end Register;
+   ---------------------------------------------------------------------------
+
+   procedure Unregister is
+   begin
+      Implementations.Unregister(Identifier);
+   end Unregister;
    ---------------------------------------------------------------------------
 
 end Logging.StdOut;

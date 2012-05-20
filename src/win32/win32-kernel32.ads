@@ -23,24 +23,26 @@
 
 pragma Ada_2005;
 
+with ByteOperations; use ByteOperations;
+
 package Win32.Kernel32 is
 
    function CreateProcess
      (lpApplicationName    : Interfaces.C.Strings.chars_ptr;
       lpCommandLine        : Interfaces.C.Strings.chars_ptr;
-      lpProcessAttributes  : access SecurityAttributes:=null;
-      lpThreadAttributes   : access SecurityAttributes:=null;
+      lpProcessAttributes  : access SECURITY_ATTRIBUTES_Type:=null;
+      lpThreadAttributes   : access SECURITY_ATTRIBUTES_Type:=null;
       bInheritHandles      : Interfaces.C.int;
       dwCreationFlags      : Interfaces.Unsigned_32;
       lpEnvironment        : System.Address;
       lpCurrentDirectory   : Interfaces.C.Strings.chars_ptr;
-      lpStartupInfo        : access StartupInfo:=null;
-      lpProcessInformation : access ProcessInformation)
+      lpStartupInfo        : access STARTUPINFO_Type:=null;
+      lpProcessInformation : access PROCESS_INFORMATION_Type)
       return Interfaces.C.int;
    pragma Import(StdCall,CreateProcess,"CreateProcessA");
 
    function CloseHandle
-     (hObject : Interfaces.C.ptrdiff_t)
+     (hObject : HANDLE_Type)
       return Interfaces.C.int;
    pragma Import(Stdcall,CloseHandle,"CloseHandle");
 
@@ -48,5 +50,51 @@ package Win32.Kernel32 is
      (lpModuleName : LPCTSTR_Type)
       return HInstance_Type;
    pragma Import(StdCall,GetModuleHandle,"GetModuleHandleA");
+
+   function CreatePipe
+     (hReadPipe        : access Handle_Type;
+      hWritePipe       : access Handle_Type;
+      lpPipeAttributes : access SECURITY_ATTRIBUTES_Type;
+      nSize            : DWORD_Type)
+      return Boolean;
+   pragma Import(StdCall,CreatePipe,"CreatePipe");
+
+   function SetHandleInformation
+     (hObject : Handle_Type;
+      dwMask  : DWORD_Type;
+      dwFlags : DWORD_Type)
+      return Boolean;
+   pragma Import(StdCall,SetHandleInformation,"SetHandleInformation");
+
+   function GetExitCodeProcess
+     (hProcess   : HANDLE_Type;
+      lpExitCode : access DWORD_Type)
+      return Boolean;
+   pragma Import(StdCall,GetExitCodeProcess,"GetExitCodeProcess");
+
+   function ReadFile
+     (hFile                : HANDLE_Type;
+      lpBuffer             : access ByteArray_Type;
+      nNumberOfBytesToRead : DWORD_Type;
+      lpNumberOfBytesRead  : access DWORD_Type;
+      lpOverlapped         : access OVERLAPPED_Type)
+      return Boolean;
+   pragma Import(StdCall,ReadFile,"ReadFile");
+
+   function SetCommTimeouts
+     (hFile          : HANDLE_Type;
+      lpCommTimeouts : access COMMTIMEOUTS_Type)
+      return Boolean;
+   pragma Import(StdCall,SetCommTimeouts,"SetCommTimeouts");
+
+   function PeekNamedPipe
+     (hNamedPipe             : HANDLE_Type;
+      lpBuffer               : access ByteArray_Type;
+      nBufferSize            : DWORD_Type;
+      lpBytesRead            : access DWORD_Type;
+      lpTotalBytesAvail      : access DWORD_Type;
+      lpBytesLeftThisMessage : access DWORD_Type)
+      return Boolean;
+   pragma Import(StdCall,PeekNamedPipe,"PeekNamedPipe");
 
 end Win32.Kernel32;

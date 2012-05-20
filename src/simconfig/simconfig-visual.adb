@@ -21,7 +21,7 @@ pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
 with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body SimConfig.Visual is
 
@@ -30,9 +30,8 @@ package body SimConfig.Visual is
 
       use type GUI.Label.Label_ClassAccess;
       use type GUI.Edit.Edit_ClassAccess;
-      use type GUI.ComboBox.Combobox_ClassAccess;
-
---      TabBounds : constant Bounds_Type:=Tab.Tab.GetBounds;
+      use type GUI.ComboBox.ComboBox_ClassAccess;
+      use type GUI.CheckBox.CheckBox_ClassAccess;
 
       procedure ArrangeElements
         (X        : Integer;
@@ -71,6 +70,15 @@ package body SimConfig.Visual is
                   Visible => True);
                Y:=Y+35;
             end if;
+            if Elements(i).CheckBox/=null then
+               Elements(i).CheckBox.SetBounds
+                 (Top     => Y,
+                  Left    => X,
+                  Height  => 30,
+                  Width   => 400,
+                  Visible => True);
+               Y:=Y+35;
+            end if;
             if Elements(i).Elements/=null then
                ArrangeElements
                  (X        => X+10,
@@ -98,6 +106,7 @@ package body SimConfig.Visual is
       use type GUI.Label.Label_ClassAccess;
       use type GUI.Edit.Edit_ClassAccess;
       use type GUI.ComboBox.ComboBox_ClassAccess;
+      use type GUI.CheckBox.CheckBox_ClassAccess;
 
       procedure Free is new Ada.Unchecked_Deallocation
         (Object => ElementArray_Type,
@@ -107,7 +116,6 @@ package body SimConfig.Visual is
          return;
       end if;
       for i in Elements'Range loop
-         Put_Line("Delete Component");
          if Elements(i).Label/=null then
             Elements(i).Label.Free;
          end if;
@@ -116,6 +124,9 @@ package body SimConfig.Visual is
          end if;
          if Elements(i).Combobox/=null then
             Elements(i).Combobox.Free;
+         end if;
+         if Elements(i).CheckBox/=null then
+            Elements(i).CheckBox.Free;
          end if;
          Put_Line("Delete Sub Array");
          if Elements(i).Elements/=null then
@@ -138,15 +149,31 @@ package body SimConfig.Visual is
 
    begin
       DeleteOptionElements(Element.Elements);
-      Put("ComboBoxSelect :");
-      Put(Element.ComboBox.GetIndex);
-      New_Line;
       CreateOptionElements
         (ElementsPage => Element.ElementsPage,
          Options      => Element.Option.Set(Element.ComboBox.GetIndex+Element.Option.Set'First).Options,
          Elements     => Element.Elements);
       ArrangeOptionElements(Element.ElementsPage);
    end ComboBoxSelect;
+   ---------------------------------------------------------------------------
+
+   procedure CheckBoxChange
+     (CallBackObject : AnyObject_ClassAccess) is
+
+      Element : constant Element_Access:=Element_Access(CallBackObject);
+      Index : Integer:=0;
+
+   begin
+      DeleteOptionElements(Element.Elements);
+      if Element.CheckBox.IsChecked then
+         Index:=1;
+      end if;
+      CreateOptionElements
+        (ElementsPage => Element.ElementsPage,
+         Options      => Element.Option.Set(Index+Element.Option.Set'First).Options,
+         Elements     => Element.Elements);
+      ArrangeOptionElements(Element.ElementsPage);
+   end CheckBoxChange;
    ---------------------------------------------------------------------------
 
    procedure CreateOptionElements
@@ -162,10 +189,6 @@ package body SimConfig.Visual is
          return;
       end if;
       Elements:=new ElementArray_Type(Options'Range);
-      Put_Line("Create Elements");
-      Put(Elements'First);
-      Put(Elements'Last);
-      New_Line;
       for i in Elements'Range loop
          Elements(i).ElementsPage    := ElementsPage_Access(ElementsPage);
          Elements(i).Option := Options(i)'Access;
@@ -192,6 +215,23 @@ package body SimConfig.Visual is
                   Options      => Options(i).Set(Options(i).DefaultIndex+Options(i).Set'First).Options,
                   Elements     => Elements(i).Elements);
                Elements(i).Combobox.OnSelect:=ComboBoxSelect'Access;
+
+            when SimConfig.ConfigElemCheck =>
+               Elements(i).CheckBox:=ElementsPage.Theme.NewCheckbox(GUI.Object_ClassAccess(ElementsPage));
+               Elements(i).CheckBox.SetCaption(Options(i).Description);
+               if Options(i).DefaultIndex=0 then
+                  Elements(i).CheckBox.SetChecked(False);
+               elsif Options(i).DefaultIndex=1 then
+                  Elements(i).CheckBox.SetChecked(True);
+               else
+                  raise InvalidDefaultIndexForCheck;
+               end if;
+               CreateOptionElements
+                 (ElementsPage => ElementsPage,
+                  Options      => Options(i).Set(Options(i).DefaultIndex+Options(i).Set'First).Options,
+                  Elements     => Elements(i).Elements);
+               Elements(i).CheckBox.CallBackObject:=Elements(i)'Access;
+               Elements(i).CheckBox.OnCheckChange:=CheckBoxChange'Access;
 
             when SimConfig.ConfigElemConstantString =>
                null;
@@ -242,14 +282,28 @@ package body SimConfig.Visual is
                   Configuration.Insert
                     (Key => ElementsArray(i).Option.Node,
                      New_Item => ElementsArray(i).Edit.GetText);
+
                when ConfigElemChoice =>
                   Configuration.Insert
                     (Key => ElementsArray(i).Option.Node,
                      New_Item => ElementsArray(i).Option.Set(ElementsArray(i).ComboBox.GetIndex+ElementsArray(i).Option.Set'First).Key);
+
+               when ConfigElemCheck =>
+                  if ElementsArray(i).CheckBox.IsChecked then
+                     Configuration.Insert
+                       (Key => ElementsArray(i).Option.Node,
+                        New_Item => ElementsArray(i).Option.Set(ElementsArray(i).Option.Set'First+1).Key);
+                  else
+                     Configuration.Insert
+                       (Key => ElementsArray(i).Option.Node,
+                        New_Item => ElementsArray(i).Option.Set(ElementsArray(i).Option.Set'First).Key);
+                  end if;
+
                when ConfigElemConstantString =>
                   Configuration.Insert
                     (Key => ElementsArray(i).Option.Node,
                      New_Item => ElementsArray(i).Option.Default);
+
             end case;
             Process(ElementsArray(i).Elements);
 

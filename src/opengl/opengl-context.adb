@@ -285,6 +285,7 @@ package body OpenGL.Context is
       glEnable(GL_BLEND);
 
       ProcessTree(Context.BasisArea);
+      ProcessTree(Context.WindowArea);
       ProcessTree(Context.ModalArea);
       ProcessTree(Context.ContextArea);
       Standard.OpenGL.AssertError;

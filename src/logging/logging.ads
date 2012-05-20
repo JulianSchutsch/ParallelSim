@@ -29,6 +29,7 @@ pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Config.Implementations;
+with Basics; use Basics;
 
 package Logging is
 
@@ -90,6 +91,6 @@ package Logging is
 
    package Implementations is new Config.Implementations
      (Implementation_Type => Implementation_Type,
-      IdentifierKey       => To_Unbounded_String("Implementation"));
+      IdentifierKey       => U("Implementation"));
 
 end Logging;

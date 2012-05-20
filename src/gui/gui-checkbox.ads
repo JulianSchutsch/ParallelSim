@@ -41,6 +41,14 @@ package GUI.CheckBox is
        (Parent : Object_ClassAccess)
         return CheckBox_ClassAccess;
 
+   function IsChecked
+     (Item : access CheckBox_Type)
+      return Boolean is abstract;
+
+   procedure SetChecked
+     (Item    : access CheckBox_Type;
+      Checked : Boolean) is abstract;
+
    procedure SetCaption
      (Item    : access Checkbox_Type;
       Caption : Unbounded_String) is abstract;

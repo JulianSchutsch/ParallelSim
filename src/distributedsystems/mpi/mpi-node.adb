@@ -26,10 +26,8 @@ with Interfaces.C;
 with Config;
 with DistributedSystems; use DistributedSystems;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with GNAT.OS_Lib;
-with GNAT.Strings;
-with GNAT.Regpat;
 with Ada.Directories; use Ada.Directories;
+with Processes;
 
 package body MPI.Node is
 
@@ -37,6 +35,7 @@ package body MPI.Node is
       record
          Configuration       : Config.Config_Type;
          ExecutableArguments : Unbounded_String;
+         Process             : aliased Processes.Process_Type;
       end record;
    type Spawn_Access is access all Spawn_Type;
 
@@ -47,6 +46,19 @@ package body MPI.Node is
       Success          : out Boolean);
    ---------------------------------------------------------------------------
 
+   procedure ProcessMessage
+     (CallBackObject : AnyObject_ClassAccess;
+      Message        : Unbounded_String) is
+
+      Spawn : constant Spawn_Access:=Spawn_Access(CallBackObject);
+
+   begin
+      if Spawn.OnMessage/=null then
+         Spawn.OnMessage(Message);
+      end if;
+   end ProcessMessage;
+   ---------------------------------------------------------------------------
+
    procedure Execute
      (Item             : access Spawn_Type;
       SupplementConfig : in out Config.Config_Type;
@@ -55,15 +67,6 @@ package body MPI.Node is
       use type StringStringMap_Pack.Cursor;
 
       Arguments      : Unbounded_String;
-      ArgumentList   : GNAT.OS_Lib.Argument_List_Access;
-      ExecutablePath : GNAT.OS_Lib.String_Access;
-      TempFileName   : GNAT.OS_Lib.String_Access;
-      TempFileDesc   : GNAT.OS_Lib.File_Descriptor;
-      TempFile       : File_Type;
-      ReturnCode     : Integer;
-
-      ErrorLogin     : Boolean:=False;
-      Failed         : Boolean:=False;
 
       Cursor         : StringStringMap_Pack.Cursor;
 
@@ -103,70 +106,55 @@ package body MPI.Node is
 
       Arguments := Arguments&Item.ExecutableArguments;
 
-      ArgumentList := GNAT.OS_Lib.Argument_String_To_List(To_String(Arguments));
-      GNAT.OS_Lib.Normalize_Arguments(ArgumentList.all);
-      ExecutablePath:=GNAT.OS_Lib.Locate_Exec_On_Path("mpiexec");
-
       if Item.OnMessage/=null then
          Item.OnMessage("Running mpiexec with "&Arguments);
       end if;
-      GNAT.OS_Lib.Create_Temp_Output_File
-        (FD   => TempFileDesc,
-         Name => TempFileName);
-      GNAT.OS_Lib.Spawn
-        (Program_Name           => ExecutablePath.all,
-         Args                   => ArgumentList.all,
-         Output_File_Descriptor => TempFileDesc,
-         Return_Code            => ReturnCode,
-         Err_To_Out             => True);
-      GNAT.OS_Lib.Close(TempFileDesc);
 
-      Open
-        (File => TempFile,
-         Mode => In_File,
-         Name => TempFileName.all);
+      Item.Process.CallBackObject:=AnyObject_ClassAccess(Item);
+      Item.Process.OnMessage:=ProcessMessage'Access;
+      Success:=Item.Process.Execute
+        (ProgramName => U("mpiexec"),
+         Arguments   => Arguments);
 
       if Item.OnMessage/=null then
          Item.OnMessage(U("Output from mpiexec:"));
       end if;
-      while not End_Of_File(TempFile) loop
-         declare
-            Msg : constant String:=Get_Line(TempFile);
-         begin
-            if Item.OnMessage/=null then
-               Item.OnMessage(U("* "&Msg));
-            end if;
-            if GNAT.Regpat.Match
-              (Expression => "Credentials required to connect",
-               Data       => Msg) then
-               ErrorLogin := True;
-               Failed     := True;
-            end if;
-            if GNAT.Regpat.Match
-              (Expression => "Aborting",
-               Data       => Msg) then
-               Failed := True;
-            end if;
-         end;
-      end loop;
-      if Item.OnMessage/=null then
-         Item.OnMessage(U("End of output, Return Code:"&Integer'Image(ReturnCode)));
-      end if;
-      Close(TempFile);
-      GNAT.Strings.Free(ArgumentList);
-      GNAT.Strings.Free(ExecutablePath);
+--      while not End_Of_File(TempFile) loop
+--         declare
+--            Msg : constant String:=Get_Line(TempFile);
+--         begin
+--            Put_Line(Msg);
+--            if Item.OnMessage/=null then
+--               Item.OnMessage(U("* "&Msg));
+--            end if;
+--            if GNAT.Regpat.Match
+--              (Expression => "Credentials required to connect",
+--               Data       => Msg) then
+--               ErrorLogin := True;
+--               Failed     := True;
+--            end if;
+--            if GNAT.Regpat.Match
+--              (Expression => "Aborting",
+--               Data       => Msg) then
+--               Failed := True;
+--            end if;
+--            if GNAT.Regpat.Match
+--              (Expression => "launch failed",
+--               Data       => Msg) then
+--               Failed := True;
+--            end if;
+--         end;
+--      end loop;
 
-      if ErrorLogin then
-         Put_Line("Login ?");
-         SupplementConfig.Include
-           (Key      => U("Account"),
-            New_Item => U(""));
-         SupplementConfig.Include
-           (Key      => U("Password"),
-            New_Item => U(""));
-      end if;
-
-      Success:=not Failed;
+--      if ErrorLogin then
+--         Put_Line("Login ?");
+--         SupplementConfig.Include
+--           (Key      => U("Account"),
+--            New_Item => U(""));
+--         SupplementConfig.Include
+--           (Key      => U("Password"),
+--            New_Item => U(""));
+--      end if;
 
    end Execute;
    ---------------------------------------------------------------------------
@@ -254,13 +242,14 @@ package body MPI.Node is
      (InitializeNode    => InitializeNode'Access,
       FinalizeNode      => FinalizeNode'Access,
       CreateSpawnObject => CreateSpawnObject'Access);
+   Identifier : constant Unbounded_String:=U("MPI");
 
    procedure Register is
    begin
 
       Implementations.Register
         (Implementation => Implementation,
-         Identifier     => U("MPI"));
+         Identifier     => Identifier);
 
    end Register;
    ---------------------------------------------------------------------------
@@ -269,7 +258,7 @@ package body MPI.Node is
    begin
 
       Implementations.Unregister
-        (Identifier => U("MPI"));
+        (Identifier => Identifier);
 
    end Unregister;
    ---------------------------------------------------------------------------

@@ -25,7 +25,7 @@ with Network.Streams;
 with Ada.Calendar;
 with Network.Packets;
 with Basics; use Basics;
-with Node;
+with NodeInfo;
 with Expressions;
 
 --with Ada.Text_IO; use Ada.Text_IO;
@@ -315,9 +315,9 @@ package body BSDSockets.Streams is
 
       Item := new Server_Type;
 
-      PortStr   := Configuration.Element(Node&".Port");
+      PortStr   := Configuration.Element(Node&".BindPort");
       FamilyStr := Configuration.Element(Node&".Family");
-      Host      := Configuration.Element(Node&".Host");
+      Host      := Configuration.Element(Node&".BindIP");
       Port      := PortID'Value(To_String(PortStr));
       if FamilyStr="IPv4" then
          Family:=AF_INET;
@@ -406,13 +406,13 @@ package body BSDSockets.Streams is
 
       Item:=new Client_Type;
 
-      PortStr   := Configuration.Element(Node&".Port");
+      PortStr   := Configuration.Element(Node&".RemotePort");
       FamilyStr := Configuration.Element(Node&".Family");
-      Host      := Configuration.Element(Node&".Host");
+      Host      := Configuration.Element(Node&".RemoteIP");
 
       PortStr := Expressions.Process
         (String    => PortStr,
-         Variables => Standard.Node.Variables);
+         Variables => NodeInfo.Variables);
 
       Item.Port := PortID'Value(To_String(PortStr));
       if FamilyStr="IPv4" then
@@ -511,15 +511,15 @@ package body BSDSockets.Streams is
       NewServerChannel.LastChannel        := null;
 
       NewServerChannel.PeerAddress.Insert
-        (Key => To_Unbounded_String("Host"),
+        (Key      => U("Host"),
          New_Item => Host);
       NewServerChannel.PeerAddress.Insert
-        (Key      => To_Unbounded_String("Port"),
+        (Key      => U("Port"),
          New_Item => Trim
-           (Source => To_Unbounded_String(BSDSockets.PortID'Image(Port)),
+           (Source => U(BSDSockets.PortID'Image(Port)),
             Side   => Ada.Strings.Left));
       NewServerChannel.PeerAddress.Insert
-        (Key      => To_Unbounded_String("Family"),
+        (Key      => U("Family"),
          New_Item => Item.Family);
 
       if NewServerChannel.NextChannel/=null then
@@ -556,11 +556,6 @@ package body BSDSockets.Streams is
    begin
 
       while Item.SendPacket/=null loop
---         Put("Send");
---         Put(Item.SendPacketPos);
---         Put("..");
---         Put(Item.SendPacket.Position);
---         New_Line;
          BSDSockets.Send
            (Socket => Item.SelectEntry.Socket,
             Data   => Item.SendPacket.Content
@@ -608,12 +603,6 @@ package body BSDSockets.Streams is
       Item.Amount  := Item.Amount-Item.Position;
       Item.Position := 0;
 
---      Put("Recv");
---      Put(Item.Amount);
---      Put(Item.Content.all'Address);
---      Put(Item.Content'First);
---      Put(Item.Content'Last);
---      New_Line;
       BSDSockets.Recv
         (Socket => Item.SelectEntry.Socket,
          Data   => Item.Content(Item.Amount..Item.Content'Last),
@@ -637,7 +626,9 @@ package body BSDSockets.Streams is
    end Recv;
    ---------------------------------------------------------------------------
 
-   procedure Process is
+   procedure Process
+     (Object : AnyObject_ClassAccess) is
+      pragma Unreferenced(Object);
 
       ServerItem            : Server_Access := Servers;
       ClientItem            : Client_Access := Clients;
@@ -750,8 +741,7 @@ package body BSDSockets.Streams is
       if InitializeCount=0 then
          -- The order here is important since BSDSockets.Process should be
          -- called before ProcessLoop.Process
-         ProcessLoop.Add
-           (Proc => Process'Access);
+         ProcessLoop.Add(Process'Access,null);
          BSDSockets.Initialize;
       end if;
       InitializeCount:=InitializeCount+1;
@@ -763,8 +753,7 @@ package body BSDSockets.Streams is
       InitializeCount:=InitializeCount-1;
       if InitializeCount=0 then
          BSDSockets.Finalize;
-         ProcessLoop.Remove
-           (Proc => Process'Access);
+         ProcessLoop.Remove(Process'Access,null);
       end if;
    end Finalize;
    ---------------------------------------------------------------------------
@@ -776,18 +765,19 @@ package body BSDSockets.Streams is
       FreeServer => FreeStreamServer'Access,
       NewClient  => NewStreamClient'Access,
       FreeClient => FreeStreamClient'Access);
+   Identifier : constant Unbounded_String:=U("BSDSockets");
 
    procedure Register is
    begin
       Network.Streams.Implementations.Register
-        (Identifier     => U("BSDSockets"),
+        (Identifier     => Identifier,
          Implementation => Implementation);
    end Register;
    ---------------------------------------------------------------------------
 
    procedure Unregister is
    begin
-      Network.Streams.Implementations.Unregister(U("BSDSockets"));
+      Network.Streams.Implementations.Unregister(Identifier);
    end Unregister;
    ---------------------------------------------------------------------------
 

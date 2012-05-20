@@ -19,7 +19,6 @@
 
 pragma Ada_2005;
 
-with GUI.Console;
 with GUI.GroupBox;
 with GUI.Window;
 with GUI.Label;
@@ -35,14 +34,14 @@ with SimClient.CreateServer;
 
 with SimClientGUI.ConnectToServer;
 with SimClientGUI.MainMenu;
+with SimClientGUI.Logging;
+with SimClientGUI.ServerSpawnWatch;
 
 package body SimClientGUI.CreateServer is
 
    Enabled : Boolean:=False;
 
    Configuration          : Config.Config_Type;
-   ExecOutputGroup        : GUI.GroupBox.GroupBox_ClassAccess    := null;
-   ExecOutput             : GUI.Console.Console_ClassAccess      := null;
    SupplementConfigGroup  : GUI.GroupBox.GroupBox_ClassAccess    := null;
    SupplementConfigArray  : SimConfig.ConfigArray_Access         := null;
    SupplementElementsPage : SimConfig.Visual.ElementsPage_Access := null;
@@ -59,12 +58,6 @@ package body SimClientGUI.CreateServer is
       Bounds : constant Bounds_Type:=GUIContext.BasisArea.GetBounds;
 
    begin
-      ExecOutputGroup.SetBounds
-        (Top     => Bounds.Height/2,
-         Left    => 10,
-         Height  => Bounds.Height-Bounds.Height/2-42,
-         Width   => Bounds.Width-20,
-         Visible => True);
       if SupplementConfigGroup/=null then
          SupplementConfigGroup.SetBounds
            (Top     => 10,
@@ -98,25 +91,18 @@ package body SimClientGUI.CreateServer is
    end CleanupFailureComponents;
    ---------------------------------------------------------------------------
 
-   procedure CreateServerMessage
-     (Message : Unbounded_String) is
-   begin
-      ExecOutput.WriteLine(Message,16#FFFFFFFF#);
-   end CreateServerMessage;
-   ---------------------------------------------------------------------------
-
    procedure CreateServerSuccessASync
      (Item : GUI.Object_ClassAccess) is
       pragma Unreferenced(Item);
    begin
       Disable;
+      SimClientGUI.Logging.Enable(Configuration);
       SimClientGUI.ConnectToServer.Enable(Configuration);
    end CreateServerSuccessAsync;
    ---------------------------------------------------------------------------
 
    procedure CreateServerSuccess is
    begin
-      ExecOutput.WriteLine(U("Success..."),16#FFFFFFFF#);
       GUIContext.BasisArea.AddASync(CreateServerSuccessASync'Access);
    end CreateServerSuccess;
    ---------------------------------------------------------------------------
@@ -174,7 +160,6 @@ package body SimClientGUI.CreateServer is
    begin
       Put_Line("CreateServerFailure");
       CleanupFailureComponents;
-      ExecOutput.WriteLine(U("Failure..."),16#FFFFFFFF#);
       if SupplementConfig.Is_Empty then
          Put_Line("No SupplementConfig");
          -- TODO: Add Failure dialog
@@ -294,25 +279,12 @@ package body SimClientGUI.CreateServer is
          raise ReenabledGUIModule with "CreateProcess";
       end if;
       Standard.SimClientGUI.CreateServer.Configuration:=Configuration;
-      ExecOutputGroup:=ThemeImplementation.NewGroupBox(GUIContext.BasisArea);
-      ExecOutput:=ThemeImplementation.NewConsole(GUI.Object_ClassAccess(ExecOutputGroup));
-      ExecOutput.SetBounds
-        (Top     => 5,
-         Left    => 5,
-         Height  => ExecOutputGroup.GetClientBounds.Height-10,
-         Width   => ExecOutputGroup.GetClientBounds.Width-10,
-         Visible => True);
-      ExecOutput.SetAnchors
-        (Top    => True,
-         Left   => True,
-         Right  => True,
-         Bottom => True);
-      ExecOutputGroup.SetCaption(U("Distributed System startup output..."));
+
+      ServerSpawnWatch.Enable;
 
       GUIContext.BasisArea.OnResize:=Resize'Access;
       Resize(null);
 
-      SimClient.CreateServer.OnMessage:=CreateServerMessage'Access;
       SimClient.CreateServer.OnSuccess:=CreateServerSuccess'Access;
       SimClient.CreateServer.OnFailure:=CreateServerFailure'Access;
       SimClient.CreateServer.Initialize(Configuration);
@@ -322,27 +294,25 @@ package body SimClientGUI.CreateServer is
    end Enable;
    ---------------------------------------------------------------------------
 
-   procedure Disable is
-      use type GUI.GroupBox.GroupBox_ClassAccess;
+   procedure Hide is
    begin
-      Put_Line("Disable");
       if not Enabled then
          raise RedisabledGUIModule with "CreateProcess";
       end if;
       CleanUpFailureComponents;
-
-      if ExecOutputGroup/=null then
-         ExecOutputGroup.Free;
-         ExecOutputGroup:=null;
-      end if;
-
-      SimClient.CreateServer.Finalize;
-      SimClient.CreateServer.OnMessage:=null;
       SimClient.CreateServer.OnSuccess:=null;
       SimClient.CreateServer.OnFailure:=null;
-
       GUIContext.BasisArea.OnResize:=null;
       Enabled:=False;
+   end Hide;
+   ---------------------------------------------------------------------------
+
+   procedure Disable is
+      use type GUI.GroupBox.GroupBox_ClassAccess;
+   begin
+      Put_Line("Disable*******************************************");
+      Hide;
+      SimClient.CreateServer.Finalize;
       Put_Line("Disable//");
    end Disable;
    ---------------------------------------------------------------------------

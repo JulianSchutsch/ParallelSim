@@ -22,7 +22,6 @@ pragma Ada_2005;
 with Network.Streams;
 with Network.Packets;
 with Ada.Unchecked_Deallocation;
-with Basics; use Basics;
 with LoggingProtocol;
 with Ada.Text_IO; use Ada.Text_IO;
 
@@ -270,12 +269,15 @@ package body Logging.Client is
       NewCont:=new Context_Type;
       NewCont.ModuleName := ModuleName;
 
+      Put_Line("Logging.Client.Find Impl");
       NewCont.Implementation:=Network.Streams.Implementations.Find
         (Configuration => Configuration,
          Node          => ConfigNode & ".Network");
+      Put_Line("Logging.Client.NewClient");
       NewCont.Client:=NewCont.Implementation.NewClient
         (Configuration => Configuration,
-         Node          => ConfigNode & ".Client.Network");
+         Node          => ConfigNode & ".Network");
+      Put_Line("Logging.Client...");
 
       NewCont.CallBack.Context := NewCont;
       NewCont.CallBack.Client  := NewCont.Client;

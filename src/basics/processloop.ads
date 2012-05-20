@@ -29,17 +29,22 @@
 --   Procedures can be removed with Add and Remove and are called in
 --   the reverse order they are added.
 
+with Basics; use Basics;
+
 package ProcessLoop is
 
    type ProcAccess is
-     access procedure;
+     access procedure
+       (Object : AnyObject_ClassAccess);
 
    procedure Process;
 
    procedure Add
-     (Proc : ProcAccess);
+     (Proc   : ProcAccess;
+      Object : AnyObject_ClassAccess);
 
    procedure Remove
-     (Proc : ProcAccess);
+     (Proc   : ProcAccess;
+      Object : AnyObject_ClassAccess);
 
 end ProcessLoop;

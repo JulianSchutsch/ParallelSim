@@ -100,6 +100,24 @@ package Basics is
       return Unbounded_String renames To_Unbounded_String;
 
    package FloatNumeric is new Ada.Numerics.Generic_Elementary_Functions
-        (Float_Type => Float);
+     (Float_Type => Float);
+
+   type CharacterBuffer_Type(Count : Integer) is tagged private;
+
+   procedure AddCharacter
+     (Item : in out CharacterBuffer_Type;
+      Char : Character);
+
+   procedure ReadString
+     (Item : in out CharacterBuffer_Type;
+      Str  : out Unbounded_String);
+
+private
+
+   type CharacterBuffer_Type(Count : Integer) is tagged
+      record
+         Buffer   : String(1..Count);
+         Position : Integer:=1;
+      end record;
 
 end Basics;

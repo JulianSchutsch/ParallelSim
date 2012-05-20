@@ -52,7 +52,9 @@ package body SimClientGUI.CreateMenu is
       (Description => U("Node"),
        FileName    => U("node.cfi")),
       (Description => U("Front"),
-       FileName    => U("front.cfi")));
+       FileName    => U("front.cfi")),
+      (Description => U("Logging"),
+       FileName    => U("logging.cfi")));
 
    type ModuleTab_Type is
       record

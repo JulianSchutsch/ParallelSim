@@ -23,6 +23,7 @@ with BSDSockets.Thin;
 with System;
 with ProcessLoop;
 with Ada.Unchecked_Conversion;
+with Basics; use Basics;
 
 package body BSDSockets is
    use type Interfaces.C.int;
@@ -485,7 +486,9 @@ package body BSDSockets is
    end Socket;
    ---------------------------------------------------------------------------
 
-   procedure DoProcess is
+   procedure DoProcess
+     (Object : AnyObject_ClassAccess) is
+      pragma Unreferenced(Object);
    begin
       SSelect
         (Sockets => DefaultSelectList);
@@ -494,15 +497,13 @@ package body BSDSockets is
    procedure Initialize is
    begin
       BSDSockets.Thin.Initialize;
-      ProcessLoop.Add
-        (Proc => DoProcess'Access);
+      ProcessLoop.Add(DoProcess'Access,null);
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      ProcessLoop.Remove
-        (Proc => DoProcess'Access);
+      ProcessLoop.Remove(DoProcess'Access,null);
       BSDSockets.Thin.Finalize;
    end Finalize;
    ---------------------------------------------------------------------------

@@ -25,7 +25,7 @@ pragma Ada_2005;
 
 with Config.Implementations;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
---with Basics; use Basics;
+with Basics; use Basics;
 
 package DistributedSystems is
 
@@ -62,7 +62,7 @@ package DistributedSystems is
      access procedure
        (Message : Unbounded_String);
 
-   type Spawn_Type is tagged
+   type Spawn_Type is new AnyObject_Type with
       record
          OnMessage : OnMessage_Access:=null;
       end record;
