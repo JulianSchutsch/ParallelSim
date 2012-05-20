@@ -29,6 +29,7 @@ abstract project Common is
       Dir & "../src/logging",
       Dir & "../src/xlib",
       Dir & "../src/win32",
+      Dir & "../src/linux",
       Dir & "../src/simconfig");
 
    CompilerSwitches:=();
