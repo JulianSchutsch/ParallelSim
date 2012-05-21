@@ -38,7 +38,7 @@ int argumentcount(const char * arguments)
       p++;
     }
 
-  printf("StringCount: %i\n",Count);
+//  printf("StringCount: %i\n",Count);
 
   return Count;
 
@@ -49,7 +49,7 @@ char ** argumentsplit(const char * arguments)
   int count=argumentcount(arguments);
 
   char ** result=malloc((count+1)*sizeof(char *));
-  printf("ARGUMENTARRAY %p\n",result);
+//  printf("ARGUMENTARRAY %p\n",result);
 
   const char * p     = arguments;
   const char * start = arguments;
@@ -63,13 +63,13 @@ char ** argumentsplit(const char * arguments)
 	  if(!Empty)
 	    {
 	      char * part=malloc((p-start+1)*sizeof(char));
-	      printf("Length of String Part : %i\n",(p-start));
+//	      printf("Length of String Part : %i\n",(p-start));
 	      strncpy(part,start,(p-start));
 	      part[p-start]='\0';
-	      printf("Part %s\n",part);
+//	      printf("Part %s\n",part);
 
 	      *entry = part;
-	      printf("Addr -> %p , %p\n",*entry,entry);
+//	      printf("Addr -> %p , %p\n",*entry,entry);
 	      entry += 1;
 
 	      Empty = 1;
@@ -89,8 +89,8 @@ char ** argumentsplit(const char * arguments)
       part[p-start]='\0';
       *entry=part;
       entry+=1;
-      printf("Length of String Part : %i\n",(p-start));
-      printf("Part %s\n",part);
+//      printf("Length of String Part : %i\n",(p-start));
+//      printf("Part %s\n",part);
     }
 
   *entry=0; // Terminate argument list
@@ -104,11 +104,11 @@ void freearguments(char ** splitargs)
   char ** partp=splitargs;
   while(*partp!=0)
     {
-      printf("Free part %p\n",*partp);
+//      printf("Free part %p\n",*partp);
       free(*partp);
       partp+=1;
     }
-  printf("Free %p\n",splitargs);
+//  printf("Free %p\n",splitargs);
   free(splitargs);
 }
 
@@ -127,7 +127,7 @@ int _exec(const char * program,const char * arguments)
 {
   printf("_exec %p %p\n",program,arguments);
   char ** splitargs=argumentsplit(arguments);
-  debugarguments(splitargs);
+//  debugarguments(splitargs);
   printf("Program %s\n",program);
   int result=execv(program,splitargs);
   printf("Failed..");

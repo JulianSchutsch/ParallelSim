@@ -174,7 +174,7 @@ package body MPI.Node is
       for i in Executables'Range loop
          Spawn.ExecutableArguments:=Spawn.ExecutableArguments& "-n"
            &Positive'Image(Executables(i).Amount)&" "
-           &Executables(i).Executable
+           &Processes.CurrentPathPrefix&Executables(i).Executable
            &" -DistributedSystemsImplementation=MPI";
          if i/=Executables'Last then
             Spawn.ExecutableArguments:=Spawn.ExecutableArguments&" : ";
