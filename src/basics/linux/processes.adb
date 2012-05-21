@@ -106,8 +106,6 @@ package body Processes is
    end FindInPathDirectories;
    ---------------------------------------------------------------------------
 
-   Count : Integer:=0;
-
    procedure ProcessQueue
      (Object : AnyObject_ClassAccess) is
 
@@ -119,19 +117,38 @@ package body Processes is
 
    begin
 
-      Result:=Linux.read
-        (FileDescriptor => Process.Pipe(0),
-         Buffer         => CharCode(0)'Unchecked_Access,
-         Count          => 1);
-      if Result<=0 then
-         Put_Line("Failed Read from Pipe");
-         Put_Line(Interfaces.C.int'Image(Linux.errno));
-         -- TODO: Handle error cases...some may require closing the pipe
-         return;
-      end if;
+      loop
+         Result:=Linux.read
+           (FileDescriptor => Process.Pipe(0),
+            Buffer         => CharCode(0)'Unchecked_Access,
+            Count          => 1);
+         if Result<=0 then
+            if Linux.errno=Linux.EAGAIN then
+               return;
+            end if;
+            Put_Line("Failed Read from Pipe");
+            Put_Line(Interfaces.C.int'Image(Linux.errno));
+            -- TODO: Handle error cases...some may require closing the pipe
+            return;
+         end if;
+         case CharCode(0) is
+            when 10 =>
+               declare
+                  Str : Unbounded_String;
+               begin
+                  Process.CharacterBuffer.ReadString(Str);
+                  if Process.OnMessage/=null then
+                     Put_Line("*"&To_String(Str));
+                     Process.OnMessage(Process.CallBackObject,Str);
+                  end if;
+               end;
+            when 13 =>
+               null;
+            when others =>
+               Process.CharacterBuffer.AddCharacter(Character'Val(CharCode(0)));
+         end case;
 
-      Put_Line("Process still running"&Integer'Image(Count));
-      Count:=Count+1;
+      end loop;
 
    end ProcessQueue;
    ---------------------------------------------------------------------------
@@ -182,7 +199,7 @@ package body Processes is
             raise FailedExecute with "Call to fork failed with "
               &Interfaces.C.int'Image(Linux.errno);
          end if;
-         if pid=0 then
+         if pid/=0 then
             -- Parent process
 
             -- PipeArray
@@ -199,6 +216,7 @@ package body Processes is
          else
             -- Child process
 
+            Put_Line("Child PROCESS");
             -- Close reading end of the pipe
             if Linux.close(Item.Pipe(0))<0 then
                Put_Line("Call to close (reading end of the pipe) failed");
@@ -206,19 +224,23 @@ package body Processes is
 
             -- Close ordinary stdout
             if Linux.close(1)<0 then
-               Put_Line("Call to close(1) failed");
+               null;
+               Put_Line(Standard_Error,"Call to close(1) failed");
             end if;
 
+            Put_Line(Standard_Error,"Closed STDOut");
             -- Reassign pipes writting end to stdout
-            if Linux.dup2(Item.Pipe(0),1)<0 then
-               null;
+            Put_Line(Standard_Error,Linux.FileDescriptor_Type'Image(Item.Pipe(1)));
+            if Linux.dup2(Item.Pipe(1),1)<0 then
+               Put_Line(Standard_Error,"Failed dup2");
+               Put_Line(Standard_Error,Interfaces.C.int'Image(Linux.errno));
             end if;
             CProgram    := Interfaces.C.Strings.New_String(To_String(FullProgramName));
             CParameters := Interfaces.C.Strings.New_String(To_String(Arguments));
             if Linux.Exec
               (ProgramName => CProgram,
                Arguments   => CParameters)<0 then
-               Put_Line("Failed Exec");
+               Put_Line(Standard_Error,"Failed Exec");
             end if;
             Interfaces.C.Strings.Free(CProgram);
             Interfaces.C.Strings.Free(CParameters);

@@ -33,6 +33,8 @@ package Linux is
    --       is complicated! (Lots of ugly c hacks)
    type pid_t_Type is new Interfaces.C.int;
 
+   EAGAIN : constant:=11;
+
    function errno
      return Interfaces.C.int;
    pragma Import(C,errno,"geterrno");

@@ -202,11 +202,12 @@ package body Fonts.ColorStrings is
 
    begin
 
-      if ColorString.Font=null then
+      if ColorString.Font=null
+        or ColorString.Content=null then
          raise FontNotAssigned;
       end if;
 
-      if ColorString.Content=null then
+      if ColorString.CurrentPosition>ColorString.Content'Last then
          return;
       end if;
 
@@ -410,8 +411,12 @@ package body Fonts.ColorStrings is
 
          ColorString.CurrentPosition    := ColorString.Content'First;
          ColorString.CurrentWrappedLine := 0;
-         ColorString.CurrentWidth
-           := ColorString.Content(ColorString.CurrentPosition).LineWidth;
+         if ColorString.CurrentPosition<=ColorString.Content'Last then
+            ColorString.CurrentWidth
+              := ColorString.Content(ColorString.CurrentPosition).LineWidth;
+         else
+            ColorString.CurrentWidth:=0;
+         end if;
          return True;
 
       end if;
