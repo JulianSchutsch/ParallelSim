@@ -33,16 +33,14 @@ with ProgramArguments;
 with DistributedSystems;
 with Basics; use Basics;
 with SimNode;
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Node is
 
-   Configuration : Config.Config_Type;
+   Configuration          : Config.Config_Type;
    DistributedSystemsImpl : DistributedSystems.Implementation_Type;
 
 begin
-   Put_Line("NODE:::::");
-
    Network.UseImplementations.Register;
    DistributedSystems.UseImplementations.Register;
    Logging.Client.Register;

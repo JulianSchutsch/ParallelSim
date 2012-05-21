@@ -39,12 +39,14 @@ package body DistributedSystems is
 
    procedure Execute
      (Item             : access Spawn_Type;
-      SupplementConfig : in out Config.Config_Type;
-      Success          : out Boolean) is
-      pragma Unreferenced(SupplementConfig);
-      pragma Unreferenced(Item);
+      SupplementConfig : Config.Config_Type) is
+
    begin
-      Success:=False;
+
+      if Item.OnFailure/=null then
+         Item.OnFailure(SupplementConfig);
+      end if;
+
    end Execute;
    ---------------------------------------------------------------------------
 

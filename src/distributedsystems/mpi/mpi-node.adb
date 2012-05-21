@@ -28,6 +28,7 @@ with DistributedSystems; use DistributedSystems;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Directories; use Ada.Directories;
 with Processes;
+with GNAT.Regpat;
 
 package body MPI.Node is
 
@@ -42,32 +43,79 @@ package body MPI.Node is
    overriding
    procedure Execute
      (Item             : access Spawn_Type;
-      SupplementConfig : in out Config.Config_Type;
-      Success          : out Boolean);
+      SupplementConfig : Config.Config_Type);
+
+   overriding
+   procedure Free
+     (Item : access Spawn_Type);
+   ---------------------------------------------------------------------------
+
+   procedure Free
+     (Item : access Spawn_Type) is
+   begin
+      Item.Process.Kill;
+      DistributedSystems.Spawn_Access(Item).Free;
+   end Free;
    ---------------------------------------------------------------------------
 
    procedure ProcessMessage
      (CallBackObject : AnyObject_ClassAccess;
       Message        : Unbounded_String) is
 
-      Spawn : constant Spawn_Access:=Spawn_Access(CallBackObject);
+      Spawn            : constant Spawn_Access:=Spawn_Access(CallBackObject);
+      SupplementConfig : Config.Config_Type;
 
    begin
       if Spawn.OnMessage/=null then
          Spawn.OnMessage(Message);
+      end if;
+      if GNAT.Regpat.Match
+        (Expression => "Credentials required to connect",
+         Data       => To_String(Message)) then
+         SupplementConfig.Include
+           (Key      => U("Account"),
+            New_Item => U(""));
+         SupplementConfig.Include
+           (Key      => U("Password"),
+            New_Item => U(""));
+         if Spawn.OnFailure/=null then
+            Spawn.OnFailure(SupplementConfig);
+         end if;
+         Spawn.Process.Kill;
+      end if;
+      if GNAT.Regpat.Match
+        (Expression => "Aborting",
+         Data       => To_String(Message)) then
+         if Spawn.OnFailure/=null then
+            Spawn.OnFailure(SupplementConfig);
+         end if;
+         Spawn.Process.Kill;
+      end if;
+      if GNAT.Regpat.Match
+        (Expression => "launch failed",
+         Data       => To_String(Message)) then
+         if Spawn.OnFailure/=null then
+            Spawn.OnFailure(SupplementConfig);
+         end if;
+         Spawn.Process.Kill;
+      end if;
+      if GNAT.Regpat.Match
+        (Expression => "MPI-Node initialized",
+         Data       =>To_String(Message)) then
+         if Spawn.OnSuccess/=null then
+            Spawn.OnSuccess.all;
+         end if;
       end if;
    end ProcessMessage;
    ---------------------------------------------------------------------------
 
    procedure Execute
      (Item             : access Spawn_Type;
-      SupplementConfig : in out Config.Config_Type;
-      Success          : out Boolean) is
+      SupplementConfig : Config.Config_Type) is
 
       use type StringStringMap_Pack.Cursor;
 
       Arguments      : Unbounded_String;
-
       Cursor         : StringStringMap_Pack.Cursor;
 
    begin
@@ -112,49 +160,17 @@ package body MPI.Node is
 
       Item.Process.CallBackObject:=AnyObject_ClassAccess(Item);
       Item.Process.OnMessage:=ProcessMessage'Access;
-      Success:=Item.Process.Execute
+      if not Item.Process.Execute
         (ProgramName => U("mpiexec"),
-         Arguments   => Arguments);
+         Arguments   => Arguments) then
+         if Item.OnFailure/=null then
+            Item.OnFailure(SupplementConfig);
+         end if;
+      end if;
 
       if Item.OnMessage/=null then
          Item.OnMessage(U("Output from mpiexec:"));
       end if;
---      while not End_Of_File(TempFile) loop
---         declare
---            Msg : constant String:=Get_Line(TempFile);
---         begin
---            Put_Line(Msg);
---            if Item.OnMessage/=null then
---               Item.OnMessage(U("* "&Msg));
---            end if;
---            if GNAT.Regpat.Match
---              (Expression => "Credentials required to connect",
---               Data       => Msg) then
---               ErrorLogin := True;
---               Failed     := True;
---            end if;
---            if GNAT.Regpat.Match
---              (Expression => "Aborting",
---               Data       => Msg) then
---               Failed := True;
---            end if;
---            if GNAT.Regpat.Match
---              (Expression => "launch failed",
---               Data       => Msg) then
---               Failed := True;
---            end if;
---         end;
---      end loop;
-
---      if ErrorLogin then
---         Put_Line("Login ?");
---         SupplementConfig.Include
---           (Key      => U("Account"),
---            New_Item => U(""));
---         SupplementConfig.Include
---           (Key      => U("Password"),
---            New_Item => U(""));
---      end if;
 
    end Execute;
    ---------------------------------------------------------------------------
@@ -228,6 +244,8 @@ package body MPI.Node is
       MyGlobalID    := Node_Type(WorldRank);
       FirstGlobalID := 0;
       LastGlobalID  := Node_Type(WorldSize-1);
+
+      Put_Line("MPI-Node initialized "&Node_Type'Image(MyGlobalID));
 
    end InitializeNode;
    ---------------------------------------------------------------------------

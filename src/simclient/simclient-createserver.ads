@@ -21,6 +21,12 @@
 --   4.Mar 2012 Julian Schutsch
 --     - Original version
 
+-- Reasons for implementation:
+--   A module for all spawn related details for ParallelSim.
+--   This is mostly a forwarding module to SimClientGUI.CreateServer,
+--   but defines what is executed and how often.
+--   (GUI/Implementation separation)
+
 pragma Ada_2005;
 
 with Config;

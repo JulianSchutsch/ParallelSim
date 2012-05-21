@@ -57,6 +57,7 @@ package body SimConfig is
             Put(Space);
             Put("Key :");
             Put_Line(ConfigSetArray(i).Key);
+            Put(Space);
             Put("Description : ");
             Put_Line(ConfigSetArray(i).Description);
             Debug(Space&" ",ConfigSetArray(i).Options);
@@ -176,7 +177,6 @@ package body SimConfig is
          Position : Integer;
 
       begin
-         Put_Line("GetCommand");
          Line:=U("");
          while not End_of_File(File) loop
             Get_Line(File,Line);
@@ -188,9 +188,6 @@ package body SimConfig is
          if Line="" then
             return False;
          end if;
-         Put("Get Line:");
-         Put(Line);
-         New_Line;
          Position:=Index
            (Source => Line,
             Pattern => " ");
@@ -208,10 +205,6 @@ package body SimConfig is
             Command:=Line;
             Param:=U("");
          end if;
-         Put("Command :");
-         Put_Line(Command&"*");
-         Put("Param :");
-         Put_Line(Param&"*");
          return True;
       end GetCommand;
       ------------------------------------------------------------------------
@@ -238,7 +231,6 @@ package body SimConfig is
                CurrentElement.Options:=null;
                ProcElement:=True;
             elsif Command="description" then
-               Put_Line("Set Description");
                CurrentElement.Description:=Expressions.Process(Param,NodeInfo.Variables);
             elsif Command="options" then
                LoadOptions(CurrentElement.Options);

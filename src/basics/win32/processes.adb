@@ -168,8 +168,8 @@ package body Processes is
                   Str : Unbounded_String;
                begin
                   Process.CharacterBuffer.ReadString(Str);
+                  Put_Line("*"&To_String(Str));
                   if Process.OnMessage/=null then
-                     Put_Line("Call OnMessage");
                      Put(Process.OnMessage.all'Address);
                      Process.OnMessage(Process.CallBackObject,Str);
                   end if;
@@ -182,6 +182,31 @@ package body Processes is
       end loop;
 
    end ProcessQueue;
+   ---------------------------------------------------------------------------
+
+   procedure Kill
+     (Item : access Process_Type) is
+
+      use type Win32.HANDLE_Type;
+      use type Interfaces.C.int;
+
+   begin
+      if Item.ProcessHandle/=Win32.NULLHANDLE then
+         if not Win32.Kernel32.TerminateProcess(Item.ProcessHandle,0) then
+            null;
+         end if;
+         if Win32.Kernel32.CloseHandle(Item.StdOutPipeIn)=0 then
+            null;
+         end if;
+         if Win32.Kernel32.CloseHandle(Item.StdOutPipeOut)=0 then
+            null;
+         end if;
+         Item.ProcessHandle := Win32.NULLHANDLE;
+         Item.StdOutPipeIn  := Win32.NULLHANDLE;
+         Item.StdOutPipeOut := Win32.NULLHANDLE;
+         ProcessLoop.Remove(ProcessQueue'Access,AnyObject_ClassAccess(Item));
+      end if;
+   end Kill;
    ---------------------------------------------------------------------------
 
    function Execute
@@ -284,5 +309,6 @@ package body Processes is
       return False;
 
    end Execute;
+   ---------------------------------------------------------------------------
 
 end Processes;

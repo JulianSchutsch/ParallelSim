@@ -23,6 +23,7 @@
 
 pragma Ada_2005;
 
+with Config;
 with Config.Implementations;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Basics; use Basics;
@@ -62,9 +63,18 @@ package DistributedSystems is
      access procedure
        (Message : Unbounded_String);
 
+   type OnFailure_Access is
+     access procedure
+       (SupplementConfig : Config.Config_Type);
+
+   type OnSuccess_Access is
+     access procedure;
+
    type Spawn_Type is new AnyObject_Type with
       record
          OnMessage : OnMessage_Access:=null;
+         OnFailure : OnFailure_Access:=null;
+         OnSuccess : OnSuccess_Access:=null;
       end record;
 
    type Spawn_Access is access all Spawn_Type;
@@ -78,8 +88,7 @@ package DistributedSystems is
    -- proceed.
    procedure Execute
      (Item             : access Spawn_Type;
-      SupplementConfig : in out Config.Config_Type;
-      Success          : out Boolean);
+      SupplementConfig : Config.Config_Type);
 
    procedure Free
      (Item : access Spawn_Type);

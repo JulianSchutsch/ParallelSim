@@ -50,6 +50,8 @@ package body SimClientGUI.CreateServer is
    ButtonRetry            : GUI.Button.Button_ClassAccess        := null;
    SupplementConfig       : Config.Config_Type;
 
+   procedure Hide;
+
    procedure Resize
      (CallBackObject : AnyObject_ClassAccess) is
       pragma Unreferenced(CallBackObject);
@@ -95,7 +97,7 @@ package body SimClientGUI.CreateServer is
      (Item : GUI.Object_ClassAccess) is
       pragma Unreferenced(Item);
    begin
-      Disable;
+      Hide;
       SimClientGUI.Logging.Enable(Configuration);
       SimClientGUI.ConnectToServer.Enable(Configuration);
    end CreateServerSuccessAsync;
@@ -129,11 +131,8 @@ package body SimClientGUI.CreateServer is
       pragma Unreferenced(CallBackObject);
       SupplementConfig : Config.Config_Type;
    begin
-      Put_Line("ButtonRetryClick");
       SupplementElementsPage.GetConfig(SupplementConfig);
-      Put_Line(".Retry");
       SimClient.CreateServer.Retry(SupplementConfig);
-      Put_Line("ButtonRetryClick//");
    end ButtonRetryClick;
    ---------------------------------------------------------------------------
 
@@ -158,7 +157,6 @@ package body SimClientGUI.CreateServer is
      (Item : GUI.Object_ClassAccess) is
       pragma Unreferenced(Item);
    begin
-      Put_Line("CreateServerFailure");
       CleanupFailureComponents;
       if SupplementConfig.Is_Empty then
          Put_Line("No SupplementConfig");
@@ -185,7 +183,6 @@ package body SimClientGUI.CreateServer is
          Right  => True,
          Bottom => True);
 
-      Put_Line(".FailureWindow");
       declare
          Bounds : constant Bounds_Type:=GUIContext.ModalArea.GetBounds;
          Label  : GUI.Label.Label_ClassAccess;
@@ -225,7 +222,6 @@ package body SimClientGUI.CreateServer is
          Button.OnClick:=FailureWindowOkClick'Access;
       end;
 
-      Put_Line(".Buttons Create");
       declare
          Bounds : constant Bounds_Type:=GUIContext.BasisArea.GetBounds;
       begin
@@ -259,7 +255,6 @@ package body SimClientGUI.CreateServer is
          ButtonRetry.OnClick:=ButtonRetryClick'Access;
       end;
       Resize(null);
-      Put_Line("CreateServerFailure//");
    end CreateServerFailureASync;
    ---------------------------------------------------------------------------
 
@@ -274,7 +269,6 @@ package body SimClientGUI.CreateServer is
    procedure Enable
      (Configuration : Config.Config_Type) is
    begin
-      Put_Line("Enable");
       if Enabled then
          raise ReenabledGUIModule with "CreateProcess";
       end if;
@@ -290,7 +284,6 @@ package body SimClientGUI.CreateServer is
       SimClient.CreateServer.Initialize(Configuration);
 
       Enabled:=True;
-      Put_Line("Enable//");
    end Enable;
    ---------------------------------------------------------------------------
 
@@ -310,10 +303,11 @@ package body SimClientGUI.CreateServer is
    procedure Disable is
       use type GUI.GroupBox.GroupBox_ClassAccess;
    begin
-      Put_Line("Disable*******************************************");
+      if not Enabled then
+         return;
+      end if;
       Hide;
       SimClient.CreateServer.Finalize;
-      Put_Line("Disable//");
    end Disable;
    ---------------------------------------------------------------------------
 

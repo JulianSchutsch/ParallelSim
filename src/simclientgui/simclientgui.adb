@@ -23,6 +23,8 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Basics; use Basics;
 with ProcessLoop;
 with SimClientGUI.MainMenu;
+with SimClientGUI.CreateServer;
+with SimClientGUI.Logging;
 
 --with Ada.Text_IO; use Ada.Text_IO;
 
@@ -34,6 +36,8 @@ package body SimClientGUI is
       pragma Unreferenced(CallBackObject);
 
    begin
+      SimClientGUI.CreateServer.Disable;
+      SimClientGUI.Logging.Disable;
       Terminated:=True;
    end OnCloseContext;
    ---------------------------------------------------------------------------

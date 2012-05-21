@@ -34,7 +34,7 @@ with SimConfig;
 with SimConfig.Visual;
 
 with Ada.Unchecked_Deallocation;
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package body SimClientGUI.CreateMenu is
@@ -171,21 +171,15 @@ package body SimClientGUI.CreateMenu is
         (Object => ModuleTabArray_Type,
          Name   => ModuleTabArray_Access);
    begin
-      Put_Line("ClearGameTabs");
       if ModuleTabs=null then
          return;
       end if;
       for i in ModuleTabs'Range loop
-         Put_Line("Free Page");
          SimConfig.FreeConfigArray(ModuleTabs(i).ConfigArray);
          ModuleTabs(i).ElementsPage.Free;
-         Put_Line("Free Tab");
          ModuleTabs(i).Tab.Free;
-         Put_Line("Loop");
       end loop;
-      Put("Free moduleTabs");
       Free(ModuleTabs);
-      Put_Line("ClearGameTabs//");
    end ClearGameTabs;
    ------------------------------------------------------------------------
 
@@ -194,13 +188,12 @@ package body SimClientGUI.CreateMenu is
       use type SimConfig.ConfigArray_Access;
 
    begin
-      Put_Line("Select Game Type");
       ClearGameTabs;
       ModuleTabs:=new ModuleTabArray_Type(Modules'Range);
       for i in ModuleTabs'Range loop
          ModuleTabs(i).ConfigArray:=SimConfig.LoadConfigArray
            (Modules(i).FileName);
-         SimConfig.DebugConfigArray(ModuleTabs(i).ConfigArray);
+--         SimConfig.DebugConfigArray(ModuleTabs(i).ConfigArray);
          ModuleTabs(i).Tab:=Tabs.NewTab(Modules(i).Description);
          ModuleTabs(i).ElementsPage:=SimConfig.Visual.CreateElementsPage
            (Parent    => GUI.Object_ClassAccess(ModuleTabs(i).Tab),
@@ -310,12 +303,10 @@ package body SimClientGUI.CreateMenu is
       end CreateGeneralTab;
 
    begin
-      Put_Line("Enabled **********************");
       if Enabled then
          raise ReenabledGUIModule with "CreateMenu";
       end if;
       Tabs:=ThemeImplementation.NewTabControl(GUIContext.BasisArea);
-      Put_Line("General Tab Create*******");
       CreateGeneralTab;
       GUIContext.BasisArea.OnResize:=WindowAreaResize'Access;
 
@@ -350,10 +341,8 @@ package body SimClientGUI.CreateMenu is
       ButtonCreate.OnClick:=ButtonCreateClick'Access;
 
       -- TODO: Could be unnecessary if the above .SetChecked does that
-      Put_Line("Select Game Type*********************************");
       SelectGameType;
 
-      Put_Line("WindowAreaResize******************************");
       WindowAreaResize(null);
       Enabled:=True;
 
@@ -365,15 +354,12 @@ package body SimClientGUI.CreateMenu is
       if not Enabled then
          raise RedisabledGUIModule with "CreateMenu";
       end if;
-      Put_Line("Disable..***********************:");
       ClearGameTabs;
-      Put_Line("Rest******************************");
       Tabs.Free;
       ButtonReturn.Free;
       ButtonCreate.Free;
       GUIContext.BasisArea.OnResize:=null;
       Enabled:=False;
-      Put_Line("Done DISABLE*************");
    end Disable;
    ---------------------------------------------------------------------------
 

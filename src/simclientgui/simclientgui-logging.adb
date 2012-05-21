@@ -20,6 +20,7 @@
 with GUI.Window;
 with GUI.Console;
 
+with Logging;
 with Logging.Server;
 with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
@@ -28,9 +29,22 @@ with Ada.Text_IO; use Ada.Text_IO;
 
 package body SimClientGUI.Logging is
 
-   Enabled : Boolean;
+   Enabled : Boolean:=False;
    Window  : GUI.Window.Window_ClassAccess;
    Console : GUI.Console.Console_ClassAccess;
+
+   procedure LogEvent
+     (Source  : StringStringMap_Pack.Map;
+      Level   : Standard.Logging.Level_Enum;
+      Module  : Unbounded_String;
+      Channel : Unbounded_String;
+      Message : Unbounded_String) is
+      pragma Unreferenced(Level);
+      pragma Unreferenced(Source);
+   begin
+      Console.WriteLine("["&Module&":"&Channel&"]:"&Message,16#FFFFFFFF#);
+   end LogEvent;
+   ---------------------------------------------------------------------------
 
    procedure Enable
      (Configuration : Config.Config_Type) is
@@ -72,6 +86,7 @@ package body SimClientGUI.Logging is
                   Right  => True,
                   Bottom => True);
             end;
+            Standard.Logging.Server.OnLogEvent:=LogEvent'Access;
             Standard.Logging.Server.Initialize(Configuration);
             Enabled:=True;
             Put_Line("Logging Server enabled, should be visible now");
@@ -87,6 +102,7 @@ package body SimClientGUI.Logging is
       if not Enabled then
          return;
       end if;
+      Standard.Logging.Server.OnLogevent:=null;
       Standard.Logging.Server.Finalize;
       Window.Free;
       Enabled:=False;

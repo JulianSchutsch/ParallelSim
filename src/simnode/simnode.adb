@@ -28,6 +28,7 @@ package body SimNode is
 
    LogImplementation : Logging.Implementation_Type;
    LogContext        : Logging.Context_ClassAccess;
+   LogChannel        : Logging.Channel_ClassAccess;
 
    procedure Initialize
      (Configuration : Config.Config_Type) is
@@ -39,6 +40,12 @@ package body SimNode is
         (Configuration => Configuration,
          ConfigNode    => U("Logging"),
          ModuleName    => U("SimNode"));
+      LogContext.NewChannel
+        (ChannelName => U("Main"),
+         Channel     => LogChannel);
+      LogChannel.Write
+        (Level   => Logging.LevelEvent,
+         Message => "SimNode initialized?");
    end Initialize;
    ---------------------------------------------------------------------------
 

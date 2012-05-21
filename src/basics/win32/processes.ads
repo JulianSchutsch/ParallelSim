@@ -36,6 +36,8 @@ package Processes is
 
    FailedExecute : Exception;
 
+   CurrentPathPrefix : Unbounded_String:=U("");
+
    type OnMessage_Access is
      access procedure
        (CallBackObject : AnyObject_ClassAccess;
@@ -53,6 +55,9 @@ package Processes is
       ProgramName : Unbounded_String;
       Arguments   : Unbounded_String)
       return Boolean;
+
+   procedure Kill
+     (Item : access Process_Type);
 
 private
    use ByteOperations;

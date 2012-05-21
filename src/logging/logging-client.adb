@@ -183,8 +183,9 @@ package body Logging.Client is
 
    begin
 
-      Put("Failed Connect");
+      Put("Failed Connect!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
       New_Line;
+      Ada.Text_IO.Flush(Ada.Text_IO.Standard_Output);
       Retry:=True;
 
    end FailedConnect;
@@ -246,7 +247,7 @@ package body Logging.Client is
    begin
 
       -- Send identification as Logging Client
-      Put("Send Identification Packet");
+      Put("Send Identification Packet!!!!!!!!!!!!!!!!!!");
       New_Line;
 
       Item.ReceiveStatus:=ReceiveStatusWaitForIdentification;
@@ -274,6 +275,7 @@ package body Logging.Client is
         (Configuration => Configuration,
          Node          => ConfigNode & ".Network");
       Put_Line("Logging.Client.NewClient");
+      NewCont.Implementation.Initialize.all;
       NewCont.Client:=NewCont.Implementation.NewClient
         (Configuration => Configuration,
          Node          => ConfigNode & ".Network");
@@ -287,7 +289,7 @@ package body Logging.Client is
       Packet.Write(LoggingProtocol.ClientID);
       Packet.Debug;
       NewCont.Client.SendPacket(Packet);
-
+      Flush(Standard_Output);
 
       return Context_ClassAccess(NewCont);
 
@@ -302,6 +304,7 @@ package body Logging.Client is
       NextChannel : Channel_Access;
 
    begin
+
       Context:=Context_Access(Item);
 
       Channel:=Context.Channels;
@@ -310,6 +313,8 @@ package body Logging.Client is
          Channel.FreeChannel;
          Channel:=NextChannel;
       end loop;
+
+      Context.Implementation.Finalize.all;
 
       Free(Context);
 

@@ -18,8 +18,8 @@
 -------------------------------------------------------------------------------
 
 pragma Ada_2005;
-with Ada.Text_IO; use Ada.Text_IO;
-with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Expressions is
 
@@ -68,7 +68,6 @@ package body Expressions is
          Char      : Character;
 
       begin
-         Put(StringPosition);
 
          PrevStringPosition:=StringPosition;
 
@@ -85,8 +84,6 @@ package body Expressions is
                when TokenModeNone =>
                   case Char is
                      when '+' =>
-                        Put("Got +");
-                        New_Line;
                         Token:=TokenAdd;
                         return True;
                      when '-' =>
@@ -117,9 +114,6 @@ package body Expressions is
                         IntValue:=IntValue*10+Character'Pos(Char)-Character'Pos('0');
                      when others =>
                         StringPosition:=StringPosition-1;
-                        Put("Got Integer");
-                        Put(IntValue);
-                        New_Line;
                         Token:=TokenInteger;
                         return True;
                   end case;
@@ -127,9 +121,6 @@ package body Expressions is
                when TokenModeString =>
                   case Char is
                      when '"' =>
-                        Put("Got String");
-                        Put(To_String(StringValue));
-                        New_Line;
                         Token:=TokenString;
                         return True;
                      when others =>
@@ -151,15 +142,9 @@ package body Expressions is
 
          case TokenMode is
             when TokenModeInteger =>
-               Put("Got Integer");
-               Put(IntValue);
-               New_Line;
                Token:=TokenInteger;
                return True;
             when TokenModeString =>
-               Put("Got String");
-               Put(To_String(StringValue));
-               New_Line;
                Token:=TokenString;
                return True;
             when TokenModeSymbol =>

@@ -21,7 +21,7 @@
 --   11.Mar 2012 Julian Schutsch
 --     - Original version
 
--- Reason for implementation
+-- Reasons for implementation
 --   Provide a basis for a simple GUI framework solving essential tasks as
 --   nested rectangle(object) management, mouse and keyboard signal delievery
 --   and canvasse.

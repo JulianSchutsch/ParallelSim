@@ -15,7 +15,7 @@
 --
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
--------------------------------------------------------------------------------
+------------------------------------------------------------------------------
 
 pragma Ada_2005;
 
@@ -27,35 +27,36 @@ package body SimClient.CreateServer is
 
    use type DistributedSystems.Spawn_ClassAccess;
 
-   Spawn : DistributedSystems.Spawn_ClassAccess:=null;
+   Spawn            : DistributedSystems.Spawn_ClassAccess:=null;
    SupplementConfig : Config.Config_Type;
 
    procedure Execute is
-
-      Success : Boolean;
-
    begin
-      Spawn.Execute
-        (SupplementConfig => SupplementConfig,
-         Success          => Success);
-      if Success then
-         if OnSuccess/=null then
-            OnSuccess.all;
-         end if;
-      else
-         if OnFailure/=null then
-            OnFailure(SupplementConfig);
-         end if;
-      end if;
+      Spawn.Execute(SupplementConfig);
    end Execute;
+   ---------------------------------------------------------------------------
+
+   procedure ExecuteFailure
+     (SupplementConfig : Config.Config_Type) is
+   begin
+      if OnFailure/=null then
+         OnFailure(SupplementConfig);
+      end if;
+   end ExecuteFailure;
+   ---------------------------------------------------------------------------
+
+   procedure ExecuteSuccess is
+   begin
+      if OnSuccess/=null then
+         OnSuccess.all;
+      end if;
+   end ExecuteSuccess;
    ---------------------------------------------------------------------------
 
    procedure ExecuteMessage
      (Message : Unbounded_String) is
    begin
-      Put("Executemessage");
       if OnMessage/=null then
-         Put_Line("ExecuteMessage deliver");
          OnMessage(Message);
       end if;
    end ExecuteMessage;
@@ -88,6 +89,8 @@ package body SimClient.CreateServer is
       Executables(1).Amount:=1;
       Implementation.CreateSpawnObject(Configuration,Executables,Spawn);
       Spawn.OnMessage:=ExecuteMessage'Access;
+      Spawn.OnFailure:=ExecuteFailure'Access;
+      Spawn.OnSuccess:=ExecuteSuccess'Access;
       Execute;
    end Initialize;
    ---------------------------------------------------------------------------

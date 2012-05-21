@@ -97,4 +97,10 @@ package Win32.Kernel32 is
       return Boolean;
    pragma Import(StdCall,PeekNamedPipe,"PeekNamedPipe");
 
+   function TerminateProcess
+     (hProcess : HANDLE_Type;
+      uExitCode : UINT_Type)
+      return Boolean;
+   pragma Import(StdCall,TerminateProcess,"TerminateProcess");
+
 end Win32.Kernel32;
