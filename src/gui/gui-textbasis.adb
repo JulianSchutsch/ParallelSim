@@ -320,6 +320,10 @@ package body GUI.TextBasis is
 
       end if;
 
+      RenderCanvasLine
+        (Item       => Item,
+         CanvasLine => NewCanvasLine);
+
       return NewCanvasLine;
 
    end InsertCanvasLine;
@@ -374,12 +378,6 @@ package body GUI.TextBasis is
             WrappedLine  => CurrentWrappedLine,
             Line         => Line);
 
-         if CanvasLine/=null then
-            RenderCanvasLine
-              (Item => Item,
-               CanvasLine => CanvasLine);
-         end if;
-
          CurrentWrappedLine:=CurrentWrappedLine+1;
 
          if (CurrentWrappedLine-Item.WrappedLineIndex)*Item.LineHeight>Item.Bounds.Height then
@@ -408,12 +406,6 @@ package body GUI.TextBasis is
                      CanvasLine   => CanvasLine,
                      WrappedLine  => CurrentWrappedLine,
                      Line         => Line);
-
-                  if CanvasLine/=null then
-                     RenderCanvasLine
-                       (Item => Item,
-                        CanvasLine => CanvasLine);
-                  end if;
 
                end if;
 
