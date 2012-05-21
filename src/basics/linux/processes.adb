@@ -224,23 +224,28 @@ package body Processes is
 
             -- Close ordinary stdout
             if Linux.close(1)<0 then
-               null;
                Put_Line(Standard_Error,"Call to close(1) failed");
             end if;
+            if Linux.close(2)<0 then
+               null;
+            end if;
 
-            Put_Line(Standard_Error,"Closed STDOut");
             -- Reassign pipes writting end to stdout
-            Put_Line(Standard_Error,Linux.FileDescriptor_Type'Image(Item.Pipe(1)));
             if Linux.dup2(Item.Pipe(1),1)<0 then
                Put_Line(Standard_Error,"Failed dup2");
                Put_Line(Standard_Error,Interfaces.C.int'Image(Linux.errno));
+            end if;
+            if Linux.dup2(Item.Pipe(1),2)<0 then
+               null;
             end if;
             CProgram    := Interfaces.C.Strings.New_String(To_String(FullProgramName));
             CParameters := Interfaces.C.Strings.New_String(To_String(Arguments));
             if Linux.Exec
               (ProgramName => CProgram,
                Arguments   => CParameters)<0 then
-               Put_Line(Standard_Error,"Failed Exec");
+               Put_Line(Standard_Error,"Failed Exec"
+                       &Interfaces.C.int'Image(Linux.errno));
+               Linux.eexit(1);
             end if;
             Interfaces.C.Strings.Free(CProgram);
             Interfaces.C.Strings.Free(CParameters);

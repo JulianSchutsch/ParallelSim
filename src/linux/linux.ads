@@ -83,4 +83,8 @@ package Linux is
       return Interfaces.C.int;
    pragma Import(C,Exec,"_exec");
 
+   procedure eexit
+     (status : Interfaces.C.int);
+   pragma Import(C,eexit,"exit");
+
 end Linux;

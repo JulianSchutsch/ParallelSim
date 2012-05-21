@@ -117,7 +117,6 @@ package body MPI.Node is
          Arguments   => Arguments);
 
       if Item.OnMessage/=null then
-         Item.OnMessage(U(""));
          Item.OnMessage(U("Output from mpiexec:"));
       end if;
 --      while not End_Of_File(TempFile) loop
