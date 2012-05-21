@@ -24,15 +24,61 @@
 pragma Ada_2005;
 
 with Interfaces.C.Strings;
-with System;
+with ByteOperations;
 
 package Linux is
 
-   type FILE_Type is new System.Address;
-   function popen
-     (command : Interfaces.C.Strings.chars_ptr;
-      ttype   : Interfaces.C.Strings.chars_ptr)
-      return File_Type;
-   pragma Import(C,popen,"popen");
+   -- TODO: This type may not be portable, but should work on all GNU
+   --       plattforms. The process of determining the correct type
+   --       is complicated! (Lots of ugly c hacks)
+   type pid_t_Type is new Interfaces.C.int;
+
+   function errno
+     return Interfaces.C.int;
+   pragma Import(C,errno,"geterrno");
+
+   type FileDescriptor_Type is new Interfaces.C.int;
+
+   type PipeFiles_Type is array(0..1) of FileDescriptor_Type;
+   pragma Convention(C,PipeFiles_Type);
+
+   function pipe
+     (PipeFiles : access PipeFiles_Type)
+      return Interfaces.C.int;
+   pragma Import(C,pipe,"pipe");
+
+   function read
+     (FileDescriptor : FileDescriptor_Type;
+      Buffer         : ByteOperations.Byte_Access;
+      Count          : Interfaces.C.size_t)
+      return Interfaces.C.int;
+   pragma Import(C,read,"read");
+
+   function close
+     (FileDescriptor : FileDescriptor_Type)
+      return Interfaces.C.int;
+   pragma Import(C,close,"close");
+
+   function fork
+     return pid_t_Type;
+   pragma Import(C,fork,"fork");
+
+   function dup2
+     (OldFileDescriptor : FileDescriptor_Type;
+      NewFileDescriptor : FileDescriptor_Type)
+      return Interfaces.C.int;
+   pragma Import(C,dup2,"dup2");
+
+   -- C procedure which tries to make this portable
+   procedure SetNonBlocking
+     (FileDescriptor : FileDescriptor_Type);
+   pragma Import(C,SetNonBlocking,"SetNonBlocking");
+
+   -- Wrapper for vararg execl call
+   function Exec
+     (ProgramName : Interfaces.C.Strings.chars_ptr;
+      Arguments   : Interfaces.C.Strings.chars_ptr)
+      return Interfaces.C.int;
+   pragma Import(C,Exec,"_exec");
 
 end Linux;

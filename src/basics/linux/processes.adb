@@ -23,10 +23,9 @@ with Interfaces.C;
 with Interfaces.C.Strings;
 with GNAT.OS_Lib;
 with GNAT.Strings;
-with Linux;
 with Ada.Directories; use Ada.Directories;
-with System;
 with ProcessLoop;
+with ByteOperations;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
@@ -50,7 +49,7 @@ package body Processes is
       Start   := PathEnv.all'First;
       Put_Line("PATH:"&PathEnv.all);
       for i in PathEnv.all'Range loop
-         if PathEnv.all(i)=';' then
+         if PathEnv.all(i)=':' then
             -- Take String Start..i-1 if i-1-start>0 and add it to the list
             if i-Start>=1 then
                PathDirectories.Append(U(PathEnv.all(Start..i-1)));
@@ -87,7 +86,7 @@ package body Processes is
             Start_Search
               (Search    => Search,
                Directory => To_String(StringList_Pack.Element(Cursor)),
-               Pattern   => To_String(FileName)&".exe",
+               Pattern   => To_String(FileName),
                Filter    => (Ordinary_File => True, others => False));
             if More_Entries(Search) then
                Get_Next_Entry
@@ -112,74 +111,27 @@ package body Processes is
    procedure ProcessQueue
      (Object : AnyObject_ClassAccess) is
 
-      use type Win32.DWORD_Type;
+      use type Interfaces.C.int;
 
-      Process   : constant Process_Access:=Process_Access(Object);
-      ExitCode  : aliased Win32.DWORD_Type;
-      BytesRead : aliased Win32.DWORD_Type:=0;
+      Process  : constant Process_Access:=Process_Access(Object);
+      CharCode : aliased ByteOperations.ByteArray_Type:=(0 => 0);
+      Result : Interfaces.C.int;
 
    begin
-      if not Win32.Kernel32.GetExitCodeProcess
-        (hProcess   => Process.ProcessHandle,
-         lpExitCode => ExitCode'Access) then
-         Put_Line("GetExitCode failed******************************************");
-      end if;
-      if ExitCode/=Win32.STILL_ACTIVE then
-         -- TODO: Report this !!!
-         return;
-      end if;
 
-      if not Win32.Kernel32.PeekNamedPipe
-        (hNamedPipe             => Process.StdOutPipeIn,
-         lpBuffer               => null,
-         nBufferSize            => 0,
-         lpBytesRead            => null,
-         lpTotalBytesAvail      => BytesRead'Access,
-         lpBytesLeftThisMessage => null) then
-         Put_Line("Failed call to PeekNamedPipe?");
-         return;
-      end if;
-
-      if BytesRead=0 then
+      Result:=Linux.read
+        (FileDescriptor => Process.Pipe(0),
+         Buffer         => CharCode(0)'Unchecked_Access,
+         Count          => 1);
+      if Result<=0 then
+         Put_Line("Failed Read from Pipe");
+         Put_Line(Interfaces.C.int'Image(Linux.errno));
+         -- TODO: Handle error cases...some may require closing the pipe
          return;
       end if;
 
       Put_Line("Process still running"&Integer'Image(Count));
       Count:=Count+1;
-
-      if Process.Buffer=null then
-         Process.Buffer:=new ByteArray_Type(0..1023);
-      end if;
-
-      if not Win32.Kernel32.ReadFile
-        (hFile                => Process.StdOutPipeIn,
-         lpBuffer             => Process.Buffer,
-         nNumberOfBytesToRead => Process.Buffer'Length,
-         lpNumberOfBytesRead  => BytesRead'Access,
-         lpOverlapped         => null) then
-         Put_Line("Failed to Read File");
-         return;
-      end if;
-
-      for i in 0..Integer(BytesRead)-1 loop
-         case Process.Buffer(i) is
-            when 10 =>
-               declare
-                  Str : Unbounded_String;
-               begin
-                  Process.CharacterBuffer.ReadString(Str);
-                  if Process.OnMessage/=null then
-                     Put_Line("Call OnMessage");
-                     Put(Process.OnMessage.all'Address);
-                     Process.OnMessage(Process.CallBackObject,Str);
-                  end if;
-               end;
-            when 13 =>
-               null;
-            when others =>
-               Process.CharacterBuffer.AddCharacter(Character'Val(Process.Buffer(i)));
-         end case;
-      end loop;
 
    end ProcessQueue;
    ---------------------------------------------------------------------------
@@ -190,13 +142,10 @@ package body Processes is
       Arguments   : Unbounded_String)
       return Boolean is
 
-      use type Win32.DWORD_Type;
-      use type Interfaces.C.ptrdiff_t;
-
       use type Interfaces.C.int;
-      use type Interfaces.Unsigned_32;
+      use type Linux.pid_t_Type;
 
-      CProgramName    : Interfaces.C.Strings.chars_ptr;
+      CProgram        : Interfaces.C.Strings.chars_ptr;
       CParameters     : Interfaces.C.Strings.chars_ptr;
       FullProgramName : Unbounded_String;
 
@@ -215,70 +164,66 @@ package body Processes is
          end if;
       end;
 
+      if Linux.pipe(Item.Pipe'Access)<0 then
+         raise FailedExecute with "call to pipe failed with "
+           &Interfaces.C.int'Image(Linux.errno);
+      end if;
       declare
-         SecAttr : aliased Win32.SECURITY_ATTRIBUTES_Type;
+         pid : Linux.pid_t_Type;
       begin
-         SecAttr.nLength        := SecAttr'Size/8;
-         SecAttr.bInheritHandle := 1;
-         if not Win32.Kernel32.CreatePipe
-           (hReadPipe        => Item.StdOutPipeIn'Access,
-            hWritePipe       => Item.StdOutPipeOut'Access,
-            lpPipeAttributes => SecAttr'Access,
-            nSize            => 0) then
-            Put("Failed Create Pipe ");
-            Put_Line(Win32.DWORD_Type'Image(Win32.GetLastError));
-            return False;
+         pid:=Linux.fork;
+         if pid<0 then
+            if Linux.close(Item.Pipe(0))<0 then
+               null;
+            end if;
+            if Linux.close(Item.Pipe(1))<0 then
+               null;
+            end if;
+            raise FailedExecute with "Call to fork failed with "
+              &Interfaces.C.int'Image(Linux.errno);
          end if;
-         if not Win32.Kernel32.SetHandleInformation
-           (hObject => Item.StdOutPipeIn,
-            dwMask  => Win32.HANDLE_FLAG_INHERIT,
-            dwFlags => 0) then
-            -- TODO: Close Pipe handles
-            Put_Line("Failed To Create SetHandleInformation");
-            return False;
+         if pid=0 then
+            -- Parent process
+
+            -- PipeArray
+            --  0 : Read
+            --  1 : Write
+            -- Close writing end of the pipe
+            if Linux.close(Item.Pipe(1))<0 then
+               raise FailedExecute with "Call to close (writting end of the pipe) failed with "
+                 &Interfaces.C.int'Image(Linux.errno);
+            end if;
+
+            Linux.SetNonBlocking(Item.Pipe(0));
+
+         else
+            -- Child process
+
+            -- Close reading end of the pipe
+            if Linux.close(Item.Pipe(0))<0 then
+               Put_Line("Call to close (reading end of the pipe) failed");
+            end if;
+
+            -- Close ordinary stdout
+            if Linux.close(1)<0 then
+               Put_Line("Call to close(1) failed");
+            end if;
+
+            -- Reassign pipes writting end to stdout
+            if Linux.dup2(Item.Pipe(0),1)<0 then
+               null;
+            end if;
+            CProgram    := Interfaces.C.Strings.New_String(To_String(FullProgramName));
+            CParameters := Interfaces.C.Strings.New_String(To_String(Arguments));
+            if Linux.Exec
+              (ProgramName => CProgram,
+               Arguments   => CParameters)<0 then
+               Put_Line("Failed Exec");
+            end if;
+            Interfaces.C.Strings.Free(CProgram);
+            Interfaces.C.Strings.Free(CParameters);
          end if;
       end;
-
-      CProgramName := Interfaces.C.Strings.New_String(To_String(FullProgramName));
-      CParameters  := Interfaces.C.Strings.New_String(To_String(Arguments));
-
-      declare
-         StartInfo   : aliased Win32.STARTUPINFO_Type;
-         ProcessInfo : aliased Win32.PROCESS_INFORMATION_Type;
-      begin
-
-         StartInfo.cb         := StartInfo'Size/8;
-         StartInfo.hStderr    := Item.StdOutPipeOut;
-         StartInfo.hStdOutput := Item.StdOutPipeOut;
-         StartInfo.hStdInput  := Win32.NULLHANDLE;
-         StartInfo.dwFlags    := Win32.STARTF_USESTDHANDLES;
-
-         if Win32.Kernel32.CreateProcess
-           (lpApplicationName    => CProgramName,
-            lpCommandLine        => CParameters,
-            lpProcessAttributes  => null,
-            lpThreadAttributes   => null,
-            bInheritHandles      => 1,
-            dwCreationFlags      => 0,
-            lpEnvironment        => System.Null_Address,
-            lpCurrentDirectory   => Interfaces.C.Strings.Null_Ptr,
-            lpStartupInfo        => StartInfo'Access,
-            lpProcessInformation => ProcessInfo'Access)=0 then
-            -- TODO: Close Pipe handles
-            --       and Free Strings
-            Put_Line("Failed To Create Process");
-            Put_Line(Win32.DWORD_Type'Image(Win32.GetLastError));
-            return False;
-         end if;
-         if Win32.Kernel32.CloseHandle(ProcessInfo.hThread)=0 then
-            Put_Line("Failed to close Handle");
-         end if;
-         -- TODO: Copy ProcessID for later
-         Item.ProcessHandle:=ProcessInfo.hProcess;
-      end;
-
-      Interfaces.C.Strings.Free(CProgramName);
-      Interfaces.C.Strings.Free(CParameters);
 
       ProcessLoop.Add(ProcessQueue'Access,AnyObject_ClassAccess(Item));
       return False;
