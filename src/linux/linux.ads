@@ -87,4 +87,10 @@ package Linux is
      (status : Interfaces.C.int);
    pragma Import(C,eexit,"exit");
 
+   function kill
+     (pid : pid_t_Type;
+      sig : Interfaces.C.int)
+      return Interfaces.C.int;
+   pragma Import(C,kill,"kill");
+
 end Linux;

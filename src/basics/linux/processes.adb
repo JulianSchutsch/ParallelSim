@@ -153,6 +153,13 @@ package body Processes is
    end ProcessQueue;
    ---------------------------------------------------------------------------
 
+   procedure Kill
+     (Item : access Process_Type) is
+   begin
+      null;
+   end Kill;
+   ---------------------------------------------------------------------------
+
    function Execute
      (Item        : access Process_Type;
       ProgramName : Unbounded_String;
