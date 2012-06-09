@@ -94,9 +94,24 @@ package body Plattform is
             end;
          end;
 
-         Detected:=PlattformUnknown;
-
       end if;
+
+      declare
+         use type GNAT.Strings.String_Access;
+         OSString : GNAT.Strings.String_Access;
+      begin
+         OSString:=GNAT.OS_Lib.Getenv("OS");
+         if OSString/=null then
+            if OSString.all="Windows_NT" then
+               Detected:=PlattformWindowsNT;
+               GNAT.Strings.Free(OSString);
+               return;
+            end if;
+         end if;
+         GNAT.Strings.Free(OSString);
+      end;
+
+      Detected:=PlattformUnknown;
 
    end Initialize;
    ---------------------------------------------------------------------------
