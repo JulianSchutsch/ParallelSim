@@ -28,6 +28,7 @@ with Ada.Directories; use Ada.Directories;
 with System;
 with ProcessLoop;
 
+with Ada.IO_Exceptions;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body Processes is
@@ -99,6 +100,9 @@ package body Processes is
                return;
             end if;
             End_Search(Search);
+         exception
+            when Ada.IO_Exceptions.Name_Error =>
+               null; -- Ignore exception for invalid paths
          end;
          Cursor:=StringList_Pack.Next(Cursor);
       end loop;
@@ -258,14 +262,20 @@ package body Processes is
            (hObject => Item.StdOutPipeIn,
             dwMask  => Win32.HANDLE_FLAG_INHERIT,
             dwFlags => 0) then
-            -- TODO: Close Pipe handles
+            if Win32.Kernel32.CloseHandle(Item.StdOutPipeIn)=0 then
+               null;
+            end if;
+            if Win32.Kernel32.CloseHandle(Item.StdOutPipeOut)=0 then
+               null;
+            end if;
             Put_Line("Failed To Create SetHandleInformation");
             return False;
          end if;
       end;
 
+      -- TODO: Check if escaping is safe
       CProgramName := Interfaces.C.Strings.New_String(To_String(FullProgramName));
-      CParameters  := Interfaces.C.Strings.New_String(To_String(Arguments));
+      CParameters  := Interfaces.C.Strings.New_String(To_String(""""&FullProgramName&""" "&Arguments));
 
       declare
          StartInfo   : aliased Win32.STARTUPINFO_Type;
@@ -289,10 +299,16 @@ package body Processes is
             lpCurrentDirectory   => Interfaces.C.Strings.Null_Ptr,
             lpStartupInfo        => StartInfo'Access,
             lpProcessInformation => ProcessInfo'Access)=0 then
-            -- TODO: Close Pipe handles
-            --       and Free Strings
+            if Win32.Kernel32.CloseHandle(Item.StdOutPipeIn)=0 then
+               null;
+            end if;
+            if Win32.Kernel32.CloseHandle(Item.StdOutPipeOut)=0 then
+               null;
+            end if;
             Put_Line("Failed To Create Process");
             Put_Line(Win32.DWORD_Type'Image(Win32.GetLastError));
+            Interfaces.C.Strings.Free(CProgramName);
+            Interfaces.C.Strings.Free(CParameters);
             return False;
          end if;
          if Win32.Kernel32.CloseHandle(ProcessInfo.hThread)=0 then

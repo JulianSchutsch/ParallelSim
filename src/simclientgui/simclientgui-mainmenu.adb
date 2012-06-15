@@ -115,11 +115,11 @@ package body SimClientGUI.MainMenu is
          raise ReenabledGUIModule with "MainMenu";
       end if;
       ButtonCreateGame := ThemeImplementation.NewButton(GUIContext.BasisArea);
-      ButtonCreateGame.SetCaption(U("Create Game"));
+      ButtonCreateGame.SetCaption(U("Create Simulation"));
       ButtonCreateGame.OnClick:=ButtonCreateGameClick'Access;
 
       ButtonJoinGame   := ThemeImplementation.NewButton(GUIContext.BasisArea);
-      ButtonJoinGame.SetCaption(U("Join Game"));
+      ButtonJoinGame.SetCaption(U("Join Simulation"));
 
       ButtonExit       := ThemeImplementation.NewButton(GUIContext.BasisArea);
       ButtonExit.SetCaption(U("Exit"));

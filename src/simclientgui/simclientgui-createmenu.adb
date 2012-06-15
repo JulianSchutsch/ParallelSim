@@ -224,7 +224,7 @@ package body SimClientGUI.CreateMenu is
          GeneralTab:=Tabs.NewTab(U("General"));
 
          GameTypeGroup:=ThemeImplementation.NewGroupBox(GUI.Object_ClassAccess(GeneralTab));
-         GameTypeGroup.SetCaption(U("Game type"));
+         GameTypeGroup.SetCaption(U("Simulation type"));
 
          RadioSinglePlayer:=ThemeImplementation.NewRadioButton(GUI.Object_ClassAccess(GameTypeGroup));
          RadioSinglePlayer.SetBounds
@@ -233,7 +233,7 @@ package body SimClientGUI.CreateMenu is
             Height  => 30,
             Width   => 300,
             Visible => True);
-         RadioSinglePlayer.SetCaption(U("Single Player"));
+         RadioSinglePlayer.SetCaption(U("Single Interaction"));
 
          RadioMultiPlayerSingleComputer:=ThemeImplementation.NewRadioButton(GUI.Object_ClassAccess(GameTypeGroup));
          RadioMultiPlayerSingleComputer.SetBounds
@@ -242,7 +242,7 @@ package body SimClientGUI.CreateMenu is
             Height  => 30,
             Width   => 300,
             Visible => True);
-         RadioMultiPlayerSingleComputer.SetCaption(U("Multi Player, Single Computer"));
+         RadioMultiPlayerSingleComputer.SetCaption(U("Multi Interaction, Single Computer"));
          RadioMultiPlayerSingleComputer.Link(RadioSinglePlayer);
 
          RadioMultiPlayerMultiComputer:=ThemeImplementation.NewRadioButton(GUI.Object_ClassAccess(GameTypeGroup));
@@ -252,7 +252,7 @@ package body SimClientGUI.CreateMenu is
             Height  => 30,
             Width   => 300,
             Visible => True);
-         RadioMultiPlayerMultiComputer.SetCaption(U("Multi Player, Multi Computer"));
+         RadioMultiPlayerMultiComputer.SetCaption(U("Multi Interaction, Multi Computer"));
          RadioMultiPlayerMultiComputer.Link(RadioSinglePlayer);
 
          RadioSinglePlayer.SetChecked;
@@ -337,7 +337,7 @@ package body SimClientGUI.CreateMenu is
          Left   => False,
          Right  => True,
          Bottom => True);
-      ButtonCreate.SetCaption(U("Create Game"));
+      ButtonCreate.SetCaption(U("Create Simulation"));
       ButtonCreate.OnClick:=ButtonCreateClick'Access;
 
       -- TODO: Could be unnecessary if the above .SetChecked does that
