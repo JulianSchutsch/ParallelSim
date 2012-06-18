@@ -64,6 +64,7 @@
 
 pragma Ada_2005;
 
+with Errors;
 with Config;
 with Config.Implementations;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -110,7 +111,8 @@ package DistributedSystems is
 
    type OnFailure_Access is
      access procedure
-       (SupplementConfig : Config.Config_Type);
+       (Error            : Errors.Error_Type;
+        SupplementConfig : Config.Config_Type);
 
    type OnSuccess_Access is
      access procedure;

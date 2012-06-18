@@ -26,15 +26,30 @@
 --   A database is necessary to decode the given error numbers, but
 --   may permit hints on how to fix errors without consultation of a user
 --   manual.
+
 pragma Ada_2005;
+
+with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Unchecked_Deallocation;
 
 package Errors is
 
+   type ErrorParamArray_Type is array(Integer range <>) of Unbounded_String;
+   type ErrorParamArray_Access is access all ErrorParamArray_Type;
    type Error_Type is
       record
-         null;
+         Error   : Unbounded_String;
+         Params  : ErrorParamArray_Access := null;
       end record;
 
    type Error_Access is access all Error_Type;
+
+   function StringToParams
+     (Str : String)
+      return ErrorParamArray_Access;
+
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => ErrorParamArray_Type,
+      Name   => ErrorParamArray_Access);
 
 end Errors;

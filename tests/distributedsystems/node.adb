@@ -1,4 +1,6 @@
+with Ada.Text_IO; use Ada.Text_IO;
+
 procedure Node is
 begin
-  null;
+  Put_Line("Node says hello");
 end Node;

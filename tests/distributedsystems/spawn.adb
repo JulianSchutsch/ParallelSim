@@ -30,7 +30,9 @@ with Network.UseImplementations;
 with DistributedSystems;
 with DistributedSystems.UseImplementations;
 with Config;
+with Errors;
 with Basics; use Basics;
+with ProcessLoop;
 
 procedure Spawn is
 
@@ -56,9 +58,11 @@ procedure Spawn is
    ---------------------------------------------------------------------------
 
    procedure SpawnFailure
-     (SupplementConfig : Config.Config_Type) is
+     (Error            : Errors.Error_Type;
+      SupplementConfig : Config.Config_Type) is
       pragma Unreferenced(SupplementConfig);
    begin
+      Put_Line("Error:"&To_String(Error.Error));
       Put_Line("Spawn failure.");
       Terminated := True;
    end SpawnFailure;
@@ -81,6 +85,7 @@ begin
    SpawnObject.Execute(SupplementConfig);
 
    loop
+      ProcessLoop.Process;
       exit when Terminated;
    end loop;
 

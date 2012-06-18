@@ -35,6 +35,7 @@
 pragma Ada_2005;
 
 with MPI; use MPI;
+with Ada.Exceptions; use Ada.Exceptions;
 with Ada.Text_IO; use Ada.Text_IO;
 with Basics; use Basics;
 with Interfaces.C;
@@ -46,6 +47,7 @@ with Processes;
 with GNAT.Regpat;
 with Network.Packets;
 with Types;
+with Errors;
 with Endianess; use Endianess;
 with ByteOperations; use ByteOperations;
 
@@ -117,7 +119,11 @@ package body MPI.Node is
            (Key      => U("Password"),
             New_Item => U(""));
          if Spawn.OnFailure/=null then
-            Spawn.OnFailure(SupplementConfig);
+            Spawn.OnFailure
+              (Error =>
+                 (Error  => U("MPIDISTSYS:MISSING_CREDENTIALS"),
+                  Params => null),
+               SupplementConfig => SupplementConfig);
          end if;
          Spawn.Process.Kill;
       end if;
@@ -125,7 +131,11 @@ package body MPI.Node is
         (Expression => "Aborting",
          Data       => To_String(Message)) then
          if Spawn.OnFailure/=null then
-            Spawn.OnFailure(SupplementConfig);
+            Spawn.OnFailure
+              (Error =>
+                 (Error  => U("MPIDISTSYS:FAILED EXEC"),
+                  Params => null),
+               SupplementConfig => SupplementConfig);
          end if;
          Spawn.Process.Kill;
       end if;
@@ -133,7 +143,11 @@ package body MPI.Node is
         (Expression => "launch failed",
          Data       => To_String(Message)) then
          if Spawn.OnFailure/=null then
-            Spawn.OnFailure(SupplementConfig);
+            Spawn.OnFailure
+              (Error =>
+                 (Error => U("MPIDISTSYS:FAILED EXEC"),
+                  Params => null),
+               SupplementConfig => SupplementConfig);
          end if;
          Spawn.Process.Kill;
       end if;
@@ -198,13 +212,30 @@ package body MPI.Node is
 
       Item.Process.CallBackObject:=AnyObject_ClassAccess(Item);
       Item.Process.OnMessage:=ProcessMessage'Access;
-      if not Item.Process.Execute
-        (ProgramName => U("mpiexec"),
-         Arguments   => Arguments) then
-         if Item.OnFailure/=null then
-            Item.OnFailure(SupplementConfig);
-         end if;
-      end if;
+      begin
+         Item.Process.Execute
+           (ProgramName => U("mpiexec"),
+            Arguments   => Arguments);
+      exception
+         when Processes.ExecutableNotFound =>
+            Item.OnFailure
+              (Error =>
+                 (Error  => U("MPIDISTSYS:!MPIEXEC"),
+                  Params => null),
+               SupplementConfig => SupplementConfig);
+         when Processes.FailedToCreatePipe =>
+            Item.OnFailure
+              (Error  =>
+                 (Error => U("MPIDISTSYS:!MPIEXEC.PIPE"),
+                  Params => null),
+               SupplementConfig => SupplementConfig);
+         when E:Processes.FailedExecute =>
+            Item.OnFailure
+              (Error =>
+                 (Error  => U("MPIDISTSYS:!MPIEXEC.EXEC"),
+                  Params => Errors.StringToParams(Ada.Exceptions.Exception_Message(E))),
+               SupplementConfig => SupplementConfig);
+      end;
 
       if Item.OnMessage/=null then
          Item.OnMessage(U("Output from mpiexec:"));
