@@ -26,6 +26,7 @@ pragma Ada_2005;
 with Ada.Unchecked_Conversion;
 with Ada.Unchecked_Deallocation;
 with System;
+with Endianess;
 
 package ByteOperations is
 
@@ -34,11 +35,17 @@ package ByteOperations is
    type ByteArray_Type is array(Integer range <>) of aliased Byte_Type;
    pragma Convention(C,ByteArray_Type);
 
+   type LittleEndianCardinal32_Access is access all Endianess.LittleEndianCardinal32;
+
    type ByteArray_Access is access all ByteArray_Type;
 
    function AddressToByteAccess is new Ada.Unchecked_Conversion
      (Source => System.Address,
       Target => Byte_Access);
+
+   function ByteAccessToLECardinal32Access is  new Ada.Unchecked_Conversion
+     (Source => Byte_Access,
+      Target => LittleEndianCardinal32_Access);
 
    procedure Free is new Ada.Unchecked_Deallocation
      (Object => ByteArray_Type,

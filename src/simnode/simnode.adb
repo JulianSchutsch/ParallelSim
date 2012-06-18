@@ -23,6 +23,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with ProcessLoop;
 with Logging;
 with Basics; use Basics;
+with SimNodes; use SimNodes;
 
 package body SimNode is
 
@@ -30,8 +31,7 @@ package body SimNode is
    LogContext        : Logging.Context_ClassAccess;
    LogChannel        : Logging.Channel_ClassAccess;
 
-   procedure Initialize
-     (Configuration : Config.Config_Type) is
+   procedure Initialize is
    begin
       LogImplementation:=Logging.Implementations.Find
         (Configuration => Configuration,

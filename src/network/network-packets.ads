@@ -26,6 +26,7 @@ pragma Ada_2005;
 with ByteOperations;
 with Types;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Interfaces.C;
 
 package Network.Packets is
 
@@ -35,11 +36,12 @@ package Network.Packets is
    type Packet_Access is access all Packet_Type;
    type Packet_Type is tagged
       record
-         Content     : ByteOperations.ByteArray_Access := null;
-         Position    : Integer       := 0;
-         Amount      : Integer       := 0;
-         Next        : Packet_Access := null;
-         Last        : Packet_Access := null;
+         Content        : ByteOperations.ByteArray_Access := null;
+         Position       : Integer       := 0;
+         Amount         : Integer       := 0;
+         Next           : Packet_Access := null;
+         Last           : Packet_Access := null;
+         CData1         : Interfaces.C.int;
       end record;
 
    procedure Write

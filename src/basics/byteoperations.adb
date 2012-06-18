@@ -42,5 +42,6 @@ package body ByteOperations is
       return SizeTToByteAccess
         (ByteAccessToSizeT(Left)+Interfaces.C.size_t(Right));
    end "+";
+   ---------------------------------------------------------------------------
 
 end ByteOperations;

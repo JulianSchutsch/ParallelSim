@@ -23,12 +23,9 @@
 
 pragma Ada_2005;
 
-with Config;
-
 package SimNode is
 
-   procedure Initialize
-     (Configuration : Config.Config_Type);
+   procedure Initialize;
 
    procedure Finalize;
 
