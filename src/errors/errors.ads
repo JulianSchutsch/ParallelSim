@@ -23,6 +23,9 @@
 --   expected.
 --   A string representation for errors is introduced to attach error data
 --   to exceptions.
+--   A database is necessary to decode the given error numbers, but
+--   may permit hints on how to fix errors without consultation of a user
+--   manual.
 pragma Ada_2005;
 
 package Errors is
