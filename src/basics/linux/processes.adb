@@ -25,7 +25,6 @@ with GNAT.OS_Lib;
 with GNAT.Strings;
 with Ada.Directories; use Ada.Directories;
 with ProcessLoop;
-with ByteOperations;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
