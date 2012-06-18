@@ -25,6 +25,7 @@ with GNAT.OS_Lib;
 with GNAT.Strings;
 with Ada.Directories; use Ada.Directories;
 with ProcessLoop;
+with Linux;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
@@ -118,7 +119,7 @@ package body Processes is
 
       loop
          Result:=Linux.read
-           (FileDescriptor => Process.Pipe(0),
+           (FileDescriptor => Process.P.Pipe(0),
             Buffer         => CharCode(0)'Unchecked_Access,
             Count          => 1);
          if Result<=0 then
@@ -159,11 +160,10 @@ package body Processes is
    end Kill;
    ---------------------------------------------------------------------------
 
-   function Execute
+   procedure Execute
      (Item        : access Process_Type;
       ProgramName : Unbounded_String;
-      Arguments   : Unbounded_String)
-      return Boolean is
+      Arguments   : Unbounded_String) is
 
       use type Interfaces.C.int;
       use type Linux.pid_t_Type;
@@ -182,13 +182,12 @@ package body Processes is
             FullName => FullProgramName,
             Success  => Success);
          if not Success then
-            Put_Line("Failed to find executable");
-            return False;
+            raise ExecutableNotFound with To_String(ProgramName);
          end if;
       end;
 
-      if Linux.pipe(Item.Pipe'Access)<0 then
-         raise FailedExecute with "call to pipe failed with "
+      if Linux.pipe(Item.P.Pipe'Access)<0 then
+         raise FailedToCreatePipe with "call to pipe failed with "
            &Interfaces.C.int'Image(Linux.errno);
       end if;
       declare
@@ -196,10 +195,10 @@ package body Processes is
       begin
          pid:=Linux.fork;
          if pid<0 then
-            if Linux.close(Item.Pipe(0))<0 then
+            if Linux.close(Item.P.Pipe(0))<0 then
                null;
             end if;
-            if Linux.close(Item.Pipe(1))<0 then
+            if Linux.close(Item.P.Pipe(1))<0 then
                null;
             end if;
             raise FailedExecute with "Call to fork failed with "
@@ -212,19 +211,19 @@ package body Processes is
             --  0 : Read
             --  1 : Write
             -- Close writing end of the pipe
-            if Linux.close(Item.Pipe(1))<0 then
+            if Linux.close(Item.P.Pipe(1))<0 then
                raise FailedExecute with "Call to close (writting end of the pipe) failed with "
                  &Interfaces.C.int'Image(Linux.errno);
             end if;
 
-            Linux.SetNonBlocking(Item.Pipe(0));
+            Linux.SetNonBlocking(Item.P.Pipe(0));
 
          else
             -- Child process
 
             Put_Line("Child PROCESS");
             -- Close reading end of the pipe
-            if Linux.close(Item.Pipe(0))<0 then
+            if Linux.close(Item.P.Pipe(0))<0 then
                Put_Line("Call to close (reading end of the pipe) failed");
             end if;
 
@@ -237,11 +236,11 @@ package body Processes is
             end if;
 
             -- Reassign pipes writting end to stdout
-            if Linux.dup2(Item.Pipe(1),1)<0 then
+            if Linux.dup2(Item.P.Pipe(1),1)<0 then
                Put_Line(Standard_Error,"Failed dup2");
                Put_Line(Standard_Error,Interfaces.C.int'Image(Linux.errno));
             end if;
-            if Linux.dup2(Item.Pipe(1),2)<0 then
+            if Linux.dup2(Item.P.Pipe(1),2)<0 then
                null;
             end if;
             CProgram    := Interfaces.C.Strings.New_String(To_String(FullProgramName));
@@ -259,7 +258,6 @@ package body Processes is
       end;
 
       ProcessLoop.Add(ProcessQueue'Access,AnyObject_ClassAccess(Item));
-      return False;
 
    end Execute;
 
