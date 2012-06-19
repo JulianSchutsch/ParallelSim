@@ -77,18 +77,11 @@ abstract project Common is
            (Dir & "../src/network/win32",
             Dir & "../src/basics/win32");
 
-         LinkerSwitches:=LinkerSwitches &
-           ("-L.",
-            "-lfreetype6");
-
       when "Linux" | "BSD" =>
 
          SourceDirectories:=SourceDirectories &
            (Dir & "../src/network/linux",
             Dir & "../src/basics/unix");
-
-         LinkerSwitches:=LinkerSwitches &
-           ("-lfreetype");
 
          LanguagesUsed:=LanguagesUsed &
            ("C");
