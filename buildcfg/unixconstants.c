@@ -65,7 +65,7 @@ int main(int argc,char ** args)
   fputs("\n",file);
   fputs("-- This file is created automatically by /buildcfg/unixconstants\n",file);
   fputs("\n",file);
-  fputs("pragma Ada_2005\n;",file);
+  fputs("pragma Ada_2005;\n",file);
   fputs("package UnixConstants is\n",file);
   fputs("\n",file);
   fprintf(file,"  EAGAIN : constant := 16#%x#;\n",EAGAIN);

@@ -64,7 +64,7 @@ int main(int argc,char ** args)
   fputs("\n",file);
   fputs("-- This file is created automatically by /buildcfg/mpiconstants\n",file);
   fputs("\n",file);
-  fputs("pragma Ada_2005\n;",file);
+  fputs("pragma Ada_2005;\n",file);
   fputs("package MPIConstants is\n",file);
   fputs("  -- Default Communicators\n",file);
   fprintf(file,"  MPI_COMM_WORLD : constant:=16#%x#;\n",MPI_COMM_WORLD);
