@@ -30,8 +30,10 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <errno.h>
+#include <wait.h>
 
-#define OUTPUTFILE "mpiconstants.ads"
+#define OUTPUTFILE "unixconstants.ads"
 
 int main(int argc,char ** args)
 {
@@ -66,7 +68,8 @@ int main(int argc,char ** args)
   fputs("pragma Ada_2005\n;",file);
   fputs("package UnixConstants is\n",file);
   fputs("\n",file);
-  fprintf(file,"  EGAIN : constant := 16#%x#;\n",EGAIN);
+  fprintf(file,"  EAGAIN : constant := 16#%x#;\n",EAGAIN);
+  fprintf(file,"  WNOHANG : constant := 16#%x#;\n",WNOHANG);
   fputs("\n",file);
   fputs("end UnixConstants;",file);
   fclose(file);

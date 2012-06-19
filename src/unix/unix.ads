@@ -25,6 +25,7 @@ pragma Ada_2005;
 
 with Interfaces.C.Strings;
 with ByteOperations;
+with UnixConstants;
 
 package Unix is
 
@@ -33,8 +34,8 @@ package Unix is
    --       is complicated! (Lots of ugly c hacks)
    type pid_t_Type is new Interfaces.C.int;
 
-   EAGAIN  : constant := 11;
-   WNOHANG : constant := 1;
+   EAGAIN  : constant := UnixConstants.EAGAIN;
+   WNOHANG : constant := UnixConstants.WNOHANG;
 
    function errno
      return Interfaces.C.int;

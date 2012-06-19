@@ -25,13 +25,12 @@ with GNAT.Regpat;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.IO_Exceptions;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with Ada.Directories;
+with Ada.Directories; use Ada.Directories;
 with Tools;
 
 package body Plattform is
 
-   procedure Initialize is
-
+   procedure Detect is
    begin
 
       -- uname plattform detection, if possible
@@ -59,6 +58,36 @@ package body Plattform is
 
       Detected:=PlattformUnknown;
 
+   end Detect;
+   ---------------------------------------------------------------------------
+
+   procedure Initialize is
+   begin
+      Detect;
+      case Detected is
+         when PlattformLinux | PlattformBSD =>
+            Tools.QuickExec
+              (Command => "gcc",
+               Argument => "unixconstants.c"&
+               " -o unixconstants"&To_String(ExecutableSuffix));
+            if not Tools.Success then
+               raise PlattformInitializationFailed with
+                 "Failed to compile unixconstants.c";
+            end if;
+            Tools.QuickExec
+              (Command  => "./unixconstants",
+               Argument => "");
+            if not Tools.Success then
+               raise PlattformInitializationFailed with
+                 "Failed to run unixconstants";
+            end if;
+            Copy_File
+              (Source_Name => "unixconstants.ads",
+               Target_Name => To_String(BasePath)&"../src/unix/unixconstants.ads");
+            Delete_File("unixconstants.ads");
+         when others =>
+            null;
+      end case;
    end Initialize;
    ---------------------------------------------------------------------------
 

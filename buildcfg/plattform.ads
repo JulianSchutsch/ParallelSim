@@ -35,6 +35,8 @@ with Common; use Common;
 
 package Plattform is
 
+   PlattformInitializationFailed : Exception;
+
    type Plattform_Enum is
      (PlattformUnknown,
       PlattformLinux,
@@ -53,7 +55,7 @@ package Plattform is
       PlattformBSD       => U("BSD"),
       PlattformWindowsNT => U("WindowsNT"));
 
-   Detected           : Plattform_Enum:=PlattformUnknown;
+   Detected         : Plattform_Enum:=PlattformUnknown;
    ExecutableSuffix : Unbounded_String;
 
    procedure Initialize;
