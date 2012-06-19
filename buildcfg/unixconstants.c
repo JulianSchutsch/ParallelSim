@@ -31,7 +31,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <errno.h>
-#include <wait.h>
+#include <sys/wait.h>
 
 #define OUTPUTFILE "unixconstants.ads"
 
