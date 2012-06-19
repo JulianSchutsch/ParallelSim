@@ -30,7 +30,7 @@ abstract project Common is
       Dir & "../src/simnodes",
       Dir & "../src/xlib",
       Dir & "../src/win32",
-      Dir & "../src/linux",
+      Dir & "../src/unix",
       Dir & "../src/simconfig");
 
    CompilerSwitches:=();
