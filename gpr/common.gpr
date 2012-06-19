@@ -81,7 +81,7 @@ abstract project Common is
            ("-L.",
             "-lfreetype6");
 
-      when "Linux" =>
+      when "Linux" | "BSD" =>
 
          SourceDirectories:=SourceDirectories &
            (Dir & "../src/network/linux",

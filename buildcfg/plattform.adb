@@ -87,6 +87,12 @@ package body Plattform is
                      Detected:=PlattformLinux;
                      return;
                   end if;
+                  if GNAT.Regpat.Match
+                    (Expression => "FreeBSD",
+                     Data       => Content) then
+                     Detected:=PlattformBSD;
+                     return;
+                  end if;
                end;
             exception
                when Ada.IO_Exceptions.End_Error =>

@@ -88,7 +88,7 @@ package body Implementations is
          Mode => Out_File,
          Name => To_String(BasePath)&"mpiconstants.h");
       case Detected is
-         when PlattformLinux =>
+         when PlattformLinux | PlattformBSD=>
             Put_Line(File,"#include ""mpi.h""");
             AdditionalConfigLines.Append(U("   MPICH2LIB:=""."";"));
 
@@ -130,7 +130,9 @@ package body Implementations is
          Arguments:=GNAT.OS_Lib.Argument_String_To_List
            (To_String(BasePath)&"mpiconstants.c -o "
             &To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix)
-            &" -I/usr/include/mpich2 -I/usr/include/mpich2-i386");
+            &" -I/usr/include/mpich2"
+            &" -I/usr/include/mpich2-i386"
+            &" -I/usr/local/include");
          GNAT.OS_Lib.Spawn
            (Program_Name => ExecPath.all,
             Args         => Arguments.all,
@@ -182,7 +184,7 @@ package body Implementations is
       case Detected is
          when PlattformUnknown =>
             null;
-         when PlattformLinux =>
+         when PlattformLinux | PlattformBSD =>
             Default(ImplementationBSDSockets) := True;
             Default(ImplementationXlib)       := True;
             Default(ImplementationMPICH2)     := True;
