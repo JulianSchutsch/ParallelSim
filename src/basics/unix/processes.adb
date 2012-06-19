@@ -25,7 +25,7 @@ with GNAT.OS_Lib;
 with GNAT.Strings;
 with Ada.Directories; use Ada.Directories;
 with ProcessLoop;
-with Linux;
+with Unix;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
@@ -118,12 +118,12 @@ package body Processes is
    begin
 
       loop
-         Result:=Linux.read
+         Result:=Unix.read
            (FileDescriptor => Process.P.Pipe(0),
             Buffer         => CharCode(0)'Unchecked_Access,
             Count          => 1);
          if Result<=0 then
-            if Linux.errno=Linux.EAGAIN then
+            if Unix.errno=Unix.EAGAIN then
                return;
             end if;
             Put_Line("Failed Read from Pipe");

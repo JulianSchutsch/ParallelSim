@@ -24,7 +24,7 @@
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Linux;
+with Unix;
 with Basics; use Basics;
 
 package Processes_Plattform is
@@ -33,7 +33,7 @@ package Processes_Plattform is
 
    type Processes_Type is
       record
-         Pipe : aliased Linux.PipeFiles_Type;
+         Pipe : aliased Unix.PipeFiles_Type;
       end record;
 
 end Processes_Plattform;

@@ -26,14 +26,15 @@ pragma Ada_2005;
 with Interfaces.C.Strings;
 with ByteOperations;
 
-package Linux is
+package Unix is
 
    -- TODO: This type may not be portable, but should work on all GNU
    --       plattforms. The process of determining the correct type
    --       is complicated! (Lots of ugly c hacks)
    type pid_t_Type is new Interfaces.C.int;
 
-   EAGAIN : constant:=11;
+   EAGAIN  : constant := 11;
+   WNOHANG : constant := 1;
 
    function errno
      return Interfaces.C.int;
@@ -100,4 +101,4 @@ package Linux is
       return pid_t_Type;
    pragma Import(C,waitpid,"waitpid");
 
-end Linux;
+end Unix;
