@@ -117,6 +117,35 @@ package body Processes is
 
    begin
 
+      declare
+
+         use type Unix.pid_t_Type;
+
+         Status : aliased  Interfaces.C.int;
+         pid    : Unix.pid_t_Type;
+      begin
+         pid:=Unix.waitpid
+           (pid     => Process.P.pid,
+            status  => Status'Access,
+            options => Unix.WNOHANG);
+         if pid=-1 then
+            Put_Line("Failed waitpid");
+         end if;
+         if pid=Process.P.pid then
+            Put_Line("Process terminated");
+            if Unix.close(Process.P.Pipe(0))/=0 then
+               null;
+            end if;
+            ProcessLoop.Remove
+              (Proc   => ProcessQueue'Access,
+               Object => Object);
+            if Process.OnTerminate/=null then
+               Process.OnTerminate(Process.CallBackObject);
+            end if;
+            return;
+         end if;
+      end;
+
       loop
          Result:=Unix.read
            (FileDescriptor => Process.P.Pipe(0),
@@ -127,7 +156,7 @@ package body Processes is
                return;
             end if;
             Put_Line("Failed Read from Pipe");
-            Put_Line(Interfaces.C.int'Image(Linux.errno));
+            Put_Line(Interfaces.C.int'Image(Unix.errno));
             -- TODO: Handle error cases...some may require closing the pipe
             return;
          end if;
@@ -166,7 +195,7 @@ package body Processes is
       Arguments   : Unbounded_String) is
 
       use type Interfaces.C.int;
-      use type Linux.pid_t_Type;
+      use type Unix.pid_t_Type;
 
       CProgram        : Interfaces.C.Strings.chars_ptr;
       CParameters     : Interfaces.C.Strings.chars_ptr;
@@ -186,71 +215,72 @@ package body Processes is
          end if;
       end;
 
-      if Linux.pipe(Item.P.Pipe'Access)<0 then
+      if Unix.pipe(Item.P.Pipe'Access)<0 then
          raise FailedToCreatePipe with "call to pipe failed with "
-           &Interfaces.C.int'Image(Linux.errno);
+           &Interfaces.C.int'Image(Unix.errno);
       end if;
       declare
-         pid : Linux.pid_t_Type;
+         pid : Unix.pid_t_Type;
       begin
-         pid:=Linux.fork;
+         pid:=Unix.fork;
          if pid<0 then
-            if Linux.close(Item.P.Pipe(0))<0 then
+            if Unix.close(Item.P.Pipe(0))<0 then
                null;
             end if;
-            if Linux.close(Item.P.Pipe(1))<0 then
+            if Unix.close(Item.P.Pipe(1))<0 then
                null;
             end if;
             raise FailedExecute with "Call to fork failed with "
-              &Interfaces.C.int'Image(Linux.errno);
+              &Interfaces.C.int'Image(Unix.errno);
          end if;
          if pid/=0 then
             -- Parent process
+            Item.P.pid:=pid;
 
             -- PipeArray
             --  0 : Read
             --  1 : Write
             -- Close writing end of the pipe
-            if Linux.close(Item.P.Pipe(1))<0 then
+            if Unix.close(Item.P.Pipe(1))<0 then
                raise FailedExecute with "Call to close (writting end of the pipe) failed with "
-                 &Interfaces.C.int'Image(Linux.errno);
+                 &Interfaces.C.int'Image(Unix.errno);
             end if;
 
-            Linux.SetNonBlocking(Item.P.Pipe(0));
+            Unix.SetNonBlocking(Item.P.Pipe(0));
 
          else
             -- Child process
 
             Put_Line("Child PROCESS");
             -- Close reading end of the pipe
-            if Linux.close(Item.P.Pipe(0))<0 then
+            if Unix.close(Item.P.Pipe(0))<0 then
                Put_Line("Call to close (reading end of the pipe) failed");
             end if;
 
             -- Close ordinary stdout
-            if Linux.close(1)<0 then
+            if Unix.close(1)<0 then
                Put_Line(Standard_Error,"Call to close(1) failed");
             end if;
-            if Linux.close(2)<0 then
+            if Unix.close(2)<0 then
                null;
             end if;
 
             -- Reassign pipes writting end to stdout
-            if Linux.dup2(Item.P.Pipe(1),1)<0 then
+            if Unix.dup2(Item.P.Pipe(1),1)<0 then
                Put_Line(Standard_Error,"Failed dup2");
-               Put_Line(Standard_Error,Interfaces.C.int'Image(Linux.errno));
+               Put_Line(Standard_Error,Interfaces.C.int'Image(Unix.errno));
             end if;
-            if Linux.dup2(Item.P.Pipe(1),2)<0 then
+            if Unix.dup2(Item.P.Pipe(1),2)<0 then
                null;
             end if;
             CProgram    := Interfaces.C.Strings.New_String(To_String(FullProgramName));
             CParameters := Interfaces.C.Strings.New_String(To_String(Arguments));
-            if Linux.Exec
+            if Unix.Exec
               (ProgramName => CProgram,
                Arguments   => CParameters)<0 then
                Put_Line(Standard_Error,"Failed Exec"
-                       &Interfaces.C.int'Image(Linux.errno));
-               Linux.eexit(1);
+                       &Interfaces.C.int'Image(Unix.errno));
+               Unix.eexit(1);
             end if;
             Interfaces.C.Strings.Free(CProgram);
             Interfaces.C.Strings.Free(CParameters);

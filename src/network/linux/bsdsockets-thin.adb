@@ -23,7 +23,7 @@
 
 pragma Ada_2005;
 
-with Linux;
+with Unix;
 
 package body BSDSockets.Thin is
    use type Interfaces.C.int;
@@ -90,7 +90,7 @@ package body BSDSockets.Thin is
 
    function Error return Interfaces.C.int is
    begin
-      return Linux.errno;
+      return Unix.errno;
    end Error;
    ---------------------------------------------------------------------------
 

@@ -85,7 +85,7 @@ abstract project Common is
 
          SourceDirectories:=SourceDirectories &
            (Dir & "../src/network/linux",
-            Dir & "../src/basics/linux");
+            Dir & "../src/basics/unix");
 
          LinkerSwitches:=LinkerSwitches &
            ("-lfreetype");

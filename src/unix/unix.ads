@@ -95,8 +95,8 @@ package Unix is
    pragma Import(C,kill,"kill");
 
    function waitpid
-     (pid : pid_t_Type;
-      status : access Interfaces.C.int;
+     (pid     : pid_t_Type;
+      status  : access Interfaces.C.int;
       options : Interfaces.C.int)
       return pid_t_Type;
    pragma Import(C,waitpid,"waitpid");

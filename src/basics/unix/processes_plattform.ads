@@ -33,6 +33,7 @@ package Processes_Plattform is
 
    type Processes_Type is
       record
+         pid  : Unix.pid_t_Type;
          Pipe : aliased Unix.PipeFiles_Type;
       end record;
 
