@@ -126,9 +126,9 @@ package body Implementations is
       end case;
 
       AdditionalConfigLines.Append
-        ("  MPICH2Lib:="&Tools.StringListToGprList(MPICH2Lib)&";");
+        ("  MPICH2LIB:="&Tools.StringListToGprList(MPICH2Lib)&";");
       AdditionalConfigLines.Append
-        ("  MPICH2Inc:="&Tools.StringListToGprList(MPICH2Inc)&";");
+        ("  MPICH2INC:="&Tools.StringListToGprList(MPICH2Inc)&";");
 
       Close(File);
 
@@ -146,8 +146,13 @@ package body Implementations is
       end if;
 
       Tools.QuickExec
-        (Command  => "mpiconstants",
+        (Command  => "./mpiconstants",
          Argument => "");
+
+      if not Tools.Success then
+         raise ImplementationInitializeFailed
+           with "Unable to run mpiconstants";
+      end if;
 
       Copy_File
         (Source_Name => "mpiconstants.ads",
