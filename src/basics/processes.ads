@@ -45,10 +45,15 @@ package Processes is
        (CallBackObject : AnyObject_ClassAccess;
         Message        : Unbounded_String);
 
+   type OnTerminate_Access is
+     access procedure
+       (CallBackObject : AnyObject_ClassAccess);
+
    type Process_Public is new AnyObject_Type with
       record
          CallBackObject : AnyObject_ClassAccess;
-         OnMessage      : OnMessage_Access;
+         OnMessage      : OnMessage_Access   := null;
+         OnTerminate    : OnTerminate_Access := null;
       end record;
    type Process_Type is new Process_Public with private;
 

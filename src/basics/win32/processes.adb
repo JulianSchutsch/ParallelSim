@@ -121,13 +121,19 @@ package body Processes is
       BytesRead : aliased Win32.DWORD_Type:=0;
 
    begin
+
       if not Win32.Kernel32.GetExitCodeProcess
         (hProcess   => Process.P.ProcessHandle,
          lpExitCode => ExitCode'Access) then
          Put_Line("GetExitCode failed******************************************");
       end if;
+
       if ExitCode/=Win32.STILL_ACTIVE then
          -- TODO: Report this !!!
+         if Process.OnTerminate/=null then
+            Process.Kill;
+            Process.OnTerminate(Process.CallBackObject);
+         end if;
          return;
       end if;
 

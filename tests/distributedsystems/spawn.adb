@@ -68,6 +68,12 @@ procedure Spawn is
    end SpawnFailure;
    ---------------------------------------------------------------------------
 
+   procedure SpawnTerminate is
+   begin
+      Terminated:=True;
+   end SpawnTerminate;
+   ---------------------------------------------------------------------------
+
 begin
 
    Network.UseImplementations.Register;
@@ -78,9 +84,10 @@ begin
      (Configuration =>  Configuration,
       Executables   => (0=>(Executable => U("node"),Amount => 1)),
       SpawnObject   => SpawnObject);
-   SpawnObject.OnMessage:=SpawnMessage'Unrestricted_Access;
-   SpawnObject.OnSuccess:=SpawnSuccess'Unrestricted_Access;
-   SpawnObject.OnFailure:=SpawnFailure'Unrestricted_Access;
+   SpawnObject.OnMessage   := SpawnMessage'Unrestricted_Access;
+   SpawnObject.OnSuccess   := SpawnSuccess'Unrestricted_Access;
+   SpawnObject.OnFailure   := SpawnFailure'Unrestricted_Access;
+   SpawnObject.OnTerminate := SpawnTerminate'Unrestricted_Access;
 
    SpawnObject.Execute(SupplementConfig);
 

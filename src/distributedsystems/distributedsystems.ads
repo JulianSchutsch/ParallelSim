@@ -117,11 +117,15 @@ package DistributedSystems is
    type OnSuccess_Access is
      access procedure;
 
+   type OnTerminate_Access is
+     access procedure;
+
    type Spawn_Type is new AnyObject_Type with
       record
-         OnMessage : OnMessage_Access:=null;
-         OnFailure : OnFailure_Access:=null;
-         OnSuccess : OnSuccess_Access:=null;
+         OnMessage   : OnMessage_Access:=null;
+         OnFailure   : OnFailure_Access:=null;
+         OnSuccess   : OnSuccess_Access:=null;
+         OnTerminate : OnTerminate_Access:=null;
       end record;
 
    type Spawn_Access is access all Spawn_Type;

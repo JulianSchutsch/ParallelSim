@@ -98,6 +98,22 @@ package body MPI.Node is
    end Free;
    ---------------------------------------------------------------------------
 
+   procedure ProcessTerminate
+     (CallBackObject : AnyObject_ClassAccess) is
+
+      Spawn : constant Spawn_Access:=Spawn_Access(CallBackObject);
+
+   begin
+
+      Put_Line("ProcessTerminate");
+
+      if Spawn.OnTerminate/=null then
+         Spawn.OnTerminate.all;
+      end if;
+
+   end ProcessTerminate;
+   ---------------------------------------------------------------------------
+
    procedure ProcessMessage
      (CallBackObject : AnyObject_ClassAccess;
       Message        : Unbounded_String) is
@@ -211,7 +227,8 @@ package body MPI.Node is
       end if;
 
       Item.Process.CallBackObject:=AnyObject_ClassAccess(Item);
-      Item.Process.OnMessage:=ProcessMessage'Access;
+      Item.Process.OnMessage   := ProcessMessage'Access;
+      Item.Process.OnTerminate := ProcessTerminate'Access;
       begin
          Item.Process.Execute
            (ProgramName => U("mpiexec"),
