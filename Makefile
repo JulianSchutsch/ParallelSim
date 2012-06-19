@@ -4,10 +4,10 @@
 all: client
 
 client:
-	$(MAKE) client --directory=buildcfg
+	$(MAKE) client -C buildcfg
 
 server:
-	$(MAKE) server --directory=buildcfg
+	$(MAKE) server -C buildcfg
 
 clean:
-	$(MAKE) clean --directory=buildcfg
+	$(MAKE) clean -C buildcfg
