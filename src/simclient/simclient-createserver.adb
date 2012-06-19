@@ -22,6 +22,7 @@ pragma Ada_2005;
 with DistributedSystems;
 with Basics; use Basics;
 with Ada.Text_IO; use Ada.Text_IO;
+with Errors;
 
 package body SimClient.CreateServer is
 
@@ -37,7 +38,9 @@ package body SimClient.CreateServer is
    ---------------------------------------------------------------------------
 
    procedure ExecuteFailure
-     (SupplementConfig : Config.Config_Type) is
+     (Error            : Errors.Error_Type;
+      SupplementConfig : Config.Config_Type) is
+      pragma Unreferenced(Error);
    begin
       if OnFailure/=null then
          OnFailure(SupplementConfig);

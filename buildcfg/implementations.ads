@@ -183,9 +183,6 @@ package Implementations is
    -- Must be called only after Plattform.Initialize
    procedure Initialize;
 
-   package StringList_Pack is new Ada.Containers.Doubly_Linked_Lists
-        (Element_Type => Unbounded_String,
-         "="          => "=");
    AdditionalConfigLines : StringList_Pack.List;
 
 end Implementations;

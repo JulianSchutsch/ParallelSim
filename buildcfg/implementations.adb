@@ -24,6 +24,7 @@ with Ada.Directories; use Ada.Directories;
 with GNAT.OS_Lib;
 with GNAT.Strings;
 with Plattform; use Plattform;
+with Tools;
 
 package body Implementations is
 
@@ -33,8 +34,11 @@ package body Implementations is
    -- On Linux it is assumed that only a /mpich2 must be added for
    -- the mpi.h and the .so is found without any further knowledge.
    procedure MPICH2_Initialize is
+
       File : File_Type;
       MPIBasePath : Unbounded_String;
+      MPICH2Lib : StringList_Pack.List;
+      MPICH2Inc : StringList_Pack.List;
 
       function CleanFileName
         (Name : String)
@@ -76,21 +80,30 @@ package body Implementations is
            with "mpiconstant.c not found, maybe execution path is not in ./buildcfg";
       end if;
 
-      begin
-         Delete_File(To_String(BasePath)&"mpiconstants.h");
-      exception
-         when others =>
-            null;
-      end;
+      Tools.DeleteFile(To_String(BasePath)&"mpiconstants.h");
 
       Create
         (File => File,
          Mode => Out_File,
          Name => To_String(BasePath)&"mpiconstants.h");
+
       case Detected is
          when PlattformLinux | PlattformBSD=>
             Put_Line(File,"#include ""mpi.h""");
-            AdditionalConfigLines.Append(U("   MPICH2LIB:=""."";"));
+            Tools.QuickExec
+              (Command => "mpicc",
+               Argument => "-compile-info");
+            if Tools.Success then
+               MPICH2Inc:=Tools.ExtractArgsFromOutput
+                 (Args => (0=>U("-I")));
+            end if;
+            Tools.QuickExec
+              (Command => "mpicc",
+               Argument => "-link-info");
+            if Tools.Success then
+               MPICH2Lib:=Tools.ExtractArgsFromOutput
+                 (Args => (U("-L"),U("-l")));
+            end if;
 
          when PlattformWindowsNT =>
             GetWindowsMPICH2BasePath;
@@ -102,7 +115,8 @@ package body Implementations is
                  with "mpi.h not found. Please set MPIBASE environment variable.";
             end if;
             Put_Line(File,"#include """&To_String(MPIBasePath)&"/include/mpi.h""");
-            AdditionalConfigLines.Append("   MPICH2LIB:="""&MPIBasePath&"/lib"";");
+            MPICH2Lib.Append("-L"&MPIBasePath&"\lib");
+            MPICH2Lib.Append(U("-lmpi"));
 
          when others =>
             Close(File);
@@ -111,64 +125,29 @@ package body Implementations is
 
       end case;
 
+      AdditionalConfigLines.Append
+        ("  MPICH2Lib:="&Tools.StringListToGprList(MPICH2Lib)&";");
+      AdditionalConfigLines.Append
+        ("  MPICH2Inc:="&Tools.StringListToGprList(MPICH2Inc)&";");
+
       Close(File);
 
-      declare
+      Tools.QuickExec
+        (Command  => "gcc",
+         Argument => To_String(BasePath)&"mpiconstants.c -o "
+         &To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix)
+         &" -I/usr/include/mpich2"
+         &" -I/usr/include/mpich2-i386"
+         &" -I/usr/local/include");
 
-         use type GNAT.OS_Lib.String_Access;
+      if not Tools.Success then
+         raise ImplementationInitializeFailed
+           with "Unable to compile mpiconstants.c for mpich2 module";
+      end if;
 
-         ExecPath   : GNAT.OS_Lib.String_Access;
-         Arguments  : GNAT.OS_Lib.String_List_Access;
-         Success    : Boolean;
-      begin
-         ExecPath := GNAT.OS_Lib.Locate_Exec_On_Path
-           (Exec_Name => "gcc");
-         if ExecPath=null then
-            raise ImplementationInitializeFailed
-              with "Unable to locate gcc";
-         end if;
-         Arguments:=GNAT.OS_Lib.Argument_String_To_List
-           (To_String(BasePath)&"mpiconstants.c -o "
-            &To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix)
-            &" -I/usr/include/mpich2"
-            &" -I/usr/include/mpich2-i386"
-            &" -I/usr/local/include");
-         GNAT.OS_Lib.Spawn
-           (Program_Name => ExecPath.all,
-            Args         => Arguments.all,
-            Success      => Success);
-         GNAT.Strings.Free(Arguments);
-         GNAT.Strings.Free(ExecPath);
-
-         if not Success then
-            raise ImplementationInitializeFailed
-              with "Unable to compile mpiconstants.c for mpich2 module";
-         end if;
-      end;
-
-      declare
-
-         use type GNAT.OS_Lib.String_Access;
-
-         Arguments  : GNAT.OS_Lib.String_List_Access;
-         Success    : Boolean;
-
-      begin
-
-         Arguments:=GNAT.OS_Lib.Argument_String_To_List
-           (To_String(BasePath)&"mpiconstants.c -o "
-            &To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix));
-         GNAT.OS_Lib.Spawn
-           (Program_Name => To_String(BasePath)&"mpiconstants"&To_String(ExecutableSuffix),
-            Args         => Arguments.all,
-            Success      => Success);
-         GNAT.Strings.Free(Arguments);
-
-         if not Success then
-            raise ImplementationInitializeFailed
-              with "Unable to execute mpiconstants for mpich2";
-         end if;
-      end;
+      Tools.QuickExec
+        (Command  => "mpiconstants",
+         Argument => "");
 
       Copy_File
         (Source_Name => "mpiconstants.ads",

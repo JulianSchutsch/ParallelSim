@@ -34,7 +34,7 @@ project Ps is
    end Linker;
 
    for Object_Dir use Common.ObjectDirectory;
-   for Source_Dirs use Common.SourceDirectories;
+   for Source_Dirs use Common.SourceDirectories&("../src");
 
 end Ps;
 

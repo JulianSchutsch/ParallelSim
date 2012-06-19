@@ -26,96 +26,36 @@ with Ada.Text_IO; use Ada.Text_IO;
 with Ada.IO_Exceptions;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 with Ada.Directories;
+with Tools;
 
 package body Plattform is
 
    procedure Initialize is
 
-      ReturnCode : Integer;
-      Success    : Boolean;
-
    begin
 
       -- uname plattform detection, if possible
-      declare
-
-         use type GNAT.Strings.String_Access;
-
-         Arguments : GNAT.OS_Lib.String_List_Access;
-         ExecPath  : GNAT.OS_Lib.String_Access;
-      begin
-         ExecPath := GNAT.OS_Lib.Locate_Exec_On_Path
-           (Exec_Name => "uname");
-         if ExecPath/=null then
-            Arguments:=GNAT.OS_Lib.Argument_String_To_List("-s");
-            GNAT.OS_Lib.Spawn
-              (Program_Name => ExecPath.all,
-               Args         => Arguments.all,
-               Output_File  => "uname.out",
-               Success      => Success,
-               Return_Code  => ReturnCode,
-               Err_To_Out   => True);
-            GNAT.Strings.Free(Arguments);
+      Tools.QuickExec("uname","-s");
+      if Tools.Success then
+         if Tools.StringInOutput("MINGW") then
+            Detected:=PlattformWindowsNT;
+            ExecutableSuffix:=U(".exe");
+            return;
          end if;
-         GNAT.Strings.Free(ExecPath);
-      end;
-
-      if (ReturnCode=0) and Success then
-         declare
-            File : File_Type;
-         begin
-            Open
-              (File => File,
-               Mode => In_File,
-               Name => "uname.out");
-            begin
-               declare
-                  Content : String:=Get_Line(File);
-               begin
-                  Close(File);
-                  Ada.Directories.Delete_File("uname.out");
-                  if GNAT.Regpat.Match
-                    (Expression => "MINGW",
-                     Data       => Content) then
-                     ExecutableSuffix:=U(".exe");
-                     Detected:=PlattformWindowsNT;
-                     return;
-                  end if;
-                  if GNAT.Regpat.Match
-                    (Expression => "Linux",
-                     Data       => Content) then
-                     Detected:=PlattformLinux;
-                     return;
-                  end if;
-                  if GNAT.Regpat.Match
-                    (Expression => "FreeBSD",
-                     Data       => Content) then
-                     Detected:=PlattformBSD;
-                     return;
-                  end if;
-               end;
-            exception
-               when Ada.IO_Exceptions.End_Error =>
-                  null;
-            end;
-         end;
-
+         if Tools.StringInOutput("Linux") then
+            Detected:=PlattformLinux;
+            return;
+         end if;
+         if Tools.StringInOutput("FreeBSD") then
+            Detected:=PlattformBSD;
+            return;
+         end if;
       end if;
 
-      declare
-         use type GNAT.Strings.String_Access;
-         OSString : GNAT.Strings.String_Access;
-      begin
-         OSString:=GNAT.OS_Lib.Getenv("OS");
-         if OSString/=null then
-            if OSString.all="Windows_NT" then
-               Detected:=PlattformWindowsNT;
-               GNAT.Strings.Free(OSString);
-               return;
-            end if;
-         end if;
-         GNAT.Strings.Free(OSString);
-      end;
+      if Tools.StringInEnvironment("Windows_NT","OS") then
+         Detected:=PlattformWindowsNT;
+         return;
+      end if;
 
       Detected:=PlattformUnknown;
 
