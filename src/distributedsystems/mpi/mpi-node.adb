@@ -330,6 +330,7 @@ package body MPI.Node is
       FirstGlobalID := 0;
       LastGlobalID  := Node_Type(WorldSize-1);
       GlobalGroup   := DistributedSystems.Group_Type(MPI_COMM_WORLD);
+      NodeCount     := Integer(WorldSize);
       ------------------------------------------------------------------------
 
       SendSlots    := new SlotArray_Type(0..2);
@@ -415,6 +416,9 @@ package body MPI.Node is
       Error : Interfaces.C.int;
 
    begin
+
+      Put_Line("Scanning Slots");
+
       for i in SendSlots'Range loop
 
          declare
@@ -422,6 +426,8 @@ package body MPI.Node is
          begin
 
             if Slot.Packet=null then
+
+               Put_Line("Sending Packet");
 
                Slot.Packet := Packet;
                ByteAccessToLECardinal32Access(Slot.Buffer(0)'Access).all
@@ -583,18 +589,92 @@ package body MPI.Node is
 
       end loop;
 
+      for i in SendSlots'Range loop
+         declare
+            Slot   : Slot_Type renames SendSlots(i);
+            Flag   : aliased Interfaces.C.int;
+            Status : aliased MPI.MPI_Status_Type;
+         begin
+            if Slot.Packet/=null then
+               Error:=MPI.MPI_Test
+                 (request => Slot.Request'Access,
+                  flag    => Flag'Access,
+                  status  => Status'Access);
+               if Error/=MPI_SUCCESS then
+                  raise InternalError with "MPI_Test (SendSlots check in Processmessages failed with "
+                    &ErrorToString(Error);
+               end if;
+               if Flag/=0 then
+                  if Slot.Packet.Position=Slot.Packet.Amount then
+                     Network.Packets.Free(Slot.Packet);
+                     Slot.Packet:=null;
+                  else
+                     declare
+                        NewPos : Integer;
+                     begin
+                        NewPos:=Integer'Min
+                          (Slot.Packet.Position+BufferSize,
+                           Slot.Packet.Amount);
+                        Error:=MPI.MPI_Isend
+                          (buf => Slot.Buffer(0)'Access,
+                           count => Interfaces.C.int(NewPos-Slot.Packet.Position),
+                           datatype => MPI_BYTE,
+                           dest => Slot.Packet.CData1,
+                           tag => 0,
+                           comm => MPI_COMM_WORLD,
+                           request => Slot.Request'Access);
+                        if Error/=MPI_SUCCESS then
+                           raise InternalError with "MPI_Isend (Processmessages) failed with "
+                             &ErrorToString(Error);
+                        end if;
+                        Slot.Packet.Position:=NewPos;
+                     end;
+                  end if;
+               end if;
+            end if;
+         end;
+      end loop;
+
    end ProcessMessages;
    ---------------------------------------------------------------------------
 
+   procedure  WaitForSend is
+      use type Network.Packets.Packet_Access;
+   begin
+      Put_Line("WaitForSend phase 1");
+      while QueueFirstPacket/=null loop
+         ProcessMessages(null);
+      end loop;
+      Put_Line("WaitForSend phase 2");
+      loop
+         declare
+            SlotUsed : Boolean:=False;
+         begin
+            SlotTestLoop:
+            for i in SendSlots'Range loop
+               if (SendSlots(i).Packet/=null) then
+                  SlotUsed:=True;
+                  exit SlotTestLoop;
+               end if;
+            end loop SlotTestLoop;
+            if not SlotUsed then
+               exit;
+            end if;
+         end;
+         ProcessMessages(null);
+      end loop;
+   end WaitForSend;
+   ---------------------------------------------------------------------------
+
    procedure SendMessage
-     (Node   : Node_Type;
+     (Dest   : Node_Type;
       Packet : Network.Packets.Packet_Access) is
 
       use type Network.Packets.Packet_Access;
 
    begin
 
-      Packet.CData1:=Interfaces.C.int(Node);
+      Packet.CData1:=Interfaces.C.int(Dest);
       if not SendPacket(Packet) then
          Packet.Last:=QueueLastPacket;
          Packet.Next:=null;
@@ -614,7 +694,8 @@ package body MPI.Node is
       FinalizeNode      => FinalizeNode'Access,
       CreateSpawnObject => CreateSpawnObject'Access,
       ProcessMessages   => ProcessMessages'Access,
-      SendMessage       => SendMessage'Access);
+      SendMessage       => SendMessage'Access,
+      WaitForSend       => WaitForSend'Access);
    Identifier : constant Unbounded_String:=U("MPI");
 
    procedure Register is

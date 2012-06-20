@@ -82,7 +82,7 @@ begin
    Implementation:=DistributedSystems.Implementations.FindAny;
    Implementation.CreateSpawnObject
      (Configuration =>  Configuration,
-      Executables   => (0=>(Executable => U("node"),Amount => 1)),
+      Executables   => (0=>(Executable => U("node"),Amount => 3)),
       SpawnObject   => SpawnObject);
    SpawnObject.OnMessage   := SpawnMessage'Unrestricted_Access;
    SpawnObject.OnSuccess   := SpawnSuccess'Unrestricted_Access;

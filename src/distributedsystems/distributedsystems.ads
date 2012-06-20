@@ -84,6 +84,7 @@ package DistributedSystems is
    MyGlobalID    : Node_Type;
    FirstGlobalID : Node_Type;
    LastGlobalID  : Node_Type;
+   NodeCount     : Integer;
 
    type MessageCallBack_Access is
      access procedure
@@ -152,12 +153,15 @@ package DistributedSystems is
 
    type SendMessage_Access is
      access procedure
-       (Node   : Node_Type;
+       (Dest   : Node_Type;
         Packet : Network.Packets.Packet_Access);
 
    type ProcessMessages_Access is
      access procedure
        (CallBack : MessageCallBack_Access);
+
+   type WaitForSend_Access is
+     access procedure;
 
    type Implementation_Type is
       record
@@ -166,6 +170,7 @@ package DistributedSystems is
          FinalizeNode      : FinalizeNode_Access      := null;
          SendMessage       : SendMessage_Access       := null;
          ProcessMessages   : ProcessMessages_Access   := null;
+         WaitForSend       : WaitForSend_Access       := null;
       end record;
 
    package Implementations is new Config.Implementations
