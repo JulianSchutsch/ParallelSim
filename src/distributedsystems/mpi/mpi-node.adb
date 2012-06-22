@@ -417,7 +417,7 @@ package body MPI.Node is
 
    begin
 
-      Put_Line("Scanning Slots");
+      Put_Line("Scanning Slots"&Node_Type'Image(MyGlobalID));
 
       for i in SendSlots'Range loop
 
@@ -427,7 +427,7 @@ package body MPI.Node is
 
             if Slot.Packet=null then
 
-               Put_Line("Sending Packet");
+               Put_Line("Sending Packet"&Node_Type'Image(MyGlobalID));
 
                Slot.Packet := Packet;
                ByteAccessToLECardinal32Access(Slot.Buffer(0)'Access).all
@@ -476,6 +476,8 @@ package body MPI.Node is
       Status : aliased MPI.MPI_Status_Type;
 
    begin
+
+--      Put_Line("Process "&Node_Type'Image(MyGlobalID));
 
       -- Check for incoming messages
       for i in ReceiveSlots'Range loop
@@ -606,9 +608,11 @@ package body MPI.Node is
                end if;
                if Flag/=0 then
                   if Slot.Packet.Position=Slot.Packet.Amount then
+                     Put_Line("Send Complete"&Node_Type'Image(MyGlobalID));
                      Network.Packets.Free(Slot.Packet);
                      Slot.Packet:=null;
                   else
+                     Put_Line("Send Part "&Node_Type'Image(MyGlobalID));
                      declare
                         NewPos : Integer;
                      begin

@@ -26,13 +26,14 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Text_IO; use Ada.Text_IO;
 
+with Ada.Containers; use Ada.Containers;
 with Network.UseImplementations;
 with DistributedSystems;
 with DistributedSystems.UseImplementations;
 with Config;
 with Errors;
-with Basics; use Basics;
 with ProcessLoop;
+with ProgramArguments;
 
 procedure Spawn is
 
@@ -76,13 +77,20 @@ procedure Spawn is
 
 begin
 
+   ProgramArguments.Initialize;
+
+   if ProgramArguments.Parameters.Length=0 then
+      Put_Line("Please specify program to run as node");
+      return;
+   end if;
+
    Network.UseImplementations.Register;
    DistributedSystems.UseImplementations.Register;
 
    Implementation:=DistributedSystems.Implementations.FindAny;
    Implementation.CreateSpawnObject
      (Configuration =>  Configuration,
-      Executables   => (0=>(Executable => U("node"),Amount => 3)),
+      Executables   => (0=>(Executable => ProgramArguments.Parameters.Element(0),Amount => 2)),
       SpawnObject   => SpawnObject);
    SpawnObject.OnMessage   := SpawnMessage'Unrestricted_Access;
    SpawnObject.OnSuccess   := SpawnSuccess'Unrestricted_Access;

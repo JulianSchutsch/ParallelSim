@@ -5,7 +5,7 @@ with "../../gpr/network";
 project Test is
 
    for Exec_Dir use Common.ExecDirectory;
-   for Main use ("spawn.adb","node.adb");
+   for Main use ("spawn.adb","pi.adb","ring.adb");
    for Languages use Common.Languagesused;
 
    package Compiler is
