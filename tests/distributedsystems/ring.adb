@@ -45,6 +45,7 @@ procedure Ring is
    Received       : Integer:=0;
 
 begin
+
    ProgramArguments.Initialize;
 
    Network.UseImplementations.Register;
@@ -56,10 +57,6 @@ begin
 
    Implementation.InitializeNode(Configuration);
 
-   -- Ring Program requires sending a packet to MyID+1 mod (X)
-   -- then start receiving, checking if we received the right packet
-   -- from the right source.
-   -- This can continue a few times!
    NextID:=DistributedSystems.MyGlobalID+1;
    if NextID>DistributedSystems.LastGlobalID then
       NextID:=DistributedSystems.FirstGlobalID;
