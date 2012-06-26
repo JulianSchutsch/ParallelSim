@@ -53,24 +53,39 @@ with ByteOperations; use ByteOperations;
 
 package body MPI.Node is
 
-   BufferSize : constant := 16*4096;
+   BufferSize : constant := 128*1024;
 
-   type Slot_Type is
+   type SendSlot_Type is
       record
-         Receiving : Boolean:=False;
-         Request   : aliased MPI.MPI_Request_Type;
-         Buffer    : ByteOperations.ByteArray_Access:=null;
-         Packet    : Network.Packets.Packet_Access:=null;
+         Request : aliased MPI.MPI_Request_Type;
+         Buffer  : ByteOperations.ByteArray_Access:=null;
+         Packet  : Network.Packets.Packet_Access:=null;
       end record;
 
-   type SlotArray_Type is array (Integer range <>) of Slot_Type;
-   type SlotArray_Access is access SlotArray_Type;
+   type ReceiveSlot_Type is
+      record
+         Request : aliased MPI.MPI_Request_Type;
+         Buffer  : ByteOperations.ByteArray_Access:=null;
+      end record;
+
+   type NodeStatus_Type is
+      record
+         Packet : Network.Packets.Packet_Access:=null;
+      end record;
+
+   type ReceiveSlotArray_Type is array (Integer range <>) of ReceiveSlot_Type;
+   type ReceiveSlotArray_Access is access ReceiveSlotArray_Type;
+   type SendSlotArray_Type is array (Integer range <>) of SendSlot_Type;
+   type SendSlotArray_Access is access SendSlotArray_Type;
+   type NodeStatusArray_Type is array (Integer range <>) of NodeStatus_Type;
+   type NodeStatusArray_Access is access NodeStatusArray_Type;
 
    -- Packets are added to the end(Last) and taken from the beginning(First)
    QueueFirstPacket : Network.Packets.Packet_Access := null;
    QueueLastPacket  : Network.Packets.Packet_Access := null;
-   SendSlots        : SlotArray_Access := null;
-   ReceiveSlots     : SlotArray_Access := null;
+   SendSlots        : SendSlotArray_Access          := null;
+   ReceiveSlots     : ReceiveSlotArray_Access       := null;
+   NodeStats        : NodeStatusArray_Access        := null;
 
    type Spawn_Type is new DistributedSystems.Spawn_Type with
       record
@@ -326,26 +341,45 @@ package body MPI.Node is
              &ErrorToString(Result);
       end if;
 
-      MyGlobalID    := Node_Type(WorldRank);
-      FirstGlobalID := 0;
-      LastGlobalID  := Node_Type(WorldSize-1);
-      GlobalGroup   := DistributedSystems.Group_Type(MPI_COMM_WORLD);
-      NodeCount     := Integer(WorldSize);
+      ThisNode     := Node_Type(WorldRank);
+      FirstNode    := 0;
+      LastNode     := Node_Type(WorldSize-1);
+      GlobalGroup  := DistributedSystems.Group_Type(MPI_COMM_WORLD);
+      NodeCount    := Integer(WorldSize);
       ------------------------------------------------------------------------
 
-      SendSlots    := new SlotArray_Type(0..2);
-      ReceiveSlots := new SlotArray_Type(0..2);
+      SendSlots    := new SendSlotArray_Type(0..0);
+      ReceiveSlots := new ReceiveSlotArray_Type(0..0);
+      NodeStats    := new NodeStatusArray_Type
+        (Integer(FirstNode)..Integer(LastNode));
 
       for i in SendSlots'Range loop
          SendSlots(i).Buffer:=new ByteOperations.ByteArray_Type(0..BufferSize-1);
       end loop;
 
       for i in ReceiveSlots'Range loop
-         ReceiveSlots(i).Buffer:=new ByteOperations.ByteArray_Type(0..BufferSize-1);
+         declare
+            Slot : ReceiveSlot_Type renames ReceiveSlots(i);
+         begin
+            Slot.Buffer:=new ByteOperations.ByteArray_Type(0..BufferSize-1);
+            Result:=MPI_Irecv
+              (buf      => Slot.Buffer(0)'Access,
+               count    => BufferSize,
+               datatype => MPI.MPI_BYTE,
+               source   => MPI.MPI_ANY_SOURCE,
+               tag      => MPI.MPI_ANY_TAG,
+               comm     => MPI.MPI_COMM_WORLD,
+               request  => Slot.Request'Access);
+            if Result/=MPI_SUCCESS then
+               raise FailedNodeInitialization
+                 with "Call to MPI_Irecv for receive preinitialisation failed with "
+                   &ErrorToString(Result);
+            end if;
+         end;
       end loop;
       ------------------------------------------------------------------------
 
-      Put_Line("MPI-Node initialized "&Node_Type'Image(MyGlobalID));
+      Put_Line("MPI-Node initialized "&Node_Type'Image(ThisNode));
 
    end InitializeNode;
    ---------------------------------------------------------------------------
@@ -388,14 +422,18 @@ package body MPI.Node is
 
       for i in ReceiveSlots'Range loop
 
-         if ReceiveSlots(i).Packet/=null then
-            Network.Packets.Free(ReceiveSlots(i).Packet);
-         end if;
-
          ByteOperations.Free(ReceiveSlots(i).Buffer);
 
       end loop;
       ------------------------------------------------------------------------
+
+      for i in NodeStats'Range loop
+
+         if NodeStats(i).Packet/=null then
+            Network.Packets.Free(NodeStats(i).Packet);
+         end if;
+
+      end loop;
 
       MPI_Finalize;
       ------------------------------------------------------------------------
@@ -417,17 +455,15 @@ package body MPI.Node is
 
    begin
 
-      Put_Line("Scanning Slots"&Node_Type'Image(MyGlobalID));
+      Put_Line("Scanning Slots"&Node_Type'Image(ThisNode));
 
       for i in SendSlots'Range loop
 
          declare
-            Slot : Slot_Type renames SendSlots(i);
+            Slot : SendSlot_Type renames SendSlots(i);
          begin
 
             if Slot.Packet=null then
-
-               Put_Line("Sending Packet"&Node_Type'Image(MyGlobalID));
 
                Slot.Packet := Packet;
                ByteAccessToLECardinal32Access(Slot.Buffer(0)'Access).all
@@ -436,6 +472,9 @@ package body MPI.Node is
                Slot.Packet.Position:=Integer'Min
                  (BufferSize-Types.Cardinal32'Size/8,
                   Slot.Packet.Amount);
+
+               Put_Line("Sending Packet from "&Node_Type'Image(ThisNode)
+                          &" [0.."&Integer'Image(Slot.Packet.Position-1)&"]");
 
                Slot.Buffer
                  (Types.Cardinal32'Size/8..Slot.Packet.Position+Types.Cardinal32'Size/8-1)
@@ -471,96 +510,102 @@ package body MPI.Node is
       use type Network.Packets.Packet_Access;
       use type Interfaces.C.int;
 
-      Error  : Interfaces.C.int;
+      Result : Interfaces.C.int;
       Flag   : aliased Interfaces.C.int;
       Status : aliased MPI.MPI_Status_Type;
 
    begin
 
---      Put_Line("Process "&Node_Type'Image(MyGlobalID));
-
-      -- Check for incoming messages
       for i in ReceiveSlots'Range loop
+
          declare
-            Slot : Slot_Type renames ReceiveSlots(i);
+            Slot : ReceiveSlot_Type renames ReceiveSlots(i);
          begin
-            if not Slot.Receiving then
-               Error:=MPI_Irecv
-                 (buf      => Slot.Buffer(ReceiveSlots(i).Buffer'First)'Access,
-                  count    => Slot.Buffer'Length,
-                  datatype => MPI.MPI_BYTE,
-                  source   => MPI.MPI_ANY_SOURCE,
-                  tag      => 0,
-                  comm     => MPI.MPI_COMM_WORLD,
-                  request  => Slot.Request'Access);
-               if Error/=MPI_SUCCESS then
-                  raise InternalError with "MPI_Irecv failed with "
-                    &ErrorToString(Error);
-               end if;
 
-               Slot.Receiving:=True;
+            Result:=MPI_Test
+              (request => Slot.Request'Access,
+               flag    => Flag'Access,
+               status  => Status'Access);
+            if Result/=MPI_SUCCESS then
+               raise InternalError with "MPI_Test failed with "
+                 &ErrorToString(Result);
+            end if;
 
-            else
+            if Flag/=0 then
 
-               Error:=MPI_Test
-                 (request => Slot.Request'Access,
-                  flag    => Flag'Access,
-                  status  => Status'Access);
-               if Error/=MPI_SUCCESS then
-                  raise InternalError with "MPI_Test failed with "
-                    &ErrorToString(Error);
-               end if;
+               declare
+                  Node : NodeStatus_Type renames NodeStats
+                    (Integer(Status.MPI_SOURCE));
+               begin
 
-               if Flag/=0 then
+                  if Node.Packet=null then
 
-                  if Slot.Packet=null then
-
-                     Slot.Packet        := new Network.Packets.Packet_Type;
-                     Slot.Packet.CData1 := Status.MPI_SOURCE;
-
+                     Node.Packet        := new Network.Packets.Packet_Type;
                      declare
                         NewPacketSize : Types.Cardinal32;
                      begin
                         NewPacketSize:=From
                           (ByteAccessToLECardinal32Access(Slot.Buffer(0)'Access).all);
 
-                        Slot.Packet.Content:=new ByteArray_Type
+                        Node.Packet.Content:=new ByteArray_Type
                           (0..Integer(NewPacketSize)-1);
-                        Slot.Packet.Position:=Integer'Min
-                          (BufferSize-Types.Cardinal32'Size,
+                        Node.Packet.Position:=Integer'Min
+                          (BufferSize-Types.Cardinal32'Size/8,
                            Integer(NewPacketSize));
-                        Slot.Packet.Content
-                          (0..Slot.Packet.Position-1)
+                        Put_Line("Receive Packet from "&
+                                 Integer'Image(Integer(Status.MPI_SOURCE))
+                                 &" [0.."&Integer'Image(Node.Packet.Position-1)&"] max "
+                                  &Integer'Image(Node.Packet.Amount));
+                        Node.Packet.Content
+                          (0..Node.Packet.Position-1)
                           :=Slot.Buffer(Types.Cardinal32'Size/8..
-                                          Types.Cardinal32'Size/8+Slot.Packet.Position-1);
-                        Slot.Packet.Amount:=Integer(NewPacketSize);
+                                          Types.Cardinal32'Size/8+Node.Packet.Position-1);
+                        Node.Packet.Amount:=Integer(NewPacketSize);
                      end;
+
                   else
+
                      declare
                         NewPos : Integer;
                      begin
                         NewPos:=Integer'Min
-                          (Slot.Packet.Position+BufferSize,
-                           Slot.Packet.Amount);
-                        Slot.Packet.Content
-                          (Slot.Packet.Position..NewPos)
-                          :=Slot.Buffer(0..NewPos-Slot.Packet.Position);
-                        Slot.Packet.Position:=NewPos;
+                          (Node.Packet.Position+BufferSize,
+                           Node.Packet.Amount);
+                        Put_Line("Receive Part from "&
+                                 Integer'Image(Integer(Status.MPI_SOURCE))
+                                 &" ["&Integer'Image(Node.Packet.Position)&".."
+                                 &Integer'Image(NewPos-1)&"] max "
+                                 &Integer'Image(Node.Packet.Amount));
+                        Node.Packet.Content
+                          (Node.Packet.Position..NewPos-1)
+                          :=Slot.Buffer(0..NewPos-Node.Packet.Position-1);
+                        Node.Packet.Position:=NewPos;
                      end;
 
                   end if;
 
-                  if  Slot.Packet.Position=Slot.Packet.Amount then
-                     Slot.Packet.Position:=0;
+                  if  Node.Packet.Position=Node.Packet.Amount then
+                     Node.Packet.Position:=0;
                      CallBack
-                       (Source => Node_Type(Slot.Packet.CData1),
-                        Packet => Slot.Packet);
-                     Network.Packets.Free(Slot.Packet);
-                     Slot.Packet:=null;
-                     Slot.Receiving:=False;
-                     --TODO: Insert Irecv call here.
+                       (Source => Node_Type(Status.MPI_SOURCE),
+                        Packet => Node.Packet);
+                     Network.Packets.Free(Node.Packet);
+                     Node.Packet:=null;
                   end if;
 
+               end;
+
+               Result:=MPI.MPI_Irecv
+                 (buf => Slot.Buffer(0)'Access,
+                  count => BufferSize,
+                  datatype => MPI.MPI_BYTE,
+                  source => MPI.MPI_ANY_SOURCE,
+                  tag => MPI.MPI_ANY_TAG,
+                  comm => MPI.MPI_COMM_WORLD,
+                  request => Slot.Request'Access);
+               if Result/=MPI.MPI_SUCCESS then
+                  raise InternalError with "MPI_Irecv (continue) failed with "
+                    &ErrorToString(Result);
                end if;
 
             end if;
@@ -593,46 +638,55 @@ package body MPI.Node is
 
       for i in SendSlots'Range loop
          declare
-            Slot   : Slot_Type renames SendSlots(i);
+            Slot   : SendSlot_Type renames SendSlots(i);
             Flag   : aliased Interfaces.C.int;
             Status : aliased MPI.MPI_Status_Type;
          begin
+
             if Slot.Packet/=null then
-               Error:=MPI.MPI_Test
+
+               Result:=MPI.MPI_Test
                  (request => Slot.Request'Access,
                   flag    => Flag'Access,
                   status  => Status'Access);
-               if Error/=MPI_SUCCESS then
+               if Result/=MPI_SUCCESS then
                   raise InternalError with "MPI_Test (SendSlots check in Processmessages failed with "
-                    &ErrorToString(Error);
+                    &ErrorToString(Result);
                end if;
+
                if Flag/=0 then
                   if Slot.Packet.Position=Slot.Packet.Amount then
-                     Put_Line("Send Complete"&Node_Type'Image(MyGlobalID));
+--                     Put_Line("Send Complete"&Node_Type'Image(ThisNode));
                      Network.Packets.Free(Slot.Packet);
                      Slot.Packet:=null;
                   else
-                     Put_Line("Send Part "&Node_Type'Image(MyGlobalID));
                      declare
                         NewPos : Integer;
                      begin
                         NewPos:=Integer'Min
                           (Slot.Packet.Position+BufferSize,
                            Slot.Packet.Amount);
-                        Error:=MPI.MPI_Isend
-                          (buf => Slot.Buffer(0)'Access,
-                           count => Interfaces.C.int(NewPos-Slot.Packet.Position),
+--                        Put_Line("Send Part from "&Node_Type'Image(ThisNode)
+--                          &"["&Integer'Image(Slot.Packet.Position)&".."
+--                                 &Integer'Image(NewPos-1)&"] max"&Integer'Image(Slot.Packet.Amount));
+                        Slot.Buffer(0..NewPos-Slot.Packet.Position-1)
+                          :=Slot.Packet.Content(Slot.Packet.Position..
+                                                  NewPos-1);
+                        Result:=MPI.MPI_Isend
+                          (buf      => Slot.Buffer(0)'Access,
+                           count    => Interfaces.C.int(NewPos-Slot.Packet.Position),
                            datatype => MPI_BYTE,
-                           dest => Slot.Packet.CData1,
-                           tag => 0,
-                           comm => MPI_COMM_WORLD,
-                           request => Slot.Request'Access);
-                        if Error/=MPI_SUCCESS then
+                           dest     => Slot.Packet.CData1,
+                           tag      => 0,
+                           comm     => MPI_COMM_WORLD,
+                           request  => Slot.Request'Access);
+                        if Result/=MPI_SUCCESS then
                            raise InternalError with "MPI_Isend (Processmessages) failed with "
-                             &ErrorToString(Error);
+                             &ErrorToString(Result);
                         end if;
                         Slot.Packet.Position:=NewPos;
                      end;
+--                     Put_Line("Send Part//");
                   end if;
                end if;
             end if;
@@ -693,13 +747,21 @@ package body MPI.Node is
    end SendMessage;
    ---------------------------------------------------------------------------
 
+   function GetTime
+     return Long_Float is
+   begin
+      return Long_Float(MPI.MPI_Wtime);
+   end GetTime;
+   ---------------------------------------------------------------------------
+
    Implementation : constant Implementation_Type:=
      (InitializeNode    => InitializeNode'Access,
       FinalizeNode      => FinalizeNode'Access,
       CreateSpawnObject => CreateSpawnObject'Access,
       ProcessMessages   => ProcessMessages'Access,
       SendMessage       => SendMessage'Access,
-      WaitForSend       => WaitForSend'Access);
+      WaitForSend       => WaitForSend'Access,
+      GetTime           => GetTime'Access);
    Identifier : constant Unbounded_String:=U("MPI");
 
    procedure Register is

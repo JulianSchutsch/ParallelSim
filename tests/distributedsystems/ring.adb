@@ -57,15 +57,15 @@ begin
 
    Implementation.InitializeNode(Configuration);
 
-   NextID:=DistributedSystems.MyGlobalID+1;
-   if NextID>DistributedSystems.LastGlobalID then
-      NextID:=DistributedSystems.FirstGlobalID;
+   NextID:=DistributedSystems.ThisNode+1;
+   if NextID>DistributedSystems.LastNode then
+      NextID:=DistributedSystems.FirstNode;
    end if;
 
-   LastID:=DistributedSystems.MyGlobalID-1;
-   if LastID<DistributedSystems.FirstGlobalID or
-     LastID>DistributedSystems.LastGlobalID then
-      LastID:=DistributedSystems.LastGlobalID;
+   LastID:=DistributedSystems.ThisNode-1;
+   if LastID<DistributedSystems.FirstNode or
+     LastID>DistributedSystems.LastNode then
+      LastID:=DistributedSystems.LastNode;
    end if;
 
    for i in 1..RingLoops loop
@@ -89,10 +89,10 @@ begin
                Put_Line("Wrong Packet Received"
                         &DistributedSystems.Node_Type'Image(Source)
                         &"/="&DistributedSystems.Node_Type'Image(LastID)
-                          &"::"&DistributedSystems.Node_Type'Image(DistributedSystems.MyGlobalID));
+                          &"::"&DistributedSystems.Node_Type'Image(DistributedSystems.ThisNode));
             else
                Put_Line("Right Packet Received "&DistributedSystems.Node_Type'Image
-                        (DistributedSystems.MyGlobalID)
+                        (DistributedSystems.ThisNode)
                           &" l"&Integer'Image(i));
                Received:=Received+1;
             end if;
@@ -107,7 +107,7 @@ begin
       end;
       Put_Line("LOOP DONE"
                &Integer'Image(i)
-                 &" "&DistributedSystems.Node_Type'Image(DistributedSystems.MyGlobalID));
+                 &" "&DistributedSystems.Node_Type'Image(DistributedSystems.ThisNode));
 
    end loop;
 

@@ -112,7 +112,7 @@ package MPI is
       count    : Interfaces.C.int;
       datatype : MPI_Datatype_Type;
       source   : Interfaces.C.unsigned;
-      tag      : Interfaces.C.int;
+      tag      : Interfaces.C.unsigned;
       comm     : MPI_Comm_Type;
       request  : MPI_Request_Access)
       return Interfaces.C.int;
@@ -129,6 +129,10 @@ package MPI is
      (comm : MPI_Comm_Type)
       return Interfaces.C.int;
    pragma Import(C,MPI_Barrier,"MPI_Barrier");
+
+   function MPI_Wtime
+     return Interfaces.C.double;
+   pragma Import(C,MPI_Wtime,"MPI_Wtime");
 
    function ErrorToString
      (ErrorCode : Interfaces.C.int)

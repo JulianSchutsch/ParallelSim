@@ -27,7 +27,7 @@ with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body Network.Packets is
 
-   PacketSizeIncrease : constant:=1024;
+   PacketSizeIncrease : constant:=1024*1024;
 
    procedure Debug
      (Packet : access Packet_Type) is

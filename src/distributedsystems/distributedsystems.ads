@@ -81,9 +81,9 @@ package DistributedSystems is
    type Node_Type is new Integer;
 
    GlobalGroup   : Group_Type;
-   MyGlobalID    : Node_Type;
-   FirstGlobalID : Node_Type;
-   LastGlobalID  : Node_Type;
+   ThisNode      : Node_Type;
+   FirstNode     : Node_Type;
+   LastNode      : Node_Type;
    NodeCount     : Integer;
 
    type MessageCallBack_Access is
@@ -163,6 +163,10 @@ package DistributedSystems is
    type WaitForSend_Access is
      access procedure;
 
+   type GetTime_Access is
+     access function
+     return Long_Float;
+
    type Implementation_Type is
       record
          CreateSpawnObject : CreateSpawnObject_Access := null;
@@ -171,6 +175,7 @@ package DistributedSystems is
          SendMessage       : SendMessage_Access       := null;
          ProcessMessages   : ProcessMessages_Access   := null;
          WaitForSend       : WaitForSend_Access       := null;
+         GetTime           : GetTime_Access           := null;
       end record;
 
    package Implementations is new Config.Implementations
