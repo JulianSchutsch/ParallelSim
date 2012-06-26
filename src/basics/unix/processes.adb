@@ -27,6 +27,7 @@ with Ada.Directories; use Ada.Directories;
 with ProcessLoop;
 with Unix;
 
+with Ada.IO_Exceptions;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body Processes is
@@ -98,6 +99,9 @@ package body Processes is
                return;
             end if;
             End_Search(Search);
+         exception
+            when Ada.IO_Exceptions.Name_Error =>
+               null;
          end;
          Cursor:=StringList_Pack.Next(Cursor);
       end loop;
