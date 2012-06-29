@@ -50,6 +50,10 @@ package Network.Packets is
 
    procedure Write
      (Packet : access Packet_Type;
+      Item   : Types.Cardinal32);
+
+   procedure Write
+     (Packet : access Packet_Type;
       Item   : Unbounded_String);
 
    function Read
@@ -59,6 +63,10 @@ package Network.Packets is
    function Read
      (Packet : access Packet_Type)
       return Types.Integer32;
+
+   function Read
+     (Packet : access Packet_Type)
+      return Types.Cardinal32;
 
    procedure Debug
      (Packet : access Packet_Type);

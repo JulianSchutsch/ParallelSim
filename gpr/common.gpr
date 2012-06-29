@@ -17,6 +17,7 @@ abstract project Common is
       Dir & "../src/network",
       Dir & "../src/simcontrol",
       Dir & "../src/simnode",
+      Dir & "../src/simfront",
       Dir & "../src/protocols",
       Dir & "../src/simclient",
       Dir & "../src/gui",

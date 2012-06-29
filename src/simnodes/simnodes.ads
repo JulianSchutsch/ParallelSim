@@ -28,11 +28,16 @@ with Config;
 
 package SimNodes is
 
+   type NodeType_Enum is
+     (NodeTypeFront,
+      NodeTypeSim);
+
    FrontGroup    : DistributedSystems.Group_Type;
    SimGroup      : DistributedSystems.Group_Type;
    Configuration : Config.Config_Type;
 
-   procedure Initialize;
+   procedure Initialize
+     (NodeType : NodeType_Enum);
    procedure Finalize;
 
 end SimNodes;

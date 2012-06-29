@@ -140,6 +140,20 @@ package body Network.Packets is
 
    procedure Write
      (Packet : access Packet_Type;
+      Item   : Types.Cardinal32) is
+
+      NetData : aliased Endianess.LittleEndianCardinal32:=Endianess.To(Item);
+
+   begin
+      Write
+        (Packet  => Packet,
+         Pointer => ByteOperations.AddressToByteAccess(NetData'Address),
+         Size    => NetData'Size/8);
+   end Write;
+   ---------------------------------------------------------------------------
+
+   procedure Write
+     (Packet : access Packet_Type;
       Item   : Types.Integer32) is
 
       NetData : aliased Endianess.LittleEndianInteger32:=Endianess.To(Item);
@@ -179,6 +193,24 @@ package body Network.Packets is
       Read
         (Packet  => Packet,
          Pointer => ByteOperations.AddressToByteAccess(NetData'Address),
+         Size    => NetData'Size/8);
+
+      return Endianess.From(NetData);
+
+   end Read;
+   ---------------------------------------------------------------------------
+
+   function Read
+     (Packet : access Packet_Type)
+      return Types.Cardinal32 is
+
+      NetData : aliased Endianess.LittleEndianCardinal32;
+
+   begin
+
+      Read
+        (Packet  => Packet,
+         Pointer =>  ByteOperations.AddressToByteAccess(NetData'Address),
          Size    => NetData'Size/8);
 
       return Endianess.From(NetData);

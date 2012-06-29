@@ -33,6 +33,7 @@ package body SimNode is
 
    procedure Initialize is
    begin
+      SimNodes.Initialize(NodeTypeSim);
       LogImplementation:=Logging.Implementations.Find
         (Configuration => Configuration,
          Node          => U("Logging"));
@@ -52,6 +53,7 @@ package body SimNode is
    procedure Finalize is
    begin
       LogImplementation.FreeContext(LogContext);
+      SimNodes.Finalize;
    end Finalize;
    ---------------------------------------------------------------------------
 

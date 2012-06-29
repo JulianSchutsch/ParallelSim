@@ -92,6 +92,7 @@ package body MPI.Node is
          Configuration       : Config.Config_Type;
          ExecutableArguments : Unbounded_String;
          Process             : aliased Processes.Process_Type;
+         SuccessReported     : Boolean:=False;
       end record;
    type Spawn_Access is access all Spawn_Type;
 
@@ -185,8 +186,10 @@ package body MPI.Node is
       if GNAT.Regpat.Match
         (Expression => "MPI-Node initialized",
          Data       =>To_String(Message)) then
-         if Spawn.OnSuccess/=null then
+         if not Spawn.SuccessReported and
+           Spawn.OnSuccess/=null then
             Spawn.OnSuccess.all;
+            Spawn.SuccessReported:=True;
          end if;
       end if;
    end ProcessMessage;
@@ -455,7 +458,7 @@ package body MPI.Node is
 
    begin
 
-      Put_Line("Scanning Slots"&Node_Type'Image(ThisNode));
+--      Put_Line("Scanning Slots"&Node_Type'Image(ThisNode));
 
       for i in SendSlots'Range loop
 
@@ -619,18 +622,17 @@ package body MPI.Node is
 
          if SendPacket(QueueFirstPacket) then
 
-            declare
-               Packet : Network.Packets.Packet_Access;
-            begin
-               Packet:=QueueFirstPacket;
-               QueueFirstPacket:=QueueFirstPacket.Next;
-               if QueueFirstPacket/=null then
-                  QueueFirstPacket.Last:=null;
-               else
-                  QueueLastPacket:=null;
-               end if;
-               Network.Packets.Free(Packet);
-            end;
+            QueueFirstPacket:=QueueFirstPacket.Next;
+
+            if QueueFirstPacket/=null then
+               QueueFirstPacket.Last:=null;
+            else
+               QueueLastPacket:=null;
+            end if;
+
+         else
+
+            exit;
 
          end if;
 
@@ -654,12 +656,15 @@ package body MPI.Node is
                     &ErrorToString(Result);
                end if;
 
+               Put_Line("Send Stat "&Interfaces.C.int'Image(Flag));
+
                if Flag/=0 then
                   if Slot.Packet.Position=Slot.Packet.Amount then
---                     Put_Line("Send Complete"&Node_Type'Image(ThisNode));
+                     Put_Line("Send Complete"&Node_Type'Image(ThisNode));
                      Network.Packets.Free(Slot.Packet);
                      Slot.Packet:=null;
                   else
+                     Put_Line("Send Cont"&Node_Type'Image(ThisNode));
                      declare
                         NewPos : Integer;
                      begin

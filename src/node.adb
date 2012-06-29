@@ -30,7 +30,6 @@ with Logging.Client;
 with Logging.StdOut;
 with ProgramArguments;
 with SimNode;
-with SimNodes;
 --with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Node is
@@ -46,7 +45,6 @@ begin
 
    ProgramArguments.Configuration.Debug;
 
-   SimNodes.Initialize;
    SimNode.Initialize;
 
    loop
@@ -54,7 +52,6 @@ begin
    end loop;
 
    SimNode.Finalize;
-   SimNodes.Finalize;
 
    Logging.StdOut.Unregister;
    Logging.Client.Unregister;

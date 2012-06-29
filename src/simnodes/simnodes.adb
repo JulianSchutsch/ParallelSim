@@ -19,14 +19,120 @@
 
 pragma Ada_2005;
 
+with Ada.Text_IO; use Ada.Text_IO;
 with ProgramArguments;
 with Basics; use Basics;
+with DistributedSystems; use DistributedSystems;
+with Network.Packets;
+with Types;
 
 package body SimNodes is
 
+   type EndType_Enum is
+     (EndTypeFirst,
+      EndTypeLast);
+
    DistributedSystemsImpl : DistributedSystems.Implementation_Type;
 
-   procedure Initialize is
+   NodeTypeIDs : constant array(NodeType_Enum) of Types.Cardinal32:=
+     (NodeTypeFront => 0,
+      NodeTypeSim   => 1);
+
+   EndTypeIDs : constant array(EndType_Enum) of Types.Cardinal32:=
+     (EndTypeFirst => 0,
+      EndTypeLast  => 1);
+
+   procedure Initialize
+     (NodeType : NodeType_Enum) is
+
+      procedure SendNodeTypePacket
+        (Dest   : Node_Type) is
+
+         Packet : Network.Packets.Packet_Access;
+
+      begin
+         Packet:=new Network.Packets.Packet_Type;
+         Packet.Write(NodeTypeIDs(NodeType));
+         DistributedSystemsImpl.SendMessage
+           (Dest   => Dest,
+            Packet => Packet);
+      end SendNodeTypePacket;
+      ------------------------------------------------------------------------
+
+      procedure SendFirstNode
+        (Dest : Node_Type) is
+
+         Packet : network.Packets.Packet_Access;
+
+      begin
+         Put_Line("SF"&Node_Type'Image(ThisNode));
+         Packet:=new Network.Packets.Packet_Type;
+         Packet.Write(EndTypeIDs(EndTypeFirst));
+         Packet.Write(Types.Cardinal32(ThisNode));
+         DistributedSystemsImpl.SendMessage
+           (Dest   => Dest,
+            Packet => Packet);
+      end SendFirstNode;
+      ------------------------------------------------------------------------
+
+      procedure SendLastNode
+        (Dest : Node_Type) is
+
+         Packet : Network.Packets.Packet_Access;
+
+      begin
+         Put_Line("SL"&Node_Type'Image(ThisNode));
+         Packet:=new Network.Packets.Packet_Type;
+         Packet.Write(EndTypeIDs(EndTypeLast));
+         Packet.Write(Types.Cardinal32(ThisNode));
+         DistributedSystemsImpl.SendMessage
+           (Dest   => Dest,
+            Packet => Packet);
+      end SendLastNode;
+      ------------------------------------------------------------------------
+
+      First           : Boolean := False;
+      Last            : Boolean := False;
+      ExpectedPackets : Integer := 2;
+
+      procedure ReceiveNeighbourType
+        (Source : Node_Type;
+         Packet : Network.Packets.Packet_Access) is
+         RecNodeType : Types.Cardinal32;
+
+         use type Types.Cardinal32;
+
+      begin
+         RecNodeType:=Packet.Read;
+         if RecNodeType/=NodeTypeIDs(NodeType) then
+            if Source=ThisNode-1 then
+               First:=True;
+            elsif Source=ThisNode+1 then
+               Last:=True;
+            end if;
+         end if;
+         ExpectedPackets:=ExpectedPackets-1;
+      end ReceiveNeighbourType;
+      ------------------------------------------------------------------------
+
+      procedure ReceiveRanges
+        (Source : Node_Type;
+         Packet : Network.Packets.Packet_Access) is
+
+         RecEndType : Types.Cardinal32;
+         RecNode    : Types.Cardinal32;
+         pragma Unreferenced(RecEndType);
+
+      begin
+         RecEndType:=Packet.Read;
+         RecNode:=Packet.Read;
+         if Node_Type(RecNode)/=Source then
+            Put_Line("RecNode/=Source in ReceiveRanges");
+         end if;
+         ExpectedPackets:=ExpectedPackets-1;
+         Put_Line("Remaining Ranges : "&Integer'Image(ExpectedPackets));
+      end ReceiveRanges;
+      ------------------------------------------------------------------------
 
    begin
 
@@ -35,20 +141,51 @@ package body SimNodes is
           (Configuration => ProgramArguments.Configuration,
            Node          => U("Arguments"));
       DistributedSystemsImpl.InitializeNode(Configuration);
---      declare
---
---         SimNode       : array(DistributedSystems.FirstGlobalID..
---                                 DistributedSystems.LastGlobalID) of Boolean;
---         NodesReported : Natural:=0;
 
---      begin
-
---         while NodesReported/=SimNode'Length loop
---            null;
---         end loop;
-
---      end;
-
+      if ThisNode/=FirstNode then
+         SendNodeTypePacket(ThisNode-1);
+      else
+         First:=True;
+         ExpectedPackets:=ExpectedPackets-1;
+      end if;
+      if ThisNode/=LastNode then
+         SendNodeTypePacket(ThisNode+1);
+      else
+         Last:=True;
+         ExpectedPackets:=ExpectedPackets-1;
+      end if;
+      Put_Line("Where "&Node_Type'Image(ThisNode)&" "&Integer'Image(ExpectedPackets));
+      while ExpectedPackets>0 loop
+         DistributedSystemsImpl.ProcessMessages(ReceiveNeighbourType'Unrestricted_Access);
+      end loop;
+      Put_Line("First "&Node_Type'Image(ThisNode));
+      if First then
+         for i in FirstNode..LastNode loop
+            if i/=ThisNode then
+               SendFirstNode(i);
+            end if;
+         end loop;
+      end if;
+      Put_Line("Last "&Node_Type'Image(ThisNode));
+      if Last then
+         for i in Firstnode..LastNode loop
+            if i/=ThisNode then
+               SendLastNode(i);
+            end if;
+         end loop;
+      end if;
+      ExpectedPackets:=4;
+      if First then
+         ExpectedPackets:=ExpectedPackets-1;
+      end if;
+      if Last then
+         ExpectedPackets:=ExpectedPackets-1;
+      end if;
+      Put_Line("Count?"&Node_Type'Image(ThisNode)&"::"&Integer'Image(ExpectedPackets));
+      while ExpectedPackets>0 loop
+         Put("*");
+         DistributedSystemsImpl.ProcessMessages(ReceiveRanges'Unrestricted_Access);
+      end loop;
    end Initialize;
    ---------------------------------------------------------------------------
 

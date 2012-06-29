@@ -15,7 +15,7 @@
 --
 --   You should have received a copy of the GNU Affero General Public License
 --   along with ParallelSim.  If not, see <http://www.gnu.org/licenses/>.
-------------------------------------------------------------------------------
+-------------------------------------------------------------------------------
 
 pragma Ada_2005;
 
@@ -76,7 +76,7 @@ package body SimClient.CreateServer is
    procedure Initialize
      (Configuration  : Config.Config_Type) is
       Implementation : DistributedSystems.Implementation_Type;
-      Executables    : DistributedSystems.ExecutableArray_Type(1..1);
+      Executables    : DistributedSystems.ExecutableArray_Type(1..2);
    begin
       Put_Line("SimClient.CreateServer.initialize");
       if Spawn/=null then
@@ -86,10 +86,10 @@ package body SimClient.CreateServer is
       Implementation:=DistributedSystems.Implementations.Find
         (Configuration => Configuration,
          Node          => U("Distribution"));
---      Executables(1).Executable:=U("front");
---      Executables(1).Amount:=1;
       Executables(1).Executable:=U("node");
       Executables(1).Amount:=1;
+      Executables(2).Executable:=U("front");
+      Executables(2).Amount:=1;
       Implementation.CreateSpawnObject(Configuration,Executables,Spawn);
       Spawn.OnMessage:=ExecuteMessage'Access;
       Spawn.OnFailure:=ExecuteFailure'Access;

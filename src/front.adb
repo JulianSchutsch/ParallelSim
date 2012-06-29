@@ -26,13 +26,31 @@ pragma Ada_2005;
 with ExceptionOutput;
 with DistributedSystems.UseImplementations;
 with Network.UseImplementations;
+with Logging.Client;
+with Logging.StdOut;
+with SimFront;
+with ProgramArguments;
 
 procedure Front is
 begin
 
    Network.UseImplementations.Register;
    DistributedSystems.UseImplementations.Register;
+   Logging.Client.Register;
+   Logging.StdOut.Register;
 
+   ProgramArguments.Initialize;
+
+   SimFront.Initialize;
+
+   loop
+      exit when SimFront.Process;
+   end loop;
+
+   SimFront.Finalize;
+
+   Logging.StdOut.Unregister;
+   Logging.Client.Unregister;
    DistributedSystems.UseImplementations.Unregister;
    Network.UseImplementations.Unregister;
 

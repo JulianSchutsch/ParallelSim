@@ -35,7 +35,7 @@ procedure Transfer is
 
    use type DistributedSystems.Node_Type;
 
-   PacketSize : constant:=1024*1024;
+   PacketSize : constant:=1024*1024*128;
 
    Implementation : DistributedSystems.Implementation_Type;
    Configuration  : Config.Config_Type;
