@@ -21,19 +21,20 @@ pragma Ada_2005;
 
 with SimNodes; use SimNodes;
 with ProcessLoop;
-with Logging;
 with Basics; use Basics;
+with SimFront.Users;
 
 package body SimFront is
 
 
    LogImplementation : Logging.Implementation_Type;
    LogContext        : Logging.Context_ClassAccess:=null;
-   LogChannel        : Logging.Channel_ClassAccess:=null;
 
    procedure Initialize is
    begin
+
       SimNodes.Initialize(SimNodes.NodeTypeFront);
+
       LogImplementation:=Logging.Implementations.Find
         (Configuration => Configuration,
          Node          => U("Logging"));
@@ -47,13 +48,20 @@ package body SimFront is
       LogChannel.Write
         (Level   => Logging.LevelEvent,
          Message => "Simfront initialized?");
+
+      SimFront.Users.Initialize;
+
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
+
+      SimFront.Users.Finalize;
+
       LogImplementation.FreeContext(LogContext);
       SimNodes.Finalize;
+
    end Finalize;
    ---------------------------------------------------------------------------
 

@@ -18,23 +18,14 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   27.Jun 2012 Julian Schutsch
+--   30.Jun 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
-with Logging;
+package Authentication.Dummy is
 
-package SimFront is
+   procedure Register;
+   procedure Unregister;
 
-   procedure Initialize;
-   procedure Finalize;
-   function Process
-     return Boolean;
-
-private
-
-   Terminated : Boolean;
-   LogChannel : Logging.Channel_ClassAccess:=null;
-
-end SimFront;
+end Authentication.Dummy;

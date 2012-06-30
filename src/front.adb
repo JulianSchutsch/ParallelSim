@@ -26,6 +26,7 @@ pragma Ada_2005;
 with ExceptionOutput;
 with DistributedSystems.UseImplementations;
 with Network.UseImplementations;
+with Authentication.Dummy;
 with Logging.Client;
 with Logging.StdOut;
 with SimFront;
@@ -38,6 +39,7 @@ begin
    DistributedSystems.UseImplementations.Register;
    Logging.Client.Register;
    Logging.StdOut.Register;
+   Authentication.Dummy.Register;
 
    ProgramArguments.Initialize;
 
@@ -49,6 +51,7 @@ begin
 
    SimFront.Finalize;
 
+   Authentication.Dummy.Unregister;
    Logging.StdOut.Unregister;
    Logging.Client.Unregister;
    DistributedSystems.UseImplementations.Unregister;
