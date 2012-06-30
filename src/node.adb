@@ -30,7 +30,7 @@ with Logging.Client;
 with Logging.StdOut;
 with ProgramArguments;
 with SimNode;
---with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Node is
 
@@ -60,5 +60,6 @@ begin
 
 exception
    when E:others =>
+      Put_Line("Node Exception");
       ExceptionOutput.Put(E);
 end Node;

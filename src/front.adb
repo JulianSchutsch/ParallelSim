@@ -31,6 +31,7 @@ with Logging.Client;
 with Logging.StdOut;
 with SimFront;
 with ProgramArguments;
+with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Front is
 begin
@@ -59,5 +60,6 @@ begin
 
 exception
    when E:others =>
+      Put_Line("Front Exception");
       ExceptionOutput.Put(E);
 end Front;

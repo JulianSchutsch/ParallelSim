@@ -183,7 +183,6 @@ package body SimNodes is
       end if;
       Put_Line("Count?"&Node_Type'Image(ThisNode)&"::"&Integer'Image(ExpectedPackets));
       while ExpectedPackets>0 loop
-         Put("*");
          DistributedSystemsImpl.ProcessMessages(ReceiveRanges'Unrestricted_Access);
       end loop;
    end Initialize;

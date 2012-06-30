@@ -5,7 +5,7 @@ abstract project Common is
    type Backtrace_Type is ("On","Off");
    type Profiling_Type is ("On","Off");
 
-   Backtrace : Backtrace_Type := external("Backtrace","Off");
+   Backtrace : Backtrace_Type := external("Backtrace","On");
    Profiling : Profiling_Type := external("Profiling","Off");
 
    Dir := Common'Project_Dir & "/";
