@@ -24,27 +24,28 @@
 pragma Ada_2005;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Config;
 with Config.Implementations;
 with Basics; use Basics;
 
 package Authentication is
 
-   type System_Type is abstract tagged null record;
+   type Generator_Type is abstract tagged null record;
 
    type PublicKey_Type is abstract tagged null record;
    type PrivateKey_Type is abstract tagged null record;
 
-   type PublicKey_ClassAccess is access all PublicKey_Type;
-   type PrivateKey_ClassAccess is access all PrivateKey_Type;
-   type System_ClassAccess is access all System_Type;
+   type PublicKey_ClassAccess is access all PublicKey_Type'Class;
+   type PrivateKey_ClassAccess is access all PrivateKey_Type'Class;
+   type Generator_ClassAccess is access all Generator_Type'Class;
 
    procedure GenerateKeyPair
-     (System     : access System_Type;
+     (System     : access Generator_Type;
       PublicKey  : out PublicKey_ClassAccess;
       PrivateKey : out PrivateKey_ClassAccess) is abstract;
 
    function GenerateMessage
-     (System : access System_Type)
+     (System : access Generator_Type)
       return Unbounded_String is abstract;
 
    function Encrypt
@@ -52,15 +53,32 @@ package Authentication is
       Message    : Unbounded_String)
       return Unbounded_String is abstract;
 
+   procedure Free
+     (PrivateKey : access PrivateKey_Type) is abstract;
+
    function Verify
      (PublicKey  : access PublicKey_Type;
       Message    : Unbounded_String;
       Encrypted  : Unbounded_String)
       return Boolean is abstract;
 
+   procedure Free
+     (PublicKey : access PublicKey_Type) is abstract;
+
+   type Generator_Constructor is
+     access function
+       (Configuration : Config.Config_Type;
+        Node          : Unbounded_String)
+        return Generator_ClassAccess;
+
+   type Generator_Destructor is
+     access procedure
+       (Item : in out Generator_ClassAccess);
+
    type Implementation_Type is
       record
-         System : System_ClassAccess:=null;
+         NewGenerator  : Generator_Constructor:=null;
+         FreeGenerator : Generator_Destructor:=null;
       end record;
 
    package Implementations is new Config.Implementations

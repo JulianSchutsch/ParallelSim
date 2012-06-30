@@ -180,7 +180,6 @@ package DistributedSystems is
 
    package Implementations is new Config.Implementations
      (Implementation_Type => Implementation_Type,
-      IdentifierKey       =>
-      To_Unbounded_String("DistributedSystemsImplementation"));
+      IdentifierKey       => U("DistributedSystemsImplementation"));
 
 end DistributedSystems;

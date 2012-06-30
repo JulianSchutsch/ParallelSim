@@ -18,42 +18,24 @@
 -------------------------------------------------------------------------------
 
 -- Revision History
---   30.Jun 2012 Julian Schutsch
+--  30.Jun 2012 Julian Schutsch
 --     - Original version
 
 pragma Ada_2005;
 
+with Types;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
-with Authentication;
 with Basics; use Basics;
 
-package SimFront.Users is
+package FrontProtocol is
 
-   type Privileges_Enum is
-     (PrivilegePlay,
-      PrivilegeTerraform,
-      PrivilegeModerator,
-      PrivilegeAdmin);
+   subtype ServerCmd_Type is Types.Integer32;
 
-   type Privileges_Type is array(Privileges_Enum) of Boolean;
+   ServerCmdPublicKey        : constant ServerCmd_Type:=0;
+   ServerCmdEncryptedMessage : constant ServerCmd_Type:=1;
+   ServerCmdShutdown         : constant ServerCmd_Type:=2;
 
-   type User_Type is
-      record
-         Nick       : Unbounded_String;
-         Privileges : Privileges_Type;
-         PublicKey  : Authentication.PublicKey_ClassAccess:=null;
-      end record;
+   ServerID : constant Unbounded_String:=U("ParallelSimFrontServer");
+   ClientID : constant Unbounded_String:=U("ParallelSimFrontClient");
 
-   AnonymousUser : User_Type:=
-     (Nick       => U("Anonymous"),
-      Privileges =>
-        (PrivilegePlay         => False,
-         PrivilegeTerraform    => False,
-         PrivilegeModerator    => False,
-         PrivilegeAdmin        => False),
-      PublicKey => null);
-
-   procedure Initialize;
-   procedure Finalize;
-
-end SimFront.Users;
+end FrontProtocol;

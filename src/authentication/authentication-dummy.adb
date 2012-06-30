@@ -19,6 +19,8 @@
 
 pragma Ada_2005;
 
+with Ada.Unchecked_Deallocation;
+
 package body Authentication.Dummy is
 
    type PublicKey_Type is new Authentication.PublicKey_Type with null record;
@@ -30,6 +32,10 @@ package body Authentication.Dummy is
       Message   : Unbounded_String;
       Encrypted : Unbounded_String)
       return Boolean;
+
+   overriding
+   procedure Free
+     (PublicKey : access PublicKey_Type);
    ---------------------------------------------------------------------------
 
    type PrivateKey_Type is new Authentication.PrivateKey_Type with null record;
@@ -40,27 +46,32 @@ package body Authentication.Dummy is
      (PrivateKey : access PrivateKey_Type;
       Message    : Unbounded_String)
       return Unbounded_String;
+
+   overriding
+   procedure Free
+     (PrivateKey : access PrivateKey_Type);
    ---------------------------------------------------------------------------
 
-   type System_Type is new Authentication.System_Type with null record;
+   type Generator_Type is new Authentication.Generator_Type with null record;
+   type Generator_Access is access all Generator_Type;
 
    overriding
    procedure GenerateKeyPair
-     (System     : access System_Type;
+     (Generator  : access Generator_Type;
       PublicKey  : out PublicKey_ClassAccess;
       PrivateKey : out PrivateKey_ClassAccess);
 
    overriding
    function GenerateMessage
-     (System : access System_Type)
+     (Generator : access Generator_Type)
       return Unbounded_String;
    ---------------------------------------------------------------------------
 
    function GenerateMessage
-     (System : access System_Type)
+     (Generator : access Generator_Type)
       return Unbounded_String is
 
-      pragma Unreferenced(System);
+      pragma Unreferenced(Generator);
 
    begin
       return U("Dummy-Message");
@@ -68,11 +79,11 @@ package body Authentication.Dummy is
    ---------------------------------------------------------------------------
 
    procedure GenerateKeyPair
-     (System     : access System_Type;
+     (Generator  : access Generator_Type;
       PublicKey  : out PublicKey_ClassAccess;
       PrivateKey : out PrivateKey_ClassAccess) is
 
-      pragma Unreferenced(System);
+      pragma Unreferenced(Generator);
 
       NewPublicKey  : PublicKey_Access;
       NewPrivateKey : PrivateKey_Access;
@@ -97,6 +108,19 @@ package body Authentication.Dummy is
    end Encrypt;
    ---------------------------------------------------------------------------
 
+   procedure Free
+     (PrivateKey : access PrivateKey_Type) is
+
+      procedure FreeIt is new Ada.Unchecked_Deallocation
+        (Object => PrivateKey_Type,
+         Name   => PrivateKey_Access);
+
+      Val : PrivateKey_Access:=PrivateKey_Access(PrivateKey);
+   begin
+      FreeIt(Val);
+   end Free;
+   ---------------------------------------------------------------------------
+
    function Verify
      (PublicKey : access PublicKey_Type;
       Message   : Unbounded_String;
@@ -110,13 +134,58 @@ package body Authentication.Dummy is
    end Verify;
    ---------------------------------------------------------------------------
 
-   type System_Access is access all System_Type;
-   System        : aliased System_Type;
-   SystemAccess  : constant System_Access:=System'Access;
-   SystemCAccess : constant System_ClassAccess:=System_ClassAccess(SystemAccess);
+   procedure Free
+     (PublicKey : access PublicKey_Type) is
+
+      procedure FreeIt is new Ada.Unchecked_Deallocation
+        (Object => PublicKey_Type,
+         Name   => PublicKey_Access);
+
+      Val : PublicKey_Access:=PublicKey_Access(PublicKey);
+
+   begin
+      FreeIt(Val);
+   end Free;
+   ---------------------------------------------------------------------------
+
+   function NewGenerator
+     (Configuration : Config.Config_Type;
+      Node          : Unbounded_String)
+      return Generator_ClassAccess is
+
+      pragma Unreferenced(Configuration);
+      pragma Unreferenced(Node);
+
+      NewGenerator : Generator_Access;
+
+   begin
+
+      NewGenerator:=new Generator_Type;
+      return Generator_ClassAccess(NewGenerator);
+
+   end NewGenerator;
+   ---------------------------------------------------------------------------
+
+   procedure FreeGenerator
+     (Item : in out Generator_ClassAccess) is
+
+      procedure Free is new Ada.Unchecked_Deallocation
+        (Object => Generator_Type,
+         Name   => Generator_Access);
+
+      ItemVal : Generator_Access:=Generator_Access(Item);
+
+   begin
+
+      Free(ItemVal);
+      Item:=null;
+
+   end FreeGenerator;
+   ---------------------------------------------------------------------------
 
    Implementation : constant Implementation_Type:=
-     (System => SystemCAccess);
+     (NewGenerator  => NewGenerator'Access,
+      FreeGenerator => FreeGenerator'Access);
    Identifier :constant Unbounded_String := U("Dummy");
 
    procedure Register is

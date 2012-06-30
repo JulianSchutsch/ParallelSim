@@ -1,4 +1,11 @@
 element choice
+  node "Front.AuthenticationType"
+  description "Authentication method:"
+  set
+    key "Dummy"
+    description "Dummy"
+  end set
+element choice
   node "Front.Network.Implementation"
   description "Network Implementation:"
   set

@@ -19,17 +19,32 @@
 
 pragma Ada_2005;
 
+with SimNodes; use SimNodes;
+with Basics; use Basics;
+
 package body SimFront.Users is
+
+   AuthenticationImpl      : Authentication.Implementation_Type;
+   AuthenticationGenerator : Authentication.Generator_ClassAccess:=null;
 
    procedure Initialize is
    begin
-      null;
+
+      AuthenticationImpl:=Authentication.Implementations.Find
+        (Configuration => Configuration,
+         Node          => U("Front"));
+      AuthenticationGenerator:=AuthenticationImpl.NewGenerator
+        (Configuration => Configuration,
+         Node          => U("Front"));
+
    end Initialize;
    ---------------------------------------------------------------------------
 
    procedure Finalize is
    begin
-      null;
+
+      AuthenticationImpl.FreeGenerator(AuthenticationGenerator);
+
    end Finalize;
    ---------------------------------------------------------------------------
 

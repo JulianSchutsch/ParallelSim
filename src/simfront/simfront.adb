@@ -23,6 +23,7 @@ with SimNodes; use SimNodes;
 with ProcessLoop;
 with Basics; use Basics;
 with SimFront.Users;
+with SimFront.Server;
 
 package body SimFront is
 
@@ -50,6 +51,7 @@ package body SimFront is
          Message => "Simfront initialized?");
 
       SimFront.Users.Initialize;
+      SimFront.Server.Initialize;
 
    end Initialize;
    ---------------------------------------------------------------------------
@@ -57,6 +59,7 @@ package body SimFront is
    procedure Finalize is
    begin
 
+      SimFront.Server.Finalize;
       SimFront.Users.Finalize;
 
       LogImplementation.FreeContext(LogContext);
