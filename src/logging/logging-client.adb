@@ -20,7 +20,7 @@
 pragma Ada_2005;
 
 with Network.Streams;
-with Network.Packets;
+with Packets;
 with Ada.Unchecked_Deallocation;
 with LoggingProtocol;
 with Ada.Text_IO; use Ada.Text_IO;
@@ -134,12 +134,12 @@ package body Logging.Client is
 
       use type Network.Streams.Client_ClassAccess;
 
-      Packet : Network.Packets.Packet_Access;
+      Packet : Packets.Packet_ClassAccess;
 
    begin
 
       if Item.Context.Client/=null then
-         Packet:=new Network.Packets.Packet_Type;
+         Packet:=new Packets.Packet_Type;
          Packet.Write(LoggingProtocol.ServerCmdLog);
          Packet.Write(LoggingProtocol.LevelInt_Type(Level_Enum'Pos(Level)));
          Packet.Write(Item.ModuleName);
@@ -234,7 +234,7 @@ package body Logging.Client is
       end loop;
 
    exception
-      when Network.Packets.PacketOutOfData =>
+      when Packets.PacketOutOfData =>
          Item.Client.Position:=PrevPosition;
 
    end Receive;
@@ -258,7 +258,7 @@ package body Logging.Client is
 
       NewCont : Context_Access;
 
-      Packet : Network.Packets.Packet_Access;
+      Packet : Packets.Packet_ClassAccess;
 
    begin
 
@@ -277,7 +277,7 @@ package body Logging.Client is
       NewCont.CallBack.Client  := NewCont.Client;
       NewCont.Client.CallBack  := NewCont.CallBack'Access;
 
-      Packet:=new Network.Packets.Packet_Type;
+      Packet:=new Packets.Packet_Type;
       Packet.Write(LoggingProtocol.ClientID);
       NewCont.Client.SendPacket(Packet);
       Flush(Standard_Output);

@@ -23,7 +23,7 @@ with ProcessLoop;
 with Config;
 with Network.Streams;
 with Ada.Calendar;
-with Network.Packets;
+with Packets;
 with Basics; use Basics;
 with NodeInfo;
 with Expressions;
@@ -36,11 +36,11 @@ package body BSDSockets.Streams is
    type BSDSocketChannel_Type is new Network.Streams.Channel_Type with
       record
          SelectEntry        : aliased BSDSockets.SelectEntry;
-         FirstSendPacket    : Network.Packets.Packet_Access := null;
+         FirstSendPacket    : Packets.Packet_ClassAccess := null;
          -- The current send packet is the last sendpacket in the list
-         SendPacket         : Network.Packets.Packet_Access := null;
+         SendPacket         : Packets.Packet_ClassAccess := null;
          SendPacketPos      : Integer := 0;
-         ReceivePacket      : Network.Packets.Packet_Access := null;
+         ReceivePacket      : Packets.Packet_ClassAccess := null;
          ReceivePacketPos   : Integer := 0;
          -- Indicates wether someone is processing this element
          -- at the moment or not. You must not delete the element
@@ -56,14 +56,14 @@ package body BSDSockets.Streams is
    overriding
    procedure SendPacket
      (Item   : access BSDSocketChannel_Type;
-      Packet : Network.Packets.Packet_Access);
+      Packet : Packets.Packet_ClassAccess);
    ---------------------------------------------------------------------------
 
    procedure SendPacket
      (Item : access BSDSocketChannel_Type;
-      Packet : Network.Packets.Packet_Access) is
+      Packet : Packets.Packet_ClassAccess) is
 
-      use type Network.Packets.Packet_Access;
+      use type Packets.Packet_ClassAccess;
 
    begin
 
@@ -139,7 +139,7 @@ package body BSDSockets.Streams is
      (Item : access BSDSocketChannel_Type)
       return Boolean is
 
-      use type Network.Packets.Packet_Access;
+      use type Packets.Packet_ClassAccess;
 
    begin
       return (Item.SendPacket=null);
@@ -548,10 +548,10 @@ package body BSDSockets.Streams is
      (Item : access BSDSocketChannel_Type'Class)
       return Boolean is
 
-      use type Network.Packets.Packet_Access;
+      use type Packets.Packet_ClassAccess;
 
       SendAmount   : Integer;
-      PacketToFree : Network.Packets.Packet_Access;
+      PacketToFree : Packets.Packet_ClassAccess;
 
    begin
 
@@ -568,7 +568,7 @@ package body BSDSockets.Streams is
             PacketToFree    := Item.SendPacket;
             Item.SendPacket := PacketToFree.Last;
             Item.SendPacketPos:=0;
-            Network.Packets.Free(PacketToFree);
+            Packets.Free(PacketToFree);
 
             if Item.SendPacket=null then
                Item.FirstSendPacket:=null;

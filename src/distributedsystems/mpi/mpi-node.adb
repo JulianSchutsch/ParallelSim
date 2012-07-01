@@ -45,7 +45,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Directories; use Ada.Directories;
 with Processes;
 with GNAT.Regpat;
-with Network.Packets;
+with Packets;
 with Types;
 with Errors;
 with Endianess; use Endianess;
@@ -59,7 +59,7 @@ package body MPI.Node is
       record
          Request : aliased MPI.MPI_Request_Type;
          Buffer  : ByteOperations.ByteArray_Access:=null;
-         Packet  : Network.Packets.Packet_Access:=null;
+         Packet  : Packets.Packet_ClassAccess:=null;
       end record;
 
    type ReceiveSlot_Type is
@@ -70,7 +70,7 @@ package body MPI.Node is
 
    type NodeStatus_Type is
       record
-         Packet : Network.Packets.Packet_Access:=null;
+         Packet : Packets.Packet_ClassAccess:=null;
       end record;
 
    type ReceiveSlotArray_Type is array (Integer range <>) of ReceiveSlot_Type;
@@ -81,8 +81,8 @@ package body MPI.Node is
    type NodeStatusArray_Access is access NodeStatusArray_Type;
 
    -- Packets are added to the end(Last) and taken from the beginning(First)
-   QueueFirstPacket : Network.Packets.Packet_Access := null;
-   QueueLastPacket  : Network.Packets.Packet_Access := null;
+   QueueFirstPacket : Packets.Packet_ClassAccess := null;
+   QueueLastPacket  : Packets.Packet_ClassAccess := null;
    SendSlots        : SendSlotArray_Access          := null;
    ReceiveSlots     : ReceiveSlotArray_Access       := null;
    NodeStats        : NodeStatusArray_Access        := null;
@@ -389,20 +389,20 @@ package body MPI.Node is
 
    procedure FinalizeNode is
 
-      use type Network.Packets.Packet_Access;
+      use type Packets.Packet_ClassAccess;
 
    begin
 
       declare
-         Packet     : Network.Packets.Packet_Access;
-         NextPacket : Network.Packets.Packet_Access;
+         Packet     : Packets.Packet_ClassAccess;
+         NextPacket : Packets.Packet_ClassAccess;
       begin
 
          Packet:=QueueFirstPacket;
          while Packet/=null loop
 
             NextPacket:=Packet.Next;
-            Network.Packets.Free(Packet);
+            Packets.Free(Packet);
             Packet:=NextPacket;
 
          end loop;
@@ -416,7 +416,7 @@ package body MPI.Node is
       for i in SendSlots'Range loop
 
          if SendSlots(i).Packet/=null then
-            Network.Packets.Free(SendSlots(i).Packet);
+            Packets.Free(SendSlots(i).Packet);
          end if;
 
          ByteOperations.Free(SendSlots(i).Buffer);
@@ -433,7 +433,7 @@ package body MPI.Node is
       for i in NodeStats'Range loop
 
          if NodeStats(i).Packet/=null then
-            Network.Packets.Free(NodeStats(i).Packet);
+            Packets.Free(NodeStats(i).Packet);
          end if;
 
       end loop;
@@ -448,10 +448,10 @@ package body MPI.Node is
    -- Returns True if  a slot is free
    -- Does no Queue handling!
    function SendPacket
-     (Packet : Network.Packets.Packet_Access)
+     (Packet : Packets.Packet_ClassAccess)
       return Boolean is
 
-      use type Network.Packets.Packet_Access;
+      use type Packets.Packet_ClassAccess;
       use type Interfaces.C.int;
 
       Error : Interfaces.C.int;
@@ -510,7 +510,7 @@ package body MPI.Node is
    procedure ProcessMessages
      (CallBack : MessageCallBack_Access) is
 
-      use type Network.Packets.Packet_Access;
+      use type Packets.Packet_ClassAccess;
       use type Interfaces.C.int;
 
       Result : Interfaces.C.int;
@@ -543,7 +543,7 @@ package body MPI.Node is
 
                   if Node.Packet=null then
 
-                     Node.Packet        := new Network.Packets.Packet_Type;
+                     Node.Packet        := new Packets.Packet_Type;
                      declare
                         NewPacketSize : Types.Cardinal32;
                      begin
@@ -592,7 +592,7 @@ package body MPI.Node is
                      CallBack
                        (Source => Node_Type(Status.MPI_SOURCE),
                         Packet => Node.Packet);
-                     Network.Packets.Free(Node.Packet);
+                     Packets.Free(Node.Packet);
                      Node.Packet:=null;
                   end if;
 
@@ -661,7 +661,7 @@ package body MPI.Node is
                if Flag/=0 then
                   if Slot.Packet.Position=Slot.Packet.Amount then
                      Put_Line("Send Complete"&Node_Type'Image(ThisNode));
-                     Network.Packets.Free(Slot.Packet);
+                     Packets.Free(Slot.Packet);
                      Slot.Packet:=null;
                   else
                      Put_Line("Send Cont"&Node_Type'Image(ThisNode));
@@ -702,7 +702,7 @@ package body MPI.Node is
    ---------------------------------------------------------------------------
 
    procedure  WaitForSend is
-      use type Network.Packets.Packet_Access;
+      use type Packets.Packet_ClassAccess;
    begin
       Put_Line("WaitForSend phase 1");
       while QueueFirstPacket/=null loop
@@ -731,9 +731,9 @@ package body MPI.Node is
 
    procedure SendMessage
      (Dest   : Node_Type;
-      Packet : Network.Packets.Packet_Access) is
+      Packet : Packets.Packet_ClassAccess) is
 
-      use type Network.Packets.Packet_Access;
+      use type Packets.Packet_ClassAccess;
 
    begin
 

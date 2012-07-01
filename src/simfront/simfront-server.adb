@@ -21,7 +21,7 @@ pragma Ada_2005;
 
 with SimNodes; use SimNodes;
 with Network.Streams;
-with Network.Packets;
+with Packets;
 with Basics; use Basics;
 with FrontProtocol;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
@@ -79,6 +79,9 @@ package body SimFront.Server is
          Item.User.PublicKey.Free;
          Item.User.PublicKey:=null;
       end if;
+
+      Item.User.PublicKey:=AuthenticationImpl.ReadPublicKey
+        (Packets.Packet_ClassAccess(Item.Channel));
 
    end CommandPublicKey;
    ---------------------------------------------------------------------------
@@ -169,7 +172,7 @@ package body SimFront.Server is
       end loop;
 
    exception
-      when Network.Packets.PacketOutOfData =>
+      when Packets.PacketOutOfData =>
          Item.Channel.Position:=PrevPosition;
 
    end Receive;

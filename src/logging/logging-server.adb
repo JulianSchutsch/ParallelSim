@@ -23,7 +23,7 @@ with Network.Streams;
 with LoggingProtocol;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with Network.Packets;
+with Packets;
 
 package body Logging.Server is
 
@@ -198,7 +198,7 @@ package body Logging.Server is
 
    exception
 
-      when Network.Packets.PacketOutOfData =>
+      when Packets.PacketOutOfData =>
          Item.Channel.Position:=PrevPosition;
 
    end Receive;
@@ -224,7 +224,7 @@ package body Logging.Server is
       pragma Unreferenced(Item);
 
       NewCallBack : ServerChannelCallBack_Access;
-      Packet      : Network.Packets.Packet_Access;
+      Packet      : Packets.Packet_ClassAccess;
 
    begin
 
@@ -238,7 +238,7 @@ package body Logging.Server is
       Channel.CallBack
         :=Network.Streams.ChannelCallBack_ClassAccess(NewCallBack);
 
-      Packet:=new Network.Packets.Packet_Type;
+      Packet:=new Packets.Packet_Type;
       Packet.Write(LoggingProtocol.ServerID);
       Channel.SendPacket(Packet);
 

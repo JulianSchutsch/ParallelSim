@@ -27,7 +27,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Config;
 with Config.Implementations;
 with Basics; use Basics;
-with Network.Packets;
+with Packets;
 
 package Authentication is
 
@@ -47,12 +47,7 @@ package Authentication is
 
    procedure WriteToPacket
      (PublicKey : access PublicKey_Type;
-      Packet    : Network.Packets.Packet_Access) is abstract;
-
-   procedure ReadFromPacket
-     (PublicKey : access PublicKey_Type;
-      Packet    : Network.Packets.Packet_Access) is abstract;
-   ---------------------------------------------------------------------------
+      Packet    : Packets.Packet_ClassAccess) is abstract;
 
    type PrivateKey_Type is abstract tagged null record;
    type PrivateKey_ClassAccess is access all PrivateKey_Type'Class;
@@ -89,10 +84,16 @@ package Authentication is
      access procedure
        (Item : in out Generator_ClassAccess);
 
+   type ReadPublicKey_Access is
+     access function
+       (Packet : Packets.Packet_ClassAccess)
+        return PublicKey_ClassAccess;
+
    type Implementation_Type is
       record
          NewGenerator  : Generator_Constructor:=null;
          FreeGenerator : Generator_Destructor:=null;
+         ReadPublicKey : ReadPublicKey_Access:=null;
       end record;
 
    package Implementations is new Config.Implementations

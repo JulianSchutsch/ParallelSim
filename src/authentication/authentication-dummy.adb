@@ -43,12 +43,7 @@ package body Authentication.Dummy is
    overriding
    procedure WriteToPacket
      (PublicKey : access PublicKey_Type;
-      Packet    : Network.Packets.Packet_Access);
-
-   overriding
-   procedure ReadFromPacket
-     (PublicKey : access PublicKey_Type;
-      Packet    : Network.Packets.Packet_Access);
+      Packet    : Packets.Packet_ClassAccess);
    ---------------------------------------------------------------------------
 
    type PrivateKey_Type is new Authentication.PrivateKey_Type with null record;
@@ -93,7 +88,7 @@ package body Authentication.Dummy is
 
    procedure WriteToPacket
      (PublicKey : access PublicKey_Type;
-      Packet    : Network.Packets.Packet_Access) is
+      Packet    : Packets.Packet_ClassAccess) is
 
       pragma Unreferenced(PublicKey);
 
@@ -104,20 +99,23 @@ package body Authentication.Dummy is
    end WriteToPacket;
    ---------------------------------------------------------------------------
 
-   procedure ReadFromPacket
-     (PublicKey : access PublicKey_Type;
-      Packet    : Network.Packets.Packet_Access) is
+   function ReadPublicKey
+     (Packet    : Packets.Packet_ClassAccess)
+      return PublicKey_ClassAccess is
 
-      pragma Unreferenced(PublicKey);
-
-      Key : Integer32;
+      Key       : Integer32;
+      PublicKey : PublicKey_Access;
 
    begin
+
       Key:=Packet.Read;
       if Key/=DummyKey then
          raise InvalidKey with "Dummy key";
       end if;
-   end ReadFromPacket;
+      PublicKey:=new PublicKey_Type;
+      return PublicKey_ClassAccess(PublicKey);
+
+   end ReadPublicKey;
    ---------------------------------------------------------------------------
 
    procedure GenerateKeyPair
@@ -227,7 +225,8 @@ package body Authentication.Dummy is
 
    Implementation : constant Implementation_Type:=
      (NewGenerator  => NewGenerator'Access,
-      FreeGenerator => FreeGenerator'Access);
+      FreeGenerator => FreeGenerator'Access,
+      ReadPublicKey => ReadPublicKey'Access);
    Identifier :constant Unbounded_String := U("Dummy");
 
    procedure Register is

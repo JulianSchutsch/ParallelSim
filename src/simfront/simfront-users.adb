@@ -23,9 +23,6 @@ with SimNodes; use SimNodes;
 
 package body SimFront.Users is
 
-   AuthenticationImpl      : Authentication.Implementation_Type;
-   AuthenticationGenerator : Authentication.Generator_ClassAccess:=null;
-
    procedure Initialize is
    begin
 

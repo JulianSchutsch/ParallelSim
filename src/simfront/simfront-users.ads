@@ -53,6 +53,9 @@ package SimFront.Users is
          PrivilegeAdmin        => False),
       PublicKey => null);
 
+   AuthenticationGenerator : Authentication.Generator_ClassAccess:=null;
+   AuthenticationImpl      : Authentication.Implementation_Type;
+
    procedure Initialize;
    procedure Finalize;
 

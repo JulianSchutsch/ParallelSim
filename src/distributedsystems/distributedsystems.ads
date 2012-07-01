@@ -69,7 +69,7 @@ with Config;
 with Config.Implementations;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Basics; use Basics;
-with Network.Packets;
+with Packets;
 
 package DistributedSystems is
 
@@ -89,7 +89,7 @@ package DistributedSystems is
    type MessageCallBack_Access is
      access procedure
        (Source : Node_Type;
-        Packet : Network.Packets.Packet_Access);
+        Packet : Packets.Packet_ClassAccess);
 
    type InitializeNode_Access is
      access procedure
@@ -154,7 +154,7 @@ package DistributedSystems is
    type SendMessage_Access is
      access procedure
        (Dest   : Node_Type;
-        Packet : Network.Packets.Packet_Access);
+        Packet : Packets.Packet_ClassAccess);
 
    type ProcessMessages_Access is
      access procedure

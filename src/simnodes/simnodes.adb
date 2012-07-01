@@ -23,7 +23,7 @@ with Ada.Text_IO; use Ada.Text_IO;
 with ProgramArguments;
 with Basics; use Basics;
 with DistributedSystems; use DistributedSystems;
-with Network.Packets;
+with Packets;
 with Types;
 
 package body SimNodes is
@@ -48,10 +48,10 @@ package body SimNodes is
       procedure SendNodeTypePacket
         (Dest   : Node_Type) is
 
-         Packet : Network.Packets.Packet_Access;
+         Packet : Packets.Packet_ClassAccess;
 
       begin
-         Packet:=new Network.Packets.Packet_Type;
+         Packet:=new Packets.Packet_Type;
          Packet.Write(NodeTypeIDs(NodeType));
          DistributedSystemsImpl.SendMessage
            (Dest   => Dest,
@@ -62,11 +62,11 @@ package body SimNodes is
       procedure SendFirstNode
         (Dest : Node_Type) is
 
-         Packet : network.Packets.Packet_Access;
+         Packet : Packets.Packet_ClassAccess;
 
       begin
          Put_Line("SF"&Node_Type'Image(ThisNode));
-         Packet:=new Network.Packets.Packet_Type;
+         Packet:=new Packets.Packet_Type;
          Packet.Write(EndTypeIDs(EndTypeFirst));
          Packet.Write(Types.Cardinal32(ThisNode));
          DistributedSystemsImpl.SendMessage
@@ -78,11 +78,11 @@ package body SimNodes is
       procedure SendLastNode
         (Dest : Node_Type) is
 
-         Packet : Network.Packets.Packet_Access;
+         Packet : Packets.Packet_ClassAccess;
 
       begin
          Put_Line("SL"&Node_Type'Image(ThisNode));
-         Packet:=new Network.Packets.Packet_Type;
+         Packet:=new Packets.Packet_Type;
          Packet.Write(EndTypeIDs(EndTypeLast));
          Packet.Write(Types.Cardinal32(ThisNode));
          DistributedSystemsImpl.SendMessage
@@ -97,7 +97,7 @@ package body SimNodes is
 
       procedure ReceiveNeighbourType
         (Source : Node_Type;
-         Packet : Network.Packets.Packet_Access) is
+         Packet : Packets.Packet_ClassAccess) is
          RecNodeType : Types.Cardinal32;
 
          use type Types.Cardinal32;
@@ -117,7 +117,7 @@ package body SimNodes is
 
       procedure ReceiveRanges
         (Source : Node_Type;
-         Packet : Network.Packets.Packet_Access) is
+         Packet : Packets.Packet_ClassAccess) is
 
          RecEndType : Types.Cardinal32;
          RecNode    : Types.Cardinal32;
