@@ -30,10 +30,13 @@ with Basics; use Basics;
 package FrontProtocol is
 
    subtype ServerCmd_Type is Types.Integer32;
+   subtype ClientCmd_Type is Types.Integer32;
 
    ServerCmdPublicKey        : constant ServerCmd_Type:=0;
    ServerCmdEncryptedMessage : constant ServerCmd_Type:=1;
    ServerCmdShutdown         : constant ServerCmd_Type:=2;
+
+   ClientCmdEncryptMessage   : constant ClientCmd_Type:=0;
 
    ServerID : constant Unbounded_String:=U("ParallelSimFrontServer");
    ClientID : constant Unbounded_String:=U("ParallelSimFrontClient");

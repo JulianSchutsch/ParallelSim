@@ -34,7 +34,8 @@ package SimFront is
 
 private
 
-   Terminated : Boolean;
-   LogChannel : Logging.Channel_ClassAccess:=null;
+   Terminated     : Boolean;
+   LogMainChannel : Logging.Channel_ClassAccess:=null;
+   LogContext     : Logging.Context_ClassAccess:=null;
 
 end SimFront;

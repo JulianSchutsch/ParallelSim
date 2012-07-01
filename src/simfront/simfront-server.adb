@@ -44,8 +44,10 @@ package body SimFront.Server is
 
    type ChannelCallBack_Type is new Network.Streams.ChannelCallBack_Type with
       record
-         Channel : Network.Streams.Channel_ClassAccess;
-         User    : User_Type;
+         Channel               : Network.Streams.Channel_ClassAccess;
+         User                  : User_Type;
+         AuthenticationMessage : Unbounded_String;
+         LogChannel            : Logging.Channel_ClassAccess;
       end record;
    type ChannelCallBack_Access is access all ChannelCallBack_Type;
 
@@ -83,20 +85,71 @@ package body SimFront.Server is
       Item.User.PublicKey:=AuthenticationImpl.ReadPublicKey
         (Packets.Packet_ClassAccess(Item.Channel));
 
+      declare
+         Packet : Packets.Packet_ClassAccess;
+      begin
+         begin
+            Packet:=new Packets.Packet_Type;
+            Packet.Write(FrontProtocol.ClientCmdEncryptMessage);
+            Item.AuthenticationMessage:=AuthenticationGenerator.GenerateMessage;
+            Packet.Write(Item.AuthenticationMessage);
+         exception
+            when others =>
+               Packets.Free(Packet);
+               raise;
+         end;
+         Item.Channel.SendPacket(Packet);
+      end;
+
    end CommandPublicKey;
    ---------------------------------------------------------------------------
 
    procedure CommandEncryptedMessage
      (Item : in out ChannelCallBack_Type) is
+
+      use type Authentication.PublicKey_ClassAccess;
+
+      EncryptedMessage : Unbounded_String;
+
    begin
-      null;
+
+      EncryptedMessage:=Item.Channel.Read;
+
+      if Item.User.PublicKey=null then
+         Item.Channel.Disconnect;
+         Item.LogChannel.Write
+           (Level   => Logging.LevelError,
+            Message => "Encrypted Message without Public Key");
+      end if;
+
+      if Item.User.PublicKey.Verify
+        (Message   => Item.AuthenticationMessage,
+         Encrypted => EncryptedMessage) then
+         -- Now it is necessary to look up the user and load
+         -- the nick and the privileges
+         null;
+      else
+         Item.LogChannel.Write
+           (Level => Logging.LevelInvalid,
+            Message => "Invalid Encryption for Public Key");
+      end if;
+
    end CommandEncryptedMessage;
    ---------------------------------------------------------------------------
 
    procedure CommandShutdown
      (Item : in out ChannelCallBack_Type) is
    begin
-      null;
+
+      if Item.User.Privileges(PrivilegeAdmin) then
+         null;
+         -- Do the actual shutdown
+      else
+         Item.LogChannel.Write
+           (Level   => Logging.LevelInvalidAccess,
+            Message => "Privilege Admin required for Shutdown");
+      end if;
+
    end CommandShutdown;
    ---------------------------------------------------------------------------
 
@@ -120,6 +173,10 @@ package body SimFront.Server is
       CallBack.Channel := Channel;
       CallBack.User    := AnonymousUser;
 
+      LogContext.NewChannel
+        (ChannelName => ConcatElements(Channel.PeerAddress,U(";")),
+         Channel     => CallBack.LogChannel);
+
    end AAccept;
    ---------------------------------------------------------------------------
 
@@ -127,6 +184,8 @@ package body SimFront.Server is
      (Item : in out ChannelCallBack_Type) is
    begin
 
+      Item.LogChannel.FreeChannel;
+      Item.LogChannel:=null;
       Network.Streams.Free(Item.Channel.CallBack);
 
    end Disconnect;

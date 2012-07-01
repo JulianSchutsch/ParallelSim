@@ -29,7 +29,6 @@ package body SimFront is
 
 
    LogImplementation : Logging.Implementation_Type;
-   LogContext        : Logging.Context_ClassAccess:=null;
 
    procedure Initialize is
    begin
@@ -45,8 +44,8 @@ package body SimFront is
          ModuleName    => U("SimFront"));
       LogContext.NewChannel
         (ChannelName => U("Main"),
-         Channel     => LogChannel);
-      LogChannel.Write
+         Channel     => LogMainChannel);
+      LogMainChannel.Write
         (Level   => Logging.LevelEvent,
          Message => "Simfront initialized?");
 

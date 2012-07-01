@@ -37,19 +37,23 @@ package Logging is
      (LevelException,
       LevelFailure,
       LevelInvalid,
+      LevelError,
       LevelDebug,
       LevelEvent,
       LevelRareEvent,
-      LevelCommonEvent);
+      LevelCommonEvent,
+      LevelInvalidAccess);
 
    for Level_Enum use
-     (LevelException => 0,
-      LevelFailure => 1,
-      LevelInvalid => 2,
-      LevelDebug => 3,
-      LevelEvent => 4,
-      LevelRareEvent => 5,
-      LevelCommonEvent => 6);
+     (LevelException     => 0,
+      LevelFailure       => 1,
+      LevelInvalid       => 2,
+      LevelError         => 3,
+      LevelDebug         => 4,
+      LevelEvent         => 5,
+      LevelRareEvent     => 6,
+      LevelCommonEvent   => 7,
+      LevelInvalidAccess => 8);
 
    type Channel_Type is abstract tagged limited null record;
    type Channel_ClassAccess is access all Channel_Type'Class;
