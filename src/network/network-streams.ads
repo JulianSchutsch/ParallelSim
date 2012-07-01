@@ -164,6 +164,6 @@ package Network.Streams is
 
    package Implementations is new Config.Implementations
      (Implementation_Type => Implementation_Type,
-      IdentifierKey       => To_Unbounded_String("StreamImplementation"));
+      IdentifierKey       => U("StreamImplementation"));
 
 end Network.Streams;

@@ -74,10 +74,12 @@ package body SimFront.Server is
       use type Authentication.PublicKey_ClassAccess;
 
    begin
+
       if Item.User.PublicKey/=null then
          Item.User.PublicKey.Free;
          Item.User.PublicKey:=null;
       end if;
+
    end CommandPublicKey;
    ---------------------------------------------------------------------------
 
@@ -177,11 +179,11 @@ package body SimFront.Server is
    begin
       StreamImplementation:=Network.Streams.Implementations.Find
         (Configuration => Configuration,
-         Node          => U("Front"));
+         Node          => U("Front.Network"));
       ReceiveStatus:=ReceiveStatusVerifyProtocol;
       Server:=StreamImplementation.NewServer
         (Configuration => Configuration,
-         Node          => U("Front"));
+         Node          => U("Front.Network"));
       Server.CallBack := ServerCallBack'Access;
    end Initialize;
    ---------------------------------------------------------------------------

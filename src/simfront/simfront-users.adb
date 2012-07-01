@@ -20,7 +20,6 @@
 pragma Ada_2005;
 
 with SimNodes; use SimNodes;
-with Basics; use Basics;
 
 package body SimFront.Users is
 
@@ -32,10 +31,10 @@ package body SimFront.Users is
 
       AuthenticationImpl:=Authentication.Implementations.Find
         (Configuration => Configuration,
-         Node          => U("Front"));
+         Node          => U("Front.Authentication"));
       AuthenticationGenerator:=AuthenticationImpl.NewGenerator
         (Configuration => Configuration,
-         Node          => U("Front"));
+         Node          => U("Front.Authentication"));
 
    end Initialize;
    ---------------------------------------------------------------------------

@@ -27,16 +27,46 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Config;
 with Config.Implementations;
 with Basics; use Basics;
+with Network.Packets;
 
 package Authentication is
 
-   type Generator_Type is abstract tagged null record;
+   InvalidKey : Exception;
 
    type PublicKey_Type is abstract tagged null record;
-   type PrivateKey_Type is abstract tagged null record;
-
    type PublicKey_ClassAccess is access all PublicKey_Type'Class;
+
+   function Verify
+     (PublicKey  : access PublicKey_Type;
+      Message    : Unbounded_String;
+      Encrypted  : Unbounded_String)
+      return Boolean is abstract;
+
+   procedure Free
+     (PublicKey : access PublicKey_Type) is abstract;
+
+   procedure WriteToPacket
+     (PublicKey : access PublicKey_Type;
+      Packet    : Network.Packets.Packet_Access) is abstract;
+
+   procedure ReadFromPacket
+     (PublicKey : access PublicKey_Type;
+      Packet    : Network.Packets.Packet_Access) is abstract;
+   ---------------------------------------------------------------------------
+
+   type PrivateKey_Type is abstract tagged null record;
    type PrivateKey_ClassAccess is access all PrivateKey_Type'Class;
+
+   function Encrypt
+     (PrivateKey : access PrivateKey_Type;
+      Message    : Unbounded_String)
+      return Unbounded_String is abstract;
+
+   procedure Free
+     (PrivateKey : access PrivateKey_Type) is abstract;
+   ---------------------------------------------------------------------------
+
+   type Generator_Type is abstract tagged null record;
    type Generator_ClassAccess is access all Generator_Type'Class;
 
    procedure GenerateKeyPair
@@ -47,23 +77,7 @@ package Authentication is
    function GenerateMessage
      (System : access Generator_Type)
       return Unbounded_String is abstract;
-
-   function Encrypt
-     (PrivateKey : access PrivateKey_Type;
-      Message    : Unbounded_String)
-      return Unbounded_String is abstract;
-
-   procedure Free
-     (PrivateKey : access PrivateKey_Type) is abstract;
-
-   function Verify
-     (PublicKey  : access PublicKey_Type;
-      Message    : Unbounded_String;
-      Encrypted  : Unbounded_String)
-      return Boolean is abstract;
-
-   procedure Free
-     (PublicKey : access PublicKey_Type) is abstract;
+   ---------------------------------------------------------------------------
 
    type Generator_Constructor is
      access function
@@ -83,6 +97,6 @@ package Authentication is
 
    package Implementations is new Config.Implementations
      (Implementation_Type => Implementation_Type,
-      IdentifierKey       => U("AuthenticationType"));
+      IdentifierKey       => U("Implementation"));
 
 end Authentication;

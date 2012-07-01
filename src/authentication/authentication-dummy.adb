@@ -20,8 +20,11 @@
 pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
+with Types; use Types;
 
 package body Authentication.Dummy is
+
+   DummyKey : constant Integer32:=-10144;
 
    type PublicKey_Type is new Authentication.PublicKey_Type with null record;
    type PublicKey_Access is access all PublicKey_Type;
@@ -36,6 +39,16 @@ package body Authentication.Dummy is
    overriding
    procedure Free
      (PublicKey : access PublicKey_Type);
+
+   overriding
+   procedure WriteToPacket
+     (PublicKey : access PublicKey_Type;
+      Packet    : Network.Packets.Packet_Access);
+
+   overriding
+   procedure ReadFromPacket
+     (PublicKey : access PublicKey_Type;
+      Packet    : Network.Packets.Packet_Access);
    ---------------------------------------------------------------------------
 
    type PrivateKey_Type is new Authentication.PrivateKey_Type with null record;
@@ -76,6 +89,35 @@ package body Authentication.Dummy is
    begin
       return U("Dummy-Message");
    end GenerateMessage;
+   ---------------------------------------------------------------------------
+
+   procedure WriteToPacket
+     (PublicKey : access PublicKey_Type;
+      Packet    : Network.Packets.Packet_Access) is
+
+      pragma Unreferenced(PublicKey);
+
+   begin
+
+      Packet.Write(DummyKey);
+
+   end WriteToPacket;
+   ---------------------------------------------------------------------------
+
+   procedure ReadFromPacket
+     (PublicKey : access PublicKey_Type;
+      Packet    : Network.Packets.Packet_Access) is
+
+      pragma Unreferenced(PublicKey);
+
+      Key : Integer32;
+
+   begin
+      Key:=Packet.Read;
+      if Key/=DummyKey then
+         raise InvalidKey with "Dummy key";
+      end if;
+   end ReadFromPacket;
    ---------------------------------------------------------------------------
 
    procedure GenerateKeyPair

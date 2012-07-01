@@ -140,12 +140,6 @@ package body Logging.Server is
 
    begin
 
-      Put("Receive");
-      New_Line;
-      Item.Channel.Debug;
-      Put(":::");
-      New_Line;
-
       loop
 
          PrevPosition:=Item.Channel.Position;

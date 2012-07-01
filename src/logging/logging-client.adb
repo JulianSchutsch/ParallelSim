@@ -145,7 +145,6 @@ package body Logging.Client is
          Packet.Write(Item.ModuleName);
          Packet.Write(Item.ChannelName);
          Packet.Write(To_Unbounded_String(Message));
-         Packet.Debug;
          Item.Context.Client.SendPacket(Packet);
       end if;
 
@@ -246,10 +245,6 @@ package body Logging.Client is
 
    begin
 
-      -- Send identification as Logging Client
-      Put("Send Identification Packet!!!!!!!!!!!!!!!!!!");
-      New_Line;
-
       Item.ReceiveStatus:=ReceiveStatusWaitForIdentification;
 
    end Connect;
@@ -270,16 +265,13 @@ package body Logging.Client is
       NewCont:=new Context_Type;
       NewCont.ModuleName := ModuleName;
 
-      Put_Line("Logging.Client.Find Impl");
       NewCont.Implementation:=Network.Streams.Implementations.Find
         (Configuration => Configuration,
          Node          => ConfigNode & ".Network");
-      Put_Line("Logging.Client.NewClient");
       NewCont.Implementation.Initialize.all;
       NewCont.Client:=NewCont.Implementation.NewClient
         (Configuration => Configuration,
          Node          => ConfigNode & ".Network");
-      Put_Line("Logging.Client...");
 
       NewCont.CallBack.Context := NewCont;
       NewCont.CallBack.Client  := NewCont.Client;
@@ -287,7 +279,6 @@ package body Logging.Client is
 
       Packet:=new Network.Packets.Packet_Type;
       Packet.Write(LoggingProtocol.ClientID);
-      Packet.Debug;
       NewCont.Client.SendPacket(Packet);
       Flush(Standard_Output);
 
