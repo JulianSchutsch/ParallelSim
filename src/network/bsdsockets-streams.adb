@@ -198,8 +198,9 @@ package body BSDSockets.Streams is
       else
 
          if Item.CallBack/=null then
-            Item.CallBack.FailedConnect
-              (Retry => RetryConnect);
+
+            Item.CallBack.FailedConnect(RetryConnect);
+
          end if;
 
          if not RetryConnect then
@@ -207,6 +208,8 @@ package body BSDSockets.Streams is
               (AddrInfo => Item.FirstAddrInfo);
             Item.ClientMode:=ClientModeFailedConnect;
          else
+            Put_Line("Retry Connect...");
+            -- TODO: Maybe a new lookup would be a better idea.
             Item.CurrAddrInfo := Item.FirstAddrInfo;
             Item.LastTime     := Ada.Calendar.Clock;
          end if;
