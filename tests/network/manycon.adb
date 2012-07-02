@@ -34,7 +34,8 @@ procedure ManyCon is
 
    Implementation : Network.Streams.Implementation_Type;
 --   Server  : Network.Streams.Server_ClassAccess;
-   Clients : array(1..ClientCount) of Network.Streams.Client_ClassAccess;
+   Clients : array(1..ClientCount) of Network.Streams.Client_ClassAccess
+     :=(others => null);
 
    type ServerCallBack_Type is new Network.Streams.ServerCallBack_Type with null record;
 
@@ -88,10 +89,10 @@ begin
    end loop;
    -- Wait for all this to happen
 
---   for i in Clients'Range loop
+   for i in Clients'Range loop
 --      Put_Line("Destroy Client "&Integer'Image(i));
---      Implementation.FreeClient(Clients(i));
---   end loop;
+      Implementation.FreeClient(Clients(i));
+   end loop;
 
 --   Put_Line("Destroy Server");
 --   Implementation.FreeServer(Server);

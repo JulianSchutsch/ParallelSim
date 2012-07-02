@@ -27,7 +27,6 @@ with Packets;
 with Basics; use Basics;
 --with NodeInfo;
 --with Expressions;
-with GNAT.Debug_Pools;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
@@ -113,8 +112,6 @@ package body BSDSockets.Streams is
 
    type Client_Type;
    type Client_Access is access all Client_Type;
-   Pool : GNAT.Debug_Pools.Debug_Pool;
-   for Client_Access'Storage_Pool use Pool;
    type Client_Type is new BSDSocketChannel_Type with
       record
          FirstAddrInfo : AddrInfoAccess:=null;
@@ -410,7 +407,6 @@ package body BSDSockets.Streams is
    begin
 
       Item:=new Client_Type;
-      Pool.Print_Info_Stdout;
       Put_Line("Allocated?");
       Put(PortID'Image(Item.Port));
       Put("New");
