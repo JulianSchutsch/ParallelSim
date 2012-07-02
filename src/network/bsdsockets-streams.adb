@@ -285,7 +285,12 @@ package body BSDSockets.Streams is
             null;
       end;
 
-      BSDSockets.RemoveEntry(Item.SelectEntry'Access);
+      begin
+         BSDSockets.RemoveEntry(Item.SelectEntry'Access);
+      exception
+         when EntryNotAddedToAnyList =>
+            null;
+      end;
 
       if Item.LastClient/=null then
          Item.LastClient.NextClient:=Item.NextClient;

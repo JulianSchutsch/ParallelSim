@@ -219,7 +219,7 @@ package body SimClient.Front is
 
    begin
 
-      Put_Line("Failed Connect");
+      Put_Line("Failed Connect(Client SYS)");
       if OnFailedConnect/=null then
          OnFailedConnect(Retry);
       end if;

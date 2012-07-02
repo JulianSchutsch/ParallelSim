@@ -45,11 +45,13 @@ package body SimClientGUI.ConnectToServer is
    end Disconnect;
    ---------------------------------------------------------------------------
 
+   FailedConnectCount : Integer:=2;
    procedure FailedConnect
      (Retry : out Boolean) is
    begin
-      Put_Line("Failed Connect, Retry");
-      Retry := True;
+      FailedConnectCount:=FailedConnectCount-1;
+      Put_Line("Failed Connect, Retry"&Integer'Image(FailedConnectCount));
+      Retry := FailedConnectCount>=0;
    end FailedConnect;
    ---------------------------------------------------------------------------
 
