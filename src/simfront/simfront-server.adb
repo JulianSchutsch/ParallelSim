@@ -27,6 +27,7 @@ with FrontProtocol;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with SimFront.Users; use SimFront.Users;
 with Authentication;
+with Types; use Types;
 
 package body SimFront.Server is
 
@@ -101,6 +102,8 @@ package body SimFront.Server is
          Item.Channel.SendPacket(Packet);
       end;
 
+      ReceiveStatus:=ReceiveStatusWaitForCommand;
+
    end CommandPublicKey;
    ---------------------------------------------------------------------------
 
@@ -134,6 +137,25 @@ package body SimFront.Server is
             Message => "Invalid Encryption for Public Key");
       end if;
 
+      declare
+         Packet : Packets.Packet_ClassAccess;
+      begin
+         Packet:=new Packets.Packet_Type;
+         Packet.Write(FrontProtocol.ClientCmdNotifyPrivileges);
+         for Privilege in FrontProtocol.Privileges_Enum'Range loop
+
+            if Item.User.Privileges(Privilege) then
+               Packet.Write(Integer32(1));
+            else
+               Packet.Write(Integer32(0));
+            end if;
+
+         end loop;
+         Item.Channel.SendPacket(Packet);
+      end;
+
+      ReceiveStatus:=ReceiveStatusWaitForCommand;
+
    end CommandEncryptedMessage;
    ---------------------------------------------------------------------------
 
@@ -141,7 +163,7 @@ package body SimFront.Server is
      (Item : in out ChannelCallBack_Type) is
    begin
 
-      if Item.User.Privileges(PrivilegeAdmin) then
+      if Item.User.Privileges(FrontProtocol.PrivilegeAdmin) then
          null;
          -- Do the actual shutdown
       else
@@ -149,6 +171,8 @@ package body SimFront.Server is
            (Level   => Logging.LevelInvalidAccess,
             Message => "Privilege Admin required for Shutdown");
       end if;
+
+      ReceiveStatus:=ReceiveStatusWaitForCommand;
 
    end CommandShutdown;
    ---------------------------------------------------------------------------

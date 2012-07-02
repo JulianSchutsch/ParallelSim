@@ -26,16 +26,9 @@ pragma Ada_2005;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Authentication;
 with Basics; use Basics;
+with FrontProtocol; use FrontProtocol;
 
 package SimFront.Users is
-
-   type Privileges_Enum is
-     (PrivilegePlay,
-      PrivilegeTerraform,
-      PrivilegeModerator,
-      PrivilegeAdmin);
-
-   type Privileges_Type is array(Privileges_Enum) of Boolean;
 
    type User_Type is
       record

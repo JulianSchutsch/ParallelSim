@@ -25,6 +25,8 @@ with ProcessLoop;
 with Ada.Unchecked_Conversion;
 with Basics; use Basics;
 
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body BSDSockets is
    use type Interfaces.C.int;
 
@@ -186,10 +188,12 @@ package body BSDSockets is
 
    begin
       AddrLen := SockAddr_In6'Size/8;
+      Put_Line("RACCEPT");
       Result  := BSDSockets.Thin.AAccept
         (Socket  => Interfaces.C.int(Socket),
          Addr    => Addr'Access,
          AddrLen => AddrLen'Access);
+      Put_Line("//RACCEPT");
       Host := BSDSockets.Thin.AddressToString
         (Addr    => Addr'Access,
          AddrLen => Positive(AddrLen));

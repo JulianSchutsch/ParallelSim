@@ -25,11 +25,11 @@ with Network.Streams;
 with Ada.Calendar;
 with Packets;
 with Basics; use Basics;
-with NodeInfo;
-with Expressions;
+--with NodeInfo;
+--with Expressions;
+with GNAT.Debug_Pools;
 
---with Ada.Text_IO; use Ada.Text_IO;
---with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body BSDSockets.Streams is
 
@@ -113,6 +113,8 @@ package body BSDSockets.Streams is
 
    type Client_Type;
    type Client_Access is access all Client_Type;
+   Pool : GNAT.Debug_Pools.Debug_Pool;
+   for Client_Access'Storage_Pool use Pool;
    type Client_Type is new BSDSocketChannel_Type with
       record
          FirstAddrInfo : AddrInfoAccess:=null;
@@ -142,7 +144,9 @@ package body BSDSockets.Streams is
       use type Packets.Packet_ClassAccess;
 
    begin
+
       return (Item.SendPacket=null);
+
    end SendBufferEmpty;
    ---------------------------------------------------------------------------
 
@@ -157,6 +161,7 @@ package body BSDSockets.Streams is
       if Item.CurrAddrInfo/=null then
 
          begin
+
             Item.SelectEntry.Socket:=Socket
               (AddrInfo => Item.CurrAddrInfo);
 
@@ -395,53 +400,63 @@ package body BSDSockets.Streams is
       Node          : Unbounded_String)
       return Network.Streams.Client_ClassAccess is
 
-      Item      : Client_Access;
+      Item      : Client_Access:=null;
       PortStr   : Unbounded_String;
       FamilyStr : Unbounded_String;
       Host      : Unbounded_String;
       Family    : AddressFamilyEnum;
-
+      pragma Warnings(Off,PortStr);
+      pragma Warnings(Off,FamilyStr);
+      pragma Warnings(Off,Host);
+      pragma Warnings(Off,Family);
+      pragma Warnings(Off,Configuration);
+      pragma Warnings(Off,Node);
 
    begin
 
       Item:=new Client_Type;
+      Put_Line("Allocated?");
+      Put(PortID'Image(Item.Port));
+      Put("New");
+      Put(Item.all'Address);
+      New_Line;
 
-      PortStr   := Configuration.Element(Node&".RemotePort");
-      FamilyStr := Configuration.Element(Node&".Family");
-      Host      := Configuration.Element(Node&".RemoteIP");
+--      PortStr   := Configuration.Element(Node&".RemotePort");
+--      FamilyStr := Configuration.Element(Node&".Family");
+--      Host      := Configuration.Element(Node&".RemoteIP");
 
-      PortStr := Expressions.Process
-        (String    => PortStr,
-         Variables => NodeInfo.Variables);
+--      PortStr := Expressions.Process
+--        (String    => PortStr,
+--         Variables => NodeInfo.Variables);
 
-      Item.Port := PortID'Value(To_String(PortStr));
-      if FamilyStr="IPv4" then
-         Family:=AF_INET;
-      else
-         if FamilyStr="IPv6" then
-            Family:=AF_INET6;
-         else
-            raise Network.Streams.InvalidData;
-         end if;
-      end if;
+--      Item.Port := PortID'Value(To_String(PortStr));
+--      if FamilyStr="IPv4" then
+--         Family:=AF_INET;
+--      else
+--         if FamilyStr="IPv6" then
+--            Family:=AF_INET6;
+--         else
+--            raise Network.Streams.InvalidData;
+--         end if;
+--      end if;
 
-      Item.FirstAddrInfo:=GetAddrInfo
-        (AddressFamily => Family,
-         SocketType    => SOCK_STREAM,
-         Protocol      => IPPROTO_ANY,
-         Host          => To_String(Host));
+--      Item.FirstAddrInfo:=GetAddrInfo
+--        (AddressFamily => Family,
+--         SocketType    => SOCK_STREAM,
+--         Protocol      => IPPROTO_ANY,
+--         Host          => To_String(Host));
 
-      Item.CurrAddrInfo := Item.FirstAddrInfo;
+--      Item.CurrAddrInfo := Item.FirstAddrInfo;
 
-      Item.NextClient := Clients;
-      if Clients/=null then
-         Clients.LastClient:=Item;
-      end if;
-      Clients:=Item;
+--      Item.NextClient := Clients;
+--      if Clients/=null then
+--         Clients.LastClient:=Item;
+--      end if;
+--      Clients:=Item;
 
-      Item.LastTime:=Ada.Calendar.Clock;
+--      Item.LastTime:=Ada.Calendar.Clock;
       -- TODO: variable Buffer size
-      Item.Content:=new ByteOperations.ByteArray_Type(0..1023);
+--      Item.Content:=new ByteOperations.ByteArray_Type(0..1023);
 
       return Network.Streams.Client_ClassAccess(Item);
 
@@ -450,26 +465,31 @@ package body BSDSockets.Streams is
 
    procedure FreeStreamClient
      (Item : in out Network.Streams.Client_ClassAccess) is
+      use type Network.Streams.Client_ClassAccess;
 
-      Client : Client_Access;
+--      Client : Client_Access;
 
    begin
 
-      Client:=Client_Access(Item);
+--      Client:=Client_Access(Item);
 
-      begin
-         BSDSockets.Shutdown
-           (Socket => Client.SelectEntry.Socket,
-            Method => BSDSockets.SD_BOTH);
-      exception
-         when BSDSockets.FailedShutdown =>
-            null;
-      end;
+--      begin
+--         BSDSockets.Shutdown
+--           (Socket => Client.SelectEntry.Socket,
+--            Method => BSDSockets.SD_BOTH);
+--      exception
+--         when BSDSockets.FailedShutdown =>
+--            null;
+--      end;
 
-      Finalize
-        (Item => Client);
+--      Finalize
+--        (Item => Client);
 
-      Network.Streams.Free(Item);
+      Put(Item.all'Address);
+      Put("Freeing");
+      Item.Free;
+      Item:=null;
+      Put_Line("Freed");
 
    end FreeStreamClient;
    ---------------------------------------------------------------------------
@@ -484,6 +504,7 @@ package body BSDSockets.Streams is
    procedure Disconnect
      (Item : access Client_Type) is
    begin
+      Put_Line("Finalize Call");
       Finalize(Client_Access(Item));
    end;
    ---------------------------------------------------------------------------
@@ -498,11 +519,15 @@ package body BSDSockets.Streams is
 
    begin
 
+      Put_Line("AAccept");
+
       BSDSockets.AAccept
         (Socket    => Item.SelectEntry.Socket,
          Host      => Host,
          Port      => Port,
          NewSocket => NewSock);
+
+      Put_Line("Channel Creation");
 
       NewServerChannel                    := new ServerChannel_Type;
       NewServerChannel.SelectEntry.Socket := NewSock;
@@ -726,7 +751,6 @@ package body BSDSockets.Streams is
 
          end loop;
 
-
          ServerItem:=ServerItem.NextServer;
 
       end loop;
@@ -750,11 +774,13 @@ package body BSDSockets.Streams is
 
    procedure Finalize is
    begin
+
       InitializeCount:=InitializeCount-1;
       if InitializeCount=0 then
          BSDSockets.Finalize;
          ProcessLoop.Remove(Process'Access,null);
       end if;
+
    end Finalize;
    ---------------------------------------------------------------------------
 
@@ -769,15 +795,19 @@ package body BSDSockets.Streams is
 
    procedure Register is
    begin
+
       Network.Streams.Implementations.Register
         (Identifier     => Identifier,
          Implementation => Implementation);
+
    end Register;
    ---------------------------------------------------------------------------
 
    procedure Unregister is
    begin
+
       Network.Streams.Implementations.Unregister(Identifier);
+
    end Unregister;
    ---------------------------------------------------------------------------
 

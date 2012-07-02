@@ -29,6 +29,14 @@ with Basics; use Basics;
 
 package FrontProtocol is
 
+   type Privileges_Enum is
+     (PrivilegePlay,
+      PrivilegeTerraform,
+      PrivilegeModerator,
+      PrivilegeAdmin);
+
+   type Privileges_Type is array(Privileges_Enum) of Boolean;
+
    subtype ServerCmd_Type is Types.Integer32;
    subtype ClientCmd_Type is Types.Integer32;
 
@@ -37,6 +45,7 @@ package FrontProtocol is
    ServerCmdShutdown         : constant ServerCmd_Type:=2;
 
    ClientCmdEncryptMessage   : constant ClientCmd_Type:=0;
+   ClientCmdNotifyPrivileges : constant ClientCmd_Type:=1;
 
    ServerID : constant Unbounded_String:=U("ParallelSimFrontServer");
    ClientID : constant Unbounded_String:=U("ParallelSimFrontClient");

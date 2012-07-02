@@ -208,11 +208,8 @@ package body Logging.Server is
      (Item : in out ServerChannelCallBack_Type) is
    begin
 
-      Put("Disconnect");
-      New_Line;
+      Put_Line("Logging.Disconnect");
       Network.Streams.Free(Item.Channel.CallBack);
-      Put("...");
-      New_Line;
 
    end Disconnect;
    ---------------------------------------------------------------------------

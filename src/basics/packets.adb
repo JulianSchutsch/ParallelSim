@@ -21,7 +21,7 @@ pragma Ada_2005;
 
 with Endianess;
 with Ada.Unchecked_Deallocation;
---with Basics; use Basics;
+with Basics; use Basics;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
@@ -254,6 +254,8 @@ package body Packets is
    procedure Free
      (Packet : access Packet_Type) is
 
+      use type ByteOperations.ByteArray_Access;
+
       PacketVal : Packet_ClassAccess;
 
       procedure InternFree is new Ada.Unchecked_Deallocation
@@ -261,9 +263,21 @@ package body Packets is
          Name   => Packet_ClassAccess);
 
    begin
-      ByteOperations.Free(Packet.Content);
+      Put_Line("Packet Free");
+      if Packet=null then
+         Put_Line("Null");
+      end if;
+      Put(Packet.all'Address);
+      if Packet.Content/=null then
+         -- TODO REENABLE
+         --         ByteOperations.Free(Packet.Content);
+         null;
+      end if;
+      Put_Line("Convert To Val");
       PacketVal:=Packet_ClassAccess(Packet);
+      Put_Line("Internal Free");
       InternFree(PacketVal);
+      Put_Line("/<");
    end Free;
 
 end Packets;
