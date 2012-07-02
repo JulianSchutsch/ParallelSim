@@ -475,7 +475,7 @@ package body BSDSockets is
          declare
             Error : constant Interfaces.C.int:=BSDSockets.Thin.Error;
          begin
-            if (Error/=35) and (Error/=10035) then
+            if (Error/=35) and (Error/=10035) and (Error/=115) then
                raise FailedConnect with "Error Code:"
                  &Interfaces.C.int'Image(BSDSockets.Thin.Error);
             end if;
