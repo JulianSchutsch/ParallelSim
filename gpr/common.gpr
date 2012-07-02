@@ -45,7 +45,7 @@ abstract project Common is
       "-g",     -- Generate Debugging information
       "-gnatf", -- Full error messages
       "-Wall",  -- All warnings enabled
-      "-O3",     -- Full optimisation
+      "-O0",     -- Full optimisation
       "-fno-strict-aliasing"
      );
 

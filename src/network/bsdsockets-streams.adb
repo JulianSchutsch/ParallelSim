@@ -259,7 +259,6 @@ package body BSDSockets.Streams is
             Item.CallBack.Disconnect;
          end if;
 
-         VarItem:=Item;
 
          Network.Streams.Free(Network.Streams.Channel_ClassAccess(VarItem));
 
@@ -401,20 +400,17 @@ package body BSDSockets.Streams is
       return Network.Streams.Client_ClassAccess is
 
       Item      : Client_Access:=null;
-      PortStr   : Unbounded_String;
-      FamilyStr : Unbounded_String;
-      Host      : Unbounded_String;
-      Family    : AddressFamilyEnum;
-      pragma Warnings(Off,PortStr);
-      pragma Warnings(Off,FamilyStr);
-      pragma Warnings(Off,Host);
-      pragma Warnings(Off,Family);
+--      PortStr   : Unbounded_String;
+--      FamilyStr : Unbounded_String;
+--      Host      : Unbounded_String;
+--      Family    : AddressFamilyEnum;
       pragma Warnings(Off,Configuration);
       pragma Warnings(Off,Node);
 
    begin
 
       Item:=new Client_Type;
+      Pool.Print_Info_Stdout;
       Put_Line("Allocated?");
       Put(PortID'Image(Item.Port));
       Put("New");
@@ -487,8 +483,7 @@ package body BSDSockets.Streams is
 
       Put(Item.all'Address);
       Put("Freeing");
-      Item.Free;
-      Item:=null;
+      Network.Streams.Free(Item);
       Put_Line("Freed");
 
    end FreeStreamClient;
@@ -553,8 +548,8 @@ package body BSDSockets.Streams is
 
       Item.FirstChannel := NewServerChannel;
       -- TODO: variable Buffer size
-      NewServerChannel.Content:=new ByteOperations.ByteArray_Type(0..1023);
-
+      -- TODO: Restore
+--      NewServerChannel.Content:=new ByteOperations.ByteArray_Type(0..1023);
 
       BSDSockets.AddEntry
         (List => BSDSockets.DefaultSelectList'Access,
@@ -622,21 +617,21 @@ package body BSDSockets.Streams is
    begin
 
       -- Clear the interval 0..Item.Position to make space for new content
-      Item.Content(0..Item.Amount-Item.Position-1)
-        :=Item.Content(Item.Position..Item.Amount-1);
+      Item.Received.Content(0..Item.Received.Amount-Item.Received.Position-1)
+        :=Item.Received.Content(Item.Received.Position..Item.Received.Amount-1);
 
-      Item.Amount  := Item.Amount-Item.Position;
-      Item.Position := 0;
+      Item.Received.Amount  := Item.Received.Amount-Item.Received.Position;
+      Item.Received.Position := 0;
 
       BSDSockets.Recv
         (Socket => Item.SelectEntry.Socket,
-         Data   => Item.Content(Item.Amount..Item.Content'Last),
+         Data   => Item.Received.Content(Item.Received.Amount..Item.Received.Content'Last),
          Flags  => BSDSockets.MSG_NONE,
          Read   => RecvAmount);
 
-      Item.Amount := Item.Amount+RecvAmount;
+      Item.Received.Amount := Item.Received.Amount+RecvAmount;
 
-      if Item.Amount/=0 then
+      if Item.Received.Amount/=0 then
          if Item.CallBack/=null then
             Item.CallBack.Receive;
          end if;

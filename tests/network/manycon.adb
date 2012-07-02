@@ -26,6 +26,7 @@ with Network.UseImplementations;
 with Config;
 with Basics; use Basics;
 --with Ada.Text_IO; use Ada.Text_IO;
+with ExceptionOutput;
 
 procedure ManyCon is
 
@@ -67,11 +68,11 @@ procedure ManyCon is
 
 begin
 
-   Configuration.Insert(U(".Family"),U("IPv4"));
-   Configuration.Insert(U(".BindIP"),U("127.0.0.1"));
-   Configuration.Insert(U(".BindPort"),U("10000"));
-   Configuration.Insert(U(".RemoteIP"),U("127.0.0.1"));
-   Configuration.Insert(U(".RemotePort"),U("10000"));
+--   Configuration.Insert(U(".Family"),U("IPv4"));
+--   Configuration.Insert(U(".BindIP"),U("127.0.0.1"));
+--   Configuration.Insert(U(".BindPort"),U("10000"));
+--   Configuration.Insert(U(".RemoteIP"),U("127.0.0.1"));
+--   Configuration.Insert(U(".RemotePort"),U("10000"));
 
    Network.UseImplementations.Register;
    Implementation:=Network.Streams.Implementations.FindAny;
@@ -87,10 +88,10 @@ begin
    end loop;
    -- Wait for all this to happen
 
-   for i in Clients'Range loop
+--   for i in Clients'Range loop
 --      Put_Line("Destroy Client "&Integer'Image(i));
-      Implementation.FreeClient(Clients(i));
-   end loop;
+--      Implementation.FreeClient(Clients(i));
+--   end loop;
 
 --   Put_Line("Destroy Server");
 --   Implementation.FreeServer(Server);
@@ -100,5 +101,8 @@ begin
 
 --   Network.UseImplementations.Unregister;
 
+exception
+   when E:others =>
+      ExceptionOutput.Put(E);
 end ManyCon;
 ------------------------------------------------------------------------------

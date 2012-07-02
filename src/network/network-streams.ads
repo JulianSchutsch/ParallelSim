@@ -68,8 +68,9 @@ package Network.Streams is
    type ChannelCallBack_Type;
    type ChannelCallBack_ClassAccess is access all ChannelCallBack_Type'Class;
 
-   type Channel_Type is abstract new Packets.Packet_Type with
+   type Channel_Type is abstract tagged
       record
+         Received        : Packets.Packet_ClassAccess:=null;
          PeerAddress     : StringStringMap_Pack.Map;
          CallBack        : ChannelCallBack_ClassAccess:=null;
       end record;
@@ -93,7 +94,7 @@ package Network.Streams is
       Packet : Packets.Packet_ClassAccess) is abstract;
 
    function SendBufferEmpty
-     (Item : access  Channel_Type)
+     (Item : access Channel_Type)
       return Boolean is abstract;
 
 ---------------------------------------------------------------------------
@@ -151,6 +152,13 @@ package Network.Streams is
      (Object => ChannelCallBack_Type'Class,
       Name   => ChannelCallBack_ClassAccess);
    ---------------------------------------------------------------------------
+
+   procedure Free is new  Ada.Unchecked_Deallocation
+     (Object => Channel_Type'Class,
+      Name   => Channel_ClassAccess);
+   procedure Free is new Ada.Unchecked_Deallocation
+     (Object => Channel_Type'Class,
+      Name   => Client_ClassAccess);
 
    type Implementation_Type is
       record
