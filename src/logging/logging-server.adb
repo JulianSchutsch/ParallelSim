@@ -76,7 +76,7 @@ package body Logging.Server is
       Message     : Unbounded_String;
 
    begin
-      LevelInt:=item.Channel.Read;
+      LevelInt:=item.Channel.Received.Read;
 
       if LevelInt not in Level_Enum'Pos(Level_Enum'First)..Level_Enum'Pos(Level_Enum'Last) then
          Put("Invalid message received");
@@ -87,9 +87,9 @@ package body Logging.Server is
       end if;
 
       Level       := Level_Enum'Val(LevelInt);
-      ModuleName  := Item.Channel.Read;
-      ChannelName := Item.Channel.Read;
-      Message     := Item.Channel.Read;
+      ModuleName  := Item.Channel.Received.Read;
+      ChannelName := Item.Channel.Received.Read;
+      Message     := Item.Channel.Received.Read;
 
       if OnLogEvent/=null then
          OnLogEvent
@@ -142,14 +142,14 @@ package body Logging.Server is
 
       loop
 
-         PrevPosition:=Item.Channel.Position;
+         PrevPosition:=Item.Channel.Received.Position;
 
          case Item.ReceiveStatus is
             when ReceiveStatusWaitForIdentification =>
                declare
                   Identification : Unbounded_String;
                begin
-                  Identification:=Item.Channel.Read;
+                  Identification:=Item.Channel.Received.Read;
                   if Identification/=LoggingProtocol.ClientID then
                      Put("Invalid Identification by Client");
                      Put(To_String(Identification));
@@ -165,7 +165,7 @@ package body Logging.Server is
                Item.ReceiveStatus:=ReceiveStatusWaitForCommand;
 
             when ReceiveStatusWaitForCommand =>
-               Item.CurrentCommand:=Item.Channel.Read;
+               Item.CurrentCommand:=Item.Channel.Received.Read;
                if Item.CurrentCommand not in Cmds'Range then
                   Put("Command not in valid range");
                   Put(Integer(Item.CurrentCommand));
@@ -199,7 +199,7 @@ package body Logging.Server is
    exception
 
       when Packets.PacketOutOfData =>
-         Item.Channel.Position:=PrevPosition;
+         Item.Channel.Received.Position:=PrevPosition;
 
    end Receive;
    ---------------------------------------------------------------------------

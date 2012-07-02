@@ -201,6 +201,9 @@ package BSDSockets.Thin is
    procedure FD_ZERO
      (Set : access fd_set_struct);
 
+   procedure SetNonBlocking
+     (Socket : SocketID);
+
    procedure Initialize;
    procedure Finalize;
 

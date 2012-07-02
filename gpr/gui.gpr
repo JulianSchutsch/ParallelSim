@@ -5,6 +5,7 @@ abstract project GUI is
    CompilerSwitches:=();
    BinderSwitches:=();
    LinkerSwitches:=();
+   SourceDirectories:=();
 
    case Config.wgl is
       when "On" =>
@@ -15,6 +16,7 @@ abstract project GUI is
 
    case Config.xlib is
       when "On" =>
+         SourceDirectories:=SourceDirectories&("../src/xlib");
          LinkerSwitches:=LinkerSwitches&("-lX11","-lGL");
       when "Off" =>
    end case;

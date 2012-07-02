@@ -84,7 +84,7 @@ package body SimFront.Server is
       end if;
 
       Item.User.PublicKey:=AuthenticationImpl.ReadPublicKey
-        (Packets.Packet_ClassAccess(Item.Channel));
+        (Item.Channel.Received);
 
       declare
          Packet : Packets.Packet_ClassAccess;
@@ -116,7 +116,7 @@ package body SimFront.Server is
 
    begin
 
-      EncryptedMessage:=Item.Channel.Read;
+      EncryptedMessage:=Item.Channel.Received.Read;
 
       if Item.User.PublicKey=null then
          Item.Channel.Disconnect;
@@ -224,13 +224,13 @@ package body SimFront.Server is
 
       loop
 
-         PrevPosition:=Item.Channel.Position;
+         PrevPosition:=Item.Channel.Received.Position;
          case ReceiveStatus is
             when ReceiveStatusVerifyProtocol =>
                declare
                   ProtocolID : Unbounded_String;
                begin
-                  ProtocolID:=Item.Channel.Read;
+                  ProtocolID:=Item.Channel.Received.Read;
                   if ProtocolID/=FrontProtocol.ClientID then
                      -- TODO: Report error somewhere
                      Item.Channel.Disconnect;
@@ -240,7 +240,7 @@ package body SimFront.Server is
                ReceiveStatus:=ReceiveStatusWaitForCommand;
 
             when ReceiveStatusWaitForCommand =>
-               CurrentCommand := Item.Channel.Read;
+               CurrentCommand := Item.Channel.Received.Read;
                if CurrentCommand not in Commands'Range then
                   Item.Channel.Disconnect;
                   -- TODO: Report Error somewhere
@@ -256,7 +256,7 @@ package body SimFront.Server is
 
    exception
       when Packets.PacketOutOfData =>
-         Item.Channel.Position:=PrevPosition;
+         Item.Channel.Received.Position:=PrevPosition;
 
    end Receive;
    ---------------------------------------------------------------------------

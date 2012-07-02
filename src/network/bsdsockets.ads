@@ -68,6 +68,7 @@ package BSDSockets is
    FailedReceive          : Exception;
    FailedRecv             : Exception;
    FailedSelect           : Exception;
+   FailedSetNonBlocking   : Exception;
 
    type SocketID is private;
 
@@ -79,19 +80,22 @@ package BSDSockets is
    type SockAddr is private;
    type SockAddrAccess is access SockAddr;
 
-   type PrivSelectEntry is private;
+   type PrivSelectEntry_Type is private;
 
-   type SelectEntry is
+   type SelectEntry_Type;
+   type SelectEntry_Access is access all SelectEntry_Type;
+
+   type SelectEntry_Type is
       record
          Socket    : SocketID;
-         Readable  : Boolean;
-         Writeable : Boolean;
-         Priv      : PrivSelectEntry;
+         Readable  : Boolean:=False;
+         Writeable : Boolean:=False;
+         Priv      : PrivSelectEntry_Type;
       end record;
 
-   type SelectList is
+   type SelectList_Type is
       record
-         FirstEntry: access SelectEntry;
+         FirstEntry: SelectEntry_Access:=null;
       end record;
 
    -- Has Representation --
@@ -135,14 +139,17 @@ package BSDSockets is
    -- This function accepts a list of SocketSelectEntry each containing
    --  a socket and a read- and writeable flag.
    procedure SSelect
-     (Sockets : in out SelectList);
+     (Sockets : in out SelectList_Type);
 
    procedure AddEntry
-     (List: access SelectList;
-      Entr: access SelectEntry);
+     (List: access SelectList_Type;
+      Entr: SelectEntry_Access);
 
    procedure RemoveEntry
-     (Entr: access SelectEntry);
+     (Entr: SelectEntry_Access);
+
+   procedure DebugEntries
+     (List : access SelectList_Type);
 
    procedure Bind
      (Socket : SocketID;
@@ -174,6 +181,9 @@ package BSDSockets is
       Host      : out Unbounded_String;
       Port      : out PortID;
       NewSocket : out SocketID);
+
+   procedure SetNonBlocking
+     (Socket : SocketID);
 
    procedure CloseSocket
      (Socket : SocketID);
@@ -217,18 +227,18 @@ package BSDSockets is
       return String;
 
    -- Default Select List, is processed by Process procedure (below)
-   DefaultSelectList : aliased SelectList;
+   DefaultSelectList : aliased SelectList_Type;
 
    procedure Initialize;
    procedure Finalize;
 
 private
 
-   type PrivSelectEntry is
+   type PrivSelectEntry_Type is
       record
-         Next : access SelectEntry := null;
-         Last : access SelectEntry := null;
-         List : access SelectList  := null;
+         Next : SelectEntry_Access := null;
+         Last : SelectEntry_Access := null;
+         List : access SelectList_Type  := null;
       end record;
 
    type SockAddr is

@@ -209,13 +209,13 @@ package body Logging.Client is
    begin
 
       loop
-         PrevPosition := Item.Client.Position;
+         PrevPosition := Item.Client.Received.Position;
          case Item.ReceiveStatus is
             when ReceiveStatusWaitForIdentification =>
                declare
                   Identification : Unbounded_String;
                begin
-                  Identification:=Item.Client.Read;
+                  Identification:=Item.Client.Received.Read;
                   if Identification/=LoggingProtocol.ServerID then
                      Item.Client.Disconnect;
                      Item.ReceiveStatus:=ReceiveStatusInvalid;
@@ -235,7 +235,7 @@ package body Logging.Client is
 
    exception
       when Packets.PacketOutOfData =>
-         Item.Client.Position:=PrevPosition;
+         Item.Client.Received.Position:=PrevPosition;
 
    end Receive;
    ---------------------------------------------------------------------------

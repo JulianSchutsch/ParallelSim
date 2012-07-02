@@ -222,6 +222,21 @@ package body BSDSockets.Thin is
    end FD_ZERO;
    ---------------------------------------------------------------------------
 
+   function WinSetNonBlocking
+     (Socket : SocketID)
+      return Interfaces.C.int;
+   pragma Import(C,WinSetNonBlocking,"WinSetNonBlocking");
+
+   procedure SetNonBlocking
+     (Socket : SocketID) is
+   begin
+      Put_Line("Set Non Blocking");
+      if WinSetNonBlocking(Socket)/=0 then
+         raise FailedSetNonBlocking;
+      end if;
+   end SetNonBlocking;
+   ---------------------------------------------------------------------------
+
    -- Stores information obtained during initialization
    WSAInfo : aliased WSAData;
 

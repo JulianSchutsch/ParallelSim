@@ -25,16 +25,19 @@ with Network.Streams;
 with Ada.Calendar;
 with Packets;
 with Basics; use Basics;
---with NodeInfo;
---with Expressions;
+with NodeInfo;
+with Expressions;
+with Ada.Exceptions; use Ada.Exceptions;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body BSDSockets.Streams is
 
+   ReceiveBufferSize : constant := 4096;
+
    type BSDSocketChannel_Type is new Network.Streams.Channel_Type with
       record
-         SelectEntry        : aliased BSDSockets.SelectEntry;
+         SelectEntry        : aliased BSDSockets.SelectEntry_Type;
          FirstSendPacket    : Packets.Packet_ClassAccess := null;
          -- The current send packet is the last sendpacket in the list
          SendPacket         : Packets.Packet_ClassAccess := null;
@@ -97,7 +100,7 @@ package body BSDSockets.Streams is
    type Server_Type is new Network.Streams.Server_Type with
       record
          Family       : Unbounded_String;
-         SelectEntry  : aliased BSDSockets.SelectEntry;
+         SelectEntry  : aliased BSDSockets.SelectEntry_Type;
          NextServer   : Server_Access:=null;
          LastServer   : Server_Access:=null;
          FirstChannel : ServerChannel_Access:=null;
@@ -155,13 +158,19 @@ package body BSDSockets.Streams is
       RetryConnect : Boolean:=False;
 
    begin
+
+      Put(Item.all'Address);
+      Put_Line("Next...");
+
       if Item.CurrAddrInfo/=null then
 
          begin
 
-            Item.SelectEntry.Socket:=Socket
-              (AddrInfo => Item.CurrAddrInfo);
+            -- TODO: What about previously allocated sockets?
+            Item.SelectEntry.Socket:=Socket(Item.CurrAddrInfo);
+            BSDSockets.SetNonBlocking(Item.SelectEntry.Socket);
 
+            Put_Line("Connect");
             Connect
               (Socket   => Item.SelectEntry.Socket,
                AddrInfo => Item.CurrAddrInfo,
@@ -171,16 +180,12 @@ package body BSDSockets.Streams is
               (List => BSDSockets.DefaultSelectList'Access,
                Entr => Item.SelectEntry'Access);
 
-            Item.ClientMode:=ClientModeConnected;
-            if Item.CallBack/=null then
-               Item.CallBack.Connect;
-            end if;
-            FreeAddrInfo
-              (AddrInfo => Item.FirstAddrInfo);
             return;
 
          exception
-            when FailedConnect =>
+            when E:FailedConnect =>
+               Put_Line("EXC:Failed Connect..");
+               Put_Line(Ada.Exceptions.Exception_Message(E));
                CloseSocket(Socket => Item.SelectEntry.Socket);
             when others =>
                CloseSocket(Socket => Item.SelectEntry.Socket);
@@ -192,6 +197,7 @@ package body BSDSockets.Streams is
              (AddrInfo => Item.CurrAddrInfo);
 
       else
+
          if Item.CallBack/=null then
             Item.CallBack.FailedConnect
               (Retry => RetryConnect);
@@ -218,12 +224,15 @@ package body BSDSockets.Streams is
       VarItem : ServerChannel_Access;
 
    begin
---      Put("Finalize");
---      Put(Item.all'Address);
---      New_Line;
+      Put("FinalizeChannel");
+      Put(Item.all'Address);
+      New_Line;
+
+      BSDSockets.DebugEntries(BSDSockets.DefaultSelectList'Access);
 
       begin
 
+         Put_Line("Remove : "&SocketID'Image(Item.SelectEntry.Socket));
          BSDSockets.RemoveEntry
            (Entr => Item.SelectEntry'Access);
 
@@ -231,6 +240,8 @@ package body BSDSockets.Streams is
          when BSDSockets.EntryNotAddedToAnyList =>
             null;
       end;
+
+      BSDSockets.DebugEntries(BSDSockets.DefaultSelectList'Access);
 
       begin
          BSDSockets.CloseSocket
@@ -345,16 +356,18 @@ package body BSDSockets.Streams is
       Listen(Socket  => Item.SelectEntry.Socket,
              Backlog => 0);
 
+      BSDSockets.SetNonBlocking(Item.SelectEntry.Socket);
+
       BSDSockets.AddEntry
         (List => BSDSockets.DefaultSelectList'Access,
          Entr => Item.SelectEntry'Access);
-      null;
 
       Item.NextServer := Servers;
       if Servers/=null then
          Servers.LastServer:=Item;
       end if;
       Servers:=Item;
+
       return Network.Streams.Server_ClassAccess(Item);
 
    end NewStreamServer;
@@ -367,6 +380,7 @@ package body BSDSockets.Streams is
 
    begin
 
+      Put_Line("FreeStreamServer");
       Serv:=Server_Access(Item);
 
       if Serv.LastServer/=null then
@@ -397,58 +411,56 @@ package body BSDSockets.Streams is
       return Network.Streams.Client_ClassAccess is
 
       Item      : Client_Access:=null;
---      PortStr   : Unbounded_String;
---      FamilyStr : Unbounded_String;
---      Host      : Unbounded_String;
---      Family    : AddressFamilyEnum;
-      pragma Warnings(Off,Configuration);
-      pragma Warnings(Off,Node);
+      PortStr   : Unbounded_String;
+      FamilyStr : Unbounded_String;
+      Host      : Unbounded_String;
+      Family    : AddressFamilyEnum;
 
    begin
 
       Item:=new Client_Type;
-      Put_Line("Allocated?");
-      Put(PortID'Image(Item.Port));
-      Put("New");
-      Put(Item.all'Address);
-      New_Line;
 
---      PortStr   := Configuration.Element(Node&".RemotePort");
---      FamilyStr := Configuration.Element(Node&".Family");
---      Host      := Configuration.Element(Node&".RemoteIP");
+      PortStr   := Configuration.Element(Node&".RemotePort");
+      FamilyStr := Configuration.Element(Node&".Family");
+      Host      := Configuration.Element(Node&".RemoteIP");
 
---      PortStr := Expressions.Process
---        (String    => PortStr,
---         Variables => NodeInfo.Variables);
+      PortStr := Expressions.Process
+        (String    => PortStr,
+         Variables => NodeInfo.Variables);
 
---      Item.Port := PortID'Value(To_String(PortStr));
---      if FamilyStr="IPv4" then
---         Family:=AF_INET;
---      else
---         if FamilyStr="IPv6" then
---            Family:=AF_INET6;
---         else
---            raise Network.Streams.InvalidData;
---         end if;
---      end if;
+      Item.Port := PortID'Value(To_String(PortStr));
+      if FamilyStr="IPv4" then
+         Family:=AF_INET;
+      else
+         if FamilyStr="IPv6" then
+            Family:=AF_INET6;
+         else
+            raise Network.Streams.InvalidData;
+         end if;
+      end if;
 
---      Item.FirstAddrInfo:=GetAddrInfo
---        (AddressFamily => Family,
---         SocketType    => SOCK_STREAM,
---         Protocol      => IPPROTO_ANY,
---         Host          => To_String(Host));
+      Item.FirstAddrInfo:=GetAddrInfo
+        (AddressFamily => Family,
+         SocketType    => SOCK_STREAM,
+         Protocol      => IPPROTO_ANY,
+         Host          => To_String(Host));
 
---      Item.CurrAddrInfo := Item.FirstAddrInfo;
+      Item.CurrAddrInfo := Item.FirstAddrInfo;
 
---      Item.NextClient := Clients;
---      if Clients/=null then
---         Clients.LastClient:=Item;
---      end if;
---      Clients:=Item;
+      Item.NextClient := Clients;
+      if Clients/=null then
+         Clients.LastClient:=Item;
+      end if;
 
---      Item.LastTime:=Ada.Calendar.Clock;
-      -- TODO: variable Buffer size
---      Item.Content:=new ByteOperations.ByteArray_Type(0..1023);
+      Clients:=Item;
+
+      Item.LastTime:=Ada.Calendar.Clock;
+
+      Item.Received:=new Packets.Packet_Type;
+      Item.Received.Content:=new ByteOperations.ByteArray_Type(0..ReceiveBufferSize-1);
+
+      -- TODO: Is there a case when we just have to give up?
+      Next(Item);
 
       return Network.Streams.Client_ClassAccess(Item);
 
@@ -457,30 +469,41 @@ package body BSDSockets.Streams is
 
    procedure FreeStreamClient
      (Item : in out Network.Streams.Client_ClassAccess) is
-      use type Network.Streams.Client_ClassAccess;
 
---      Client : Client_Access;
+      use type Network.Streams.Client_ClassAccess;
+      use type Packets.Packet_ClassAccess;
+
+      Client : Client_Access;
 
    begin
 
---      Client:=Client_Access(Item);
+      Client:=Client_Access(Item);
 
---      begin
---         BSDSockets.Shutdown
---           (Socket => Client.SelectEntry.Socket,
---            Method => BSDSockets.SD_BOTH);
---      exception
---         when BSDSockets.FailedShutdown =>
---            null;
---      end;
+      if Client.FirstAddrInfo/=null then
+         BSDSockets.FreeAddrInfo(Client.FirstAddrInfo);
+         Client.FirstAddrInfo:=null;
+      end if;
 
---      Finalize
---        (Item => Client);
+      begin
+         BSDSockets.Shutdown
+           (Socket => Client.SelectEntry.Socket,
+            Method => BSDSockets.SD_BOTH);
+      exception
+         when BSDSockets.FailedShutdown =>
+            null;
+      end;
 
-      Put(Item.all'Address);
-      Put("Freeing");
+      Finalize
+        (Item => Client);
+
+      if Client.Received/=null then
+         Packets.Free(Client.Received);
+         Client.Received:=null;
+      end if;
+
+      Put_Line("FreeClient");
       Network.Streams.Free(Item);
-      Put_Line("Freed");
+      Put_Line("FREE::");
 
    end FreeStreamClient;
    ---------------------------------------------------------------------------
@@ -500,6 +523,7 @@ package body BSDSockets.Streams is
    end;
    ---------------------------------------------------------------------------
 
+   AcceptFailed : Boolean:=False;
    procedure AAccept
      (Item : not null Server_Access) is
 
@@ -510,21 +534,31 @@ package body BSDSockets.Streams is
 
    begin
 
-      Put_Line("AAccept");
+--      Put_Line("Try Accept");
+      begin
+         BSDSockets.AAccept
+           (Socket    => Item.SelectEntry.Socket,
+            Host      => Host,
+            Port      => Port,
+            NewSocket => NewSock);
+      exception
+         when BSDSockets.FailedAccept =>
+            if not AcceptFailed then
+               Put_Line("AcceptFail:"&SocketID'Image(Item.SelectEntry.Socket));
+               AcceptFailed:=True;
+            end if;
+            return;
+      end;
 
-      BSDSockets.AAccept
-        (Socket    => Item.SelectEntry.Socket,
-         Host      => Host,
-         Port      => Port,
-         NewSocket => NewSock);
-
-      Put_Line("Channel Creation");
+      Put_Line("Channel Creation for Server"&SocketID'Image(Item.SelectEntry.Socket));
 
       NewServerChannel                    := new ServerChannel_Type;
       NewServerChannel.SelectEntry.Socket := NewSock;
       NewServerChannel.Server             := Item;
       NewServerChannel.NextChannel        := Item.FirstChannel;
       NewServerChannel.LastChannel        := null;
+
+      BSDSockets.SetNonBlocking(NewSock);
 
       NewServerChannel.PeerAddress.Insert
         (Key      => U("Host"),
@@ -543,9 +577,8 @@ package body BSDSockets.Streams is
       end if;
 
       Item.FirstChannel := NewServerChannel;
-      -- TODO: variable Buffer size
-      -- TODO: Restore
---      NewServerChannel.Content:=new ByteOperations.ByteArray_Type(0..1023);
+      NewServerChannel.Received:=new Packets.Packet_Type;
+      NewServerChannel.Received.Content:=new ByteOperations.ByteArray_Type(0..ReceiveBufferSize);
 
       BSDSockets.AddEntry
         (List => BSDSockets.DefaultSelectList'Access,
@@ -555,7 +588,6 @@ package body BSDSockets.Streams is
          Item.CallBack.AAccept
            (Channel => Network.Streams.Channel_ClassAccess(NewServerChannel));
       end if;
-
 
    end AAccept;
 
@@ -664,19 +696,16 @@ package body BSDSockets.Streams is
 
          ClientItem.Active:=True;
 
-
          if ClientItem.ClientMode/=ClientModeConnecting then
 
             OperationSuccess:=True;
 
             if ClientItem.SelectEntry.Readable then
-               OperationSuccess:=Recv
-                 (Item => ClientItem);
+               OperationSuccess:=Recv(ClientItem);
             end if;
 
             if ClientItem.SelectEntry.Writeable then
-               OperationSuccess
-                 :=Send(Item => ClientItem)
+               OperationSuccess:=Send(ClientItem)
                  and OperationSuccess;
             end if;
 
@@ -687,10 +716,21 @@ package body BSDSockets.Streams is
 
          else
 
-            -- TODO : Currently a timeout of 1 second is assumed
-            --        This should become a configurable value
-            if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
-               Next(ClientItem);
+            if ClientItem.SelectEntry.Writeable then
+               Put_Line("Connecting Success"&SocketID'Image(ClientItem.SelectEntry.Socket));
+               if ClientItem.CallBack/=null then
+                  ClientItem.CallBack.Connect;
+               end if;
+              FreeAddrInfo(ClientItem.FirstAddrInfo);
+              ClientItem.FirstAddrInfo:=null;
+              ClientItem.ClientMode:=ClientModeConnected;
+            else
+               -- TODO : Currently a timeout of 1 second is assumed
+               --        This should become a configurable value
+               if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
+                  Next(ClientItem);
+               end if;
+
             end if;
 
          end if;
@@ -700,6 +740,7 @@ package body BSDSockets.Streams is
          ClientItem:=NextClientItem;
 
       end loop;
+      ------------------------------------------------------------------------
 
       while ServerItem/=null loop
 

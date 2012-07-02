@@ -25,15 +25,19 @@ with Network.Streams;
 with Network.UseImplementations;
 with Config;
 with Basics; use Basics;
---with Ada.Text_IO; use Ada.Text_IO;
 with ExceptionOutput;
+with ProcessLoop;
+
+with Ada.Text_IO; use Ada.Text_IO;
 
 procedure ManyCon is
 
    ClientCount : constant := 5;
+   Accepted : Integer:=0;
+   pragma Warnings(Off,Accepted);
 
    Implementation : Network.Streams.Implementation_Type;
---   Server  : Network.Streams.Server_ClassAccess;
+   Server  : Network.Streams.Server_ClassAccess;
    Clients : array(1..ClientCount) of Network.Streams.Client_ClassAccess
      :=(others => null);
 
@@ -50,57 +54,88 @@ procedure ManyCon is
    procedure Connect
      (Item : in out ClientCallBack_Type);
 
+   overriding
+   procedure FailedConnect
+     (Item  : in out ClientCallBack_Type;
+      Retry : in out Boolean);
+
    procedure AAccept
      (Item    : in out ServerCallBack_Type;
       Channel : Network.Streams.Channel_ClassAccess) is
+      pragma Unreferenced(Item);
+      pragma Unreferenced(Channel);
    begin
-      null;
+      Put_Line("Accepting...");
+      Accepted:=Accepted+1;
    end AAccept;
+   ---------------------------------------------------------------------------
+
+   procedure FailedConnect
+     (Item  : in out ClientCallBack_Type;
+      Retry : in out Boolean) is
+      pragma Unreferenced(Item);
+   begin
+      Put_Line("Failed Connect");
+      Retry:=True;
+   end FailedConnect;
    ---------------------------------------------------------------------------
 
    procedure Connect
      (Item : in out ClientCallBack_Type) is
+      pragma Unreferenced(Item);
    begin
-      null;
+      Put_Line("Connected");
    end Connect;
    ---------------------------------------------------------------------------
 
-   Configuration : Config.Config_Type;
+   Configuration  : Config.Config_Type;
+   ServerCallBack : aliased ServerCallBack_Type;
+   ClientCallBack : aliased ClientCallBack_Type;
+   Counter  : Integer:=0;
 
 begin
 
---   Configuration.Insert(U(".Family"),U("IPv4"));
---   Configuration.Insert(U(".BindIP"),U("127.0.0.1"));
---   Configuration.Insert(U(".BindPort"),U("10000"));
---   Configuration.Insert(U(".RemoteIP"),U("127.0.0.1"));
---   Configuration.Insert(U(".RemotePort"),U("10000"));
+   Configuration.Insert(U(".Family"),U("IPv4"));
+   Configuration.Insert(U(".BindIP"),U("127.0.0.1"));
+   Configuration.Insert(U(".BindPort"),U("10000"));
+   Configuration.Insert(U(".RemoteIP"),U("127.0.0.1"));
+   Configuration.Insert(U(".RemotePort"),U("10000"));
 
    Network.UseImplementations.Register;
    Implementation:=Network.Streams.Implementations.FindAny;
 
---   Implementation.Initialize.all;
+   Implementation.Initialize.all;
 
---   Put_Line("Create Server");
---   Server:=Implementation.NewServer(Configuration,U(""));
+   Server:=Implementation.NewServer(Configuration,U(""));
+   Server.CallBack:=ServerCallBack'Unrestricted_Access;
 
    for i in Clients'Range loop
---      Put_Line("Create Client "&Integer'Image(i));
       Clients(i):=Implementation.NewClient(Configuration,U(""));
+      Clients(i).CallBack:=ClientCallBack'Unrestricted_Access;
    end loop;
    -- Wait for all this to happen
 
+   while Accepted<ClientCount loop
+      if Counter=100000 then
+         Put("*");
+         Counter:=0;
+      end if;
+      Counter:=Counter+1;
+      ProcessLoop.Process;
+   end loop;
+
    for i in Clients'Range loop
---      Put_Line("Destroy Client "&Integer'Image(i));
+      Put_Line("Destroy Client "&Integer'Image(i));
       Implementation.FreeClient(Clients(i));
    end loop;
 
 --   Put_Line("Destroy Server");
---   Implementation.FreeServer(Server);
+   Implementation.FreeServer(Server);
 
 --   Put_Line("Finalize");
---   Implementation.Finalize.all;
+   Implementation.Finalize.all;
 
---   Network.UseImplementations.Unregister;
+   Network.UseImplementations.Unregister;
 
 exception
    when E:others =>
