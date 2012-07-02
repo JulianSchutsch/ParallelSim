@@ -146,6 +146,9 @@ package BSDSockets.Thin is
       return Interfaces.C.int;
    pragma Import(C,SSelect,"select");
 
+   procedure SetNonBlocking
+     (Socket : SocketID);
+
    function GetAddrInfo
      (pNodeName    : Interfaces.C.Strings.chars_ptr;
       pServiceName : Interfaces.C.Strings.chars_ptr;

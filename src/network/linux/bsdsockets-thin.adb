@@ -33,6 +33,20 @@ package body BSDSockets.Thin is
    c_AF_INET6:Interfaces.C.int;
    pragma Import(C,c_AF_INET6,"c_AF_INET6");
 
+   function UnixSetNonBlocking
+     (Socket : SocketID)
+      return Interfaces.C.int;
+   pragma Import(C,UnixSetNonBlocking,"UnixSetNonBlocking");
+
+   procedure SetNonBlocking
+     (Socket : SocketID) is
+   begin
+      if UnixSetNonBlocking(Socket)/=0 then
+         raise FailedSetNonBlocking with "Error "&Interfaces.C.int'Image(Error);
+      end if;
+   end SetNonBlocking;
+   ---------------------------------------------------------------------------
+
    function DecypherAddressFamily
      (AddressFamily : AddressFamilyEnum)
       return Interfaces.C.int is
