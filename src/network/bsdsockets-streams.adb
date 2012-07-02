@@ -166,7 +166,6 @@ package body BSDSockets.Streams is
 
          begin
 
-            -- TODO: What about previously allocated sockets?
             Item.SelectEntry.Socket:=Socket(Item.CurrAddrInfo);
             BSDSockets.SetNonBlocking(Item.SelectEntry.Socket);
 
@@ -228,11 +227,8 @@ package body BSDSockets.Streams is
       Put(Item.all'Address);
       New_Line;
 
-      BSDSockets.DebugEntries(BSDSockets.DefaultSelectList'Access);
-
       begin
 
-         Put_Line("Remove : "&SocketID'Image(Item.SelectEntry.Socket));
          BSDSockets.RemoveEntry
            (Entr => Item.SelectEntry'Access);
 
@@ -240,8 +236,6 @@ package body BSDSockets.Streams is
          when BSDSockets.EntryNotAddedToAnyList =>
             null;
       end;
-
-      BSDSockets.DebugEntries(BSDSockets.DefaultSelectList'Access);
 
       begin
          BSDSockets.CloseSocket
@@ -267,6 +261,8 @@ package body BSDSockets.Streams is
             Item.CallBack.Disconnect;
          end if;
 
+         Item.Received.Free;
+         Item.Received:=null;
 
          Network.Streams.Free(Network.Streams.Channel_ClassAccess(VarItem));
 
@@ -288,6 +284,8 @@ package body BSDSockets.Streams is
           when FailedCloseSocket =>
             null;
       end;
+
+      BSDSockets.RemoveEntry(Item.SelectEntry'Access);
 
       if Item.LastClient/=null then
          Item.LastClient.NextClient:=Item.NextClient;
@@ -376,7 +374,9 @@ package body BSDSockets.Streams is
    procedure FreeStreamServer
      (Item : in out Network.Streams.Server_ClassAccess) is
 
-      Serv : Server_Access;
+      Serv        : Server_Access;
+      Channel     : ServerChannel_Access;
+      NextChannel : ServerChannel_Access;
 
    begin
 
@@ -399,9 +399,15 @@ package body BSDSockets.Streams is
       BSDSockets.CloseSocket
         (Socket => Serv.SelectEntry.Socket);
 
-      -- TODO: This looks like we forgotten to free all the channels
-      -- associated with the server!
+      Channel:=Serv.FirstChannel;
+      while Channel/=null loop
+         NextChannel:=Channel.NextChannel;
+         Finalize(Channel);
+         Channel:=NextChannel;
+      end loop;
+
       Network.Streams.Free(Item);
+
    end FreeStreamServer;
    ---------------------------------------------------------------------------
 
@@ -544,7 +550,7 @@ package body BSDSockets.Streams is
       exception
          when BSDSockets.FailedAccept =>
             if not AcceptFailed then
-               Put_Line("AcceptFail:"&SocketID'Image(Item.SelectEntry.Socket));
+               Put_Line("****** AcceptFail:"&SocketID'Image(Item.SelectEntry.Socket));
                AcceptFailed:=True;
             end if;
             return;
@@ -676,15 +682,16 @@ package body BSDSockets.Streams is
 
    procedure Process
      (Object : AnyObject_ClassAccess) is
+
       pragma Unreferenced(Object);
+
+      use type Ada.Calendar.Time;
 
       ServerItem            : Server_Access := Servers;
       ClientItem            : Client_Access := Clients;
       NextClientItem        : Client_Access;
       ServerChannelItem     : ServerChannel_Access;
       NextServerChannelItem : ServerChannel_Access;
-
-      use type Ada.Calendar.Time;
 
       OperationSuccess : Boolean;
 
@@ -728,6 +735,8 @@ package body BSDSockets.Streams is
                -- TODO : Currently a timeout of 1 second is assumed
                --        This should become a configurable value
                if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
+                  BSDSockets.CloseSocket(ClientItem.SelectEntry.Socket);
+                  BSDSockets.RemoveEntry(ClientItem.SelectEntry'Access);
                   Next(ClientItem);
                end if;
 

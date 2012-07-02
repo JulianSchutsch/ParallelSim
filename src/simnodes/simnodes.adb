@@ -24,7 +24,7 @@ with ProgramArguments;
 with Basics; use Basics;
 with DistributedSystems; use DistributedSystems;
 with Packets;
-with Types;
+with Types; use Types;
 
 package body SimNodes is
 
@@ -68,6 +68,7 @@ package body SimNodes is
          Put_Line("SF"&Node_Type'Image(ThisNode));
          Packet:=new Packets.Packet_Type;
          Packet.Write(EndTypeIDs(EndTypeFirst));
+         Packet.Write(NodeTypeIDs(NodeType));
          Packet.Write(Types.Cardinal32(ThisNode));
          DistributedSystemsImpl.SendMessage
            (Dest   => Dest,
@@ -84,6 +85,7 @@ package body SimNodes is
          Put_Line("SL"&Node_Type'Image(ThisNode));
          Packet:=new Packets.Packet_Type;
          Packet.Write(EndTypeIDs(EndTypeLast));
+         Packet.Write(NodeTypeIDs(NodeType));
          Packet.Write(Types.Cardinal32(ThisNode));
          DistributedSystemsImpl.SendMessage
            (Dest   => Dest,
@@ -98,9 +100,8 @@ package body SimNodes is
       procedure ReceiveNeighbourType
         (Source : Node_Type;
          Packet : Packets.Packet_ClassAccess) is
-         RecNodeType : Types.Cardinal32;
 
-         use type Types.Cardinal32;
+         RecNodeType : Types.Cardinal32;
 
       begin
          RecNodeType:=Packet.Read;
@@ -119,16 +120,32 @@ package body SimNodes is
         (Source : Node_Type;
          Packet : Packets.Packet_ClassAccess) is
 
-         RecEndType : Types.Cardinal32;
-         RecNode    : Types.Cardinal32;
-         pragma Unreferenced(RecEndType);
+         RecEndType  : Types.Cardinal32;
+         RecNodeType : Types.Cardinal32;
+         RecNode     : Types.Cardinal32;
 
       begin
-         RecEndType:=Packet.Read;
-         RecNode:=Packet.Read;
+         RecEndType  := Packet.Read;
+         RecNodeType := Packet.Read;
+         RecNode     := Packet.Read;
          if Node_Type(RecNode)/=Source then
             Put_Line("RecNode/=Source in ReceiveRanges");
          end if;
+
+         if RecEndType=EndTypeIDs(EndTypeFirst) then
+            if RecNodeType=NodeTypeIDs(NodeTypeFront) then
+               FirstFront:=Node_Type(RecNode);
+            else
+               FirstSim:=Node_Type(RecNode);
+            end if;
+         else
+            if RecNodeType=NodeTypeIDs(NodeTypeFront) then
+               LastFront:=Node_Type(RecNode);
+            else
+               LastSim:=Node_Type(RecNode);
+            end if;
+         end if;
+
          ExpectedPackets:=ExpectedPackets-1;
          Put_Line("Remaining Ranges : "&Integer'Image(ExpectedPackets));
       end ReceiveRanges;

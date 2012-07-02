@@ -129,10 +129,8 @@ begin
       Implementation.FreeClient(Clients(i));
    end loop;
 
---   Put_Line("Destroy Server");
    Implementation.FreeServer(Server);
 
---   Put_Line("Finalize");
    Implementation.Finalize.all;
 
    Network.UseImplementations.Unregister;

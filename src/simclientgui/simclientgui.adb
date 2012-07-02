@@ -25,6 +25,7 @@ with ProcessLoop;
 with SimClientGUI.MainMenu;
 with SimClientGUI.CreateServer;
 with SimClientGUI.Logging;
+with SimClient;
 
 --with Ada.Text_IO; use Ada.Text_IO;
 
@@ -48,6 +49,8 @@ package body SimClientGUI is
    begin
 
       Terminated:=False;
+
+      SimClient.Initialize(Configuration);
 
       GUIImplementation
         :=GUI.Implementations.Find
@@ -76,6 +79,8 @@ package body SimClientGUI is
 
       GUI.FreeContext
         (Context => GUIContext);
+
+      SimClient.Finalize;
 
    end Finalize;
    ---------------------------------------------------------------------------

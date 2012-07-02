@@ -35,6 +35,10 @@ package SimNodes is
    FrontGroup    : DistributedSystems.Group_Type;
    SimGroup      : DistributedSystems.Group_Type;
    Configuration : Config.Config_Type;
+   FirstFront    : DistributedSystems.Node_Type;
+   FirstSim      : DistributedSystems.Node_Type;
+   LastFront     : DistributedSystems.Node_Type;
+   LastSim       : DistributedSystems.Node_Type;
 
    procedure Initialize
      (NodeType : NodeType_Enum);

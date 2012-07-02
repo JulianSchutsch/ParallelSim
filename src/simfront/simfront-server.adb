@@ -29,6 +29,8 @@ with SimFront.Users; use SimFront.Users;
 with Authentication;
 with Types; use Types;
 
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body SimFront.Server is
 
    type ReceiveStatus_Enum is
@@ -78,6 +80,9 @@ package body SimFront.Server is
 
    begin
 
+      Item.LogChannel.Write
+        (Level   => Logging.LevelEvent,
+         Message => "Receiving Public Key");
       if Item.User.PublicKey/=null then
          Item.User.PublicKey.Free;
          Item.User.PublicKey:=null;
@@ -102,6 +107,10 @@ package body SimFront.Server is
          Item.Channel.SendPacket(Packet);
       end;
 
+      Item.LogChannel.Write
+        (Level   => Logging.LevelEvent,
+         Message => "Received Public Key, Send Message to encrypt");
+
       ReceiveStatus:=ReceiveStatusWaitForCommand;
 
    end CommandPublicKey;
@@ -119,10 +128,10 @@ package body SimFront.Server is
       EncryptedMessage:=Item.Channel.Received.Read;
 
       if Item.User.PublicKey=null then
-         Item.Channel.Disconnect;
          Item.LogChannel.Write
            (Level   => Logging.LevelError,
             Message => "Encrypted Message without Public Key");
+         Item.Channel.Disconnect;
       end if;
 
       if Item.User.PublicKey.Verify
@@ -140,6 +149,7 @@ package body SimFront.Server is
       declare
          Packet : Packets.Packet_ClassAccess;
       begin
+
          Packet:=new Packets.Packet_Type;
          Packet.Write(FrontProtocol.ClientCmdNotifyPrivileges);
          for Privilege in FrontProtocol.Privileges_Enum'Range loop
@@ -151,8 +161,14 @@ package body SimFront.Server is
             end if;
 
          end loop;
+
          Item.Channel.SendPacket(Packet);
+
       end;
+
+      Item.LogChannel.Write
+        (Level   => Logging.LevelEvent,
+         Message => "Authentication valid, send privileges record");
 
       ReceiveStatus:=ReceiveStatusWaitForCommand;
 
@@ -189,6 +205,7 @@ package body SimFront.Server is
       pragma Unreferenced(Item);
 
       CallBack : ChannelCallBack_Access;
+      Packet   : Packets.Packet_ClassAccess;
 
    begin
 
@@ -201,6 +218,10 @@ package body SimFront.Server is
         (ChannelName => ConcatElements(Channel.PeerAddress,U(";")),
          Channel     => CallBack.LogChannel);
 
+      Packet:=new Packets.Packet_Type;
+      Packet.Write(FrontProtocol.ServerID);
+      Channel.SendPacket(Packet);
+
    end AAccept;
    ---------------------------------------------------------------------------
 
@@ -208,6 +229,9 @@ package body SimFront.Server is
      (Item : in out ChannelCallBack_Type) is
    begin
 
+      Item.LogChannel.Write
+        (Level   => Logging.LevelEvent,
+         Message => "Disconnecting");
       Item.LogChannel.FreeChannel;
       Item.LogChannel:=null;
       Network.Streams.Free(Item.Channel.CallBack);
@@ -222,6 +246,7 @@ package body SimFront.Server is
 
    begin
 
+      Put_Line("Receive:::");
       loop
 
          PrevPosition:=Item.Channel.Received.Position;
@@ -232,7 +257,9 @@ package body SimFront.Server is
                begin
                   ProtocolID:=Item.Channel.Received.Read;
                   if ProtocolID/=FrontProtocol.ClientID then
-                     -- TODO: Report error somewhere
+                     Item.LogChannel.Write
+                       (Level   => Logging.LevelInvalid,
+                        Message => "Invalid Front Protocol ID send by Client");
                      Item.Channel.Disconnect;
                      return;
                   end if;
@@ -242,8 +269,10 @@ package body SimFront.Server is
             when ReceiveStatusWaitForCommand =>
                CurrentCommand := Item.Channel.Received.Read;
                if CurrentCommand not in Commands'Range then
+                  Item.LogChannel.Write
+                    (Level   => Logging.LevelInvalid,
+                     Message => "Invalid Command called by Client");
                   Item.Channel.Disconnect;
-                  -- TODO: Report Error somewhere
                end if;
                ReceiveStatus  := ReceiveStatusProcessCommand;
 
@@ -256,6 +285,7 @@ package body SimFront.Server is
 
    exception
       when Packets.PacketOutOfData =>
+         Put_Line("OutOfData::::");
          Item.Channel.Received.Position:=PrevPosition;
 
    end Receive;
@@ -263,6 +293,7 @@ package body SimFront.Server is
 
    procedure Initialize is
    begin
+
       StreamImplementation:=Network.Streams.Implementations.Find
         (Configuration => Configuration,
          Node          => U("Front.Network"));
@@ -271,6 +302,7 @@ package body SimFront.Server is
         (Configuration => Configuration,
          Node          => U("Front.Network"));
       Server.CallBack := ServerCallBack'Access;
+
    end Initialize;
    ---------------------------------------------------------------------------
 
