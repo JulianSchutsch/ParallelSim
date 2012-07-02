@@ -735,8 +735,19 @@ package body BSDSockets.Streams is
                -- TODO : Currently a timeout of 1 second is assumed
                --        This should become a configurable value
                if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
-                  BSDSockets.CloseSocket(ClientItem.SelectEntry.Socket);
-                  BSDSockets.RemoveEntry(ClientItem.SelectEntry'Access);
+                  begin
+                     BSDSockets.CloseSocket(ClientItem.SelectEntry.Socket);
+                  exception
+                     when FailedCloseSocket =>
+                        null;
+                  end;
+                  -- This can fail during a Fail+Retry connect
+                  begin
+                     BSDSockets.RemoveEntry(ClientItem.SelectEntry'Access);
+                  exception
+                     when EntryNotAddedToAnyList =>
+                        null;
+                  end;
                   Next(ClientItem);
                end if;
 
