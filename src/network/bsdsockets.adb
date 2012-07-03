@@ -399,6 +399,7 @@ package body BSDSockets is
 --      OptTrue : aliased Interfaces.C.int:=1;
 
    begin
+
       for i in 0..15 loop
          Addr.sin6_addr.s6_addr(i):=0;
       end loop;

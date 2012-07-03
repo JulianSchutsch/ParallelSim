@@ -75,7 +75,7 @@ package body SimClientGUI.CreateServer is
       use type GUI.GroupBox.GroupBox_ClassAccess;
       use type GUI.Button.Button_ClassAccess;
    begin
-      Put_Line("CleanupFail");
+
       if SupplementConfigGroup/=null then
          SupplementConfigGroup.Free;
          SupplementConfigGroup:=null;
@@ -89,7 +89,7 @@ package body SimClientGUI.CreateServer is
          ButtonRetry.Free;
          ButtonRetry:=null;
       end if;
-      Put_Line("CleanupFail//");
+
    end CleanupFailureComponents;
    ---------------------------------------------------------------------------
 

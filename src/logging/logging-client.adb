@@ -182,8 +182,7 @@ package body Logging.Client is
 
    begin
 
-      Put("Failed Connect!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
-      New_Line;
+      Put_Line("Logging.Client : Failed Connect");
       Ada.Text_IO.Flush(Ada.Text_IO.Standard_Output);
       Retry:=True;
 
@@ -195,6 +194,7 @@ package body Logging.Client is
 
    begin
 
+      Put_Line("Logging.Client : Disconnect");
       Item.Context.Client:=null;
 
    end Disconnect;
@@ -217,6 +217,7 @@ package body Logging.Client is
                begin
                   Identification:=Item.Client.Received.Read;
                   if Identification/=LoggingProtocol.ServerID then
+                     Put_Line("Logging.Client : Invalid Server ID");
                      Item.Client.Disconnect;
                      Item.ReceiveStatus:=ReceiveStatusInvalid;
                      return;
@@ -227,6 +228,8 @@ package body Logging.Client is
                Item.ReceiveStatus:=ReceiveStatusInvalid;
 
             when ReceiveStatusInvalid =>
+               Put_Line("Logging.Client : Invalid Data received");
+               Item.Client.Disconnect;
                return;
 
          end case;
@@ -244,6 +247,8 @@ package body Logging.Client is
      (Item : in out ClientCallBack_Type) is
 
    begin
+
+      Put_Line("Logging.Client : Connected");
 
       Item.ReceiveStatus:=ReceiveStatusWaitForIdentification;
 

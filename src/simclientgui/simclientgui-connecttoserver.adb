@@ -65,7 +65,6 @@ package body SimClientGUI.ConnectToServer is
       if Enabled then
          raise ReenabledGUIModule with "ConnectToServer";
       end if;
-      Put_Line("SimClientGUI.ConnectToServer.Enable");
       MessageWindow := ThemeImplementation.NewWindow(GUIContext.WindowArea);
       MessageWindow.SetBounds
         (Top     => (GUIBounds.Height-MessageWindowHeight)/2-1,

@@ -525,6 +525,7 @@ package body BSDSockets.Streams is
    procedure Disconnect
      (Item : access ServerChannel_Type) is
    begin
+      Put_Line("Disconnect Called  for "&SocketID'Image(Item.SelectEntry.Socket));
       Finalize(ServerChannel_Access(Item));
    end Disconnect;
    ---------------------------------------------------------------------------
@@ -548,7 +549,7 @@ package body BSDSockets.Streams is
 
    begin
 
---      Put_Line("Try Accept");
+      Put_Line("Try Accept "&SocketID'Image(Item.SelectEntry.Socket));
       begin
          BSDSockets.AAccept
            (Socket    => Item.SelectEntry.Socket,
@@ -700,8 +701,7 @@ package body BSDSockets.Streams is
       NextClientItem        : Client_Access;
       ServerChannelItem     : ServerChannel_Access;
       NextServerChannelItem : ServerChannel_Access;
-
-      OperationSuccess : Boolean;
+      OperationSuccess      : Boolean;
 
    begin
 
@@ -720,11 +720,11 @@ package body BSDSockets.Streams is
             end if;
 
             if ClientItem.SelectEntry.Writeable then
-               OperationSuccess:=Send(ClientItem)
-                 and OperationSuccess;
+               OperationSuccess:=Send(ClientItem) and OperationSuccess;
             end if;
 
             if not OperationSuccess then
+               Put_Line("Operations Failed"&SocketID'Image(ClientItem.SelectEntry.Socket));
                ClientItem.Active:=False;
                Finalize(ClientItem);
             end if;
@@ -743,6 +743,7 @@ package body BSDSockets.Streams is
                -- TODO : Currently a timeout of 1 second is assumed
                --        This should become a configurable value
                if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
+                  Put_Line("Timeout for "&SocketID'Image(ClientItem.SelectEntry.Socket));
                   begin
                      BSDSockets.CloseSocket(ClientItem.SelectEntry.Socket);
                   exception
