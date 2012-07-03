@@ -144,6 +144,8 @@ package body BSDSockets is
                       Entr: SelectEntry_Access) is
    begin
 
+      Entr.Readable:=False;
+      Entr.Writeable:=False;
       if Entr.Priv.List/=null then
          raise EntryAddedToTwoLists;
       end if;
@@ -161,6 +163,9 @@ package body BSDSockets is
 
    procedure RemoveEntry(Entr: SelectEntry_Access) is
    begin
+
+      Entr.Readable:=False;
+      Entr.Writeable:=False;
       if Entr.Priv.List=null then
          raise EntryNotAddedToAnyList;
       end if;
@@ -173,6 +178,7 @@ package body BSDSockets is
          Entr.Priv.List.FirstEntry:=Entr.Priv.Next;
       end if;
       Entr.Priv.List := null;
+
    end RemoveEntry;
    ---------------------------------------------------------------------------
 

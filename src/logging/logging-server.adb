@@ -237,6 +237,7 @@ package body Logging.Server is
 
       Packet:=new Packets.Packet_Type;
       Packet.Write(LoggingProtocol.ServerID);
+      Put_Line("Sending Identification Packet:"&Integer'Image(Packet.Amount));
       Channel.SendPacket(Packet);
 
    end AAccept;

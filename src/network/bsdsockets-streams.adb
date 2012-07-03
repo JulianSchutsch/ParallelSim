@@ -28,6 +28,7 @@ with Basics; use Basics;
 with NodeInfo;
 with Expressions;
 with Ada.Exceptions; use Ada.Exceptions;
+with BSDSockets.Thin;
 
 with Ada.Text_IO; use Ada.Text_IO;
 
@@ -109,7 +110,9 @@ package body BSDSockets.Streams is
 
    type ClientModeEnum is
      (ClientModeConnecting,
+      ClientModeStartConnecting,
       ClientModeConnected,
+      ClientModeWaitTillNextConnect,
       ClientModeFailedConnect,
       ClientModeDisconnected);
 
@@ -162,58 +165,69 @@ package body BSDSockets.Streams is
       Put(Item.all'Address);
       Put_Line("Next...");
 
-      if Item.CurrAddrInfo/=null then
+      while Item.CurrAddrInfo/=null loop
 
          begin
 
             Item.SelectEntry.Socket:=Socket(Item.CurrAddrInfo);
-            BSDSockets.SetNonBlocking(Item.SelectEntry.Socket);
+--            BSDSockets.SetNonBlocking(Item.SelectEntry.Socket);
 
-            Put_Line("Connect");
+            Put_Line("Connect"&SocketID'Image(Item.SelectEntry.Socket));
             Connect
               (Socket   => Item.SelectEntry.Socket,
                AddrInfo => Item.CurrAddrInfo,
                Port     => Item.Port);
+            Put_Line("Error?"&Interfaces.C.int'Image(BSDSockets.Thin.Error));
 
             BSDSockets.AddEntry
               (List => BSDSockets.DefaultSelectList'Access,
                Entr => Item.SelectEntry'Access);
 
+            Item.ClientMode:=ClientModeConnecting;
+
             return;
 
          exception
+
             when E:FailedConnect =>
-               Put_Line("EXC:Failed Connect..");
+               Put_Line("EXC:Failed Connect.."&SocketID'Image(Item.SelectEntry.Socket));
                Put_Line(Ada.Exceptions.Exception_Message(E));
                CloseSocket(Socket => Item.SelectEntry.Socket);
+               BSDSockets.DebugEntries(BSDSockets.DefaultSelectList'Access);
+
             when others =>
+               Put_Line("EXC:Connection Failed ..Closing Socket");
                CloseSocket(Socket => Item.SelectEntry.Socket);
+               Item.ClientMode:=ClientModeDisconnected;
                raise;
+
          end;
 
          Item.CurrAddrInfo
            := BSDSockets.AddrInfo_Next
              (AddrInfo => Item.CurrAddrInfo);
 
+      end loop;
+
+      if Item.CallBack/=null then
+
+         Item.CallBack.FailedConnect(RetryConnect);
       else
+         Put_Line("No CallBack : Assume no retry");
 
-         if Item.CallBack/=null then
+      end if;
 
-            Item.CallBack.FailedConnect(RetryConnect);
-
-         end if;
-
-         if not RetryConnect then
-            FreeAddrInfo
-              (AddrInfo => Item.FirstAddrInfo);
-            Item.ClientMode:=ClientModeFailedConnect;
-         else
-            Put_Line("Retry Connect...");
-            -- TODO: Maybe a new lookup would be a better idea.
-            Item.CurrAddrInfo := Item.FirstAddrInfo;
-            Item.LastTime     := Ada.Calendar.Clock;
-         end if;
-
+      if not RetryConnect then
+         Put_Line("No Retry, Giving up...");
+         FreeAddrInfo
+           (AddrInfo => Item.FirstAddrInfo);
+         Item.ClientMode:=ClientModeFailedConnect;
+      else
+         Put_Line("Retry Connect...");
+         -- TODO: Maybe a new lookup would be a better idea.
+         Item.CurrAddrInfo := Item.FirstAddrInfo;
+         Item.LastTime     := Ada.Calendar.Clock;
+         Item.ClientMode   := ClientModeWaitTillNextConnect;
       end if;
 
    end;
@@ -473,8 +487,9 @@ package body BSDSockets.Streams is
       Item.Received:=new Packets.Packet_Type;
       Item.Received.Content:=new ByteOperations.ByteArray_Type(0..ReceiveBufferSize-1);
 
-      -- TODO: Is there a case when we just have to give up?
-      Next(Item);
+      -- We cannot connect yet since the callbacks are not available yet.
+      -- Must put everything in a "Trigger" Connect status.
+      Item.ClientMode:=ClientModeStartConnecting;
 
       return Network.Streams.Client_ClassAccess(Item);
 
@@ -645,7 +660,8 @@ package body BSDSockets.Streams is
 
    exception
 
-      when BSDSockets.FailedSend =>
+      when E:BSDSockets.FailedSend =>
+         Put_Line("** FAILED SEND **"&Ada.Exceptions.Exception_Message(E));
          return False;
 
    end Send;
@@ -683,7 +699,8 @@ package body BSDSockets.Streams is
 
    exception
 
-      when BSDSockets.FailedRecv =>
+      when E:BSDSockets.FailedRecv =>
+         Put_Line("** Failed RECV **"&Ada.Exceptions.Exception_Message(E));
          return False;
 
    end Recv;
@@ -711,58 +728,69 @@ package body BSDSockets.Streams is
 
          ClientItem.Active:=True;
 
-         if ClientItem.ClientMode/=ClientModeConnecting then
+         case ClientItem.ClientMode is
+            when ClientModeConnected =>
 
-            OperationSuccess:=True;
+               OperationSuccess:=True;
 
-            if ClientItem.SelectEntry.Readable then
-               OperationSuccess:=Recv(ClientItem);
-            end if;
-
-            if ClientItem.SelectEntry.Writeable then
-               OperationSuccess:=Send(ClientItem) and OperationSuccess;
-            end if;
-
-            if not OperationSuccess then
-               Put_Line("Operations Failed"&SocketID'Image(ClientItem.SelectEntry.Socket));
-               ClientItem.Active:=False;
-               Finalize(ClientItem);
-            end if;
-
-         else
-
-            if ClientItem.SelectEntry.Writeable then
-               Put_Line("Connecting Success"&SocketID'Image(ClientItem.SelectEntry.Socket));
-               if ClientItem.CallBack/=null then
-                  ClientItem.CallBack.Connect;
+               if ClientItem.SelectEntry.Readable then
+                  OperationSuccess:=Recv(ClientItem);
                end if;
-              FreeAddrInfo(ClientItem.FirstAddrInfo);
-              ClientItem.FirstAddrInfo:=null;
-              ClientItem.ClientMode:=ClientModeConnected;
-            else
-               -- TODO : Currently a timeout of 1 second is assumed
-               --        This should become a configurable value
+
+               if ClientItem.SelectEntry.Writeable then
+                  OperationSuccess:=Send(ClientItem) and OperationSuccess;
+               end if;
+
+               if not OperationSuccess then
+                  Put_Line("Operations Failed"&SocketID'Image(ClientItem.SelectEntry.Socket));
+                  ClientItem.Active:=False;
+                  Finalize(ClientItem);
+               end if;
+
+            when ClientModeStartConnecting =>
+               Next(ClientItem);
+
+            when ClientModeWaitTillNextConnect =>
                if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
-                  Put_Line("Timeout for "&SocketID'Image(ClientItem.SelectEntry.Socket));
-                  begin
-                     BSDSockets.CloseSocket(ClientItem.SelectEntry.Socket);
-                  exception
-                     when FailedCloseSocket =>
-                        null;
-                  end;
-                  -- This can fail during a Fail+Retry connect
-                  begin
-                     BSDSockets.RemoveEntry(ClientItem.SelectEntry'Access);
-                  exception
-                     when EntryNotAddedToAnyList =>
-                        null;
-                  end;
                   Next(ClientItem);
                end if;
 
-            end if;
+            when ClientModeConnecting =>
+               if ClientItem.SelectEntry.Writeable then
+                  Put_Line("Connecting Success"&SocketID'Image(ClientItem.SelectEntry.Socket));
+                  if ClientItem.CallBack/=null then
+                     ClientItem.CallBack.Connect;
+                  end if;
+                  FreeAddrInfo(ClientItem.FirstAddrInfo);
+                  ClientItem.FirstAddrInfo:=null;
+                  ClientItem.ClientMode:=ClientModeConnected;
+               else
+                  Put_Line("Waiting..."&SocketID'Image(ClientItem.SelectEntry.Socket));
+                  -- TODO : Currently a timeout of 1 second is assumed
+                  --        This should become a configurable value
+                  if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
+                     Put_Line("Timeout for "&SocketID'Image(ClientItem.SelectEntry.Socket));
+                     begin
+                        BSDSockets.CloseSocket(ClientItem.SelectEntry.Socket);
+                     exception
+                        when FailedCloseSocket =>
+                           null;
+                     end;
+                     -- This can fail during a Fail+Retry connect
+                     begin
+                        BSDSockets.RemoveEntry(ClientItem.SelectEntry'Access);
+                     exception
+                        when EntryNotAddedToAnyList =>
+                           null;
+                     end;
+                     Next(ClientItem);
+                  end if;
+               end if;
 
-         end if;
+            when ClientModeFailedConnect | ClientModeDisconnected =>
+               null;
+
+         end case;
 
          ClientItem.Active:=False;
 

@@ -223,12 +223,14 @@ package body Logging.Client is
                      return;
                   end if;
                end;
+               Put_Line("#### VALID SERVER ID FOR LOGGING ####");
                -- There is no more data to be expected
                -- for this implementation at the moment
                Item.ReceiveStatus:=ReceiveStatusInvalid;
+               return;
 
             when ReceiveStatusInvalid =>
-               Put_Line("Logging.Client : Invalid Data received");
+               Put_Line("Logging.Client : Invalid Data received"&Integer'Image(Item.Client.Received.Amount));
                Item.Client.Disconnect;
                return;
 
@@ -280,6 +282,7 @@ package body Logging.Client is
 
       NewCont.CallBack.Context := NewCont;
       NewCont.CallBack.Client  := NewCont.Client;
+      NewCont.CallBack.ReceiveStatus:= ReceiveStatusWaitForIdentification;
       NewCont.Client.CallBack  := NewCont.CallBack'Access;
 
       Packet:=new Packets.Packet_Type;
