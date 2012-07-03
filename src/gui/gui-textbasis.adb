@@ -20,7 +20,6 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Canvas;
 --with Ada.Text_IO; use Ada.Text_IO;
---with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body GUI.TextBasis is
 
