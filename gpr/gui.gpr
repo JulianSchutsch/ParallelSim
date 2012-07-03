@@ -7,6 +7,8 @@ abstract project GUI is
    LinkerSwitches:=();
    SourceDirectories:=();
 
+   Dir:=GUI'Project_Dir&"/";
+
    case Config.wgl is
       when "On" =>
 	     LinkerSwitches:=LinkerSwitches
@@ -16,7 +18,7 @@ abstract project GUI is
 
    case Config.xlib is
       when "On" =>
-         SourceDirectories:=SourceDirectories&("../src/xlib");
+         SourceDirectories:=SourceDirectories&(Dir&"../src/xlib");
          LinkerSwitches:=LinkerSwitches&("-lX11","-lGL");
       when "Off" =>
    end case;
