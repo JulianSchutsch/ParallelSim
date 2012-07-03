@@ -417,9 +417,8 @@ package body BSDSockets is
 --         OptVal  => OptTrue'Address,
 --         OptLen => Interfaces.C.int'Size/8);
 --      if Result/=0 then
---         Put(Integer(BSDSockets.Thin.Error));
---         New_Line;
---         raise FAILEDBIND;
+--         raise FAILEDBIND with "Failed SetSockOpt with Error Code:"
+--           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
 --      end if;
 
       HostPtr:=Interfaces.C.Strings.New_String(Host);
@@ -441,6 +440,7 @@ package body BSDSockets is
         (Interfaces.C.unsigned_short(Port));
       Addr.sin6_flowinfo := 0;
       Addr.sin6_scope_id := 0;
+      Put_Line("BIND SOCKET : "&SocketID'Image(Socket));
 
       Result:=BSDSockets.Thin.Bind(Socket  => Interfaces.C.int(Socket),
                                    Name    => Addr'Access,

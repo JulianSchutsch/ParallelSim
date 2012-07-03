@@ -96,10 +96,10 @@ procedure ManyCon is
 begin
 
    Configuration.Insert(U(".Family"),U("IPv4"));
-   Configuration.Insert(U(".BindIP"),U("127.0.0.1"));
-   Configuration.Insert(U(".BindPort"),U("10000"));
+   Configuration.Insert(U(".BindIP"),U("0.0.0.0"));
+   Configuration.Insert(U(".BindPort"),U("50000"));
    Configuration.Insert(U(".RemoteIP"),U("127.0.0.1"));
-   Configuration.Insert(U(".RemotePort"),U("10000"));
+   Configuration.Insert(U(".RemotePort"),U("50000"));
 
    Network.UseImplementations.Register;
    Implementation:=Network.Streams.Implementations.FindAny;
