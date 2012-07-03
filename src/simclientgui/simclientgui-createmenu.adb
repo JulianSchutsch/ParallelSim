@@ -231,7 +231,7 @@ package body SimClientGUI.CreateMenu is
            (Top     => 5,
             Left    => 5,
             Height  => 30,
-            Width   => 300,
+            Width   => 500,
             Visible => True);
          RadioSinglePlayer.SetCaption(U("Single Interaction"));
 
@@ -240,7 +240,7 @@ package body SimClientGUI.CreateMenu is
            (Top     => 45,
             Left    => 5,
             Height  => 30,
-            Width   => 300,
+            Width   => 500,
             Visible => True);
          RadioMultiPlayerSingleComputer.SetCaption(U("Multi Interaction, Single Computer"));
          RadioMultiPlayerSingleComputer.Link(RadioSinglePlayer);
@@ -250,7 +250,7 @@ package body SimClientGUI.CreateMenu is
            (Top     => 85,
             Left    => 5,
             Height  => 30,
-            Width   => 300,
+            Width   => 500,
             Visible => True);
          RadioMultiPlayerMultiComputer.SetCaption(U("Multi Interaction, Multi Computer"));
          RadioMultiPlayerMultiComputer.Link(RadioSinglePlayer);
