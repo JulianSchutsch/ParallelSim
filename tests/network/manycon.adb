@@ -116,7 +116,7 @@ begin
    -- Wait for all this to happen
 
    while Accepted<ClientCount loop
-      if Counter=100000 then
+      if Counter=1 then
          Put("*");
          Counter:=0;
       end if;

@@ -170,7 +170,7 @@ package body BSDSockets.Streams is
          begin
 
             Item.SelectEntry.Socket:=Socket(Item.CurrAddrInfo);
---            BSDSockets.SetNonBlocking(Item.SelectEntry.Socket);
+            BSDSockets.SetNonBlocking(Item.SelectEntry.Socket);
 
             Put_Line("Connect"&SocketID'Image(Item.SelectEntry.Socket));
             Connect
@@ -765,7 +765,7 @@ package body BSDSockets.Streams is
                   ClientItem.FirstAddrInfo:=null;
                   ClientItem.ClientMode:=ClientModeConnected;
                else
-                  Put_Line("Waiting..."&SocketID'Image(ClientItem.SelectEntry.Socket));
+--                  Put_Line("Waiting..."&SocketID'Image(ClientItem.SelectEntry.Socket));
                   -- TODO : Currently a timeout of 1 second is assumed
                   --        This should become a configurable value
                   if Ada.Calendar.Clock-ClientItem.LastTime>1.0 then
