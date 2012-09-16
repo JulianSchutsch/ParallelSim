@@ -26,14 +26,7 @@ with Ada.Containers.Doubly_Linked_Lists;
 
 package Common is
 
-   BasePath : Unbounded_String;
 
-   type StringArray_Type is array(Integer range <>) of Unbounded_String;
-   type StringArray_Access is access all StringArray_Type;
-
-   package StringList_Pack is new Ada.Containers.Doubly_Linked_Lists
-     (Element_Type => Unbounded_String,
-      "="          => "=");
 
    function U
      (Source : String)
