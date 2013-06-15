@@ -139,7 +139,7 @@ package body OpenGL.Context.Xlib is
               (dpy => Context.Display,
                drawable => glX.GLXDrawable_Type(Context.Window));
          else
-            glFinish;
+            glFinish.all;
          end if;
       end Paint;
 
