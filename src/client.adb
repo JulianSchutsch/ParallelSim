@@ -34,7 +34,6 @@ with DistributedSystems.UseImplementations;
 with Logging.StdOut;
 with Logging.Client;
 with YellowBlue;
-with Authentication.Dummy;
 
 with SimClientGUI;
 
@@ -50,7 +49,6 @@ begin
    YellowBlue.Register;
    Logging.StdOut.Register;
    Logging.Client.Register;
-   Authentication.Dummy.Register;
 
    Configuration.Insert(U("GUI.GUIImplementation") , U("OpenGL"));
    Configuration.Insert(U("GUI.Theme")             , U("YellowBlue"));
@@ -64,7 +62,6 @@ begin
 
    SimClientGUI.Finalize;
 
-   Authentication.Dummy.Unregister;
    YellowBlue.UnRegister;
    Logging.Client.Unregister;
    Logging.StdOut.Unregister;

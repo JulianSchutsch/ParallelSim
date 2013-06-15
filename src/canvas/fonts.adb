@@ -22,8 +22,7 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
---with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
---with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Fonts is
 
@@ -67,17 +66,30 @@ package body Fonts is
 
    begin
 
-      for i in 1..Length(UCS4) loop
+      if Length(UCS4)=0 then
+         return 0;
+      end if;
+
+      for i in 1..Length(UCS4)-1 loop
 
          ThisCharacter:=Element(UCS4,i);
          Width:=Width+Font_ClassAccess(Font).Kerning
            (FirstChar  => PreviousCharacter,
             SecondChar => ThisCharacter);
 
-         Width:=Width+Font.CharacterWidth(ThisCharacter);
+         Width:=Width+Font.CharacterAdvance(ThisCharacter);
          PreviousCharacter:=ThisCharacter;
 
       end loop;
+
+      ThisCharacter:=Element(UCS4,Length(UCS4));
+      Width:=Width+Font_ClassAccess(Font).Kerning
+        (FirstChar => PreviousCharacter,
+         SecondChar => ThisCharacter);
+      Width:=Width+Font.CharacterAdvance(ThisCharacter);
+      Width:=Width+Font_ClassAccess(Font).Kerning
+        (FirstChar => ThisCharacter,
+         SecondChar => Wide_Wide_Character'Val(0));
 
       return Integer(Float'Rounding(Width));
 

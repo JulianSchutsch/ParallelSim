@@ -85,7 +85,7 @@ package body OpenGL.Context is
          ttype  => GL_UNSIGNED_BYTE,
          data   => System.Null_Address);
 
-      Standard.OpenGL.AssertError;
+      Standard.OpenGL.AssertError("NewCanvas");
 
       GUI.AddCanvasByContext
         (Object => Object,
@@ -117,6 +117,41 @@ package body OpenGL.Context is
 
    procedure Paint
      (Context : in out Context_Type) is
+
+      procedure SetupView is
+      begin
+         glViewPort
+           (x      => 0,
+            y      => 0,
+            width  => GLsizei_Type(Context.Bounds.Width),
+            height => GLsizei_Type(Context.Bounds.Height));
+
+         glMatrixMode(GL_PROJECTION);
+         glLoadIdentity;
+         glOrtho
+           (left    => 0.0,
+            right   => GLdouble_Type(Context.Bounds.Width),
+            bottom  => GLdouble_Type(Context.Bounds.Height),
+            top     => 0.0,
+            nearVal => -1.0,
+            farVal  => 1.0);
+
+         glMatrixMode(GL_MODELVIEW);
+         glLoadIdentity;
+
+         glDisable(GL_SCISSOR_TEST);
+         glDisable(GL_DEPTH_TEST);
+         glEnable(GL_TEXTURE_2D);
+         glBlendFunc
+           (sfactor => GL_SRC_ALPHA,
+            dfactor => GL_ONE_MINUS_SRC_ALPHA);
+         glAlphaFunc
+           (func => GL_GREATER,
+            ref  => 0.1);
+         glEnable(GL_BLEND);
+         glColor4f(1.0,1.0,1.0,1.0);
+      end SetupView;
+      ------------------------------------------------------------------------
 
       procedure ProcessTree
         (Object : Object_ClassAccess) is
@@ -168,7 +203,7 @@ package body OpenGL.Context is
                            format => GL_BGRA,
                            ttype  => GL_UNSIGNED_BYTE,
                            data   => CanvasCursor.Image(0,0)'Address);
-                           Standard.OpenGL.AssertError;
+                           Standard.OpenGL.AssertError("Upload Image");
 
                      end if;
 
@@ -229,7 +264,9 @@ package body OpenGL.Context is
                   ------------------------------------------------------------
 
                when RenderCustom =>
-                  null;
+
+                  p.RenderCustom;
+                  SetupView;
                   ------------------------------------------------------------
 
             end case;
@@ -247,48 +284,21 @@ package body OpenGL.Context is
          return;
       end if;
 
-      glViewPort
-        (x      => 0,
-         y      => 0,
-         width  => GLsizei_Type(Context.Bounds.Width),
-         height => GLsizei_Type(Context.Bounds.Height));
-
-      glMatrixMode(GL_PROJECTION);
-      glLoadIdentity;
-      glOrtho
-        (left    => 0.0,
-         right   => GLdouble_Type(Context.Bounds.Width),
-         bottom  => GLdouble_Type(Context.Bounds.Height),
-         top     => 0.0,
-         nearVal => -1.0,
-         farVal  => 1.0);
-
-      glMatrixMode(GL_MODELVIEW);
-      glLoadIdentity;
+      SetupView;
 
       glClearColor
         (red   => 0.0,
          green => 0.0,
-         blue  => 1.0,
+         blue  => 0.0,
          alpha => 1.0);
 
       glClear(GL_COLOR_BUFFER_BIT or GL_DEPTH_BUFFER_BIT);
-      glDisable(GL_SCISSOR_TEST);
-      glDisable(GL_DEPTH_TEST);
-      glEnable(GL_TEXTURE_2D);
-      glBlendFunc
-        (sfactor => GL_SRC_ALPHA,
-         dfactor => GL_ONE_MINUS_SRC_ALPHA);
-      glAlphaFunc
-        (func => GL_GREATER,
-         ref  => 0.1);
-      glEnable(GL_BLEND);
 
       ProcessTree(Context.BasisArea);
       ProcessTree(Context.WindowArea);
       ProcessTree(Context.ModalArea);
       ProcessTree(Context.ContextArea);
-      Standard.OpenGL.AssertError;
+      Standard.OpenGL.AssertError("Paint");
    end Paint;
    ---------------------------------------------------------------------------
 

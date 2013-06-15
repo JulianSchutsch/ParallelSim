@@ -25,6 +25,7 @@ with Basics; use Basics;
 with BoundsCalc; use BoundsCalc;
 with GUIMouse; use GUIMouse;
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body YellowBlue.Window is
 
@@ -34,18 +35,26 @@ package body YellowBlue.Window is
    BorderWidth      : constant Integer := LineWidth*2+BorderSpaceWidth;
    CornerSize       : constant Integer := 2*BorderWidth;
    TopBarHeight     : constant Integer := TitleBarHeight+2*BorderWidth;
+   ButtonWidth      : constant Integer := 18;
+   ButtonHeight     : constant Integer := 18;
+   ButtonSpace      : constant Integer := 4;
 
-   NormalBackgroundColor     : constant Canvas.Color_Type := 16#7F7F7F7F#;
-   NormalBorderLineColor     : constant Canvas.Color_Type := 16#FF000000#;
-   NormalBorderEdgeLineColor : constant Canvas.Color_Type := 16#FFFFFFFF#;
-   NormalClientColor         : constant Canvas.Color_Type := 16#EF00007F#;
-   NormalTitleBarColor       : constant Canvas.Color_Type := 16#7F00007F#;
+   ButtonFrameColor  : constant Canvas.Color_Type := 16#FFFFFFFF#;
+   PButtonFrameColor : constant Canvas.Color_Type := 16#FFFF0000#;
 
-   FocussedBackgroundColor     : constant Canvas.Color_Type := 16#FF7F7F7F#;
+   NormalBackgroundColor     : constant Canvas.Color_Type := 16#EF3F3F3F#;
+   NormalBorderLineColor     : constant Canvas.Color_Type := 16#FFCFCFCF#;
+   NormalBorderEdgeLineColor : constant Canvas.Color_Type := 16#FF7F7F7F#;
+   NormalClientColor         : constant Canvas.Color_Type := 16#EF7F7F7F#;
+   NormalTitleBarColor       : constant Canvas.Color_Type := 16#EF00007F#;
+
+   FocussedBackgroundColor     : constant Canvas.Color_Type := 16#EF7F7F7F#;
    FocussedBorderLineColor     : constant Canvas.Color_Type := 16#FFFFFFFF#;
-   FocussedBorderEdgeLineColor : constant Canvas.Color_Type := 16#FF00FF00#;
-   FocussedClientColor         : constant Canvas.Color_Type := 16#EF007F00#;
-   FocussedTitleBarColor       : constant Canvas.Color_Type := 16#7F007F00#;
+   FocussedBorderEdgeLineColor : constant Canvas.Color_Type := 16#FF7F7F7F#;
+   FocussedClientColor         : constant Canvas.Color_Type := 16#EF7F7F7F#;
+   FocussedTitleBarColor       : constant Canvas.Color_Type := 16#EF007F00#;
+
+   type ButtonX_Array is array(GUI.Window.WindowButtons_Enum) of Integer;
 
    type Window_Type is new GUI.Window.Window_Type with
       record
@@ -60,6 +69,10 @@ package body YellowBlue.Window is
          ClientArea        : GUI.Canvas_ClassAccess;
          TitleCanvas       : GUI.Canvas_ClassAccess;
          Font              : Fonts.Font_ClassAccess;
+         ButtonCanvas      : GUI.Canvas_ClassAccess;
+         ButtonPressed     : Boolean:=False;
+         PressedButton     : GUI.Window.WindowButtons_Enum;
+         ButtonX           : ButtonX_Array;
       end record;
    type Window_Access is access all Window_Type;
 
@@ -100,6 +113,79 @@ package body YellowBlue.Window is
    procedure SetCaption
      (Window  : access Window_Type;
       Caption : Unbounded_String);
+
+   overriding
+   procedure SetButtons
+     (Window  : access Window_Type;
+      Buttons : GUI.Window.WindowButtons_Set);
+   ---------------------------------------------------------------------------
+
+   procedure DrawButtons
+     (Window : access Window_Type) is
+
+      use type GUI.Window.WindowButtons_Enum;
+
+      Count   : Natural:=0;
+      Buttons : constant GUI.Window.WindowButtons_Set:=Window.GetButtons;
+      Width   : Integer;
+      X       : Integer:=0;
+
+   begin
+
+      if Window.ButtonCanvas/=null then
+         FreeCanvas(Window.ButtonCanvas);
+      end if;
+
+      for i in Buttons'Range loop
+         if Buttons(i) then
+            Count:=Count+1;
+         end if;
+      end loop;
+
+      if Count/=0 then
+         Width:=Count*ButtonWidth+(Count-1)*ButtonSpace;
+      else
+         return;
+      end if;
+
+      Window.ButtonCanvas:=Window.NewCanvas
+        (Height => ButtonHeight,
+         Width  => Width);
+
+      Window.ButtonCanvas.Clear(0);
+      if Buttons(GUI.Window.WindowButtonClose) then
+         Window.ButtonX(GUI.Window.WindowButtonClose):=X;
+         if Window.ButtonPressed and Window.PressedButton=GUI.Window.WindowButtonClose then
+            Window.ButtonCanvas.Rectangle
+              (X => X,
+               Y => 0,
+               Height => ButtonHeight,
+               Width => ButtonWidth,
+               Color => PButtonFrameColor);
+         else
+            Window.ButtonCanvas.Rectangle
+              (X => X,
+               Y => 0,
+               Height => ButtonHeight,
+               Width => ButtonWidth,
+               Color => ButtonFrameColor);
+         end if;
+      end if;
+
+      Window.ButtonCanvas.SetBounds
+        (Top     => 9,
+         Left    => Window.GetBounds.Width-Width-9,
+         Width   => Width,
+         Height  => ButtonHeight,
+         Visible => True);
+      Window.ButtonCanvas.SetAnchors
+        (Top    => True,
+         Left   => False,
+         Right  => True,
+         Bottom => False);
+      Window.ButtonCanvas.BringToFront;
+
+   end DrawButtons;
    ---------------------------------------------------------------------------
 
    procedure Free
@@ -123,6 +209,28 @@ package body YellowBlue.Window is
    begin
 
       If Button=LeftButton then
+
+         if Item.ButtonCanvas/=null then
+            if TestInsideBounds(Item.ButtonCanvas.GetBounds,X,Y) then
+               declare
+                  use type GUI.Window.OnCloseWindow_Access;
+                  Buttons : GUI.Window.WindowButtons_Set:=Item.GetButtons;
+                  RX      : Integer:=X-Item.ButtonCanvas.GetBounds.Left;
+               begin
+                  if Buttons(GUI.Window.WindowButtonClose) and
+                    RX>=Item.ButtonX(GUI.Window.WindowButtonClose) and
+                    RX<Item.ButtonX(GUI.Window.WindowButtonClose)+ButtonWidth then
+                     Item.ButtonPressed := True;
+                     Item.PressedButton := GUI.Window.WindowButtonClose;
+
+                  end if;
+               end;
+               if Item.ButtonPressed then
+                  DrawButtons(Item);
+                  return True;
+               end if;
+            end if;
+         end if;
 
          if Y<BorderWidth then
 
@@ -254,6 +362,30 @@ package body YellowBlue.Window is
         (Refx => X,
          Refy => Y);
       Item.StopChange;
+      if Item.ButtonCanvas/=null then
+         if Item.ButtonPressed and
+           TestInsideBounds(Item.ButtonCanvas.GetBounds,X,Y) then
+            declare
+               use type GUI.Window.WindowButtons_Enum;
+               use type GUI.Window.OnCloseWindow_Access;
+               RX : Integer:=X-Item.ButtonCanvas.GetBounds.Left;
+            begin
+               if Item.GetButtons(Item.PressedButton) and
+                 RX>=Item.ButtonX(Item.PressedButton) and
+                 RX<Item.ButtonX(Item.PressedButton)+ButtonWidth then
+
+                  if Item.PressedButton=GUI.Window.WindowButtonClose and
+                    Item.OnCloseWindow/=null then
+                     Item.OnCloseWindow(Item.CallBackObject);
+                  end if;
+
+               end if;
+            end;
+         end if;
+      end if;
+
+      Item.ButtonPressed := False;
+      DrawButtons(Item);
    end MouseUp;
    ---------------------------------------------------------------------------
 
@@ -309,6 +441,7 @@ package body YellowBlue.Window is
                Left   => True,
                Right  => False,
                Bottom => False);
+            Window.TitleCanvas.BringToFront;
 
          end;
       end if;
@@ -363,6 +496,7 @@ package body YellowBlue.Window is
          Y      => 1,
          Height => TopBarHeight-1,
          Color  => BorderLineColor);
+
       Window.TopLeftCorner.HorzLine
         (X      => LineWidth+BorderSpaceWidth,
          Y      => LineWidth+BorderSpaceWidth,
@@ -373,6 +507,7 @@ package body YellowBlue.Window is
          Y      => LineWidth+BorderSpaceWidth+1,
          Height => TopbarHeight-LineWidth-BorderSpaceWidth-BorderWidth,
          Color  => BorderLineColor);
+
       Window.TopLeftCorner.HorzLine
         (X      => LineWidth+BorderSpaceWidth+1,
          Y      => TopBarHeight-BorderWidth,
@@ -718,6 +853,7 @@ package body YellowBlue.Window is
          Right  => True,
          Bottom => True);
       ------------------------------------------------------------------------
+
    end DrawCanvasse;
    ---------------------------------------------------------------------------
 
@@ -728,6 +864,15 @@ package body YellowBlue.Window is
       GUI.Window.Window_Access(Window).SetCaption(Caption);
       DrawTitleCanvas(Window);
    end SetCaption;
+   ---------------------------------------------------------------------------
+
+   procedure SetButtons
+     (Window  : access Window_Type;
+      Buttons : GUI.Window.WindowButtons_Set) is
+   begin
+      GUI.Window.Window_Access(Window).SetButtons(Buttons);
+      DrawButtons(Window);
+   end SetButtons;
    ---------------------------------------------------------------------------
 
    procedure Focus

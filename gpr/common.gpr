@@ -5,20 +5,18 @@ abstract project Common is
    type Backtrace_Type is ("On","Off");
    type Profiling_Type is ("On","Off");
 
-   Backtrace : Backtrace_Type := external("Backtrace","On");
+   Backtrace : Backtrace_Type := external("Backtrace","Off");
    Profiling : Profiling_Type := external("Profiling","Off");
 
    Dir := Common'Project_Dir & "/";
 
    SourceDirectories:=
-     (Dir & "../src/basics",
-      Dir & "../src/errors",
-      Dir & "../src/authentication",
+     (Dir & "../src",
+      Dir & "../src/basics",
       Dir & "../src/basics/littleendian", -- Currently no plattform supported has different endianess
       Dir & "../src/network",
       Dir & "../src/simcontrol",
       Dir & "../src/simnode",
-      Dir & "../src/simfront",
       Dir & "../src/protocols",
       Dir & "../src/simclient",
       Dir & "../src/gui",
@@ -29,11 +27,11 @@ abstract project Common is
       Dir & "../src/distributedsystems/mpi",
       Dir & "../src/simclientgui",
       Dir & "../src/logging",
-      Dir & "../src/simnodes",
+      Dir & "../src/xlib",
       Dir & "../src/win32",
+      Dir & "../src/linux",
       Dir & "../src/simconfig");
 
-   CompilerSwitches:=();
    ObjectDirectory:=Dir & "../build";
    ExecDirectory:=".";
 
@@ -42,12 +40,13 @@ abstract project Common is
       "-gnatn", -- Inlining
       "-g",     -- Generate Debugging information
       "-gnatf", -- Full error messages
-      "-Wall",  -- All warnings enabled
-      "-O0",     -- Full optimisation
-      "-fno-strict-aliasing"
+      "-O3",     -- Full optimisation
+      "-fno-strict-aliasing",
+      "-gnatp",
+      "-gnatE"
      );
 
-   LinkerSwitches:=("-lgmem");
+   LinkerSwitches:=("-lgmem","-gnatE");
 
    case Profiling is
 
@@ -64,7 +63,7 @@ abstract project Common is
 
    end case;
 
-   LanguagesUsed:=("Ada","C");
+   LanguagesUsed:=("Ada");
 
    BinderSwitches:=
      ("-E");
@@ -73,16 +72,25 @@ abstract project Common is
 
       when "WindowsNT" =>
 
-         SourceDirectories:=SourceDirectories & 
+         SourceDirectories:=SourceDirectories &
            (Dir & "../src/network/win32",
             Dir & "../src/basics/win32");
 
-      when "Linux" | "BSD" =>
+         LinkerSwitches:=LinkerSwitches &
+           ("-L.",
+            "-lfreetype6");
+
+      when "Linux" =>
 
          SourceDirectories:=SourceDirectories &
            (Dir & "../src/network/linux",
-            Dir & "../src/unix",
-            Dir & "../src/basics/unix");
+            Dir & "../src/basics/linux");
+
+         LinkerSwitches:=LinkerSwitches &
+           ("-lfreetype");
+
+         LanguagesUsed:=LanguagesUsed &
+           ("C");
 
       when "Unknown" =>
 

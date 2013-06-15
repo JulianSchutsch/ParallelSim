@@ -25,8 +25,6 @@ with ProcessLoop;
 with Ada.Unchecked_Conversion;
 with Basics; use Basics;
 
-with Ada.Text_IO; use Ada.Text_IO;
-
 package body BSDSockets is
    use type Interfaces.C.int;
 
@@ -53,13 +51,6 @@ package body BSDSockets is
    function AddressToAddrInfoAccess is new Ada.Unchecked_Conversion
      (Source => System.Address,
       Target => AddrInfoAccess);
-   ---------------------------------------------------------------------------
-
-   procedure SetNonBlocking
-     (Socket : SocketID) is
-   begin
-      BSDSockets.Thin.SetNonBlocking(Socket);
-   end SetNonBlocking;
    ---------------------------------------------------------------------------
 
    procedure Recv
@@ -114,7 +105,6 @@ package body BSDSockets is
       Result : Interfaces.C.int;
 
    begin
-      Put_Line("CloseSocket : "&SocketID'Image(Socket));
       Result:=BSDSockets.Thin.CloseSocket
         (Socket => Interfaces.C.int(Socket));
       if Result/=0 then
@@ -129,7 +119,6 @@ package body BSDSockets is
       Result : Interfaces.C.int;
 
    begin
-      Put_Line("Shutdown : "&SocketID'Image(Socket));
       Result:=BSDSockets.Thin.Shutdown
         (Socket => Interfaces.C.int(Socket),
          Method => ShutdownMethodToInt(Method));
@@ -140,32 +129,24 @@ package body BSDSockets is
    end Shutdown;
    ---------------------------------------------------------------------------
 
-   procedure AddEntry(List: access SelectList_Type;
-                      Entr: SelectEntry_Access) is
+   procedure AddEntry(List: access SelectList;
+                      Entr: access SelectEntry) is
    begin
-
-      Entr.Readable:=False;
-      Entr.Writeable:=False;
       if Entr.Priv.List/=null then
          raise EntryAddedToTwoLists;
       end if;
       Entr.Priv.Next := List.FirstEntry;
       Entr.Priv.Last := null;
-
       if Entr.Priv.Next/=null then
          Entr.Priv.Next.Priv.Last:=Entr;
       end if;
       Entr.Priv.List:=List;
       List.FirstEntry:=Entr;
-
    end AddEntry;
    ---------------------------------------------------------------------------
 
-   procedure RemoveEntry(Entr: SelectEntry_Access) is
+   procedure RemoveEntry(Entr: access SelectEntry) is
    begin
-
-      Entr.Readable:=False;
-      Entr.Writeable:=False;
       if Entr.Priv.List=null then
          raise EntryNotAddedToAnyList;
       end if;
@@ -178,25 +159,7 @@ package body BSDSockets is
          Entr.Priv.List.FirstEntry:=Entr.Priv.Next;
       end if;
       Entr.Priv.List := null;
-
    end RemoveEntry;
-   ---------------------------------------------------------------------------
-
-   procedure DebugEntries
-     (List : access SelectList_Type) is
-
-      Entr : SelectEntry_Access;
-
-      Nr : Integer:=1;
-
-   begin
-      Entr:=List.FirstEntry;
-      while Entr/=null loop
-         Put_Line(" "&Integer'Image(Nr)&" "&SocketID'Image(Entr.Socket));
-         Nr:=Nr+1;
-         Entr:=Entr.Priv.Next;
-      end loop;
-   end DebugEntries;
    ---------------------------------------------------------------------------
 
    function ToString(Port : PortID) return String is
@@ -239,14 +202,14 @@ package body BSDSockets is
    end AAccept;
    ---------------------------------------------------------------------------
 
-   procedure SSelect(Sockets : in out SelectList_Type) is
+   procedure SSelect(Sockets : in out SelectList) is
       Fill        : Integer:=0;
       ReadSet     : aliased BSDSockets.Thin.fd_set_struct;
       WriteSet    : aliased BSDSockets.Thin.fd_set_struct;
       TimeVal     : aliased BSDSockets.Thin.TimeVal;
       Result      : Interfaces.C.int;
-      MainCursor  : SelectEntry_Access:=Sockets.FirstEntry;
-      StartCursor : SelectEntry_Access:=Sockets.FirstEntry;
+      MainCursor  : access SelectEntry:=Sockets.FirstEntry;
+      StartCursor : access SelectEntry:=Sockets.FirstEntry;
       MaxSocket   : Interfaces.C.int;
 
    begin
@@ -256,15 +219,12 @@ package body BSDSockets is
       TimeVal.tv_usec := 0;
       MaxSocket := 1023; --TODO: TEMP HACK
       while MainCursor/=null loop
-
          if Interfaces.C.int(MainCursor.Socket)>MaxSocket then
             MaxSocket:=Interfaces.C.int(MainCursor.Socket);
          end if;
-
          BSDSockets.Thin.FD_SET(MainCursor.Socket,ReadSet'Access);
          BSDSockets.Thin.FD_SET(MainCursor.Socket,WriteSet'Access);
          Fill := Fill+1;
-
          if Fill=BSDSockets.Thin.FD_SETSIZE then
             Result := BSDSockets.Thin.SSelect
               (NumberOfSockets => MaxSocket+1,
@@ -291,16 +251,13 @@ package body BSDSockets is
                StartCursor := StartCursor.Priv.Next;
                Fill := Fill - 1;
             end loop;
-
             BSDSockets.Thin.FD_ZERO(ReadSet'Access);
             BSDSockets.Thin.FD_ZERO(WriteSet'Access);
-
          end if;
          MainCursor := MainCursor.Priv.Next;
       end loop;
 
       if Fill /= 0 then
-
          Result := BSDSockets.Thin.SSelect
            (NumberOfSockets => MaxSocket+1,
             ReadSet         => ReadSet'Access,
@@ -319,11 +276,8 @@ package body BSDSockets is
 
             StartCursor := StartCursor.Priv.Next;
             Fill := Fill - 1;
-
          end loop;
-
       end if;
-
    end SSelect;
    ---------------------------------------------------------------------------
 
@@ -343,14 +297,11 @@ package body BSDSockets is
                         SocketType    : SocketTypeEnum;
                         Protocol      : ProtocolEnum;
                         Host          : String) return AddrInfoAccess is
-
       Result          : Interfaces.C.int;
       AddrInfoPointer : aliased AddrInfoAccess;
       HostPtr         : Interfaces.C.Strings.chars_ptr;
       Hints           : aliased AddrInfo;
-
    begin
-
       Hints.ai_flags     := 0;
       Hints.ai_family    := BSDSockets.Thin.DecypherAddressFamily(AddressFamily);
       Hints.ai_socktype  := SocketTypeToInt(SocketType);
@@ -371,9 +322,7 @@ package body BSDSockets is
          raise FailedGetAddrInfo with "Error Code"
            &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
-
       return AddrInfoPointer;
-
    end GetAddrInfo;
    ---------------------------------------------------------------------------
 
@@ -405,7 +354,6 @@ package body BSDSockets is
 --      OptTrue : aliased Interfaces.C.int:=1;
 
    begin
-
       for i in 0..15 loop
          Addr.sin6_addr.s6_addr(i):=0;
       end loop;
@@ -417,8 +365,9 @@ package body BSDSockets is
 --         OptVal  => OptTrue'Address,
 --         OptLen => Interfaces.C.int'Size/8);
 --      if Result/=0 then
---         raise FAILEDBIND with "Failed SetSockOpt with Error Code:"
---           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
+--         Put(Integer(BSDSockets.Thin.Error));
+--         New_Line;
+--         raise FAILEDBIND;
 --      end if;
 
       HostPtr:=Interfaces.C.Strings.New_String(Host);
@@ -427,6 +376,10 @@ package body BSDSockets is
         (AddressFamily => BSDSockets.Thin.DecypherAddressFamily(Family),
          AddrString    => HostPtr,
          Buffer        => Addr.sin6_addr'Access);
+--      for i in 0..15 loop
+--         Put(Integer(Addr.sin6_addr.s6_addr(i)));
+--      end loop;
+--      New_Line;
 
       Interfaces.C.Strings.Free(Item=>HostPtr);
 
@@ -435,12 +388,18 @@ package body BSDSockets is
            &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
 
+--      Put("::::");
+--      Put(Integer(BSDSockets.Thin.DecypherAddressFamily(Family)));
+--      Put(Integer(Port));
+--      Put(Integer(SockAddr_In6'Size/8));
+--      Put(Integer(In_Addr6'Size/8));
+--      New_Line;
+
       Addr.sin6_family   := Interfaces.C.short(BSDSockets.Thin.DecypherAddressFamily(Family));
       Addr.sin6_port     := BSDSockets.Thin.HTONS
         (Interfaces.C.unsigned_short(Port));
       Addr.sin6_flowinfo := 0;
       Addr.sin6_scope_id := 0;
-      Put_Line("BIND SOCKET : "&SocketID'Image(Socket));
 
       Result:=BSDSockets.Thin.Bind(Socket  => Interfaces.C.int(Socket),
                                    Name    => Addr'Access,
@@ -474,20 +433,19 @@ package body BSDSockets is
       AddressToSockAddrAccess(AddrInfo.ai_addr).sa_port := BSDSockets.Thin.HTONS
         (Interfaces.C.unsigned_short(Port));
 
+--      Put(Integer(AddrInfo.ai_flags));
+--      Put(Integer(AddrInfo.ai_family));
+--      Put(Integer(AddrInfo.ai_socktype));
+--      Put(Integer(AddrInfo.ai_protocol));
+--      Put(Integer(SizeTToInt(AddrInfo.ai_addrlen)));
+--      New_Line;
       Result:=BSDSockets.Thin.Connect(Interfaces.C.int(Socket),
                                       AddressToSockAddrAccess(AddrInfo.ai_addr),
                                       SizeTToInt(AddrInfo.ai_addrlen));
 
       if Result/=0 then
-         declare
-            Error : constant Interfaces.C.int:=BSDSockets.Thin.Error;
-         begin
-            if (Error/=35) and (Error/=10035) and (Error/=115) then
-               raise FailedConnect with "Error Code:"
-                 &Interfaces.C.int'Image(BSDSockets.Thin.Error);
-            end if;
-         end;
-
+         raise FailedConnect with "Error Code:"
+           &Interfaces.C.int'Image(BSDSockets.Thin.Error);
       end if;
 
    end Connect;

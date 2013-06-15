@@ -122,6 +122,7 @@ package body Fonts.Freetype is
       Error  : FT_Error_Type;
 
    begin
+      Put_Line("Search Freetype font:"&To_String(Name));
       -- Small Fonts can be stored as bitmaps by Freetype
       -- but a different cache interface has to be used for this
       if Size>20 then
@@ -142,7 +143,7 @@ package body Fonts.Freetype is
 
       -- Don't setup any private parts of the Font, since this is handled
       -- by the parent package
-      Font.Filename := Name;
+      Font.Filename := Name&".ttf";
       Font.Index    := 0;
 
       Error:=FTC_Manager_LookupFace

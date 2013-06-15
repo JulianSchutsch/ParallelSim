@@ -55,7 +55,7 @@ package body Fonts.FreeType.Small is
    end SelectGlyph;
    ---------------------------------------------------------------------------
 
-   function CharacterWidth
+   function CharacterAdvance
      (Font : access SmallFont_Type;
       Char : Wide_Wide_Character)
       return Float is
@@ -68,7 +68,7 @@ package body Fonts.FreeType.Small is
          char_code => Wide_Wide_Character'Pos(Char));
       SelectGlyph(Font,CharGlyph,FT_LOAD_DEFAULT);
       return Float(SBit.xadvance);
-   end CharacterWidth;
+   end CharacterAdvance;
    ---------------------------------------------------------------------------
 
    procedure GlyphOut
@@ -152,6 +152,27 @@ package body Fonts.FreeType.Small is
       Y:=Y+Float(Sbit.yadvance);
 
    end GlyphOut;
+   ---------------------------------------------------------------------------
+
+   function CharacterWidth
+     (Font : access SmallFont_Type;
+      Char : Wide_Wide_Character)
+      return Float is
+
+      GlyphIndex : FT_UInt_Type;
+
+   begin
+
+      GlyphIndex:=FTC_CMapCache_Lookup
+        (cache => CMapCache,
+         face_id => FTC_FaceID_Type(Font.all'Address),
+         cmap_index => -1,
+         char_code => Wide_Wide_Character'Pos(Char));
+
+      SelectGlyph(Font,GlyphIndex,FT_LOAD_RENDER);
+      return Float(SBit.left)/64.0+Float(SBit.width);
+
+   end CharacterWidth;
    ---------------------------------------------------------------------------
 
    procedure CharacterOut

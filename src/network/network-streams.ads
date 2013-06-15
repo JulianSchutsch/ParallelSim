@@ -49,7 +49,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Ada.Unchecked_Deallocation;
 with Basics; use Basics;
 with Config.Implementations;
-with Packets;
+with Network.Packets;
 
 package Network.Streams is
 
@@ -68,9 +68,8 @@ package Network.Streams is
    type ChannelCallBack_Type;
    type ChannelCallBack_ClassAccess is access all ChannelCallBack_Type'Class;
 
-   type Channel_Type is abstract tagged
+   type Channel_Type is abstract new Network.Packets.Packet_Type with
       record
-         Received        : Packets.Packet_ClassAccess:=null;
          PeerAddress     : StringStringMap_Pack.Map;
          CallBack        : ChannelCallBack_ClassAccess:=null;
       end record;
@@ -91,10 +90,10 @@ package Network.Streams is
 
    procedure SendPacket
      (Item   : access Channel_Type;
-      Packet : Packets.Packet_ClassAccess) is abstract;
+      Packet : Network.Packets.Packet_Access) is abstract;
 
    function SendBufferEmpty
-     (Item : access Channel_Type)
+     (Item : access  Channel_Type)
       return Boolean is abstract;
 
 ---------------------------------------------------------------------------
@@ -153,13 +152,6 @@ package Network.Streams is
       Name   => ChannelCallBack_ClassAccess);
    ---------------------------------------------------------------------------
 
-   procedure Free is new  Ada.Unchecked_Deallocation
-     (Object => Channel_Type'Class,
-      Name   => Channel_ClassAccess);
-   procedure Free is new Ada.Unchecked_Deallocation
-     (Object => Channel_Type'Class,
-      Name   => Client_ClassAccess);
-
    type Implementation_Type is
       record
          Initialize : Network.Streams.Initialize_Access  := null;
@@ -172,6 +164,6 @@ package Network.Streams is
 
    package Implementations is new Config.Implementations
      (Implementation_Type => Implementation_Type,
-      IdentifierKey       => U("StreamImplementation"));
+      IdentifierKey       => To_Unbounded_String("StreamImplementation"));
 
 end Network.Streams;

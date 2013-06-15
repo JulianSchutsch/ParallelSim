@@ -221,7 +221,6 @@ package body SimConfig is
          Cursor         : ConfigSetList_Pack.Cursor;
 
       begin
-
          while GetCommand loop
             if Command="key" then
                if ProcElement then
@@ -271,7 +270,6 @@ package body SimConfig is
          Cursor         : ConfigElemList_Pack.Cursor;
 
       begin
-
          while GetCommand loop
 
             if Command="element" then
@@ -321,7 +319,6 @@ package body SimConfig is
             end if;
 
          end loop;
-
          if ProcElement then
             List.Append(CurrentElement);
          end if;

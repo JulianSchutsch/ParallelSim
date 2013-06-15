@@ -68,10 +68,6 @@ package Endianess is
    function From(Integer: BigEndianInteger32) return Integer32;
    function From(Integer: BigEndianInteger64) return Integer64;
 
-   function To(Cardinal: Cardinal32) return LittleEndianCardinal32;
-
-   function From(Cardinal: LittleEndianCardinal32) return Cardinal32;
-
 private
 
    type LittleEndianInteger16 is new Interfaces.Integer_16;

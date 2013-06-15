@@ -94,6 +94,10 @@ package body YellowBlue.Button is
 
       Bounds : constant Bounds_Type:=Item.GetBounds;
 
+      BackgroundColor : Canvas.Color_Type;
+      FrameColor      : Canvas.Color_Type;
+      FontColor       : Canvas.Color_Type;
+
    begin
 
       if Item.Canvas/=null then
@@ -109,17 +113,22 @@ package body YellowBlue.Button is
          Width  => Bounds.Width);
 
       if Item.PressedWithin then
-         Item.Canvas.Clear(16#FFFF0000#);
+         BackgroundColor := 16#FF00007F#;
+         FrameColor      := 16#FF000000#;
+         FontColor       := 16#FFFFFFFF#;
       else
-         Item.Canvas.Clear(16#FF7F0000#);
+         BackgroundColor := 16#FF7F7F7F#;
+         FrameColor      := 16#FF000000#;
+         FontColor       := 16#FF000000#;
       end if;
 
+      Item.Canvas.Clear(BackgroundColor);
       Item.Canvas.Rectangle
         (X => 0,
          Y => 0,
          Height => Bounds.Height,
          Width => Bounds.Width,
-         Color => 16#FFFFFFFF#);
+         Color => FrameColor);
 
       Item.Canvas.SetBounds
         (Top     => 0,
@@ -139,7 +148,7 @@ package body YellowBlue.Button is
                X => Float((Bounds.Width-Width)/2-1),
                Y => Float((Bounds.Height-Height)/2-1),
                Text => Item.Caption,
-               Color => 16#FFFFFFFF#);
+               Color => FontColor);
          end;
 
       end if;

@@ -45,6 +45,12 @@ private
       Color  : Standard.Canvas.Color_Type);
 
    overriding
+   function CharacterAdvance
+     (Font : access LargeFont_Type;
+      Char : Wide_Wide_Character)
+      return Float;
+
+   overriding
    function CharacterWidth
      (Font : access LargeFont_Type;
       Char : Wide_Wide_Character)

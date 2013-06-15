@@ -18,23 +18,17 @@ pragma Ada_2005;
 
 package body MPI is
 
-   function ErrorToString
-     (ErrorCode : Interfaces.C.int)
+   function ReturnValueToString
+     (ReturnValue : Interfaces.C.int)
       return String is
    begin
-      case ErrorCode is
+      case ReturnValue is
          when MPI_SUCCESS =>
             return "SUCCESS";
-         when MPI_ERR_BUFFER =>
-            return "MPI_ERR_BUFFER";
-         when MPI_ERR_COUNT =>
-            return "MPI_ERR_COUNT";
-         when MPI_ERR_TYPE =>
-            return "MPI_ERR_TYPE";
          when others =>
-            return "Unknown Return Value:"&Interfaces.C.int'Image(ErrorCode);
+            return "Unknown Return Value:"&Interfaces.C.int'Image(ReturnValue);
       end case;
-   end ErrorToString;
+   end ReturnValueToString;
    ---------------------------------------------------------------------------
 
 end MPI;

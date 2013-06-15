@@ -23,7 +23,7 @@
 
 pragma Ada_2005;
 
-with Unix;
+with Linux;
 
 package body BSDSockets.Thin is
    use type Interfaces.C.int;
@@ -32,20 +32,6 @@ package body BSDSockets.Thin is
    pragma Import(C,c_AF_INET,"c_AF_INET");
    c_AF_INET6:Interfaces.C.int;
    pragma Import(C,c_AF_INET6,"c_AF_INET6");
-
-   function UnixSetNonBlocking
-     (Socket : SocketID)
-      return Interfaces.C.int;
-   pragma Import(C,UnixSetNonBlocking,"UnixSetNonBlocking");
-
-   procedure SetNonBlocking
-     (Socket : SocketID) is
-   begin
-      if UnixSetNonBlocking(Socket)/=0 then
-         raise FailedSetNonBlocking with "Error "&Interfaces.C.int'Image(Error);
-      end if;
-   end SetNonBlocking;
-   ---------------------------------------------------------------------------
 
    function DecypherAddressFamily
      (AddressFamily : AddressFamilyEnum)
@@ -104,7 +90,7 @@ package body BSDSockets.Thin is
 
    function Error return Interfaces.C.int is
    begin
-      return Unix.errno;
+      return Linux.errno;
    end Error;
    ---------------------------------------------------------------------------
 

@@ -37,7 +37,19 @@ package GUI.Window is
       WindowChangeModeSizeBottom,
       WindowChangeModeSizeBottomRight);
 
-   type Window_Type is new Object_Type with private;
+   type WindowButtons_Enum is
+     (WindowButtonClose);
+   type WindowButtons_Set is array(WindowButtons_Enum) of Boolean;
+
+   type OnCloseWindow_Access is
+     access procedure(CallBackObject : AnyObject_ClassAccess);
+
+   type Window_Public is new Object_Type with
+      record
+         OnCloseWindow : OnCloseWindow_Access:=null;
+      end record;
+
+   type Window_Type is new Window_Public with private;
    type Window_Access is access all Window_Type;
    type Window_ClassAccess is access all Window_Type'Class;
 
@@ -80,16 +92,25 @@ package GUI.Window is
      (Window : access Window_Type)
       return Unbounded_String;
 
+   procedure SetButtons
+     (Window  : access Window_Type;
+      Buttons : WindowButtons_Set);
+
+   function GetButtons
+     (Window : access Window_Type)
+      return WindowButtons_Set;
+
 private
 
-   type Window_Type is new Object_Type with
+   type Window_Type is new Window_Public with
       record
-         RefX      : Integer;
-         RefY      : Integer;
-         RefHeight : Integer;
-         RefWidth  : Integer;
-         Mode      : WindowChangeMode_Enum:=WindowChangeModeNothing;
-         Caption   : Unbounded_String;
+         RefX       : Integer;
+         RefY       : Integer;
+         RefHeight  : Integer;
+         RefWidth   : Integer;
+         Mode       : WindowChangeMode_Enum:=WindowChangeModeNothing;
+         Caption    : Unbounded_String;
+         Buttons    : WindowButtons_Set:=(others=>False);
       end record;
 
 end GUI.Window;

@@ -32,10 +32,10 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 
 package body YellowBlue.ListBox is
 
-   FrameColor  : constant Canvas.Color_Type:=16#FFFFFF00#;
+   FrameColor  : constant Canvas.Color_Type:=16#FF000000#;
    FrameWidth  : constant Integer:=1;
    BorderWidth : constant Integer:=2;
-   FillColor   : constant Canvas.Color_Type:=16#FF0000FF#;
+   FillColor   : constant Canvas.Color_Type:=16#FFFFFFFF#;
 
    type ListBox_Type is new GUI.ListBox.ListBox_Type with
       record

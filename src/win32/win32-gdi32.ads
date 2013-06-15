@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 --   Copyright 2012 Julian Schutsch
 --
---   This file is part of ParallelSim
+--   This file is part of TrainWorld
 --
 --   ParallelSim is free software: you can redistribute it and/or modify
 --   it under the terms of the GNU Affero General Public License as published

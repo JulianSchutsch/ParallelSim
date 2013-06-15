@@ -18,12 +18,17 @@
 -------------------------------------------------------------------------------
 pragma Ada_2005;
 
+with Ada.Text_IO; use Ada.Text_IO;
+
 package body GUI.Console is
 
    procedure Initialize
      (Item   : access Console_Type;
       Parent : Object_ClassAccess) is
    begin
+      Put("Initialize Console");
+      Put(Item.all'Address);
+      New_Line;
 
       GUI.Object_Access(Item).Initialize(Parent);
 

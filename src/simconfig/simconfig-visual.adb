@@ -20,7 +20,7 @@
 pragma Ada_2005;
 
 with Ada.Unchecked_Deallocation;
---with Ada.Text_IO; use Ada.Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 --with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
 
 package body SimConfig.Visual is
@@ -128,6 +128,7 @@ package body SimConfig.Visual is
          if Elements(i).CheckBox/=null then
             Elements(i).CheckBox.Free;
          end if;
+         Put_Line("Delete Sub Array");
          if Elements(i).Elements/=null then
             DeleteOptionElements(Elements(i).Elements);
          end if;

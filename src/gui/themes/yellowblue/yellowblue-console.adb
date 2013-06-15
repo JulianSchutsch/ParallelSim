@@ -186,7 +186,7 @@ package body YellowBlue.Console is
             Size       => 18,
             Attributes => Fonts.NoAttributes));
 
-      NewConsole.TextBasis.EnableInput(0,To_Unbounded_String(">"));
+      NewConsole.TextBasis.EnableInput(0,U(">"));
       NewConsole.TextBasis.CallBackObject := AnyObject_ClassAccess(NewConsole);
       NewConsole.TextBasis.OnVisualChange := VisualChange'Access;
       NewConsole.TextBasis.OnInputEnter   := InputEnter'Access;

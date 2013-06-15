@@ -138,7 +138,7 @@ package body Fonts.FreeType.Large is
    end GlyphOut;
    ---------------------------------------------------------------------------
 
-   function CharacterWidth
+   function CharacterAdvance
      (Font : access LargeFont_Type;
       Char : Wide_Wide_Character)
       return Float is
@@ -151,6 +151,25 @@ package body Fonts.FreeType.Large is
          char_code => Wide_Wide_Character'Pos(Char));
       SelectGlyph(Font,CharGlyph,FT_LOAD_DEFAULT);
       return Float(Glyph.advance.x)/(64.0*1024.0);
+   end CharacterAdvance;
+   ---------------------------------------------------------------------------
+
+   function CharacterWidth
+     (Font : access LargeFont_Type;
+      Char : Wide_Wide_Character)
+      return Float is
+      GlyphIndex : FT_UInt_Type;
+      Bitmap : FT_BitmapGlyph_Access;
+   begin
+      GlyphIndex:=FTC_CMapCache_Lookup
+        (cache => CMapCache,
+         face_id => FTC_FaceID_Type(Font.all'Address),
+         cmap_index => -1,
+         char_code => Wide_Wide_Character'Pos(Char));
+
+      SelectGlyph(Font,GlyphIndex,FT_LOAD_RENDER);
+      Bitmap:=Convert(Glyph);
+      return Float(Bitmap.left)/64.0+Float(Bitmap.bitmap.width);
    end CharacterWidth;
    ---------------------------------------------------------------------------
 

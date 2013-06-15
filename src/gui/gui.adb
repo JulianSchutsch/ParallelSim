@@ -269,6 +269,36 @@ package body GUI is
    ---------------------------------------------------------------------------
 
    procedure BringToFront
+     (Canvas : access Canvas_Type) is
+
+      P : Canvas_ClassAccess;
+
+   begin
+      if Canvas.Next=null then
+         return;
+      end if;
+
+      P:=Canvas_ClassAccess(Canvas);
+      while P.Next/=null loop
+         P := P.Next;
+      end loop;
+
+      if Canvas.Last/=null then
+         Canvas.Last.Next:=Canvas.Next;
+      else
+         Canvas.Object.Canvasse:=Canvas.Next;
+      end if;
+
+      Canvas.Next.Last := Canvas.Last;
+
+      Canvas.Next := null;
+      Canvas.Last := P;
+      Canvas.Last.Next := Canvas_ClassAccess(Canvas);
+
+   end BringToFront;
+   ---------------------------------------------------------------------------
+
+   procedure BringToFront
      (Item : Object_ClassAccess) is
    begin
       if Item.Last=null then
@@ -311,6 +341,9 @@ package body GUI is
       Chars   : Unbounded_String) is
 
    begin
+
+      Put_Line("CharacterSend:"&Integer'Image(Length(Chars)));
+      Put_Line(To_String(Chars));
 
       if Context.Priv.FocusObject/=null then
          if not Context.Priv.FocusObject.CharacterInput(Chars) then

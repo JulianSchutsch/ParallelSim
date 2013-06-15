@@ -27,16 +27,17 @@ with Canvas;
 with GUIDefinitions; use GUIDefinitions;
 with GUIMouse; use GUIMouse;
 with GUIKeys; use GUIKeys;
+With Ada.Text_IO; use Ada.Text_IO;
 
 with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 --with Ada.Text_IO; use Ada.Text_IO;
 
 package body YellowBlue.Edit is
 
-   FillColor   : constant Canvas.Color_Type:=16#FF7F7F7F#;
-   FrameColor  : constant Canvas.Color_Type:=16#FFFFFF00#;
-   TextColor   : constant Canvas.Color_Type:=16#FFFFFFFF#;
-   CursorColor : constant Canvas.Color_Type:=16#FFFFFFFF#;
+   FillColor   : constant Canvas.Color_Type:=16#FFFFFFFF#;
+   FrameColor  : constant Canvas.Color_Type:=16#FF000000#;
+   TextColor   : constant Canvas.Color_Type:=16#FF000000#;
+   CursorColor : constant Canvas.Color_Type:=16#FF000000#;
    LeftTextDistance  : constant Integer:=3;
    RightTextDistance : constant Integer:=4;
 
@@ -213,6 +214,7 @@ package body YellowBlue.Edit is
       Chars : Unbounded_String)
       return Boolean is
    begin
+      Put_Line("CharacterInput");
       Item.CursorPosition:=Item.CursorPosition
         +Item.Text.Insert
         (Position => Item.CursorPosition,

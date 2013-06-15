@@ -28,7 +28,6 @@ with Ada.Directories; use Ada.Directories;
 with System;
 with ProcessLoop;
 
-with Ada.IO_Exceptions;
 with Ada.Text_IO; use Ada.Text_IO;
 
 package body Processes is
@@ -100,9 +99,6 @@ package body Processes is
                return;
             end if;
             End_Search(Search);
-         exception
-            when Ada.IO_Exceptions.Name_Error =>
-               null; -- Ignore exception for invalid paths
          end;
          Cursor:=StringList_Pack.Next(Cursor);
       end loop;
@@ -110,6 +106,8 @@ package body Processes is
       return;
    end FindInPathDirectories;
    ---------------------------------------------------------------------------
+
+   Count : Integer:=0;
 
    procedure ProcessQueue
      (Object : AnyObject_ClassAccess) is
@@ -121,24 +119,18 @@ package body Processes is
       BytesRead : aliased Win32.DWORD_Type:=0;
 
    begin
-
       if not Win32.Kernel32.GetExitCodeProcess
-        (hProcess   => Process.P.ProcessHandle,
+        (hProcess   => Process.ProcessHandle,
          lpExitCode => ExitCode'Access) then
          Put_Line("GetExitCode failed******************************************");
       end if;
-
       if ExitCode/=Win32.STILL_ACTIVE then
          -- TODO: Report this !!!
-         if Process.OnTerminate/=null then
-            Process.Kill;
-            Process.OnTerminate(Process.CallBackObject);
-         end if;
          return;
       end if;
 
       if not Win32.Kernel32.PeekNamedPipe
-        (hNamedPipe             => Process.P.StdOutPipeIn,
+        (hNamedPipe             => Process.StdOutPipeIn,
          lpBuffer               => null,
          nBufferSize            => 0,
          lpBytesRead            => null,
@@ -152,12 +144,15 @@ package body Processes is
          return;
       end if;
 
+      Put_Line("Process still running"&Integer'Image(Count));
+      Count:=Count+1;
+
       if Process.Buffer=null then
          Process.Buffer:=new ByteArray_Type(0..1023);
       end if;
 
       if not Win32.Kernel32.ReadFile
-        (hFile                => Process.P.StdOutPipeIn,
+        (hFile                => Process.StdOutPipeIn,
          lpBuffer             => Process.Buffer,
          nNumberOfBytesToRead => Process.Buffer'Length,
          lpNumberOfBytesRead  => BytesRead'Access,
@@ -173,7 +168,9 @@ package body Processes is
                   Str : Unbounded_String;
                begin
                   Process.CharacterBuffer.ReadString(Str);
+                  Put_Line("*"&To_String(Str));
                   if Process.OnMessage/=null then
+                     Put(Process.OnMessage.all'Address);
                      Process.OnMessage(Process.CallBackObject,Str);
                   end if;
                end;
@@ -194,28 +191,29 @@ package body Processes is
       use type Interfaces.C.int;
 
    begin
-      if Item.P.ProcessHandle/=Win32.NULLHANDLE then
-         if not Win32.Kernel32.TerminateProcess(Item.P.ProcessHandle,0) then
+      if Item.ProcessHandle/=Win32.NULLHANDLE then
+         if not Win32.Kernel32.TerminateProcess(Item.ProcessHandle,0) then
             null;
          end if;
-         if Win32.Kernel32.CloseHandle(Item.P.StdOutPipeIn)=0 then
+         if Win32.Kernel32.CloseHandle(Item.StdOutPipeIn)=0 then
             null;
          end if;
-         if Win32.Kernel32.CloseHandle(Item.P.StdOutPipeOut)=0 then
+         if Win32.Kernel32.CloseHandle(Item.StdOutPipeOut)=0 then
             null;
          end if;
-         Item.P.ProcessHandle := Win32.NULLHANDLE;
-         Item.P.StdOutPipeIn  := Win32.NULLHANDLE;
-         Item.P.StdOutPipeOut := Win32.NULLHANDLE;
+         Item.ProcessHandle := Win32.NULLHANDLE;
+         Item.StdOutPipeIn  := Win32.NULLHANDLE;
+         Item.StdOutPipeOut := Win32.NULLHANDLE;
          ProcessLoop.Remove(ProcessQueue'Access,AnyObject_ClassAccess(Item));
       end if;
    end Kill;
    ---------------------------------------------------------------------------
 
-   procedure Execute
+   function Execute
      (Item        : access Process_Type;
       ProgramName : Unbounded_String;
-      Arguments   : Unbounded_String) is
+      Arguments   : Unbounded_String)
+      return Boolean is
 
       use type Win32.DWORD_Type;
       use type Interfaces.C.ptrdiff_t;
@@ -237,7 +235,8 @@ package body Processes is
             FullName => FullProgramName,
             Success  => Success);
          if not Success then
-            raise ExecutableNotFound with To_String(ProgramName);
+            Put_Line("Failed to find executable");
+            return False;
          end if;
       end;
 
@@ -247,31 +246,26 @@ package body Processes is
          SecAttr.nLength        := SecAttr'Size/8;
          SecAttr.bInheritHandle := 1;
          if not Win32.Kernel32.CreatePipe
-           (hReadPipe        => Item.P.StdOutPipeIn'Access,
-            hWritePipe       => Item.P.StdOutPipeOut'Access,
+           (hReadPipe        => Item.StdOutPipeIn'Access,
+            hWritePipe       => Item.StdOutPipeOut'Access,
             lpPipeAttributes => SecAttr'Access,
             nSize            => 0) then
-            raise FailedToCreatePipe with
-              Win32.DWORD_Type'Image(Win32.GetLastError);
+            Put("Failed Create Pipe ");
+            Put_Line(Win32.DWORD_Type'Image(Win32.GetLastError));
+            return False;
          end if;
          if not Win32.Kernel32.SetHandleInformation
-           (hObject => Item.P.StdOutPipeIn,
+           (hObject => Item.StdOutPipeIn,
             dwMask  => Win32.HANDLE_FLAG_INHERIT,
             dwFlags => 0) then
-            if Win32.Kernel32.CloseHandle(Item.P.StdOutPipeIn)=0 then
-               null;
-            end if;
-            if Win32.Kernel32.CloseHandle(Item.P.StdOutPipeOut)=0 then
-               null;
-            end if;
-            raise FailedExecute with "SetHandleInformation;"
-              &Win32.DWORD_Type'Image(Win32.GetLastError);
+            -- TODO: Close Pipe handles
+            Put_Line("Failed To Create SetHandleInformation");
+            return False;
          end if;
       end;
 
-      -- TODO: Check if escaping is safe
       CProgramName := Interfaces.C.Strings.New_String(To_String(FullProgramName));
-      CParameters  := Interfaces.C.Strings.New_String(To_String(""""&FullProgramName&""" "&Arguments));
+      CParameters  := Interfaces.C.Strings.New_String(To_String(Arguments));
 
       declare
          StartInfo   : aliased Win32.STARTUPINFO_Type;
@@ -279,8 +273,8 @@ package body Processes is
       begin
 
          StartInfo.cb         := StartInfo'Size/8;
-         StartInfo.hStderr    := Item.P.StdOutPipeOut;
-         StartInfo.hStdOutput := Item.P.StdOutPipeOut;
+         StartInfo.hStderr    := Item.StdOutPipeOut;
+         StartInfo.hStdOutput := Item.StdOutPipeOut;
          StartInfo.hStdInput  := Win32.NULLHANDLE;
          StartInfo.dwFlags    := Win32.STARTF_USESTDHANDLES;
 
@@ -295,29 +289,24 @@ package body Processes is
             lpCurrentDirectory   => Interfaces.C.Strings.Null_Ptr,
             lpStartupInfo        => StartInfo'Access,
             lpProcessInformation => ProcessInfo'Access)=0 then
-            if Win32.Kernel32.CloseHandle(Item.P.StdOutPipeIn)=0 then
-               null;
-            end if;
-            if Win32.Kernel32.CloseHandle(Item.P.StdOutPipeOut)=0 then
-               null;
-            end if;
-            Interfaces.C.Strings.Free(CProgramName);
-            Interfaces.C.Strings.Free(CParameters);
-            raise FailedExecute with "CreateProcess;"
-              &Win32.DWORD_Type'Image(Win32.GetLastError);
+            -- TODO: Close Pipe handles
+            --       and Free Strings
+            Put_Line("Failed To Create Process");
+            Put_Line(Win32.DWORD_Type'Image(Win32.GetLastError));
+            return False;
          end if;
          if Win32.Kernel32.CloseHandle(ProcessInfo.hThread)=0 then
             Put_Line("Failed to close Handle");
          end if;
          -- TODO: Copy ProcessID for later
-         Item.P.ProcessHandle:=ProcessInfo.hProcess;
+         Item.ProcessHandle:=ProcessInfo.hProcess;
       end;
 
       Interfaces.C.Strings.Free(CProgramName);
       Interfaces.C.Strings.Free(CParameters);
 
       ProcessLoop.Add(ProcessQueue'Access,AnyObject_ClassAccess(Item));
-      Put_Line("Processes added to pipe queue");
+      return False;
 
    end Execute;
    ---------------------------------------------------------------------------

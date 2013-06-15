@@ -20,7 +20,7 @@
 pragma Ada_2005;
 
 with Network.Streams;
-with Packets;
+with Network.Packets;
 with Ada.Unchecked_Deallocation;
 with LoggingProtocol;
 with Ada.Text_IO; use Ada.Text_IO;
@@ -134,17 +134,18 @@ package body Logging.Client is
 
       use type Network.Streams.Client_ClassAccess;
 
-      Packet : Packets.Packet_ClassAccess;
+      Packet : Network.Packets.Packet_Access;
 
    begin
 
       if Item.Context.Client/=null then
-         Packet:=new Packets.Packet_Type;
+         Packet:=new Network.Packets.Packet_Type;
          Packet.Write(LoggingProtocol.ServerCmdLog);
          Packet.Write(LoggingProtocol.LevelInt_Type(Level_Enum'Pos(Level)));
          Packet.Write(Item.ModuleName);
          Packet.Write(Item.ChannelName);
          Packet.Write(To_Unbounded_String(Message));
+         Packet.Debug;
          Item.Context.Client.SendPacket(Packet);
       end if;
 
@@ -182,7 +183,8 @@ package body Logging.Client is
 
    begin
 
-      Put_Line("Logging.Client : Failed Connect");
+      Put("Failed Connect!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
+      New_Line;
       Ada.Text_IO.Flush(Ada.Text_IO.Standard_Output);
       Retry:=True;
 
@@ -194,7 +196,6 @@ package body Logging.Client is
 
    begin
 
-      Put_Line("Logging.Client : Disconnect");
       Item.Context.Client:=null;
 
    end Disconnect;
@@ -209,29 +210,24 @@ package body Logging.Client is
    begin
 
       loop
-         PrevPosition := Item.Client.Received.Position;
+         PrevPosition := Item.Client.Position;
          case Item.ReceiveStatus is
             when ReceiveStatusWaitForIdentification =>
                declare
                   Identification : Unbounded_String;
                begin
-                  Identification:=Item.Client.Received.Read;
+                  Identification:=Item.Client.Read;
                   if Identification/=LoggingProtocol.ServerID then
-                     Put_Line("Logging.Client : Invalid Server ID");
                      Item.Client.Disconnect;
                      Item.ReceiveStatus:=ReceiveStatusInvalid;
                      return;
                   end if;
                end;
-               Put_Line("#### VALID SERVER ID FOR LOGGING ####");
                -- There is no more data to be expected
                -- for this implementation at the moment
                Item.ReceiveStatus:=ReceiveStatusInvalid;
-               return;
 
             when ReceiveStatusInvalid =>
-               Put_Line("Logging.Client : Invalid Data received"&Integer'Image(Item.Client.Received.Amount));
-               Item.Client.Disconnect;
                return;
 
          end case;
@@ -239,8 +235,8 @@ package body Logging.Client is
       end loop;
 
    exception
-      when Packets.PacketOutOfData =>
-         Item.Client.Received.Position:=PrevPosition;
+      when Network.Packets.PacketOutOfData =>
+         Item.Client.Position:=PrevPosition;
 
    end Receive;
    ---------------------------------------------------------------------------
@@ -250,7 +246,9 @@ package body Logging.Client is
 
    begin
 
-      Put_Line("Logging.Client : Connected");
+      -- Send identification as Logging Client
+      Put("Send Identification Packet!!!!!!!!!!!!!!!!!!");
+      New_Line;
 
       Item.ReceiveStatus:=ReceiveStatusWaitForIdentification;
 
@@ -265,28 +263,31 @@ package body Logging.Client is
 
       NewCont : Context_Access;
 
-      Packet : Packets.Packet_ClassAccess;
+      Packet : Network.Packets.Packet_Access;
 
    begin
 
       NewCont:=new Context_Type;
       NewCont.ModuleName := ModuleName;
 
+      Put_Line("Logging.Client.Find Impl");
       NewCont.Implementation:=Network.Streams.Implementations.Find
         (Configuration => Configuration,
          Node          => ConfigNode & ".Network");
+      Put_Line("Logging.Client.NewClient");
       NewCont.Implementation.Initialize.all;
       NewCont.Client:=NewCont.Implementation.NewClient
         (Configuration => Configuration,
          Node          => ConfigNode & ".Network");
+      Put_Line("Logging.Client...");
 
       NewCont.CallBack.Context := NewCont;
       NewCont.CallBack.Client  := NewCont.Client;
-      NewCont.CallBack.ReceiveStatus:= ReceiveStatusWaitForIdentification;
       NewCont.Client.CallBack  := NewCont.CallBack'Access;
 
-      Packet:=new Packets.Packet_Type;
+      Packet:=new Network.Packets.Packet_Type;
       Packet.Write(LoggingProtocol.ClientID);
+      Packet.Debug;
       NewCont.Client.SendPacket(Packet);
       Flush(Standard_Output);
 

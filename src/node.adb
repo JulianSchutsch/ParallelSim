@@ -28,14 +28,19 @@ with DistributedSystems.UseImplementations;
 with Network.UseImplementations;
 with Logging.Client;
 with Logging.StdOut;
+with Config;
 with ProgramArguments;
+with DistributedSystems;
+with Basics; use Basics;
 with SimNode;
-with Ada.Text_IO; use Ada.Text_IO;
+--with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Node is
 
-begin
+   Configuration          : Config.Config_Type;
+   DistributedSystemsImpl : DistributedSystems.Implementation_Type;
 
+begin
    Network.UseImplementations.Register;
    DistributedSystems.UseImplementations.Register;
    Logging.Client.Register;
@@ -44,14 +49,25 @@ begin
    ProgramArguments.Initialize;
 
    ProgramArguments.Configuration.Debug;
+   DistributedSystemsImpl
+     := DistributedSystems.Implementations.Find
+       (Configuration => ProgramArguments.Configuration,
+        Node          => U("Arguments"));
 
-   SimNode.Initialize;
+   DistributedSystemsImpl.InitializeNode
+     (Configuration => Configuration,
+      Group         => 0); -- TODO:Group ID not yet valid
+   Configuration.Debug;
+
+   SimNode.Initialize(Configuration);
 
    loop
       exit when SimNode.Process;
    end loop;
 
    SimNode.Finalize;
+
+   DistributedSystemsImpl.FinalizeNode.all;
 
    Logging.StdOut.Unregister;
    Logging.Client.Unregister;
@@ -60,6 +76,5 @@ begin
 
 exception
    when E:others =>
-      Put_Line("Node Exception");
       ExceptionOutput.Put(E);
 end Node;

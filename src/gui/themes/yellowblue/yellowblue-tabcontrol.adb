@@ -35,13 +35,13 @@ package body YellowBlue.TabControl is
 
    TabBorderWidth       : constant Integer:=3;
    TabHorzBorderWidth   : constant Integer:=12;
-   NormalFillColor      : constant Canvas.Color_Type:=16#FF000000#;
-   NormalFrameColor     : constant Canvas.Color_Type:=16#FFFFFF00#;
-   NormalCaptionColor   : constant Canvas.Color_Type:=16#FFFFFFFF#;
-   SelectedFillColor    : constant Canvas.Color_Type:=16#FFFF0000#;
+   NormalFillColor      : constant Canvas.Color_Type:=16#FF7F7F7F#;
+   NormalFrameColor     : constant Canvas.Color_Type:=16#FFFFFFFF#;
+   NormalCaptionColor   : constant Canvas.Color_Type:=16#FF000000#;
+   SelectedFillColor    : constant Canvas.Color_Type:=16#FF00007F#;
    SelectedFrameColor   : constant Canvas.Color_Type:=16#FFFFFFFF#;
    SelectedCaptionColor : constant Canvas.Color_Type:=16#FFFFFFFF#;
-   FrameColor           : constant Canvas.Color_Type:=16#FFFFFF00#;
+   FrameColor           : constant Canvas.Color_Type:=16#FFFFFFFF#;
 
    type TabControl_Type;
    type TabControl_Access is access all TabControl_Type;

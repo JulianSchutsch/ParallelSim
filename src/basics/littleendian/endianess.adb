@@ -37,12 +37,6 @@ package body Endianess is
       return LittleEndianInteger32(Integer);
    end;
 
-   function To(Cardinal: Cardinal32) return LittleEndianCardinal32 is
-   begin
-      return LittleEndianCardinal32(Cardinal);
-   end To;
-   ---------------------------------------------------------------------------
-
    function To(Integer: Integer64) return LittleEndianInteger64 is
    begin
       return LittleEndianInteger64(Integer);
@@ -57,12 +51,6 @@ package body Endianess is
    begin
       return Integer32(Integer);
    end;
-
-   function From(Cardinal: LittleEndianCardinal32) return Cardinal32 is
-   begin
-      return Cardinal32(Cardinal);
-   end From;
-   ---------------------------------------------------------------------------
 
    function From(Integer: LittleEndianInteger64) return Integer64 is
    begin

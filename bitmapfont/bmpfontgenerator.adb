@@ -84,7 +84,8 @@ procedure BMPFontGenerator is
       Put_Line(File,"");
       Put_Line(File,"   type Char_Type is");
       Put_Line(File,"      record");
-      Put_Line(File,"         Image : CharImage_Access;");
+      Put_Line(File,"         Image   : CharImage_Access;");
+      Put_Line(File,"         Advance : Integer;");
       Put_Line(File,"      end record;");
       Put_Line(File,"");
       Put_Line(File,"   type CharArray_Type is array(Integer range <>) of Char_Type;");
@@ -136,6 +137,10 @@ procedure BMPFontGenerator is
          PutInt(Char);
       end PutCharName;
       ------------------------------------------------------------------------
+
+      type Advance_Array is array(0..255) of Float;
+
+--      Advances : Advance_Array;
 
    begin
 

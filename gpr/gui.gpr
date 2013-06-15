@@ -5,9 +5,6 @@ abstract project GUI is
    CompilerSwitches:=();
    BinderSwitches:=();
    LinkerSwitches:=();
-   SourceDirectories:=();
-
-   Dir:=GUI'Project_Dir&"/";
 
    case Config.wgl is
       when "On" =>
@@ -18,20 +15,10 @@ abstract project GUI is
 
    case Config.xlib is
       when "On" =>
-         SourceDirectories:=SourceDirectories&(Dir&"../src/xlib");
-         LinkerSwitches:=LinkerSwitches&("-lX11","-lGL");
-      when "Off" =>
+	     LinkerSwitches:=LinkerSwitches
+		    &("-lX11","-lGL");
+	  when "Off" =>
    end case;
-
-   case Config.freetype is
-      when "On" =>
-         case Config.Detected is
-            when "WindowsNT" =>
-               LinkerSwitches:=LinkerSwitches&("-lfreetype6");
-            when others =>
-               LinkerSwitches:=LinkerSwitches&("-lfreetype");
-         end case;
-      when "Off" =>
-   end case;
+	     
 
 end GUI;

@@ -44,11 +44,7 @@ package body DistributedSystems is
    begin
 
       if Item.OnFailure/=null then
-         Item.OnFailure
-           (Error =>
-              (Error => U("VOIDDISTSYS:NOEXEC"),
-               Params => null),
-            SupplementConfig => SupplementConfig);
+         Item.OnFailure(SupplementConfig);
       end if;
 
    end Execute;

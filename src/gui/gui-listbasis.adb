@@ -121,18 +121,28 @@ package body GUI.ListBasis is
            (Height => FontHeight,
             Width  => CanvasWidth);
 
-         if LineNumber/=Item.SelectedIndex then
-            NewCanvas.Canvas.Clear(0);
-         else
-            NewCanvas.Canvas.Clear(16#FFFF0000#);
-         end if;
+         declare
+            Color      : Canvas.Color_Type;
+            Background : Canvas.Color_Type;
+         begin
 
-         Item.Font.TextOut
-           (Canvas => Canvas.Canvas_ClassAccess(NewCanvas.Canvas),
-            X      => 0.0,
-            Y      => 0.0,
-            Text   => StringAndColor.String,
-            Color  => StringAndColor.Color);
+            if LineNumber/=Item.SelectedIndex then
+               Background:=0;
+               Color:=StringAndColor.Color;
+            else
+               Background:=16#FF0000FF#;
+               Color:=16#FFFFFFFF#;
+            end if;
+
+            NewCanvas.Canvas.Clear(Background);
+            Item.Font.TextOut
+              (Canvas => Canvas.Canvas_ClassAccess(NewCanvas.Canvas),
+               X      => 0.0,
+               Y      => 0.0,
+               Text   => StringAndColor.String,
+               Color  => Color);
+         end;
+
          NewCanvas.Canvas.SetBounds
            (Top     => yPosition,
             Left    => 0,

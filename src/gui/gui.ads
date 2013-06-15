@@ -110,6 +110,9 @@ package GUI is
      (Canvas : access Canvas_Type)
       return Bounds_Type;
 
+   procedure BringToFront
+     (Canvas : access Canvas_Type);
+
    -- CALL ONLY BY INHERITED
    procedure Finalize
      (Canvas : access Canvas_Type);
@@ -139,6 +142,9 @@ package GUI is
    type OnASync_Access is
      access procedure
        (Item : Object_ClassAccess);
+
+   procedure RenderCustom
+     (Object : access Object_Type) is null;
 
    procedure Initialize
      (Item   : access Object_Type;

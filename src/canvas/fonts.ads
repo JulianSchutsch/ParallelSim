@@ -45,6 +45,11 @@ package Fonts is
      (Font : access Font_Type)
       return Integer is abstract;
 
+   function CharacterAdvance
+     (Font : access Font_Type;
+      Char : Wide_Wide_Character)
+      return Float is abstract;
+
    function CharacterWidth
      (Font : access Font_Type;
       Char : Wide_Wide_Character)

@@ -28,7 +28,7 @@ with Canvas;
 
 package body YellowBlue.Label is
 
-   TextColor : constant Canvas.Color_Type:=16#FFFFFF00#;
+   TextColor : constant Canvas.Color_Type:=16#FF000000#;
 
    type Label_Type is new GUI.Label.Label_Type with
       record

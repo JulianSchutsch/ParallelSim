@@ -1,7 +1,7 @@
 -------------------------------------------------------------------------------
 --   Copyright 2012 Julian Schutsch
 --
---   This file is part of ParallelSim
+--   This file is part of TrainWorld
 --
 --   ParallelSim is free software: you can redistribute it and/or modify
 --   it under the terms of the GNU Affero General Public License as published
@@ -43,6 +43,7 @@ package Win32 is
    type WPARAM_Type is new Interfaces.C.ptrdiff_t;
    subtype LPARAM_Type is LONG_PTR_Type;
    subtype HINSTANCE_Type is HANDLE_Type;
+   subtype HMODULE_Type is HANDLE_Type;
    subtype HICON_Type is HANDLE_Type;
    subtype HCURSOR_Type is HICON_Type;
    subtype HBRUSH_Type is HANDLE_Type;
@@ -55,6 +56,9 @@ package Win32 is
    type BOOL_Type is new Interfaces.C.int;
    type BYTE_Type is new Interfaces.Unsigned_8;
    subtype HGLRC_Type is HANDLE_Type;
+   type GUID_Type is array(0..15) of Interfaces.Unsigned_8;
+   pragma Convention(C,GUID_Type);
+   type HRESULT_Type is new Interfaces.C.int;
 
    function HANDLEToInteger is new Ada.Unchecked_Conversion
      (Source => HANDLE_Type,
@@ -175,6 +179,9 @@ package Win32 is
       end record;
    type CREATESTRUCT_Access is access CREATESTRUCT_Type;
    pragma Convention(C,CREATESTRUCT_Type);
+   -- This is necessary because unchecked conversion of this type and
+   -- possible access through different channels cannot be avoided
+   pragma No_Strict_Aliasing(CREATESTRUCT_Access);
 
    type POINT_Type is
       record
@@ -291,5 +298,11 @@ package Win32 is
    pragma Import(StdCall,GetLastError,"GetLastError");
 
    STARTF_USESTDHANDLES : constant:=16#100#;
+
+   S_OK : constant HRESULT_Type:=0;
+
+   function GUIDToString
+     (GUID : GUID_Type)
+      return String;
 
 end Win32;

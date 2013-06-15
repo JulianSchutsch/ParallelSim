@@ -99,22 +99,22 @@ begin
       Bottom => False);
    Combobox.AddEntry
      (String => U("First Entry"),
-      Color  => 16#FFFFFFFF#);
+      Color  => 16#FF000000#);
    Combobox.AddEntry
      (String => U("Second Entry"),
-      Color  => 16#FFFFFFFF#);
+      Color  => 16#FF000000#);
    Combobox.AddEntry
      (String => U("Third Entry"),
-      Color  => 16#FFFFFFFF#);
+      Color  => 16#FF000000#);
    Combobox.AddEntry
      (String => U("Fourth Entry"),
-      Color  => 16#FFFFFFFF#);
+      Color  => 16#FF000000#);
    Combobox.AddEntry
      (String => U("Fifth Entry"),
-      Color  => 16#FFFFFFFF#);
+      Color  => 16#FF000000#);
    Combobox.AddEntry
      (String => U("Sixth Entry"),
-      Color  => 16#FFFFFFFF#);
+      Color  => 16#FF000000#);
    Combobox.SetIndex(0);
 
    -- Waiting until either Context.OnClose is triggered

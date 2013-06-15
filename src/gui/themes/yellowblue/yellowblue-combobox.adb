@@ -33,12 +33,12 @@ with GUIMouse; use GUIMouse;
 
 package body YellowBlue.Combobox is
 
-   BackgroundColor    : constant Canvas.Color_Type:=16#FF00007F#;
-   FrameColor         : constant Canvas.Color_Type:=16#FFFFFF00#;
-   TriangleColor      : constant Canvas.Color_Type:=16#FFFFFFFF#;
+   BackgroundColor    : constant Canvas.Color_Type:=16#FFFFFFFF#;
+   FrameColor         : constant Canvas.Color_Type:=16#FF000000#;
+   TriangleColor      : constant Canvas.Color_Type:=16#FF000000#;
    DownButtonWidth    : constant:=25;
    TriangleDistance   : constant:=4;
-   RectangleColor     : constant Canvas.Color_Type:=16#FFFFFFFF#;
+   RectangleColor     : constant Canvas.Color_Type:=16#FF000000#;
    RectangleDistance  : constant:=4;
    DropDownListHeight : constant:=100;
    MaxVisibleDropDownEntries : constant:=5;

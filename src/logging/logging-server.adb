@@ -23,7 +23,7 @@ with Network.Streams;
 with LoggingProtocol;
 with Ada.Text_IO; use Ada.Text_IO;
 with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
-with Packets;
+with Network.Packets;
 
 package body Logging.Server is
 
@@ -76,7 +76,7 @@ package body Logging.Server is
       Message     : Unbounded_String;
 
    begin
-      LevelInt:=item.Channel.Received.Read;
+      LevelInt:=item.Channel.Read;
 
       if LevelInt not in Level_Enum'Pos(Level_Enum'First)..Level_Enum'Pos(Level_Enum'Last) then
          Put("Invalid message received");
@@ -87,9 +87,9 @@ package body Logging.Server is
       end if;
 
       Level       := Level_Enum'Val(LevelInt);
-      ModuleName  := Item.Channel.Received.Read;
-      ChannelName := Item.Channel.Received.Read;
-      Message     := Item.Channel.Received.Read;
+      ModuleName  := Item.Channel.Read;
+      ChannelName := Item.Channel.Read;
+      Message     := Item.Channel.Read;
 
       if OnLogEvent/=null then
          OnLogEvent
@@ -140,16 +140,22 @@ package body Logging.Server is
 
    begin
 
+      Put("Receive");
+      New_Line;
+      Item.Channel.Debug;
+      Put(":::");
+      New_Line;
+
       loop
 
-         PrevPosition:=Item.Channel.Received.Position;
+         PrevPosition:=Item.Channel.Position;
 
          case Item.ReceiveStatus is
             when ReceiveStatusWaitForIdentification =>
                declare
                   Identification : Unbounded_String;
                begin
-                  Identification:=Item.Channel.Received.Read;
+                  Identification:=Item.Channel.Read;
                   if Identification/=LoggingProtocol.ClientID then
                      Put("Invalid Identification by Client");
                      Put(To_String(Identification));
@@ -165,7 +171,7 @@ package body Logging.Server is
                Item.ReceiveStatus:=ReceiveStatusWaitForCommand;
 
             when ReceiveStatusWaitForCommand =>
-               Item.CurrentCommand:=Item.Channel.Received.Read;
+               Item.CurrentCommand:=Item.Channel.Read;
                if Item.CurrentCommand not in Cmds'Range then
                   Put("Command not in valid range");
                   Put(Integer(Item.CurrentCommand));
@@ -198,8 +204,8 @@ package body Logging.Server is
 
    exception
 
-      when Packets.PacketOutOfData =>
-         Item.Channel.Received.Position:=PrevPosition;
+      when Network.Packets.PacketOutOfData =>
+         Item.Channel.Position:=PrevPosition;
 
    end Receive;
    ---------------------------------------------------------------------------
@@ -208,8 +214,11 @@ package body Logging.Server is
      (Item : in out ServerChannelCallBack_Type) is
    begin
 
-      Put_Line("Logging.Disconnect");
+      Put("Disconnect");
+      New_Line;
       Network.Streams.Free(Item.Channel.CallBack);
+      Put("...");
+      New_Line;
 
    end Disconnect;
    ---------------------------------------------------------------------------
@@ -221,7 +230,7 @@ package body Logging.Server is
       pragma Unreferenced(Item);
 
       NewCallBack : ServerChannelCallBack_Access;
-      Packet      : Packets.Packet_ClassAccess;
+      Packet      : Network.Packets.Packet_Access;
 
    begin
 
@@ -235,9 +244,8 @@ package body Logging.Server is
       Channel.CallBack
         :=Network.Streams.ChannelCallBack_ClassAccess(NewCallBack);
 
-      Packet:=new Packets.Packet_Type;
+      Packet:=new Network.Packets.Packet_Type;
       Packet.Write(LoggingProtocol.ServerID);
-      Put_Line("Sending Identification Packet:"&Integer'Image(Packet.Amount));
       Channel.SendPacket(Packet);
 
    end AAccept;

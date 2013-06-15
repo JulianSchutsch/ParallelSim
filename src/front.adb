@@ -26,40 +26,17 @@ pragma Ada_2005;
 with ExceptionOutput;
 with DistributedSystems.UseImplementations;
 with Network.UseImplementations;
-with Authentication.Dummy;
-with Logging.Client;
-with Logging.StdOut;
-with SimFront;
-with ProgramArguments;
-with Ada.Text_IO; use Ada.Text_IO;
 
 procedure Front is
 begin
 
    Network.UseImplementations.Register;
    DistributedSystems.UseImplementations.Register;
-   Logging.Client.Register;
-   Logging.StdOut.Register;
-   Authentication.Dummy.Register;
 
-   ProgramArguments.Initialize;
-
-   SimFront.Initialize;
-
-   loop
-      exit when SimFront.Process;
-   end loop;
-
-   SimFront.Finalize;
-
-   Authentication.Dummy.Unregister;
-   Logging.StdOut.Unregister;
-   Logging.Client.Unregister;
    DistributedSystems.UseImplementations.Unregister;
    Network.UseImplementations.Unregister;
 
 exception
    when E:others =>
-      Put_Line("Front Exception");
       ExceptionOutput.Put(E);
 end Front;

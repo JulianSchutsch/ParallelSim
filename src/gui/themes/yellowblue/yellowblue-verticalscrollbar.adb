@@ -35,14 +35,14 @@ package body YellowBlue.VerticalScrollBar is
    SlideTop               : constant Integer
      := Integer(ButtonHeight)+BarButtonDistance;
 
-   ButtonBackgroundColor  : constant Canvas.Color_Type:=16#FF0000FF#;
-   ButtonTriangleColor    : constant Canvas.Color_Type:=16#FFFFFF00#;
-   ButtonRectangleColor   : constant Canvas.Color_Type:=16#FFFFFF00#;
+   ButtonBackgroundColor  : constant Canvas.Color_Type:=16#FF7F7F7F#;
+   ButtonTriangleColor    : constant Canvas.Color_Type:=16#FFFFFFFF#;
+   ButtonRectangleColor   : constant Canvas.Color_Type:=16#FF000000#;
 
-   SlideFrameColor        : constant Canvas.Color_Type:=16#FFFFFF00#;
+   SlideFrameColor        : constant Canvas.Color_Type:=16#FF000000#;
    SlideFaceColor         : constant Canvas.Color_Type:=16#00000000#;
-   BarFrameColor          : constant Canvas.Color_Type:=16#FF00FF00#;
-   BarFaceColor           : constant Canvas.Color_Type:=16#FF007F00#;
+   BarFrameColor          : constant Canvas.Color_Type:=16#FF7F7F7F#;
+   BarFaceColor           : constant Canvas.Color_Type:=16#FF3F3F3F#;
    BarHandleColor         : constant Canvas.Color_Type:=16#FFFFFFFF#;
 
    type BarMode_Enum is

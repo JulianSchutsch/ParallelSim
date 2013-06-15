@@ -22,8 +22,9 @@
 --     - Original version
 
 -- Demo
---   Demonstration for setting up a GUI context and a console and
---   reacting to events.
+--   Demonstration for setting up a GUI context and a window and
+--   reacting to events:
+--     * Closing of the context
 
 pragma Ada_2005;
 

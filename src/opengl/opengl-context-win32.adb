@@ -33,8 +33,7 @@ with Ada.Strings.Unbounded; use Ada.Strings.Unbounded;
 with Config; use Config;
 with Basics; use Basics;
 
---with Ada.Text_IO; use Ada.Text_IO;
---with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 with GUIKeys; use GUIKeys;
 with GUIMouse; use GUIMouse;
@@ -107,6 +106,9 @@ package body OpenGL.Context.Win32 is
       KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown,  -- 248..251
       KeyUnknown,KeyUnknown,KeyUnknown,KeyUnknown); -- 252..255
 
+   LibraryHandle : HMODULE_Type := NULLHANDLE;
+   LibraryCount  : Natural:=0;
+   LibraryName   : constant String:="opengl32.dll"&Character'Val(0);
 
    type Context_Type;
    type Context_Access is access all Context_Type;
@@ -122,6 +124,7 @@ package body OpenGL.Context.Win32 is
          ContextInitialized  : Boolean           := False;
          MouseButtonsPressed : MouseButton_Array := NoMouseButtons;
          HasCapture          : Boolean           := False;
+         LibraryLoaded       : Boolean           := False;
 
          CSTR_ClassName : Interfaces.C.Strings.chars_ptr
            := Interfaces.C.Strings.Null_Ptr;
@@ -133,7 +136,36 @@ package body OpenGL.Context.Win32 is
    procedure Finalize
      (Context : in out Context_Type);
 
+   overriding
+   procedure Paint
+     (Context : in out Context_Type);
+   ---------------------------------------------------------------------------
+
    Contexts : Context_Access:=null;
+
+   function WGLGetProc
+     (Str : String)
+      return System.Address is
+
+      use type System.Address;
+
+      Result : System.Address;
+
+      CName : Interfaces.C.char_array:=Interfaces.C.To_C(Str);
+
+   begin
+
+      Result := wglGetProcAddress(CName(CName'First)'Access);
+      if Result=System.Null_Address then
+         Result:=GetProcAddress(LibraryHandle,CName(CName'First)'Access);
+         if Result=System.Null_Address then
+            raise FailedToCreateContext with "wglGetProcAddress and library GetProcAddress returned null for """&Str(Str'First..Str'Last-1)&"""";
+         end if;
+      end if;
+      return Result;
+
+   end WGLGetProc;
+   ---------------------------------------------------------------------------
 
    procedure Paint
      (Context : in out Context_Type) is
@@ -156,7 +188,7 @@ package body OpenGL.Context.Win32 is
       if Context.DoubleBuffered then
          Result:=SwapBuffers(Context.DeviceContext);
       else
-         glFinish;
+         glFinish.all;
       end if;
 
    end Paint;
@@ -423,6 +455,7 @@ package body OpenGL.Context.Win32 is
                pragma Warnings(On);
             begin
                if wParam>=32 then
+                  Put_Line("Win32WM_CHAR:"&WParam_Type'Image(wParam));
                   GUI.ContextCharacterInput
                     (Context => Context_ClassAccess(Context),
                      Chars   => UCS2ToUTF8(Convert(wParam)));
@@ -542,6 +575,14 @@ package body OpenGL.Context.Win32 is
         (Context.CSTR_ClassName,
          GetModuleHandle(Interfaces.C.Strings.Null_Ptr));
 
+      if Context.LibraryLoaded then
+         pragma Assert(LibraryCount>=1);
+         LibraryCount:=LibraryCount-1;
+         if LibraryCount=0 then
+            OpenGL.UnloadFunctions;
+         end if;
+      end if;
+
       -- Free C String memory
       Interfaces.C.Strings.Free(Context.CSTR_ClassName);
       Interfaces.C.Strings.Free(Context.CSTR_Title);
@@ -556,9 +597,6 @@ package body OpenGL.Context.Win32 is
 
       use type Interfaces.C.int;
 
-      pragma Unreferenced(Configuration);
-      pragma Unreferenced(Node);
-
       Context    : Context_Access;
       WndClass   : aliased WNDCLASS_Type;
       HInstance  : HINSTANCE_Type;
@@ -570,6 +608,8 @@ package body OpenGL.Context.Win32 is
       HWNDResult : HWND_Type;
       pragma Unreferenced(BoolResult);
       pragma Unreferenced(HWNDResult);
+
+      Title : Unbounded_String:=U("Window");
 
    begin
 
@@ -589,10 +629,18 @@ package body OpenGL.Context.Win32 is
       HInstance:=GetModuleHandle
         (lpModuleName => Interfaces.C.Strings.Null_Ptr);
 
+      declare
+         Key : Unbounded_String:=Node&".Title";
+      begin
+         if Configuration.Contains(Key) then
+            Title:=Configuration.Element(Key);
+         end if;
+      end;
+
       Context.CSTR_ClassName
         := Interfaces.C.Strings.New_String("OpenGLWindow");
       Context.CSTR_Title
-        := Interfaces.C.Strings.New_String("ParallelSim");
+        := Interfaces.C.Strings.New_String(To_String(Title));
 
       -- Create and Register a window class for an ordinary window
       WndClass.Style
@@ -716,9 +764,21 @@ package body OpenGL.Context.Win32 is
              &DWORD_Type'Image(GetLastError);
       end if;
 
+      if LibraryCount=0 then
+         LibraryHandle:=LoadLibrary(LibraryName(LibraryName'First)'Address);
+         if LibraryHandle=NULLHANDLE then
+            raise FailedToCreateContext with "Could not load library handle";
+         end if;
+      end if;
+
+      Context.LibraryLoaded := True;
+      LibraryCount  := LibraryCount+1;
+
       -- Initialize basic window environment
       GUI.Initialize
         (Context => Context_ClassAccess(Context));
+
+      OpenGL.LoadFunctions(WGLGetProc'Access,True);
 
       Context.ContextInitialized:=True;
 

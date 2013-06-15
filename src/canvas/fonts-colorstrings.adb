@@ -19,8 +19,7 @@ pragma Ada_2005;
 with Ada.Unchecked_Deallocation;
 with Ada.Strings.Wide_Wide_Unbounded; use Ada.Strings.Wide_Wide_Unbounded;
 with Basics; use Basics;
---with Ada.Text_IO; use Ada.Text_IO;
---with Ada.Integer_Text_IO; use Ada.Integer_Text_IO;
+with Ada.Text_IO; use Ada.Text_IO;
 
 package body Fonts.ColorStrings is
 
@@ -505,7 +504,7 @@ package body Fonts.ColorStrings is
          ThisChar             := ColorString.Content(i).Char;
 
          AccumWidth
-           := AccumWidth+Integer(ColorString.Font.CharacterWidth(ThisChar));
+           := AccumWidth+Integer(ColorString.Font.CharacterAdvance(ThisChar));
 
          ColorString.Content(i).AccumWidth := AccumWidth;
          ColorString.Content(i).NextLine := 0; -- Reset this to reset wrapping
@@ -586,7 +585,9 @@ package body Fonts.ColorStrings is
 
    begin
 
+      Put_Line("COnvert String"&TO_String(String));
       UCS4:=UTF8ToUCS4(String);
+      Put_Line("DOne");
 
       if ColorString.Content=null then
          if Position=1 then

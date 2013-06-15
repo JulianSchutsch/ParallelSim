@@ -38,6 +38,12 @@ package Fonts.FreeType.Small is
       Color  : Standard.Canvas.Color_Type);
 
    overriding
+   function CharacterAdvance
+     (Font : access SmallFont_Type;
+      Char : Wide_Wide_Character)
+      return Float;
+
+   overriding
    function CharacterWidth
      (Font : access SmallFont_Type;
       Char : Wide_Wide_Character)

@@ -73,7 +73,7 @@ procedure Listbox is
 
       ListBox.AddEntry
         (String => U("Entry Added :"&Integer'Image(AddCounter)),
-         Color  => 16#FFFFFFFF#);
+         Color  => 16#FF000000#);
 
    end AddClick;
    ---------------------------------------------------------------------------

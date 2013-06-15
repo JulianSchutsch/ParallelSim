@@ -29,6 +29,22 @@ package body GUI.Window is
    end SetCaption;
    ---------------------------------------------------------------------------
 
+   procedure SetButtons
+     (Window  : access Window_Type;
+      Buttons : WindowButtons_Set) is
+   begin
+      Window.Buttons:=Buttons;
+   end SetButtons;
+   ---------------------------------------------------------------------------
+
+   function GetButtons
+     (Window : access Window_Type)
+      return WindowButtons_Set is
+   begin
+      return Window.Buttons;
+   end GetButtons;
+   ---------------------------------------------------------------------------
+
    function GetCaption
      (Window : access Window_Type)
       return Unbounded_String is

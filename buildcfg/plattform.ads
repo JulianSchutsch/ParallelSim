@@ -35,27 +35,22 @@ with Common; use Common;
 
 package Plattform is
 
-   PlattformInitializationFailed : Exception;
-
    type Plattform_Enum is
      (PlattformUnknown,
       PlattformLinux,
-      PlattformBSD,
       PlattformWindowsNT);
 
    PlattformName : array(Plattform_Enum) of Unbounded_String:=
      (PlattformUnknown   => U("Unknown Plattform"),
       PlattformLinux     => U("Linux"),
-      PlattformBSD       => U("BSD"),
       PlattformWindowsNT => U("Windows NT"));
 
    PlattformIdentifier : array(Plattform_Enum) of Unbounded_String:=
      (PlattformUnknown   => U("Unknown"),
       PlattformLinux     => U("Linux"),
-      PlattformBSD       => U("BSD"),
       PlattformWindowsNT => U("WindowsNT"));
 
-   Detected         : Plattform_Enum:=PlattformUnknown;
+   Detected           : Plattform_Enum:=PlattformUnknown;
    ExecutableSuffix : Unbounded_String;
 
    procedure Initialize;

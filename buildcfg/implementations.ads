@@ -135,13 +135,11 @@ package Implementations is
    Compatible : array(Implementation_Enum,Plattform_Enum) of Boolean:=
      (ImplementationBSDSockets =>
         (PlattformLinux     => True,
-         PlattformBSD       => True,
          PlattformWindowsNT => True,
          others             => False),
 
       ImplementationMPICH2 =>
         (PlattformLinux     => True,
-         PlattformBSD       => True,
          PlattformWindowsNT => True,
          others             => False),
 
@@ -151,12 +149,10 @@ package Implementations is
 
       ImplementationXlib =>
         (PlattformLinux     => True,
-         PlattformBSD       => True,
          Others             => False),
 
       ImplementationFreeType =>
         (PlattformLinux     => True,
-         PlattformBSD       => True,
          PlattformWindowsNT => True,
          others             => False),
 
@@ -183,6 +179,9 @@ package Implementations is
    -- Must be called only after Plattform.Initialize
    procedure Initialize;
 
+   package StringList_Pack is new Ada.Containers.Doubly_Linked_Lists
+        (Element_Type => Unbounded_String,
+         "="          => "=");
    AdditionalConfigLines : StringList_Pack.List;
 
 end Implementations;
