@@ -133,6 +133,10 @@ package body OpenGL.Context.Xlib is
 
       procedure Paint is
       begin
+         if not Context.ContextInitialized then
+            return;
+         end if;
+
          OpenGL.Context.Paint(OpenGL.Context.Context_Type(Context.all));
          if Context.DoubleBuffered then
             glX.glXSwapBuffers
@@ -181,8 +185,6 @@ package body OpenGL.Context.Xlib is
                end if;
 
             when Expose =>
-               Put("Expose");
-               New_Line;
                Paint;
 
             when ButtonPress =>
@@ -486,6 +488,14 @@ package body OpenGL.Context.Xlib is
          raise FailedToCreateContext
            with "Failed call to XSetErrorHandler";
       end if;
+
+      begin
+         glX.LoadGLX(Context.Display);
+      exception
+         when E:others =>
+            raise FailedToCreateContext
+              with "Failed to load GLX";
+      end;
 
       if glX.glXQueryVersion
         (dpy   => Context.Display,
