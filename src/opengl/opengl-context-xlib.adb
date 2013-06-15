@@ -736,7 +736,7 @@ package body OpenGL.Context.Xlib is
       GUI.Initialize
         (Context => Context_ClassAccess(Context));
 
-      OpenGL.LoadFunctions(GLX.GetProcAdress'Access,True);
+      OpenGL.LoadFunctions(GLX.GetProcAddress'Access,True);
 
       Context.ContextInitialized:=True;
 
